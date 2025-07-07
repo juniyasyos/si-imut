@@ -17,6 +17,9 @@ return [
                 'include' => [
                     storage_path('app'),
                     base_path('public'),
+                    base_path('.env'),
+                    base_path('config'),
+                    base_path('resources'),
                 ],
 
                 /*
