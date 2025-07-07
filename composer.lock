@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "773e365960552b7dd926149aaafbb0df",
+    "content-hash": "222e454654d875e6210fa13c32053afc",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3613,22 +3613,22 @@
         },
         {
             "name": "juniyasyos/filament-backup",
-            "version": "v1.2.3",
+            "version": "v1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/filament-backup-juniyasyos.git",
-                "reference": "79cfd8ab9b76a038b76ce12c99692b471dfd066f"
+                "reference": "c3f1cd940c4c8a92383d02c2c9425389b2bffed6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/79cfd8ab9b76a038b76ce12c99692b471dfd066f",
-                "reference": "79cfd8ab9b76a038b76ce12c99692b471dfd066f",
+                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/c3f1cd940c4c8a92383d02c2c9425389b2bffed6",
+                "reference": "c3f1cd940c4c8a92383d02c2c9425389b2bffed6",
                 "shasum": ""
             },
             "require": {
                 "calebporzio/sushi": "^2.4",
                 "filament/filament": "^3.0",
-                "php": "^8.3",
+                "php": "^8.2",
                 "spatie/laravel-backup": "^8.0|^9.0",
                 "spatie/laravel-package-tools": "^1.15"
             },
@@ -3680,9 +3680,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/filament-backup-juniyasyos/issues",
-                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v1.2.3"
+                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v1.2.4"
             },
-            "time": "2025-07-05T07:01:59+00:00"
+            "time": "2025-07-07T03:24:20+00:00"
         },
         {
             "name": "juniyasyos/filament-media-manager",
@@ -5935,16 +5935,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.13.2",
+            "version": "1.13.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "d25e62e636b0a9b01e3bdebb7823b474876dd829"
+                "reference": "faed855a7b5f4d4637717c2b3863e277116beb36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/d25e62e636b0a9b01e3bdebb7823b474876dd829",
-                "reference": "d25e62e636b0a9b01e3bdebb7823b474876dd829",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/faed855a7b5f4d4637717c2b3863e277116beb36",
+                "reference": "faed855a7b5f4d4637717c2b3863e277116beb36",
                 "shasum": ""
             },
             "require": {
@@ -5983,7 +5983,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.2"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.3"
             },
             "funding": [
                 {
@@ -5991,7 +5991,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-07-04T14:07:32+00:00"
+            "time": "2025-07-05T12:25:42+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -8317,16 +8317,16 @@
         },
         {
             "name": "rmsramos/activitylog",
-            "version": "v1.0.12",
+            "version": "v1.0.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rmsramos/activitylog.git",
-                "reference": "56f9f3f0c24b2474a8ea39cc701584d0035b5c86"
+                "reference": "09e66832f6f8b2abde878f33954b64d19aa482ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rmsramos/activitylog/zipball/56f9f3f0c24b2474a8ea39cc701584d0035b5c86",
-                "reference": "56f9f3f0c24b2474a8ea39cc701584d0035b5c86",
+                "url": "https://api.github.com/repos/rmsramos/activitylog/zipball/09e66832f6f8b2abde878f33954b64d19aa482ef",
+                "reference": "09e66832f6f8b2abde878f33954b64d19aa482ef",
                 "shasum": ""
             },
             "require": {
@@ -8385,9 +8385,9 @@
             ],
             "support": {
                 "issues": "https://github.com/rmsramos/activitylog/issues",
-                "source": "https://github.com/rmsramos/activitylog/tree/v1.0.12"
+                "source": "https://github.com/rmsramos/activitylog/tree/v1.0.13"
             },
-            "time": "2025-07-04T23:28:21+00:00"
+            "time": "2025-07-06T22:18:24+00:00"
         },
         {
             "name": "ryangjchandler/blade-capture-directive",
@@ -16381,7 +16381,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.4"
+        "php": "^8.2"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"
