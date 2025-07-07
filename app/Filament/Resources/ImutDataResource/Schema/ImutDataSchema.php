@@ -115,8 +115,9 @@ class ImutDataSchema
                                 RichEditor::make('description')
                                     ->label(__('filament-forms::imut-data.fields.description'))
                                     ->placeholder(__('filament-forms::imut-data.form.main.description_placeholder'))
-                                    ->helperText(__('filament-forms::imut-data.form.main.description_helper'))
                                     ->disabled(fn(?Model $record) => $record && $record->created_by !== Auth::id())
+                                    ->helperText(__('filament-forms::imut-data.form.main.description_helper'))
+                                    ->dehydrated(false)
                                     ->columnSpan(2)
                                     ->maxLength(255),
 
