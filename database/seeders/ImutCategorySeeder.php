@@ -36,6 +36,14 @@ class ImutCategorySeeder extends Seeder
                 'scope' => 'internal',
                 'description' => 'Indikator yang digunakan untuk memantau dan mencegah insiden keselamatan pasien di fasilitas pelayanan kesehatan.',
             ],
+            [
+                'category_name' => 'Indikator Mutu Unit Pelayanan',
+                'short_name' => 'UNIT',
+                'scope' => 'unit',
+                'is_use_global' => true,
+                'description' => 'Indikator mutu yang dirancang khusus untuk menilai dan meningkatkan kualitas layanan di tingkat unit pelayanan.',
+            ],
+
         ];
 
         foreach ($categories as $data) {

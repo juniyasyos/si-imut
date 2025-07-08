@@ -39,6 +39,7 @@ class ImutDataProdSeeder extends Seeder
                 'IMP-UNIT' => 'imp-unit.json',
                 'IMP-RS' => 'imp-rs.json',
                 'IMIKP' => 'imp_kp.json',
+                'UNIT' => 'unit.json'
             ];
 
             // $this->createLaporanImut();
