@@ -373,30 +373,5 @@
             "data_collection_tool": "Pengamatan menggunakan formulir pengumpulan data",
             "responsible_person": "Kepala Instalasi Farmasi, Tim PPI"
         }
-    },
-    {
-        "title": "Kecepatan Waktu Tanggap Komplain",
-        "description": "Mengukur kecepatan rumah sakit dalam merespon keluhan pasien, baik secara tertulis, lisan, maupun melalui media massa, hingga proses tindak lanjut sesuai waktu berdasarkan grading risiko.",
-        "profile": {
-            "rationale": "Undang-Undang No. 44 Tahun 2009 tentang Rumah Sakit. Pasal 32: Hak Pasien dimana mempunyai hak mengajukan pengaduan atas kualitas pelayanan yang didapatkan.",
-            "quality_dimension": "Berfokus Kepada Pasien",
-            "objective": "Tergambarnya kecepatan rumah sakit dalam merespon keluhan pasien agar dapat diperbaiki dan ditingkatkan sebagai bentuk pemenuhan hak pasien.",
-            "operational_definition": "Rentang waktu Rumah sakit dalam menanggapi keluhan tertulis, lisan atau melalui media masa melalui tahapan identifikasi, penetapan grading risiko, analisa hingga tindak lanjutnya.",
-            "indicator_type": "process",
-            "numerator_formula": "Jumlah komplain yang ditanggapi dan ditindaklanjuti sesuai waktu yang ditetapkan berdasarkan grading",
-            "denominator_formula": "Jumlah Komplain yang disurvei",
-            "target_value": "> 80%",
-            "inclusion_criteria": "Semua komplain",
-            "exclusion_criteria": "Tidak ada",
-            "data_source": "Data sekunder dari Laporan komplain",
-            "data_collection_frequency": "1 Bulan",
-            "analysis_plan": "Run Chart",
-            "analysis_period_type": "bulanan",
-            "analysis_period_value": 3,
-            "data_collection_method": "Data dikumpulkan secara retrospektif",
-            "sampling_method": "Dilakukan sesuai dengan referensi statistik yang ditetapkan oleh rumah sakit (Total Sampling)",
-            "data_collection_tool": "Formulir Monitoring",
-            "responsible_person": "Kepala Unit Teknologi dan Informasi"
-        }
     }
 ]
