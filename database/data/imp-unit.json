@@ -203,31 +203,6 @@
         }
     },
     {
-        "title": "Kepatuhan Request Pemeriksaan Laboratorium",
-        "description": "Kepatuhan petugas untuk menginput request pemeriksaan laboratorium sebelum petugas mengambil sampel.",
-        "profile": {
-            "rationale": "Standar Akreditasi Rumah Sakit",
-            "quality_dimension": "Efisiensi",
-            "objective": "Mempercepat pelayanan laboratorium",
-            "operational_definition": "Kepatuhan request pemeriksaan laboratorium adalah kepatuhan petugas untuk menginput request pemeriksaan laboratorium sebelum petugas mengambil sampel.",
-            "indicator_type": "process",
-            "numerator_formula": "Jumlah request pemeriksaan laboratorium yang patuh",
-            "denominator_formula": "Jumlah request seluruh pemeriksaan laboratorium dalam satu bulan",
-            "target_value": 100,
-            "inclusion_criteria": "Semua pemeriksaan laboratorium di RS. Citra Husada",
-            "exclusion_criteria": "Tidak ada",
-            "data_source": "Data penerimaan sampel laboratorium",
-            "data_collection_frequency": "1 Bulan",
-            "analysis_plan": "Run Chart",
-            "analysis_period_type": "bulanan",
-            "analysis_period_value": 3,
-            "data_collection_method": "Data dikumpulkan secara retrospektif",
-            "sampling_method": "Total Sampling",
-            "data_collection_tool": "Formulir Monitoring",
-            "responsible_person": "Kepala Instalasi Laboratorium"
-        }
-    },
-    {
         "title": "Kejadian Pengulangan Pelayanan Rontgen",
         "description": "Kejadian pengulangan pelayanan rontgen adalah kejadian pengulangan foto yang tidak sesuai dengan kriteria radiografi seperti foto sesuai dengan permintaan, anatomi tidak terpotong, kontras dan densitas sesuai.",
         "profile": {
