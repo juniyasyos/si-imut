@@ -25,7 +25,7 @@ class ImutData extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['title', 'imut_kategori_id', 'slug', 'status', 'created_by'];
+    protected $fillable = ['title', 'imut_kategori_id', 'slug', 'description', 'status', 'created_by'];
 
     protected static function boot()
     {
@@ -88,8 +88,8 @@ class ImutData extends Model
 
     protected static function booted()
     {
-        static::saved(fn ($penilaian) => $penilaian->clearCache());
-        static::deleted(fn ($penilaian) => $penilaian->clearCache());
+        static::saved(fn($penilaian) => $penilaian->clearCache());
+        static::deleted(fn($penilaian) => $penilaian->clearCache());
     }
 
     /**
