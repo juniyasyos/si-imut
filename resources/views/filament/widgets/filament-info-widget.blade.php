@@ -23,8 +23,9 @@
                 </span>
 
                 {{-- Dokumentasi --}}
-                <x-filament::link color="gray" href="https://github.com/juniyasyos" icon="heroicon-m-book-open"
-                    rel="noopener noreferrer" target="_blank">
+                <x-filament::link color="gray"
+                    href="https://drive.google.com/file/d/1T8yUfW7PJhV2UT5ox35X-RJk1cQ6K0oI/view?usp=sharing"
+                    icon="heroicon-m-book-open" rel="noopener noreferrer" target="_blank">
                     Panduan Penggunaan
                 </x-filament::link>
             </div>
