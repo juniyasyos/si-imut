@@ -272,10 +272,7 @@
             "denominator_formula": "Jumlah item obat (R/) yang disurvei",
             "target_value": 80,
             "inclusion_criteria": "Resep yang dilayani rumah sakit",
-            "exclusion_criteria": [
-                "Obat di luar forkit karena kebutuhan pasien dengan persetujuan Komite Medik dan Direktur",
-                "Stok obat nasional berdasarkan e-katalog kosong"
-            ],
+            "exclusion_criteria": "Obat di luar forkit karena kebutuhan pasien dengan persetujuan Komite Medik dan Direktur, Stok obat nasional berdasarkan e-katalog kosong",
             "formula": "N/D x 100%",
             "data_source": "Data sekunder dari lembar resep",
             "data_collection_frequency": "1 Bulan",
@@ -327,10 +324,7 @@
             "denominator_formula": "Jumlah item obat (R/) yang disurvei",
             "target_value": 80,
             "inclusion_criteria": "Resep yang dilayani rumah sakit",
-            "exclusion_criteria": [
-                "Obat di luar forkit karena kebutuhan pasien dengan persetujuan komite Medik dan Direktur",
-                "Stok obat nasional berdasarkan e-katalog kosong"
-            ],
+            "exclusion_criteria": "Obat di luar forkit karena kebutuhan pasien dengan persetujuan komite Medik dan Direktur, Stok obat nasional berdasarkan e-katalog kosong",
             "formula": "N/D x 100%",
             "data_source": "Data sekunder dari lembar resep",
             "data_collection_frequency": "1 Bulan",
@@ -460,11 +454,7 @@
             "denominator_formula": "Jumlah total pasien rawat inap dalam 1 bulan",
             "target_value": 100,
             "inclusion_criteria": "Pasien rawat inap dalam perawatan lebih dari 1 hari",
-            "exclusion_criteria": [
-                "Pasien rawat inap dalam perawatan kurang dari 1 hari",
-                "Pasien one day care",
-                "Pasien pulang paksa"
-            ],
+            "exclusion_criteria": "Pasien rawat inap dalam perawatan kurang dari 1 hari, Pasien one day care, Pasien pulang paksa",
             "formula": "N/D x 100%",
             "data_source": "Rekam medik pasien",
             "data_collection_frequency": "1 Bulan",
@@ -489,16 +479,8 @@
             "numerator_formula": "Pasien rawat inap yang dilakukan monitoring dan evaluasi gizi lanjutan",
             "denominator_formula": "Jumlah total pasien rawat inap dalam 1 bulan",
             "target_value": 100,
-            "inclusion_criteria": [
-                "Pasien rawat inap dalam perawatan lebih dari 1 hari",
-                "Pasien rawat inap dengan hasil skor skrining gizi awal ≥ 2 atau berisiko malnutrisi"
-            ],
-            "exclusion_criteria": [
-                "Pasien rawat inap dalam perawatan kurang dari 1 hari",
-                "Pasien one day care",
-                "Pasien pulang paksa",
-                "Pasien meninggal"
-            ],
+            "inclusion_criteria": "Pasien rawat inap dalam perawatan lebih dari 1 hari,Pasien rawat inap dengan hasil skor skrining gizi awal ≥ 2 atau berisiko malnutrisi",
+            "exclusion_criteria":"Pasien rawat inap dalam perawatan kurang dari 1 hari, Pasien one day care, Pasien pulang paksa, Pasien meninggal",
             "formula": "N/D x 100%",
             "data_source": "Rekam medik pasien",
             "data_collection_frequency": "1 Bulan",
