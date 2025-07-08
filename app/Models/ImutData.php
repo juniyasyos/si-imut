@@ -25,7 +25,14 @@ class ImutData extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['title', 'imut_kategori_id', 'slug', 'description', 'status', 'created_by'];
+    protected $fillable = [
+        'title',
+        'slug',
+        'imut_kategori_id',
+        'description',
+        'status',
+        'created_by',
+    ];
 
     protected static function boot()
     {

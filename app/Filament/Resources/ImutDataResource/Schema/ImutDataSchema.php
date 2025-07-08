@@ -117,7 +117,7 @@ class ImutDataSchema
                                     ->placeholder(__('filament-forms::imut-data.form.main.description_placeholder'))
                                     ->disabled(fn(?Model $record) => $record && $record->created_by !== Auth::id())
                                     ->helperText(__('filament-forms::imut-data.form.main.description_helper'))
-                                    ->dehydrated(false)
+                                    ->dehydrated(true)
                                     ->columnSpan(2)
                                     ->maxLength(255),
 
@@ -138,6 +138,7 @@ class ImutDataSchema
                             Section::make('Unit Kerja')
                                 ->description('Pilih unit kerja yang memiliki indikator mutu ini.')
                                 ->columnSpanFull()
+                                ->collapsed()
                                 ->visible(fn() => Auth::user()->can('attach_imut_data_to_unit_kerja_unit::kerja'))
                                 ->schema([
                                     CheckboxList::make('unitKerja')
@@ -153,7 +154,6 @@ class ImutDataSchema
                                         ->name('unitKerjaIds'),
                                 ])
                         ]),
-
 
                     Tab::make('📍 Benchmarking')
                         ->schema([
