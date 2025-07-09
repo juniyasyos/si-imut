@@ -19,7 +19,7 @@ class ImutBenchmarkingSeeder extends Seeder
         $regions = RegionType::all();
         $laporans = \App\Models\LaporanImut::all();
 
-        ImutData::whereHas('category', fn($q) => $q->where('is_benchmark_category', true))
+        ImutData::whereHas('categories', fn($q) => $q->where('is_benchmark_category', true))
             ->get()
             ->each(function ($d) use ($regions, $laporans) {
                 foreach ($laporans as $lap) {
