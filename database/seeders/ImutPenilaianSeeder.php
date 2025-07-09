@@ -16,24 +16,34 @@ class ImutPenilaianSeeder extends Seeder
     public function run(): void
     {
         $this->initImut();
-        $lapUnits = DB::table('laporan_unit_kerjas')->get()->keyBy(fn($r) => "{$r->laporan_imut_id}-{$r->unit_kerja_id}");
 
-        ImutProfile::all()->each(function ($p) use ($lapUnits) {
-            foreach ($lapUnits as $key => $lap) {
-                [$lId, $uId] = explode('-', $key);
+        $lapUnits = DB::table('laporan_unit_kerjas')->get()->keyBy(fn($r) => "{$r->laporan_imut_id}-{$r->unit_kerja_id}");
+        $imutProfiles = ImutProfile::all();
+        $now = now();
+        $faker = fake();
+        $rows = [];
+
+        foreach ($imutProfiles as $p) {
+            foreach ($lapUnits as $lap) {
                 $den = rand(80, 120);
                 $num = rand((int)($den * 0.7), $den);
 
-                ImutPenilaian::create([
+                $rows[] = [
                     'imut_profil_id'         => $p->id,
                     'laporan_unit_kerja_id'  => $lap->id,
-                    'analysis'               => fake()->sentence(2),
-                    'recommendations'        => fake()->sentence(15),
+                    'analysis'               => $faker->sentence(2),
+                    'recommendations'        => $faker->sentence(15),
                     'numerator_value'        => $num,
                     'denominator_value'      => $den,
                     'created_at'             => Carbon::parse($p->start_period)->addDays(rand(0, 90)),
-                ]);
+                    'updated_at'             => $now,
+                ];
             }
-        });
+        }
+
+        // Bulk insert sekaligus
+        foreach (array_chunk($rows, 1000) as $chunk) {
+            ImutPenilaian::insert($chunk);
+        }
     }
 }
