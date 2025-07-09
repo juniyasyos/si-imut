@@ -63,7 +63,6 @@ class ImutProfileSeeder extends Seeder
                 // Validasi keys (sama seperti sebelumnya)
                 $required = [
                     'target_value',
-                    'target_operator',
                     'analysis_period_type',
                     'analysis_period_value',
                     'rationale',
