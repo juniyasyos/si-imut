@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Database\Seeders\Traits\ImutInitializer;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
+use App\Traits\ImutInitializer;
 use Illuminate\Database\Seeder;
 
 class LaporanImutSeeder extends Seeder

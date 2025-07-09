@@ -2,7 +2,7 @@
 
 namespace Database\seeders;
 
-use Database\Seeders\Traits\ImutInitializer;
+use App\Traits\ImutInitializer;
 use App\Models\ImutCategory;
 use App\Models\ImutData;
 use Illuminate\Database\Seeder;
@@ -39,7 +39,7 @@ class ImutDataSeeder extends Seeder
             foreach ($data as $ind) {
                 ImutData::firstOrCreate([
                     'title'           => $ind['title'],
-                    'imut_kategori_id'=> $cat->id,
+                    'imut_kategori_id' => $cat->id,
                     'description'     => $ind['description'],
                     'status'          => true,
                     'created_by'      => $this->adminUserId,

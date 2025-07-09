@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\Traits;
+namespace App\Traits;
 
 use App\Models\User;
 use App\Models\UnitKerja;
@@ -20,6 +20,6 @@ trait ImutInitializer
         $this->faker       = Faker::create();
         $this->now         = Carbon::now();
         $this->adminUserId = User::where('name', 'admin')->value('id') ?? 1;
-        $this->unitKerjaIds= UnitKerja::pluck('id')->toArray();
+        $this->unitKerjaIds = UnitKerja::pluck('id')->toArray();
     }
 }

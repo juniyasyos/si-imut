@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Database\Seeders\Traits\ImutInitializer;
+use App\Traits\ImutInitializer;
 use App\Models\ImutData;
 use App\Models\ImutProfile;
 use Illuminate\Database\Seeder;
