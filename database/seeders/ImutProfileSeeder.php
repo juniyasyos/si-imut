@@ -16,7 +16,7 @@ class ImutProfileSeeder extends Seeder
     {
         $this->initImut();
 
-        ImutData::with('category')->get()->each(function ($d) {
+        ImutData::with('categories')->get()->each(function ($d) {
             $profile = json_decode($d->description, true)['profile'] ?? null;
             if (! $profile) {
                 $this->command->warn("Tidak ada profile untuk {$d->title}");
