@@ -36,38 +36,36 @@ class ImutDataSeeder extends Seeder
 
     public function run(): void
     {
-        DB::transaction(function () {
-            $this->init();
+        $this->init();
 
-            $filesByCategoryShortName = [
-                'INM' => 'inm.json',
-                'IMP-UNIT' => 'imp-unit.json',
-                'IMP-RS' => 'imp-rs.json',
-                'IMIKP' => 'imp_kp.json',
-                'UNIT' => 'unit.json'
-            ];
+        $filesByCategoryShortName = [
+            'INM' => 'inm.json',
+            'IMP-UNIT' => 'imp-unit.json',
+            'IMP-RS' => 'imp-rs.json',
+            'IMIKP' => 'imp_kp.json',
+            'UNIT' => 'unit.json'
+        ];
 
-            $this->createLaporanImut();
+        $this->createLaporanImut();
 
-            foreach ($filesByCategoryShortName as $shortName => $filename) {
-                $category = ImutCategory::where('short_name', $shortName)->first();
+        foreach ($filesByCategoryShortName as $shortName => $filename) {
+            $category = ImutCategory::where('short_name', $shortName)->first();
 
-                if (! $category) {
-                    $this->command->warn("Kategori dengan short_name \"$shortName\" tidak ditemukan. Lewati file \"$filename\".");
+            if (! $category) {
+                $this->command->warn("Kategori dengan short_name \"$shortName\" tidak ditemukan. Lewati file \"$filename\".");
 
-                    continue;
-                }
-
-                $indicators = $this->getJsonData($filename);
-                if (! $indicators) {
-                    continue;
-                }
-
-                foreach ($indicators as $indicator) {
-                    $this->processIndicator($indicator, $category);
-                }
+                continue;
             }
-        });
+
+            $indicators = $this->getJsonData($filename);
+            if (! $indicators) {
+                continue;
+            }
+
+            foreach ($indicators as $indicator) {
+                $this->processIndicator($indicator, $category);
+            }
+        }
     }
 
     private function init(): void
