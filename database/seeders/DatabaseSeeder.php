@@ -22,7 +22,12 @@ class DatabaseSeeder extends Seeder
                 UnitKerjaSeeder::class,
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
+                ImutCategorySeeder::class,  
+                LaporanImutSeeder::class,
                 ImutDataSeeder::class,
+                ImutProfileSeeder::class,
+                ImutBenchmarkingSeeder::class,
+                ImutPenilaianSeeder::class,
             ]
         );
     }
