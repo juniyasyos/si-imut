@@ -93,16 +93,19 @@ class ImutDataProdSeeder extends Seeder
     private function processIndicator(array $indicator, ImutCategory $category): void
     {
         try {
+            // Simpan atau ambil data IMUT
             $imutData = ImutData::firstOrCreate([
                 'title' => $indicator['title'],
                 'imut_kategori_id' => $category->id,
-                'description' => $indicator['description'],
+            ], [
+                'description' => $indicator['description'] ?? '',
                 'status' => true,
                 'created_by' => $this->adminUserId,
             ]);
 
             $profile = $indicator['profile'];
 
+            // Validasi wajib isi
             $requiredKeys = [
                 'rationale',
                 'quality_dimension',
@@ -131,10 +134,12 @@ class ImutDataProdSeeder extends Seeder
                 }
             }
 
+            // Validasi tipe indikator
             $indicatorType = in_array($profile['indicator_type'], ['process', 'outcome', 'output'])
                 ? $profile['indicator_type']
                 : 'process';
 
+            // Hitung periode analisis
             $analysisPeriodType = $profile['analysis_period_type'];
             $analysisPeriodValue = (int) $profile['analysis_period_value'];
 
@@ -142,10 +147,10 @@ class ImutDataProdSeeder extends Seeder
             $end_periode = match ($analysisPeriodType) {
                 'mingguan' => $start_periode->copy()->addWeeks($analysisPeriodValue),
                 'bulanan' => $start_periode->copy()->addMonths($analysisPeriodValue),
-                'semester' => $start_periode->copy()->addMonths($analysisPeriodValue * 6),
                 default => $start_periode->copy(),
             };
 
+            // Simpan profil IMUT
             $imutProfile = ImutProfile::firstOrCreate([
                 'imut_data_id' => $imutData->id,
                 'version' => 'version 1',
@@ -173,6 +178,34 @@ class ImutDataProdSeeder extends Seeder
                 'data_collection_tool' => $profile['data_collection_tool'],
                 'responsible_person' => $profile['responsible_person'],
             ]);
+
+            // Cek file JSON per unit kerja
+            $unitKerjaPath = base_path('database/data/unitkerja');
+            $unitFiles = glob($unitKerjaPath . '/*.json');
+
+            foreach ($unitFiles as $file) {
+                $jsonData = json_decode(file_get_contents($file), true);
+
+                if (!isset($jsonData['unit_kerja']) || !isset($jsonData['imut'])) {
+                    continue;
+                }
+
+                $unitShortName = $jsonData['unit_kerja'];
+                $imutTitles = collect($jsonData['imut']);
+
+                if ($imutTitles->contains($imutData->title)) {
+                    $unitId = $this->getUnitKerjaIdByShortName($unitShortName);
+
+                    if ($unitId) {
+                        $imutData->unitKerja()->syncWithoutDetaching([
+                            $unitId => [
+                                'assigned_by' => $this->adminUserId ?? 1,
+                                'assigned_at' => now(),
+                            ],
+                        ]);
+                    }
+                }
+            }
         } catch (\Throwable $e) {
             dd([
                 'error' => $e->getMessage(),
