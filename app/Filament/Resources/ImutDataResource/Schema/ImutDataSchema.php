@@ -220,18 +220,19 @@ class ImutDataSchema
                                                     ->schema($schema)
                                                     ->nullable()
                                                     ->defaultItems(1)
-                                                    ->addable(
-                                                        fn(Get $get) => $get('created_by') === auth()->id()
-                                                    )
-                                                    ->deletable(
-                                                        fn(Get $get) => $get('created_by') === auth()->id()
-                                                    )
-                                                    ->cloneable(
-                                                        fn(Get $get) => $get('created_by') === auth()->id()
-                                                    )
-                                                    ->reorderable(
-                                                        fn(Get $get) => $get('created_by') === auth()->id()
-                                                    )
+                                                    ->addable()
+                                                    // ->addable(
+                                                    //     fn(Get $get) => ! $get('created_by') === auth()->id()
+                                                    // )
+                                                    // ->deletable(
+                                                    //     fn(Get $get) => $get('created_by') === auth()->id()
+                                                    // )
+                                                    // ->cloneable(
+                                                    //     fn(Get $get) => $get('created_by') === auth()->id()
+                                                    // )
+                                                    // ->reorderable(
+                                                    //     fn(Get $get) => $get('created_by') === auth()->id()
+                                                    // )
                                                     ->columnSpan('full'),
                                                 // ->extraActions([
                                                 //     Action::make('exportData')
