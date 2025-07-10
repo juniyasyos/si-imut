@@ -43,7 +43,17 @@ return [
         // IMUT Profile
         'view_imut::profile',
         'view_any_imut::profile',
-
+        'create_imut::profile',
+        'update_imut::profile',
+        'restore_imut::profile',
+        'restore_any_imut::profile',
+        'delete_imut::profile',
+        'delete_any_imut::profile',
+        'replicate_imut::profile',
+        'reorder_imut::profile',
+        'force_delete_imut::profile',
+        'force_delete_any_imut::profile',
+        
         // IMUT Category
         'view_any_imut::category',
         'view_imut::category',

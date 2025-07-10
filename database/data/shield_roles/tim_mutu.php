@@ -64,6 +64,7 @@ return [
         'reorder_imut::profile',
         'force_delete_imut::profile',
         'force_delete_any_imut::profile',
+        'force_editable_imut::profile',
 
         // Region Type
         'view_any_region::type::bencmarking',

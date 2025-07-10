@@ -2,14 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\ImutBenchmarking;
 use App\Models\ImutCategory;
 use App\Models\ImutData;
-use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
-use App\Models\RegionType;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
