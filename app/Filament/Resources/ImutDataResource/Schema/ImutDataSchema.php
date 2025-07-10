@@ -70,7 +70,7 @@ class ImutDataSchema
                                     ->helperText(__('filament-forms::imut-data.form.main.helper_text'))
                                     ->prefixIcon('heroicon-o-pencil-square')
                                     ->required()
-                                    ->readOnly(fn(?Model $record) => $record && $record->created_by !== Auth::id())
+                                    ->readOnly(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->columnSpan(2)
                                     ->unique('imut_data', 'title', ignoreRecord: true)
                                     ->maxLength(255),
@@ -98,7 +98,7 @@ class ImutDataSchema
                                     })
                                     ->searchable()
                                     ->required()
-                                    ->disabled(fn(?Model $record) => $record && $record->created_by !== Auth::id())
+                                    ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->hint(__('filament-forms::imut-data.form.main.category_hint')),
 
                                 Toggle::make('status')
@@ -107,7 +107,7 @@ class ImutDataSchema
                                     ->inline(true)
                                     ->columnSpan(2)
                                     ->onColor('success')
-                                    ->disabled(fn(?Model $record) => $record && $record->created_by !== Auth::id())
+                                    ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->required()
                                     ->default(true)
                                     ->columnSpan(1),
@@ -115,7 +115,7 @@ class ImutDataSchema
                                 RichEditor::make('description')
                                     ->label(__('filament-forms::imut-data.fields.description'))
                                     ->placeholder(__('filament-forms::imut-data.form.main.description_placeholder'))
-                                    ->disabled(fn(?Model $record) => $record && $record->created_by !== Auth::id())
+                                    ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->helperText(__('filament-forms::imut-data.form.main.description_helper'))
                                     ->dehydrated(true)
                                     ->columnSpan(2)
