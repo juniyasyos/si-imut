@@ -9,8 +9,8 @@ class ApexChartConfig
         array $xLabels,
         string $xLableTitle = 'Periode',
         string $yLableTitle = 'Capaian (%)',
-        int $yAxisMin = null,
-        int $yAxisMax = null,
+        int $yAxisMin = 0,
+        int $yAxisMax = 100,
         bool $showDataLabels = true
     ): array {
         $maxValue = collect($series)
