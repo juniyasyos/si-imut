@@ -191,13 +191,13 @@ class ImutDataProdSeeder extends Seeder
                     continue;
                 }
 
-                $unitShortName = $jsonData['unit_kerja'];
+                $unitName = $jsonData['unit_kerja'];
                 $imutTitles = collect($jsonData['imut']);
 
                 // Cocokkan dengan title dari imutData
                 if ($imutTitles->contains($imutData->title)) {
                     // Cari unit kerja berdasarkan nama singkat (short_name)
-                    $unitKerja = \App\Models\UnitKerja::where('short_name', $unitShortName)->first();
+                    $unitKerja = \App\Models\UnitKerja::where('unit_name', $unitName)->first();
 
                     if ($unitKerja) {
                         // Sinkronisasi tanpa detach
