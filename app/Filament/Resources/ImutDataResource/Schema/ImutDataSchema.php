@@ -220,19 +220,10 @@ class ImutDataSchema
                                                     ->schema($schema)
                                                     ->nullable()
                                                     ->defaultItems(1)
-                                                    ->addable()
-                                                    // ->addable(
-                                                    //     fn(Get $get) => ! $get('created_by') === auth()->id()
-                                                    // )
-                                                    // ->deletable(
-                                                    //     fn(Get $get) => $get('created_by') === auth()->id()
-                                                    // )
-                                                    // ->cloneable(
-                                                    //     fn(Get $get) => $get('created_by') === auth()->id()
-                                                    // )
-                                                    // ->reorderable(
-                                                    //     fn(Get $get) => $get('created_by') === auth()->id()
-                                                    // )
+                                                    ->addable(fn(Get $get) => $get('created_by') === auth()->id() || Auth::user()->can('force_editable_imut::profile'))
+                                                    ->deletable(fn(Get $get) => $get('created_by') === auth()->id() || Auth::user()->can('force_editable_imut::profile'))
+                                                    ->cloneable(fn(Get $get) => $get('created_by') === auth()->id() || Auth::user()->can('force_editable_imut::profile'))
+                                                    ->reorderable(fn(Get $get) => $get('created_by') === auth()->id() || Auth::user()->can('force_editable_imut::profile'))
                                                     ->columnSpan('full'),
                                                 // ->extraActions([
                                                 //     Action::make('exportData')
