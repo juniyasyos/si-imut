@@ -90,4 +90,9 @@ class CacheKey
         $joinedIds = implode('_', $unitKerjaIds);
         return "imut_laporans_unit_kerjas_{$joinedIds}";
     }
+
+    public static function imutChartSeriesData(int $laporanId): string
+    {
+        return "imut:chart-series-data:laporan:$laporanId";
+    }
 }
