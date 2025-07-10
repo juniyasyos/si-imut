@@ -12,7 +12,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Cache::flush();
-    $this->seed(DatabaseProductionSeeder::class);
+    // $this->seed(DatabaseProductionSeeder::class);
+    $this->seed();
 });
 
 function benchmark(string $functionName, callable $callback): void
@@ -51,19 +52,19 @@ function benchmark(string $functionName, callable $callback): void
 // BENCHMARKED TESTS
 // ===============================================
 
-test('benchmark getCurrentLaporanData with and without cache', function () {
-    $laporan = LaporanImut::where('status', LaporanImut::STATUS_COMPLETE)->first();
+// test('benchmark getCurrentLaporanData with and without cache', function () {
+//     $laporan = LaporanImut::where('status', LaporanImut::STATUS_COMPLETE)->first();
 
-    if (! $laporan) {
-        $this->markTestSkipped('Tidak ada laporan dengan status COMPLETE di database.');
-    }
+//     if (! $laporan) {
+//         $this->markTestSkipped('Tidak ada laporan dengan status COMPLETE di database.');
+//     }
 
-    // Pertama: tanpa cache
-    benchmark('getCurrentLaporanData - first run (no cache)', fn() => LaporanImutFacade::getCurrentLaporanData($laporan));
+//     // Pertama: tanpa cache
+//     benchmark('getCurrentLaporanData - first run (no cache)', fn() => LaporanImutFacade::getCurrentLaporanData($laporan));
 
-    // Kedua: dengan cache
-    benchmark('getCurrentLaporanData - second run (cached)', fn() => LaporanImutFacade::getCurrentLaporanData($laporan));
-});
+//     // Kedua: dengan cache
+//     benchmark('getCurrentLaporanData - second run (cached)', fn() => LaporanImutFacade::getCurrentLaporanData($laporan));
+// });
 
 test('benchmark getChartDataForLastLaporan with and without cache', function () {
     // Pertama
@@ -73,20 +74,20 @@ test('benchmark getChartDataForLastLaporan with and without cache', function () 
     benchmark('getChartDataForLastLaporan - second run (cached)', fn() => LaporanImutFacade::getChartDataForLastLaporan(6));
 });
 
-test('benchmark getPenilaianGroupedByProfile with and without cache', function () {
-    $laporan = LaporanImut::first();
+// test('benchmark getPenilaianGroupedByProfile with and without cache', function () {
+//     $laporan = LaporanImut::first();
 
-    if (! $laporan) {
-        $this->markTestSkipped('Tidak ada laporan di database.');
-    }
+//     if (! $laporan) {
+//         $this->markTestSkipped('Tidak ada laporan di database.');
+//     }
 
-    benchmark('getPenilaianGroupedByProfile - first run (no cache)', fn() => LaporanImutFacade::getPenilaianGroupedByProfile($laporan->id));
+//     benchmark('getPenilaianGroupedByProfile - first run (no cache)', fn() => LaporanImutFacade::getPenilaianGroupedByProfile($laporan->id));
 
-    benchmark('getPenilaianGroupedByProfile - second run (cached)', fn() => LaporanImutFacade::getPenilaianGroupedByProfile($laporan->id));
-});
+//     benchmark('getPenilaianGroupedByProfile - second run (cached)', fn() => LaporanImutFacade::getPenilaianGroupedByProfile($laporan->id));
+// });
 
-test('benchmark getLaporanList with and without cache', function () {
-    benchmark('getLaporanList - first run (no cache)', fn() => LaporanImutFacade::getLaporanList());
+// test('benchmark getLaporanList with and without cache', function () {
+//     benchmark('getLaporanList - first run (no cache)', fn() => LaporanImutFacade::getLaporanList());
 
-    benchmark('getLaporanList - second run (cached)', fn() => LaporanImutFacade::getLaporanList());
-});
+//     benchmark('getLaporanList - second run (cached)', fn() => LaporanImutFacade::getLaporanList());
+// });

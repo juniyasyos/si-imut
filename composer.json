@@ -99,7 +99,7 @@
         ],
         "dev-lara": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php artisan serve\" \"php -d max_execution_time=0 artisan queue:work --tries=1 --timeout=120 \" \"php artisan pail --timeout=0\" --names=server,queue,logs"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php artisan serve\" \"php -d max_execution_time=0 artisan queue:work --tries=1 --timeout=400 \" \"php artisan pail --timeout=0\" --names=server,queue,logs"
         ],
         "setup": [
             "git clean -f && git reset --hard && git pull",

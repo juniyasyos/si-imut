@@ -8,6 +8,7 @@ use App\Models\ImutProfile;
 use App\Models\LaporanImut;
 use App\Support\CacheKey;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -99,54 +100,116 @@ class LaporanImutService
         });
     }
 
+    // public function getCurrentLaporanData(LaporanImut $laporan): ?array
+    // {
+    //     $cacheKey = CacheKey::dashboardSiimutAllData($laporan->id);
+
+    //     return Cache::remember($cacheKey, now()->addHours(12), function () use ($laporan) {
+    //         $laporanId = $laporan->id;
+
+    //         // 1. Ambil indikator aktif & profil terbaru
+    //         $indikatorAktif = $this->getAktifIndikatorWithProfiles(collect([$laporanId]));
+    //         $profileIds     = $this->getLatestProfileIds($indikatorAktif)->all();
+
+    //         // 2. Ambil penilaian, dikelompokkan per profil
+    //         $penilaianByProfile = $this->getGroupedPenilaian(
+    //             laporanIds: [$laporanId],
+    //             profileIds: $profileIds,
+    //             groupBy: 'imut_penilaians.imut_profil_id'
+    //         );
+
+    //         // 3. Hitung unit yang sudah melapor & belum dinilai
+    //         $allPenilaian = $penilaianByProfile->flatten();
+
+    //         $unitMelapor = $allPenilaian
+    //             ->filter(
+    //                 fn($p) =>
+    //                 ! is_null($p->numerator_value) &&
+    //                     ! is_null($p->denominator_value)
+    //             )
+    //             ->pluck('laporanUnitKerja.unit_kerja_id')
+    //             ->unique()
+    //             ->count();
+
+    //         $belumDinilai = $allPenilaian
+    //             ->filter(
+    //                 fn($p) =>
+    //                 ! is_null($p->numerator_value) ||
+    //                     ! is_null($p->denominator_value)
+    //             )
+    //             ->count();
+
+    //         // 4. Hitung indikator “tercapai” dengan helper
+    //         $tercapai = $this->countTercapai($indikatorAktif, $penilaianByProfile, $laporanId);
+
+    //         // 5. Total unit kerja di laporan
+    //         $laporan->loadCount('unitKerjas');
+    //         $totalUnit = $laporan->unit_kerjas_count;
+
+    //         return [
+    //             'totalIndikator' => $indikatorAktif->count(),
+    //             'tercapai'       => $tercapai,
+    //             'unitMelapor'    => $unitMelapor,
+    //             'totalUnit'      => $totalUnit,
+    //             'belumDinilai'   => $belumDinilai,
+    //         ];
+    //     });
+    // }
+
     public function getCurrentLaporanData(LaporanImut $laporan): ?array
     {
-        try {
-            $cacheKey = CacheKey::dashboardSiimutAllData($laporan->id);
+        $cacheKey = CacheKey::dashboardSiimutAllData($laporan->id);
 
-            return Cache::remember($cacheKey, now()->addHours(12), function () use ($laporan) {
-                $laporanId = $laporan->id;
-                $laporanIds = [$laporanId];
+        return Cache::remember($cacheKey, now()->addHours(12), function () use ($laporan) {
+            $laporanId = $laporan->id;
 
-                // Ambil indikator aktif dan profil terbaru
-                $indikatorAktif = $this->getAktifIndikatorWithProfiles(collect($laporanIds));
-                $profileIds = $this->getLatestProfileIds($indikatorAktif);
+            // 1. Ambil indikator aktif & profil terbaru
+            $indikatorAktif = $this->getAktifIndikatorWithProfiles(collect([$laporanId]));
+            $profileIds     = $this->getLatestProfileIds($indikatorAktif)->all();
 
-                // Query efisien penilaian
-                $penilaian = $this->getGroupedPenilaian(
-                    laporanIds: $laporanIds,
-                    profileIds: $profileIds->all(),
-                    groupBy: 'imut_penilaians.imut_profil_id'
-                );
+            // 2. Ambil penilaian, dikelompokkan per profil
+            $penilaianByProfile = $this->getGroupedPenilaian(
+                laporanIds: [$laporanId],
+                profileIds: $profileIds,
+                groupBy: 'imut_penilaians.imut_profil_id'
+            );
 
-                // Hitung unit melapor dan belum dinilai
-                $allPenilaian = $penilaian->flatten();
-                $unitMelapor = $allPenilaian
-                    ->filter(fn($p) => !is_null($p->numerator_value) && !is_null($p->denominator_value))
-                    ->pluck('laporanUnitKerja.unit_kerja_id')
-                    ->unique()
-                    ->count();
+            // 3. Hitung unit yang sudah melapor & belum dinilai
+            $allPenilaian = $penilaianByProfile->flatten();
 
-                $belumDinilai = $allPenilaian->filter(
-                    fn($p) => ! is_null($p->numerator_value) || ! is_null($p->denominator_value)
-                )->count();
+            $unitMelapor = $allPenilaian
+                ->filter(
+                    fn($p) =>
+                    ! is_null($p->numerator_value) &&
+                        ! is_null($p->denominator_value)
+                )
+                ->pluck('laporanUnitKerja.unit_kerja_id')
+                ->unique()
+                ->count();
 
-                // Load total unit kerja
-                $laporan->loadCount('unitKerjas');
+            $belumDinilai = $allPenilaian
+                ->filter(
+                    fn($p) =>
+                    ! is_null($p->numerator_value) ||
+                        ! is_null($p->denominator_value)
+                )
+                ->count();
 
-                return [
-                    'totalIndikator' => $indikatorAktif->count(),
-                    'tercapai' => $this->countTercapai($indikatorAktif, $penilaian, $laporanId),
-                    'unitMelapor' => $unitMelapor,
-                    'totalUnit' => $laporan->unit_kerjas_count,
-                    'belumDinilai' => $belumDinilai,
-                ];
-            });
-        } catch (\Throwable $e) {
-            Log::error('Gagal mengambil current laporan data: ' . $e->getMessage());
+            // 4. Hitung indikator “tercapai” dengan helper
+            $tercapai = $this->countTercapai($indikatorAktif, $penilaianByProfile, $laporanId);
 
-            return null;
-        }
+            // 5. Total unit kerja di laporan
+            $laporan->loadCount('unitKerjas');
+            $totalUnit = $laporan->unit_kerjas_count;
+
+            return [
+                'totalIndikator' => $indikatorAktif->count(),
+                'tercapai'       => $tercapai,
+                'unitMelapor'    => $unitMelapor,
+                'totalUnit'      => $totalUnit,
+                'belumDinilai'   => $belumDinilai,
+            ];
+        });
     }
 
     public function getPenilaianGroupedByProfile(int $laporanId): Collection
@@ -260,19 +323,19 @@ class LaporanImutService
     private function getGroupedPenilaian(array $laporanIds, ?array $profileIds = null, string $groupBy = 'laporan_unit_kerjas.laporan_imut_id'): Collection
     {
         $query = ImutPenilaian::query()
-            ->select('imut_penilaians.*', 'laporan_unit_kerjas.laporan_imut_id as laporan_id')
             ->with('laporanUnitKerja')
-            ->join('laporan_unit_kerjas', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->whereIn('laporan_unit_kerjas.laporan_imut_id', $laporanIds);
+            ->whereHas('laporanUnitKerja', function ($q) use ($laporanIds) {
+                $q->whereIn('laporan_imut_id', $laporanIds);
+            });
 
         if ($profileIds) {
-            $query->whereIn('imut_penilaians.imut_profil_id', $profileIds);
+            $query->whereIn('imut_profil_id', $profileIds);
         }
 
         $data = $query->get();
 
         return $data->groupBy(match ($groupBy) {
-            'laporan_unit_kerjas.laporan_imut_id' => 'laporan_id',
+            'laporan_unit_kerjas.laporan_imut_id' => fn($item) => $item->laporanUnitKerja->laporan_imut_id,
             'imut_penilaians.imut_profil_id' => 'imut_profil_id',
             default => $groupBy,
         });
