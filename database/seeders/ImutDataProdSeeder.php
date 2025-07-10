@@ -186,6 +186,7 @@ class ImutDataProdSeeder extends Seeder
             foreach ($unitFiles as $file) {
                 $jsonData = json_decode(file_get_contents($file), true);
 
+                // Lewati jika struktur tidak sesuai
                 if (!isset($jsonData['unit_kerja']) || !isset($jsonData['imut'])) {
                     continue;
                 }
@@ -193,12 +194,15 @@ class ImutDataProdSeeder extends Seeder
                 $unitShortName = $jsonData['unit_kerja'];
                 $imutTitles = collect($jsonData['imut']);
 
+                // Cocokkan dengan title dari imutData
                 if ($imutTitles->contains($imutData->title)) {
-                    $unitId = $this->getUnitKerjaIdByShortName($unitShortName);
+                    // Cari unit kerja berdasarkan nama singkat (short_name)
+                    $unitKerja = \App\Models\UnitKerja::where('short_name', $unitShortName)->first();
 
-                    if ($unitId) {
+                    if ($unitKerja) {
+                        // Sinkronisasi tanpa detach
                         $imutData->unitKerja()->syncWithoutDetaching([
-                            $unitId => [
+                            $unitKerja->id => [
                                 'assigned_by' => $this->adminUserId ?? 1,
                                 'assigned_at' => now(),
                             ],
