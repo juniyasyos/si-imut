@@ -71,14 +71,13 @@ class ImutProfileForm
 
                         TextInput::make('slug')
                             ->label(__('filament-forms::imut-data.fields.slug'))
-                            ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
                             ->readOnly()
                             ->extraAttributes(['class' => 'bg-gray-100 text-gray-500'])
                             ->columnSpan(1),
 
                         TextInput::make('responsible_person')
                             ->label('Penanggung Jawab')
-                            ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                            ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                             ->placeholder('Peran yang benanggung jawab')
                             ->required()
                             ->maxLength(255),
@@ -147,7 +146,7 @@ class ImutProfileForm
                         ->schema([
                             Textarea::make('numerator_formula')
                                 ->label('Rumus Pembilang')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->rows(3)
                                 ->required()
                                 ->placeholder('Contoh: Jumlah pasien yang menerima layanan X...')
@@ -155,7 +154,7 @@ class ImutProfileForm
 
                             Textarea::make('denominator_formula')
                                 ->label('Rumus Penyebut')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->rows(3)
                                 ->required()
                                 ->placeholder('Contoh: Jumlah total pasien yang memenuhi syarat...')
@@ -167,14 +166,14 @@ class ImutProfileForm
                         ->schema([
                             TextInput::make('inclusion_criteria')
                                 ->label('Kriteria Inklusi')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->required()
                                 ->placeholder('Contoh: Pasien usia ≥ 18 tahun...')
                                 ->helperText('Data yang harus disertakan.'),
 
                             TextInput::make('exclusion_criteria')
                                 ->label('Kriteria Eksklusi')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->required()
                                 ->placeholder('Contoh: Pasien tanpa rekam medis lengkap...')
                                 ->helperText('Data yang harus dikecualikan dari penghitungan.'),
@@ -196,28 +195,28 @@ class ImutProfileForm
                         ->schema([
                             TextInput::make('data_source')
                                 ->label('Sumber Data')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->placeholder('Contoh: EMR, Audit Form, Survey')
                                 ->helperText('Sumber utama data indikator ini berasal dari mana.')
                                 ->prefixIcon('heroicon-o-server'),
 
                             TextInput::make('data_collection_frequency')
                                 ->label('Frekuensi Pengumpulan')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->placeholder('Contoh: Bulanan, Mingguan')
                                 ->helperText('Berapa sering data dikumpulkan.')
                                 ->prefixIcon('heroicon-o-calendar-days'),
 
                             TextInput::make('data_collection_method')
                                 ->label('Metode Pengumpulan')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->placeholder('Contoh: Elektronik, Manual, Observasi')
                                 ->helperText('Bagaimana proses pengumpulan data dilakukan.')
                                 ->prefixIcon('heroicon-o-finger-print'),
 
                             TextInput::make('sampling_method')
                                 ->label('Metode Sampling')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->placeholder('Contoh: Total sampling, Random sampling')
                                 ->helperText('Metode pemilihan sampel data untuk dianalisis.')
                                 ->prefixIcon('heroicon-o-beaker'),
@@ -250,7 +249,7 @@ class ImutProfileForm
 
                             TextInput::make('target_value')
                                 ->label('🎯 Nilai Target')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->numeric()
                                 ->placeholder('Contoh: 90, 95, 100')
                                 ->helperText('Target pencapaian kinerja indikator.')
@@ -279,7 +278,7 @@ class ImutProfileForm
 
                             TextInput::make('analysis_period_value')
                                 ->label('Nilai Periode')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->numeric()
                                 ->required()
                                 ->reactive()
@@ -292,7 +291,7 @@ class ImutProfileForm
 
                             DatePicker::make('start_period')
                                 ->label('Periode Mulai')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->required()
                                 ->reactive()
                                 ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get) {
@@ -301,7 +300,7 @@ class ImutProfileForm
 
                             DatePicker::make('end_period')
                                 ->label('Periode Selesai')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->readOnly()
                                 ->required(),
                         ]),
@@ -312,14 +311,14 @@ class ImutProfileForm
                         ->schema([
                             Textarea::make('data_collection_tool')
                                 ->label('Alat Kumpul Data')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->placeholder('Contoh: Kuesioner, Google Form, EMR, Form Audit')
                                 ->rows(2)
                                 ->helperText('Alat bantu atau instrumen yang digunakan dalam proses pengumpulan.'),
 
                             Textarea::make('analysis_plan')
                                 ->label('Rencana Analisis')
-                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && Auth::user()->can('force_editable_imut::profile'))
+                                ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->placeholder('Langkah-langkah bagaimana data akan dianalisis untuk mengevaluasi indikator.')
                                 ->rows(3)
                                 ->helperText('Ceritakan secara ringkas bagaimana analisis dilakukan.'),
