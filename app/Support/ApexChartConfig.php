@@ -7,11 +7,12 @@ class ApexChartConfig
     public static function defaultOptions(
         array $series,
         array $xLabels,
+        string $backgroundchart = 'transparent',
         string $xLableTitle = 'Periode',
         string $yLableTitle = 'Capaian (%)',
         int $yAxisMin = 0,
         int $yAxisMax = 100,
-        bool $showDataLabels = true
+        bool $showDataLabels = true,
     ): array {
         $maxValue = collect($series)
             ->pluck('data')
@@ -36,6 +37,7 @@ class ApexChartConfig
                 'type' => 'line',
                 'height' => 450,
                 'stacked' => false,
+                'background' => $backgroundchart ?: 'transparent',
                 'toolbar' => [
                     'show' => true,
                     'tools' => [

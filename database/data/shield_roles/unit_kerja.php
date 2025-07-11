@@ -53,7 +53,7 @@ return [
         'reorder_imut::profile',
         'force_delete_imut::profile',
         'force_delete_any_imut::profile',
-        
+
         // IMUT Category
         'view_any_imut::category',
         'view_imut::category',
@@ -70,10 +70,8 @@ return [
 
         // Report
         'view_unit_kerja_report_laporan::imut',
-        'view_unit_kerja_report_detail_laporan::imut',
-        'view_imut_data_report_laporan::imut',
         'view_imut_data_report_detail_laporan::imut',
-        'view_imut_penilaian_imut::penilaian',
         'update_numerator_denominator_imut::penilaian',
+        'create_recommendation_penilaian_imut::penilaian',
     ],
 ];

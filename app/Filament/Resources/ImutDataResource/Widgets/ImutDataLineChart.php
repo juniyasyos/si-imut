@@ -47,8 +47,6 @@ class ImutDataLineChart extends ApexChartWidget
             ->pluck('year', 'year')
             ->toArray();
 
-        // dd();
-
         $regionTypes = RegionType::pluck('type', 'id')->toArray();
 
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
@@ -60,6 +58,10 @@ class ImutDataLineChart extends ApexChartWidget
                     Select::make('region_type_id')->label('Benchmarking Region')->options($regionTypes)->multiple()->searchable()->reactive(),
                     Checkbox::make('show_benchmarking')->label('Tampilkan Benchmarking')->default(false)->reactive()->visible($is_benchmarking),
                     Checkbox::make('show_dataLabels')->label('Tampilkan Nilai')->default(true)->reactive(),
+                    ColorPicker::make('chart_background')
+                        ->label('Warna Latar Chart')
+                        ->default('transparent')
+                        ->reactive(),
                 ])
                 ->columns(2),
 
@@ -124,6 +126,7 @@ class ImutDataLineChart extends ApexChartWidget
     {
         $chartType = $this->filterFormData['chart_type'] ?? 'mixed';
         $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
+        $backgroundChart = $this->filterFormData['chart_background'];
 
         $seriesData = $this->getChartSeries($chartType);
         $xLabels = $this->getMonthLabels();
@@ -135,6 +138,7 @@ class ImutDataLineChart extends ApexChartWidget
         return ApexChartConfig::defaultOptions(
             series: $seriesData,
             xLabels: $xLabels,
+            backgroundchart: $backgroundChart,
             xLableTitle: 'Periode',
             yLableTitle: 'Nilai (%)',
             yAxisMin: 0,
