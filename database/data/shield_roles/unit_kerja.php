@@ -69,8 +69,7 @@ return [
         'update_numerator_denominator_imut::penilaian',
 
         // Report
-        'view_unit_kerja_report_laporan::imut',
-        'view_imut_data_report_detail_laporan::imut',
+        'view_unit_kerja_report_detail_laporan::imut',
         'update_numerator_denominator_imut::penilaian',
         'create_recommendation_penilaian_imut::penilaian',
     ],

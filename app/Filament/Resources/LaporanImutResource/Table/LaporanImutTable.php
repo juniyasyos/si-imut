@@ -81,7 +81,7 @@ class LaporanImutTable
                 })
                 ->color(fn($record) => match (self::resolveStatus($record)) {
                     'coming_soon' => 'gray',
-                    'complete' => 'gray',
+                    'complete' => 'success',
                     default => 'warning',
                 })
                 ->disabled(fn($record) => self::resolveStatus($record) === 'coming_soon')
@@ -113,8 +113,7 @@ class LaporanImutTable
                     ->color('success')
                     ->visible(
                         fn($record) => method_exists($record, 'trashed') &&
-                            ! $record->trashed() &&
-                            Gate::any([
+                            ! $record->trashed() && Auth::user()->can([
                                 'view_unit_kerja_report_laporan::imut',
                                 'view_imut_data_report_laporan::imut',
                             ])
