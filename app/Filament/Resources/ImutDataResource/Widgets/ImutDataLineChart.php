@@ -47,6 +47,8 @@ class ImutDataLineChart extends ApexChartWidget
             ->pluck('year', 'year')
             ->toArray();
 
+        // dd();
+
         $regionTypes = RegionType::pluck('type', 'id')->toArray();
 
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
