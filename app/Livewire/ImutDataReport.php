@@ -59,7 +59,13 @@ class ImutDataReport extends Component implements HasForms, HasTable
                 TextColumn::make('imut_kategori')
                     ->label('Imut Kategori')
                     ->toggleable()
-                    ->alignCenter()
+                    ->sortable()
+                    ->color(function ($record) {
+                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
+                        $id = $record->imut_kategori_id ?? 0;
+                        return $colors[$id % count($colors)];
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->badge(),
 
                 TextColumn::make('total_numerator')

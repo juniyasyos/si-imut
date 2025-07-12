@@ -49,6 +49,7 @@ class ImutDataUnitKerjaReport extends Component implements HasForms, HasTable
                 TextColumn::make('unit_kerja')
                     ->label('Unit Kerja')
                     ->grow()
+                    ->sortable()
                     ->searchable(query: function (EloquentBuilder $query, string $search) {
                         $query->where('unit_kerja.unit_name', 'like', "%{$search}%");
                         // dd($query->toSql(), $query->getBindings(), $query->get());
@@ -62,6 +63,13 @@ class ImutDataUnitKerjaReport extends Component implements HasForms, HasTable
                 TextColumn::make('imut_kategori')
                     ->label('Imut Kategori')
                     ->toggleable()
+                    ->sortable()
+                    ->color(function ($record) {
+                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
+                        $id = $record->imut_kategori_id ?? 0;
+                        return $colors[$id % count($colors)];
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->badge(),
 
                 TextColumn::make('imut_profil')
@@ -192,6 +200,7 @@ class ImutDataUnitKerjaReport extends Component implements HasForms, HasTable
         return TextColumn::make($name)
             ->label($label)
             ->toggleable()
+            ->limit(80)
             ->searchable(
                 query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
             );

@@ -117,7 +117,14 @@ class ImutDataTable
                     ]);
                 }),
 
-            EditAction::make(),
+            EditAction::make()
+                ->label(fn($record) => (
+                    $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
+                ) ? 'Lihat' : 'Ubah')
+                ->icon(fn($record) => (
+                    $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
+                ) ? 'heroicon-o-eye' : 'heroicon-o-pencil-square')
+                ->visible(fn($record) => !is_null($record)),
 
             ActionGroup::make([
                 ActionTable::make('lihat_berdasarkan_imut_data')
