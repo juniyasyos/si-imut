@@ -246,7 +246,7 @@ class ImutPenilaianResource extends Resource implements HasShieldPermissions
                         ->columns(1)
                         ->schema([
                             Textarea::make('numerator_formula')
-                                ->label('Rumus Pembilang')
+                                ->label('Rumus Pembilang (Numerator)')
                                 ->rows(3)
                                 ->readOnly()
                                 ->required()
@@ -254,7 +254,7 @@ class ImutPenilaianResource extends Resource implements HasShieldPermissions
                                 ->helperText('Rumus untuk bagian atas (numerator) dari indikator.'),
 
                             Textarea::make('denominator_formula')
-                                ->label('Rumus Penyebut')
+                                ->label('Rumus Penyebut (Denumerator)')
                                 ->rows(3)
                                 ->readOnly()
                                 ->required()
