@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ImutProfileForm
 {
-    /**
+/**
      * Summary of make
      *
      * @return Forms\Components\Tabs[]
@@ -145,7 +145,7 @@ class ImutProfileForm
                         ->columns(1)
                         ->schema([
                             Textarea::make('numerator_formula')
-                                ->label('Rumus Pembilang')
+                                ->label('Rumus Pembilang (Numerator)')
                                 ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->rows(3)
                                 ->required()
@@ -153,7 +153,7 @@ class ImutProfileForm
                                 ->helperText('Rumus untuk bagian atas (numerator) dari indikator.'),
 
                             Textarea::make('denominator_formula')
-                                ->label('Rumus Penyebut')
+                                ->label('Rumus Penyebut (Denumerator)')
                                 ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                 ->rows(3)
                                 ->required()

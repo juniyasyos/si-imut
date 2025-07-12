@@ -72,9 +72,13 @@ class ProfilesRelationManager extends RelationManager
                 //     TextInput::make('responsible_person')->disabled(),
                 // ]),
                 Action::make('edit')
-                    ->label('Edit')
-                    ->icon('heroicon-m-pencil-square')
-                    ->visible(true)
+                    ->label(fn($record) => (
+                        $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
+                    ) ? 'Lihat' : 'Ubah')
+                    ->icon(fn($record) => (
+                        $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
+                    ) ? 'heroicon-o-eye' : 'heroicon-o-pencil-square')
+                    ->visible(fn($record) => !is_null($record))
                     ->url(fn($record, $livewire) => ImutDataResource::getUrl('edit-profile', [
                         'imutDataSlug' => $livewire->ownerRecord->slug,
                         'record' => $record->slug,

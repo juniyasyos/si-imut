@@ -454,6 +454,7 @@ class ImutPenilaianResource extends Resource implements HasShieldPermissions
                     Textarea::make('analysis')
                         ->label('Analisis')
                         ->rows(4)
+                        ->required()
                         ->readOnly(
                             fn($livewire) => $livewire->isLaporanPeriodClosed()
                                 && !Auth::user()?->can('force_editable_imut::penilaian')
@@ -464,6 +465,7 @@ class ImutPenilaianResource extends Resource implements HasShieldPermissions
 
                     Textarea::make('recommendations')
                         ->label('Rekomendasi')
+                        ->required()
                         ->disabled(
                             fn() =>
                             ! Auth::user()?->can('create_recommendation_penilaian_imut::penilaian')

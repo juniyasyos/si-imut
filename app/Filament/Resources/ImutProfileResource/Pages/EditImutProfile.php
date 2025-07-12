@@ -5,9 +5,14 @@ namespace App\Filament\Resources\ImutProfileResource\Pages;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutData;
 use App\Models\ImutProfile;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Js;
 
 class EditImutProfile extends EditRecord
 {
@@ -57,13 +62,33 @@ class EditImutProfile extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            DeleteAction::make()
+                ->visible(fn() => static::canEditProfilIndikator($this->record)),
+        ];
+    }
+
+
+    protected function getFormActions(): array
+    {
+        return [
+            Action::make('save')
+                ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
+                ->submit('save')
+                ->visible(fn() => static::canEditProfilIndikator($this->record))
+                ->keyBindings(['mod+s']),
+
+            Action::make('cancel')
+                ->label(__('filament-panels::resources/pages/edit-record.form.actions.cancel.label'))
+                ->alpineClickHandler('document.referrer ? window.history.back() : (window.location.href = ' . Js::from($this->previousUrl ?? static::getResource()::getUrl()) . ')')
+                ->visible(fn() => static::canEditProfilIndikator($this->record))
+                ->color('gray'),
+        ];
     }
 
     public static function canEditProfilIndikator(?Model $record = null): bool
     {
         $user = Auth::user();
-
-        return $record?->created_by === $user?->id;
+        return $record?->imutData->created_by === $user?->id;
     }
 }
