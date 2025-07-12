@@ -58,21 +58,33 @@ class UnitKerjaReport extends Component implements HasForms, HasTable
                     ->label('Capaian')
                     ->alignCenter()
                     ->toggleable()
-                    ->state(fn($record) => number_format($record->filled_count ?? 0) . ' dari ' . number_format($record->total_count ?? 0) . ' imut sudah terisi')
-                    ->tooltip(fn($record) => 'Persentase: ' . Number::format($record->percentage ?? 0, 2, locale: app()->getLocale()) . '%')
+                    ->state(
+                        fn($record) =>
+                        number_format($record->filled_count ?? 0) . ' dari ' . number_format($record->total_count ?? 0) . ' imut sudah terisi'
+                    )
+                    ->tooltip(
+                        fn($record) =>
+                        'Persentase: ' . Number::format($record->percentage ?? 0, 2, locale: app()->getLocale()) . '%'
+                    )
                     ->color(fn($record) => match (true) {
                         !is_numeric($record->percentage) => null,
                         $record->percentage >= ($record->avg_standard ?? 100) => 'success',
                         $record->percentage >= (($record->avg_standard ?? 100) * 0.8) => 'warning',
                         default => 'danger',
                     })
+                    ->sortable(
+                        query: fn($query, $direction) =>
+                        $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
+                    )
                     ->summarize(
                         Summarizer::make()
                             ->label('Total Capaian')
                             ->using(function (Builder $query) {
                                 $n = $query->sum('filled_count');
                                 $d = $query->sum('total_count');
-                                return $d > 0 ? Number::format(($n / $d) * 100, 2, locale: app()->getLocale()) . '%' : '0%';
+                                return $d > 0
+                                    ? Number::format(($n / $d) * 100, 2, locale: app()->getLocale()) . '%'
+                                    : '0%';
                             })
                     ),
 

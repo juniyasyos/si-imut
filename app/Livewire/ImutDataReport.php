@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
+use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -13,6 +14,7 @@ use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
@@ -59,7 +61,6 @@ class ImutDataReport extends Component implements HasForms, HasTable
                 TextColumn::make('imut_kategori')
                     ->label('Imut Kategori')
                     ->toggleable()
-                    ->sortable()
                     ->color(function ($record) {
                         $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
                         $id = $record->imut_kategori_id ?? 0;
@@ -114,7 +115,16 @@ class ImutDataReport extends Component implements HasForms, HasTable
                 ExportAction::make()->exporter(SummaryImutDataReportExport::class)->label('Ekspor laporan IMUT')
             ])
             ->filters([
-                // ...
+                SelectFilter::make('imut_kategori')
+                    ->label('Imut Kategori')
+                    ->options(
+                        fn() => ImutCategory::query()
+                            ->pluck('short_name', 'id')
+                            ->toArray()
+                    )
+                    ->attribute('imut_kategori_id')
+                    ->multiple()
+                    ->placeholder('Semua Kategori'),
             ])
             ->actions([
                 Action::make('details')

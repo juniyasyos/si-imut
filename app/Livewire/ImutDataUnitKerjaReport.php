@@ -52,25 +52,23 @@ class ImutDataUnitKerjaReport extends Component implements HasForms, HasTable
                     ->sortable()
                     ->searchable(query: function (EloquentBuilder $query, string $search) {
                         $query->where('unit_kerja.unit_name', 'like', "%{$search}%");
-                        // dd($query->toSql(), $query->getBindings(), $query->get());
-
                         return $query;
                     })
                     ->extraAttributes([
                         'style' => 'padding-right: 9rem;',
                     ]),
 
-                TextColumn::make('imut_kategori')
-                    ->label('Imut Kategori')
-                    ->toggleable()
-                    ->sortable()
-                    ->color(function ($record) {
-                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-                        $id = $record->imut_kategori_id ?? 0;
-                        return $colors[$id % count($colors)];
-                    })
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->badge(),
+                // TextColumn::make('imut_kategori')
+                //     ->label('Imut Kategori')
+                //     ->toggleable()
+                //     ->sortable()
+                //     ->color(function ($record) {
+                //         $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
+                //         $id = $record->imut_kategori_id;
+                //         return $colors[$id % count($colors)];
+                //     })
+                //     ->toggleable(isToggledHiddenByDefault: false)
+                //     ->badge(),
 
                 TextColumn::make('imut_profil')
                     ->label('Imut Profil')
