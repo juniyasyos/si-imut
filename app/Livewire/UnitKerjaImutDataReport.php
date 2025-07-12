@@ -55,7 +55,13 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
                 TextColumn::make('imut_kategori')
                     ->label('Imut Kategori')
                     ->toggleable()
-                    ->alignCenter()
+                    ->sortable()
+                    ->color(function ($record) {
+                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
+                        $id = $record->imut_kategori_id;
+                        return $colors[$id % count($colors)];
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->badge(),
 
                 TextColumn::make('imut_profil')
