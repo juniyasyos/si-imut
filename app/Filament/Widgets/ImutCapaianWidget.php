@@ -91,8 +91,8 @@ class ImutCapaianWidget extends ApexChartWidget
         return ApexChartConfig::defaultOptions(
             $series,
             $xLabels,
-            xLableTitle: 'IMUT Kategori',
-            yLableTitle: 'Capaian (%)',
+            xLabelTitle: 'IMUT Kategori',
+            yLabelTitle: 'Capaian (%)',
             showDataLabels: $showdataLabels
         );
     }

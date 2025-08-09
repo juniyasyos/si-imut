@@ -8,10 +8,10 @@ class ApexChartConfig
         array $series,
         array $xLabels,
         string $backgroundchart = 'transparent',
-        string $xLableTitle = 'Periode',
-        string $yLableTitle = 'Capaian (%)',
-        int $yAxisMin = 0,
-        int $yAxisMax = 100,
+        string $xLabelTitle = 'Periode',
+        string $yLabelTitle = 'Capaian (%)',
+        ?int $yAxisMin = null,
+        ?int $yAxisMax = null,
         bool $showDataLabels = true,
     ): array {
         $maxValue = collect($series)
@@ -80,7 +80,7 @@ class ApexChartConfig
             ],
             'xaxis' => [
                 'categories' => $xLabels,
-                'title' => ['text' => $xLableTitle],
+                'title' => ['text' => $xLabelTitle],
                 'labels' => [
                     'rotate' => -45,
                     'style' => [
@@ -96,7 +96,7 @@ class ApexChartConfig
                 'max' => $yAxisMax,
                 'axisTicks' => ['show' => true],
                 'axisBorder' => ['show' => true],
-                'title' => ['text' => $yLableTitle],
+                'title' => ['text' => $yLabelTitle],
             ]],
             'markers' => [
                 'size' => 5,

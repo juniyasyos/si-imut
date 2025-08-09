@@ -139,8 +139,8 @@ class ImutDataUnitKerjaGrafikOverview extends ApexChartWidget
         return ApexChartConfig::defaultOptions(
             series: $seriesData,
             xLabels: $xLabels,
-            xLableTitle: 'Periode',
-            yLableTitle: 'Nilai (%)',
+            xLabelTitle: 'Periode',
+            yLabelTitle: 'Nilai (%)',
             showDataLabels: $showdataLabels
         );
     }
