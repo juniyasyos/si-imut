@@ -139,8 +139,8 @@ class ImutDataLineChart extends ApexChartWidget
             series: $seriesData,
             xLabels: $xLabels,
             backgroundchart: $backgroundChart,
-            xLableTitle: 'Periode',
-            yLableTitle: 'Nilai (%)',
+            xLabelTitle: 'Periode',
+            yLabelTitle: 'Nilai (%)',
             yAxisMin: 0,
             yAxisMax: 120,
             showDataLabels: $showdataLabels
