@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\LaporanImutExporter;
 use App\Filament\Resources\LaporanImutResource\Pages;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
@@ -10,14 +9,10 @@ use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaReport;
 use App\Filament\Resources\LaporanImutResource\Schema\LaporanImutSchema;
 use App\Filament\Resources\LaporanImutResource\Table\LaporanImutTable;
-use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -109,36 +104,10 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->columns(LaporanImutTable::columns())
-            ->filters([
-                TrashedFilter::make()
-                    ->default('with'),
-            ])
-            ->headerActions([
-                ExportAction::make()->exporter(LaporanImutExporter::class)
-            ])
+            ->filters(LaporanImutTable::filters())
+            ->headerActions(LaporanImutTable::headerActions())
             ->actions(LaporanImutTable::actions())
-            ->bulkActions(
-                [
-                    Tables\Actions\BulkActionGroup::make([
-                        Tables\Actions\RestoreBulkAction::make(),
-                        Tables\Actions\ForceDeleteBulkAction::make(),
-                    ]),
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]
-            );
-    }
-
-    protected static function getBulkActions(): array
-    {
-        return [
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\RestoreBulkAction::make()
-                    ->visible(fn(LaporanImut $record) => method_exists($record, 'trashed') && $record->trashed()),
-                Tables\Actions\ForceDeleteBulkAction::make()
-                    ->visible(fn(LaporanImut $record) => method_exists($record, 'trashed') && $record->trashed()),
-            ]),
-            Tables\Actions\DeleteBulkAction::make(),
-        ];
+            ->bulkActions(LaporanImutTable::bulkActions());
     }
 
     public static function getRelations(): array

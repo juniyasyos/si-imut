@@ -26,7 +26,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class ImutDataSchema
+class ImutDataSchema extends ImutDataResource
 {
     public static function make(): array
     {
@@ -268,7 +268,7 @@ class ImutDataSchema
                                                     Action::make('goto_region_type_list')
                                                         ->icon('heroicon-m-list-bullet')
                                                         ->tooltip('Lihat daftar semua Region Type')
-                                                        ->url(fn() => ImutDataResource::getUrl('bencmarking-region-type')),
+                                                        ->url(fn() => static::getUrl('bencmarking-region-type')),
                                                 ])
                                                     ->label('Aksi'),
                                             ])

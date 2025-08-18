@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\ImutDataExporter;
 use App\Filament\Resources\ImutDataResource\Pages;
 use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
@@ -13,13 +12,6 @@ use App\Models\ImutData;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -101,33 +93,10 @@ class ImutDataResource extends Resource implements HasShieldPermissions
         return $table
             ->query(fn() => ImutDataTable::query())
             ->columns(ImutDataTable::columns())
-            ->headerActions([
-                ExportAction::make()
-                    ->exporter(ImutDataExporter::class)
-            ])
-            ->filters([
-                TrashedFilter::make()
-                    ->default('with'),
-                SelectFilter::make('imut_kategori_id')
-                    ->label('Kategori IMUT')
-                    ->preload()
-                    ->multiple()
-                    ->relationship('categories', 'short_name')
-                    ->searchable(),
-
-            ])
+            ->headerActions(ImutDataTable::headerActions())
+            ->filters(ImutDataTable::filters())
             ->actions(ImutDataTable::actions())
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-
-                    RestoreBulkAction::make()
-                        ->visible(fn() => method_exists(static::getModel(), 'bootSoftDeletes')),
-
-                    ForceDeleteBulkAction::make()
-                        ->visible(fn() => method_exists(static::getModel(), 'bootSoftDeletes')),
-                ]),
-            ]);
+            ->bulkActions(ImutDataTable::bulkActions());
     }
 
     public static function getTableQuery(): \Illuminate\Database\Eloquent\Builder

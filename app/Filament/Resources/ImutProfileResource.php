@@ -2,18 +2,14 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Forms\ImutProfileForm;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use App\Models\ImutProfile;
-use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\ImutProfileResource\Pages;
+use App\Filament\Resources\ImutProfileResource\Schema\ImutProfileResourceSchema;
+use App\Filament\Resources\ImutProfileResource\Tables\ImutProfileResourceTable;
+use App\Models\ImutProfile;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Tables\Actions\{EditAction, ViewAction, DeleteAction, RestoreAction, ForceDeleteAction};
-use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction, RestoreBulkAction, ForceDeleteBulkAction};
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Table;
 
 class ImutProfileResource extends Resource implements HasShieldPermissions
 {
@@ -54,61 +50,16 @@ class ImutProfileResource extends Resource implements HasShieldPermissions
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            ...ImutProfileForm::make()
-        ]);
+        return $form->schema(ImutProfileResourceSchema::make());
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                TextColumn::make('version')
-                    ->label('Versi')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('indicator_type')
-                    ->label('Tipe Indikator')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'process' => 'info',
-                        'output' => 'warning',
-                        'outcome' => 'success',
-                        default => 'gray',
-                    }),
-
-                TextColumn::make('target')
-                    ->label('Target')
-                    ->formatStateUsing(fn($state, $record) =>
-                    trim(($record->target_operator ?? '') . ' ' . ($record->target_value !== null ? "{$record->target_value}%" : '')
-                    ))
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('responsible_person')
-                    ->label('Penanggung Jawab')
-                    ->searchable()
-                    ->limit(20),
-            ])
-            ->filters([
-                TrashedFilter::make()
-                    ->default('with'),
-            ])
-            ->actions([
-                // ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
-                RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
-                ForceDeleteAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                    ForceDeleteBulkAction::make()
-                ]),
-            ]);
+            ->columns(ImutProfileResourceTable::columns())
+            ->filters(ImutProfileResourceTable::filters())
+            ->actions(ImutProfileResourceTable::actions())
+            ->bulkActions(ImutProfileResourceTable::bulkActions());
     }
 
     public static function getRelations(): array

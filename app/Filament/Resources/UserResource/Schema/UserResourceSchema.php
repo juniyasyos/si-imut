@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Schema;
 
+use App\Filament\Resources\UserResource;
 use App\Models\Position;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
@@ -16,7 +17,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\CreateRecord;
 
-class UserResourceSchema
+class UserResourceSchema extends UserResource
 {
     public static function make(): array
     {

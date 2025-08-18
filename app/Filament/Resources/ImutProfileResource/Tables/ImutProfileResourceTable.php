@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Filament\Resources\ImutProfileResource\Tables;
+
+use App\Filament\Resources\ImutProfileResource;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Illuminate\Database\Eloquent\Model;
+
+class ImutProfileResourceTable extends ImutProfileResource
+{
+    public static function columns(): array
+    {
+        return [
+            TextColumn::make('version')
+                ->label('Versi')
+                ->searchable()
+                ->sortable(),
+
+            TextColumn::make('indicator_type')
+                ->label('Tipe Indikator')
+                ->badge()
+                ->color(fn(string $state): string => match ($state) {
+                    'process' => 'info',
+                    'output' => 'warning',
+                    'outcome' => 'success',
+                    default => 'gray',
+                }),
+
+            TextColumn::make('target')
+                ->label('Target')
+                ->formatStateUsing(fn($state, $record) => trim(($record->target_operator ?? '') . ' ' . ($record->target_value !== null ? "{$record->target_value}%" : '')))
+                ->searchable()
+                ->sortable(),
+
+            TextColumn::make('responsible_person')
+                ->label('Penanggung Jawab')
+                ->searchable()
+                ->limit(20),
+        ];
+    }
+
+    public static function filters(): array
+    {
+        return [
+            TrashedFilter::make()
+                ->default('with'),
+        ];
+    }
+
+    public static function actions(): array
+    {
+        return [
+            EditAction::make(),
+            DeleteAction::make(),
+            RestoreAction::make()
+                ->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
+            ForceDeleteAction::make()
+                ->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
+        ];
+    }
+
+    public static function bulkActions(): array
+    {
+        return [
+            BulkActionGroup::make([
+                DeleteBulkAction::make(),
+                RestoreBulkAction::make(),
+                ForceDeleteBulkAction::make(),
+            ]),
+        ];
+    }
+}
+

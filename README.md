@@ -106,11 +106,17 @@ MAIL_USERNAME=
 MAIL_PASSWORD=
 MAIL_FROM_ADDRESS="admin@rs-example.com"
 MAIL_FROM_NAME="SIIMUT RS"
-```  
+```
 
 ---
 
-## 📢 Mengapa Memilih SIIMUT?  
+## 📁 Struktur Resource Filament
+
+Untuk menjaga kode tetap terorganisir, konfigurasi `form` dan `table` pada resource Filament dipisahkan ke dalam kelas khusus. Resource seperti `RoleResource`, `ImutCategoryResource`, `ImutDataResource`, `ImutPenilaianResource`, `ImutProfileResource`, `LaporanImutResource`, `UnitKerjaResource`, dan `UserResource` kini memanfaatkan struktur `Schema\*` dan `Tables\*` sehingga lebih mudah dirawat dan dikembangkan.
+
+---
+
+## 📢 Mengapa Memilih SIIMUT?
 
 SIIMUT dirancang khusus untuk mendukung **rumah sakit di Indonesia** dalam:  
 ✔ **Efisiensi Pemantauan** – Proses pelacakan indikator mutu lebih cepat dan akurat.  
