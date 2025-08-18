@@ -2,23 +2,32 @@
 
 namespace App\Filament\Resources\ImutDataResource\Table;
 
+use App\Filament\Exports\ImutDataExporter;
+use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Models\ImutData;
 use App\Models\User;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Actions\Action as ActionTable;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class ImutDataTable
+class ImutDataTable extends ImutDataResource
 {
     public static function query(): Builder
     {
@@ -159,6 +168,41 @@ class ImutDataTable
                             method_exists($record, 'trashed') &&
                             $record->trashed()
                     ),
+            ]),
+        ];
+    }
+
+    public static function filters(): array
+    {
+        return [
+            TrashedFilter::make()
+                ->default('with'),
+            SelectFilter::make('imut_kategori_id')
+                ->label('Kategori IMUT')
+                ->preload()
+                ->multiple()
+                ->relationship('categories', 'short_name')
+                ->searchable(),
+        ];
+    }
+
+    public static function headerActions(): array
+    {
+        return [
+            ExportAction::make()
+                ->exporter(ImutDataExporter::class),
+        ];
+    }
+
+    public static function bulkActions(): array
+    {
+        return [
+            BulkActionGroup::make([
+                DeleteBulkAction::make(),
+                RestoreBulkAction::make()
+                    ->visible(fn() => method_exists(static::class, 'bootSoftDeletes')),
+                ForceDeleteBulkAction::make()
+                    ->visible(fn() => method_exists(static::class, 'bootSoftDeletes')),
             ]),
         ];
     }

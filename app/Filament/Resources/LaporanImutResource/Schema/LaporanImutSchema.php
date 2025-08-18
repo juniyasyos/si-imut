@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Schema;
 
+use App\Filament\Resources\LaporanImutResource;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
@@ -13,7 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Illuminate\Support\Facades\Auth;
 
-class LaporanImutSchema
+class LaporanImutSchema extends LaporanImutResource
 {
     public static function make(): array
     {

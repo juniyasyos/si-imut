@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Table;
 
+use App\Filament\Exports\LaporanImutExporter;
+use App\Filament\Resources\LaporanImutResource;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaReport;
@@ -11,18 +13,24 @@ use App\Tables\Columns\ProgressColumn;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
-class LaporanImutTable
+class LaporanImutTable extends LaporanImutResource
 {
     public static function columns(): array
     {
@@ -62,7 +70,28 @@ class LaporanImutTable
 
     public static function filters(): array
     {
-        return [];
+        return [
+            TrashedFilter::make()
+                ->default('with'),
+        ];
+    }
+
+    public static function headerActions(): array
+    {
+        return [
+            ExportAction::make()->exporter(LaporanImutExporter::class),
+        ];
+    }
+
+    public static function bulkActions(): array
+    {
+        return [
+            BulkActionGroup::make([
+                RestoreBulkAction::make(),
+                ForceDeleteBulkAction::make(),
+            ]),
+            DeleteBulkAction::make(),
+        ];
     }
 
     public static function actions(): array

@@ -1,28 +1,37 @@
 <?php
 
-namespace App\Filament\Resources\UserResource\Tabels;
+namespace App\Filament\Resources\UserResource\Tables;
 
+use App\Filament\Exports\UserExporter;
+use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ForceDeleteAction;
+use Filament\Tables\Actions\ForceDeleteBulkAction;
+use Filament\Tables\Actions\RestoreAction;
+use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
-use Illuminate\Support\Facades\Gate;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Illuminate\Support\Facades\Gate;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\ViewAction;
 
-class UserResourceTable
+class UserResourceTable extends UserResource
 {
-    public static function make(): array
+    public static function columns(): array
     {
         return [
             Split::make([
@@ -60,6 +69,23 @@ class UserResourceTable
                         ->grow(false),
                 ])->alignStart()->visibleFrom('lg')->space(1),
             ]),
+        ];
+    }
+
+    public static function filters(): array
+    {
+        return [
+            TrashedFilter::make()->default('with'),
+            SelectFilter::make('roles')
+                ->label(__('filament-forms::users.filters.roles'))
+                ->relationship('roles', 'name')
+                ->multiple()
+                ->preload(),
+            SelectFilter::make('position')
+                ->label(__('filament-forms::users.filters.position'))
+                ->relationship('position', 'name')
+                ->multiple()
+                ->preload(),
         ];
     }
 
@@ -105,6 +131,23 @@ class UserResourceTable
                             $record->trashed()
                     ),
             ])->button()->label(__('filament-forms::users.actions.group'))
+        ];
+    }
+
+    public static function bulkActions(): array
+    {
+        return [
+            BulkActionGroup::make([
+                DeleteBulkAction::make()
+                    ->visible(fn() => Gate::allows('deleteAny', User::class)),
+                RestoreBulkAction::make()
+                    ->visible(fn() => Gate::allows('restoreAny', User::class)),
+                ForceDeleteBulkAction::make()
+                    ->visible(fn() => Gate::allows('forceDeleteAny', User::class)),
+                ExportBulkAction::make()
+                    ->exporter(UserExporter::class)
+                    ->visible(fn() => Gate::allows('export', User::class)),
+            ]),
         ];
     }
 }

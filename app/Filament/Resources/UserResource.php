@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\UserExporter;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\Schema\UserResourceInfolist;
 use App\Filament\Resources\UserResource\Schema\UserResourceSchema;
-use App\Filament\Resources\UserResource\Tabels\UserResourceTable;
+use App\Filament\Resources\UserResource\Tables\UserResourceTable;
 use App\Models\User;
 use App\Traits\HasActiveIcon;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
@@ -17,14 +16,6 @@ use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\FontWeight;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -121,38 +112,10 @@ class UserResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-            ->columns(UserResourceTable::make())
-            ->filters([
-                TrashedFilter::make()
-                    ->default('with'),
-                SelectFilter::make('roles')
-                    ->label(__('filament-forms::users.filters.roles'))
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload(),
-                SelectFilter::make('position')
-                    ->label(__('filament-forms::users.filters.position'))
-                    ->relationship('position', 'name')
-                    ->multiple()
-                    ->preload(),
-            ])
+            ->columns(UserResourceTable::columns())
+            ->filters(UserResourceTable::filters())
             ->actions(UserResourceTable::actions())
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->visible(fn() => Gate::allows('deleteAny', User::class)),
-
-                    RestoreBulkAction::make()
-                        ->visible(fn() => Gate::allows('restoreAny', User::class)),
-
-                    ForceDeleteBulkAction::make()
-                        ->visible(fn() => Gate::allows('forceDeleteAny', User::class)),
-
-                    ExportBulkAction::make()
-                        ->exporter(UserExporter::class)
-                        ->visible(fn() => Gate::allows('export', User::class)),
-                ]),
-            ]);
+            ->bulkActions(UserResourceTable::bulkActions());
     }
 
     public static function getRelations(): array

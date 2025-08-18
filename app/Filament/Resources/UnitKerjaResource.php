@@ -2,42 +2,16 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\UnitKerjaExporter;
-use Filament\Forms;
-use App\Models\User;
-use Filament\Tables;
-use Filament\Forms\Form;
-use App\Models\UnitKerja;
-use Filament\Tables\Table;
-use Illuminate\Support\Str;
-use App\Models\UserUnitKerja;
-use Filament\Resources\Resource;
-use Awcodes\TableRepeater\Header;
-use Filament\Forms\Components\Card;
-use Illuminate\Support\Facades\Gate;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Repeater;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
 use App\Filament\Resources\UnitKerjaResource\Pages;
-use Awcodes\TableRepeater\Components\TableRepeater;
-use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Components\{TextInput, Textarea, Select, Grid};
-use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
-use App\Filament\Resources\UnitKerjaResource\RelationManagers\UsersRelationManager;
 use App\Filament\Resources\UnitKerjaResource\RelationManagers\ImutDataRelationManager;
-use Filament\Tables\Actions\ExportAction;
+use App\Filament\Resources\UnitKerjaResource\Schema\UnitKerjaResourceSchema;
+use App\Filament\Resources\UnitKerjaResource\Tables\UnitKerjaResourceTable;
+use App\Models\UnitKerja;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class UnitKerjaResource extends Resource implements HasShieldPermissions
 {
@@ -99,107 +73,17 @@ class UnitKerjaResource extends Resource implements HasShieldPermissions
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Section::make(__('filament-forms::unit-kerja.form.unit.title'))
-                    ->description(__('filament-forms::unit-kerja.form.unit.description'))
-                    ->schema([
-                        TextInput::make('unit_name')
-                            ->label(__('filament-forms::unit-kerja.fields.unit_name'))
-                            ->placeholder(__('filament-forms::unit-kerja.form.unit.name_placeholder'))
-                            ->helperText(__('filament-forms::unit-kerja.form.unit.helper_text'))
-                            ->required()
-                            ->unique('unit_kerja', 'unit_name', ignoreRecord: true)
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        Textarea::make('description')
-                            ->label(__('filament-forms::unit-kerja.fields.description'))
-                            ->placeholder(__('filament-forms::unit-kerja.form.unit.description_placeholder'))
-                            ->rows(3)
-                            ->columnSpanFull(),
-
-                    ]),
-            ]);
+        return $form->schema(UnitKerjaResourceSchema::make());
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('unit_name')
-                    ->label(__('filament-forms::unit-kerja.fields.unit_name'))
-                    ->description(fn(UnitKerja $record) => Str::limit($record->description, 60))
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('imut_data_count')
-                    ->label(__('filament-forms::imut-category.fields.data_count'))
-                    ->counts('imutData')
-                    ->badge()
-                    ->alignCenter()
-                    ->sortable(),
-            ])
-            ->filters([
-                TrashedFilter::make()
-                    ->default('with'),
-            ])
-            ->headerActions([
-                ExportAction::make()->exporter(UnitKerjaExporter::class)
-            ])
-            ->actions([
-                // RelationManagerAction::make('user-relation-manager')
-                //     // ->slideOver()
-                //     ->label('User Attach')
-                //     ->icon('heroicon-o-user')
-                //     ->relationManager(UsersRelationManager::make())
-                //     ->visible(
-                //         fn($record) =>
-                //         Gate::any(['attach_user_to_unit_kerja_unit::kerja'], $record)
-                //             && method_exists($record, 'trashed') === false
-                //             ? true
-                //             : ! $record->trashed()
-                //     ),
-
-                // RelationManagerAction::make('imutData-relation-manager')
-                //     ->slideOver()
-                //     ->label('Imut Data Attach')
-                //     ->icon('heroicon-o-chart-bar')
-                //     ->relationManager(ImutDataRelationManager::make())
-                //     ->visible(
-                //         fn($record) =>
-                //         Gate::any(['attach_imut_data_to_unit_kerja_unit::kerja'], $record)
-                //             && method_exists($record, 'trashed') === false
-                //             ? true
-                //             : ! $record->trashed()
-                //     ),
-
-                ActionGroup::make([
-                    // ViewAction::make(),
-                    EditAction::make(),
-                    DeleteAction::make(),
-                    RestoreAction::make()
-                        ->visible(
-                            fn($record) =>
-                            Gate::allows('restore', $record) &&
-                                method_exists($record, 'trashed') &&
-                                $record->trashed()
-                        ),
-
-                    ForceDeleteAction::make()
-                        ->visible(
-                            fn($record) =>
-                            Gate::allows('forceDelete', $record) &&
-                                method_exists($record, 'trashed') &&
-                                $record->trashed()
-                        ),
-                ])->button()->label(__('filament-forms::users.actions.group')),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                ])->visible(fn() => Gate::any(['update_imut::category', 'create_imut::category'])),
-            ]);
+            ->columns(UnitKerjaResourceTable::columns())
+            ->filters(UnitKerjaResourceTable::filters())
+            ->headerActions(UnitKerjaResourceTable::headerActions())
+            ->actions(UnitKerjaResourceTable::actions())
+            ->bulkActions(UnitKerjaResourceTable::bulkActions());
     }
 
     public static function getRelations(): array
