@@ -102,11 +102,17 @@ class ImutCapaianWidget extends ApexChartWidget
         return Cache::remember(
             CacheKey::imutLaporans(),
             now()->addMinutes(5),
-            fn() => LaporanImut::with([
-                'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-            ])
+            fn() => LaporanImut::query()
+                ->select(['id', 'assessment_period_start', 'assessment_period_end'])
+                ->with([
+                    'laporanUnitKerjas' => fn($q) => $q->select(['id', 'laporan_imut_id', 'unit_kerja_id']),
+                    'laporanUnitKerjas.imutPenilaians' => fn($q) => $q->select(['id', 'laporan_unit_kerja_id', 'imut_profil_id', 'numerator_value', 'denominator_value']),
+                    'laporanUnitKerjas.imutPenilaians.profile' => fn($q) => $q->select(['id', 'imut_data_id', 'target_value']),
+                    'laporanUnitKerjas.imutPenilaians.profile.imutData' => fn($q) => $q->select(['id', 'imut_kategori_id']),
+                    'laporanUnitKerjas.imutPenilaians.profile.imutData.categories' => fn($q) => $q->select(['id', 'short_name']),
+                ])
                 ->where('assessment_period_start', '>=', now()->subMonths(6))
-                ->where('status', [LaporanImut::STATUS_COMPLETE, LaporanImut::STATUS_COMINGSOON])
+                ->whereIn('status', [LaporanImut::STATUS_COMPLETE, LaporanImut::STATUS_COMINGSOON])
                 ->orderBy('assessment_period_start')
                 ->get()
         );

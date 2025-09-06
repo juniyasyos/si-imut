@@ -173,16 +173,10 @@ class LaporanImut extends Model
         $start = $this->assessment_period_start->startOfDay();
         $end = $this->assessment_period_end->startOfDay();
 
-        $newStatus = match (true) {
+        return match (true) {
             $today->lt($start) => self::STATUS_COMINGSOON,
             $today->lte($end) => self::STATUS_PROCESS,
             default => self::STATUS_COMPLETE,
         };
-
-        if ($value !== $newStatus) {
-            $this->updateQuietly(['status' => $newStatus]);
-        }
-
-        return $newStatus;
     }
 }

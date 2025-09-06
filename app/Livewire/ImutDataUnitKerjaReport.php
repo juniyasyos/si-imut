@@ -160,7 +160,7 @@ class ImutDataUnitKerjaReport extends Component implements HasForms, HasTable
                     ->icon('heroicon-o-pencil-square')
                     ->color('info')
                     ->url(function ($record) {
-                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+                        $laporanSlug = $record->laporan_slug ?? null;
 
                         return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
                             'laporanSlug' => $laporanSlug,
@@ -169,7 +169,7 @@ class ImutDataUnitKerjaReport extends Component implements HasForms, HasTable
                     }),
             ])
             ->recordUrl(function ($record) {
-                $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+                $laporanSlug = $record->laporan_slug ?? null;
 
                 return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
                     'laporanSlug' => $laporanSlug,

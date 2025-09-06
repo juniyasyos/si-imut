@@ -116,16 +116,21 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
     {
         $unitKerjaIds = Auth::user()->unitKerjas->pluck('id')->toArray();
 
-        return
-            Cache::remember(
+        return Cache::remember(
                 CacheKey::imutLaporansForUnitKerjas($unitKerjaIds),
                 now()->addDay(1),
-                fn() => LaporanImut::with([
-                    'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    },
-                    'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-                ])
+                fn() => LaporanImut::query()
+                    ->select(['id', 'assessment_period_start', 'assessment_period_end'])
+                    ->with([
+                        'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
+                            $query->select(['id', 'laporan_imut_id', 'unit_kerja_id'])
+                                ->whereIn('unit_kerja_id', $unitKerjaIds);
+                        },
+                        'laporanUnitKerjas.imutPenilaians' => fn($q) => $q->select(['id', 'laporan_unit_kerja_id', 'imut_profil_id', 'numerator_value', 'denominator_value']),
+                        'laporanUnitKerjas.imutPenilaians.profile' => fn($q) => $q->select(['id', 'imut_data_id', 'target_value']),
+                        'laporanUnitKerjas.imutPenilaians.profile.imutData' => fn($q) => $q->select(['id', 'imut_kategori_id']),
+                        'laporanUnitKerjas.imutPenilaians.profile.imutData.categories' => fn($q) => $q->select(['id', 'short_name']),
+                    ])
                     ->whereHas('laporanUnitKerjas', function ($query) use ($unitKerjaIds) {
                         $query->whereIn('unit_kerja_id', $unitKerjaIds);
                     })

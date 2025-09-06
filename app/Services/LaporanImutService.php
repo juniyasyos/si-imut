@@ -54,7 +54,7 @@ class LaporanImutService
         $cacheKey = CacheKey::dashboardSiimutChartData();
 
         return Cache::remember($cacheKey, now()->addDays(7), function () use ($limit) {
-            $laporanList =  $laporanList = Cache::remember(
+            $laporanList = Cache::remember(
                 CacheKey::recentLaporanList($limit),
                 now()->addHours(12),
                 fn() => $this->getRecentLaporanList($limit)
@@ -237,8 +237,9 @@ class LaporanImutService
         $cacheKey = CacheKey::laporanList($filters, $limit);
 
         return Cache::remember($cacheKey, now()->addHours(12), function () use ($filters, $limit) {
-            $query = LaporanImut::with('unitKerjas')
-                ->orderByDesc('assessment_period_start');
+            $query = LaporanImut::query()
+                ->select(['id', 'name', 'assessment_period_start', 'assessment_period_end', 'status'])
+                ->withCount('unitKerjas');
 
             if (! empty($filters['status'])) {
                 $query->where('status', $filters['status']);
@@ -252,9 +253,14 @@ class LaporanImutService
                 $query->whereDate('assessment_period_end', '<=', $filters['end_date']);
             }
 
-            return $limit
-                ? $query->limit($limit)->get()->sortBy('assessment_period_start')->values()
-                : $query->get()->sortBy('assessment_period_start')->values();
+            if ($limit) {
+                // Ambil N laporan terbaru berdasarkan tanggal mulai (desc), lalu tampilkan ascending
+                $items = $query->orderByDesc('assessment_period_start')->limit($limit)->get();
+                return $items->sortBy('assessment_period_start')->values();
+            }
+
+            // Tanpa limit: biarkan DB menyortir ascending untuk menghindari sort in-memory besar
+            return $query->orderBy('assessment_period_start')->get();
         });
     }
 
@@ -282,16 +288,18 @@ class LaporanImutService
         $key = CacheKey::recentLaporanList($limit);
 
         return Cache::remember($key, now()->addHours(6), function () use ($limit) {
-            $laporan = LaporanImut::with('unitKerjas')
+            $laporan = LaporanImut::query()
+                ->select(['id', 'assessment_period_start'])
                 ->orderByDesc('assessment_period_start')
                 ->limit($limit)
                 ->get();
 
             if ($laporan->count() < $limit) {
-                $additional = LaporanImut::where('status', '!=', LaporanImut::STATUS_PROCESS)
+                $additional = LaporanImut::query()
+                    ->select(['id', 'assessment_period_start'])
+                    ->where('status', '!=', LaporanImut::STATUS_PROCESS)
                     ->orderByDesc('assessment_period_start')
                     ->limit($limit - $laporan->count())
-                    ->with('unitKerjas')
                     ->get();
 
                 $laporan = $laporan->concat($additional);
@@ -323,7 +331,8 @@ class LaporanImutService
     private function getGroupedPenilaian(array $laporanIds, ?array $profileIds = null, string $groupBy = 'laporan_unit_kerjas.laporan_imut_id'): Collection
     {
         $query = ImutPenilaian::query()
-            ->with('laporanUnitKerja')
+            ->select(['imut_profil_id', 'laporan_unit_kerja_id', 'numerator_value', 'denominator_value', 'recommendations'])
+            ->with(['laporanUnitKerja:id,laporan_imut_id,unit_kerja_id'])
             ->whereHas('laporanUnitKerja', function ($q) use ($laporanIds) {
                 $q->whereIn('laporan_imut_id', $laporanIds);
             });

@@ -167,6 +167,7 @@ class LaporanUnitKerja extends Model
     public static function getReportByUnitKerjaDetails(int $laporanId, int $unitKerjaId)
     {
         return self::query()
+            ->join('laporan_imuts', 'laporan_unit_kerjas.laporan_imut_id', '=', 'laporan_imuts.id')
             ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
             ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
             ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
@@ -179,6 +180,7 @@ class LaporanUnitKerja extends Model
                 'laporan_unit_kerjas.id as laporan_unit_kerja_id',
                 'laporan_unit_kerjas.laporan_imut_id',
                 'laporan_unit_kerjas.unit_kerja_id',
+                'laporan_imuts.slug as laporan_slug',
                 'unit_kerja.unit_name',
                 'imut_data.title as imut_data',
                 'imut_kategori.short_name as imut_kategori',
@@ -212,6 +214,7 @@ class LaporanUnitKerja extends Model
     public static function getReportByImutDataDetails(int $laporanId = 1, int $imutDataId = 1)
     {
         return self::query()
+            ->join('laporan_imuts', 'laporan_unit_kerjas.laporan_imut_id', '=', 'laporan_imuts.id')
             ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
             ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
             ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
@@ -224,6 +227,7 @@ class LaporanUnitKerja extends Model
                 'laporan_unit_kerjas.laporan_imut_id',
                 'laporan_unit_kerjas.id as laporan_unit_kerja_id',
                 'laporan_unit_kerjas.unit_kerja_id',
+                'laporan_imuts.slug as laporan_slug',
                 'unit_kerja.unit_name as unit_kerja',
                 'imut_data.title as imut_data',
                 'imut_kategori.short_name as imut_kategori',
@@ -266,6 +270,7 @@ class LaporanUnitKerja extends Model
                 'laporan_unit_kerjas.laporan_imut_id',
                 'laporan_unit_kerjas.unit_kerja_id',
                 'laporan_imuts.name as laporan_name',
+                'laporan_imuts.slug as laporan_slug',
                 'laporan_imuts.status as laporan_status',
                 'unit_kerja.unit_name',
                 'imut_data.title as imut_data',
