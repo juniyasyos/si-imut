@@ -1,0 +1,187 @@
+Blueprint Test Plan 001 — SI-IMUT
+
+Context (current suite)
+- PHPUnit + Pest in use; testsuites: Unit, Feature (phpunit.xml).
+- Majority Feature tests cover: Auth, Role/Permission (Filament Shield), Domain Models, a Job, a Service benchmark.
+- Gaps: request validation, controllers/middleware matrix, Livewire/Filament resource behavior, database schema integrity, cache/N+1, notifications/mail/console, uploads/rate limit, i18n, snapshots, optional E2E, CI quality gates.
+
+Objectives
+- Increase confidence on core flows (authz, CRUD, reporting) with reproducible, isolated tests.
+- Guard performance (N+1, cache correctness) and security (validation, uploads, rate limit).
+- Establish CI quality gates (coverage, static/mutation analysis).
+
+Success Metrics
+- Coverage: ≥ 80% on app/ (excluding providers/resources) and ≥ 70% project-wide.
+- No N+1 on key queries (≤ baseline queries asserted in tests).
+- Green policy/permission matrix for all main models.
+- CI: stable, deterministic runs in < 8 min.
+
+Groundwork (pre-requisites)
+- Ensure Tests\TestCase boots the app (CreatesApplication). If missing, restore standard Laravel TestCase.
+- Keep tests within tests/Feature and tests/Unit unless phpunit.xml is updated.
+- Use RefreshDatabase, Carbon::setTestNow(), Cache::fake(), Event::fake(), Notification::fake(), Queue::fake() patterns.
+
+Phase 1 — Authorization & Policies (P1)
+Goals
+- Full ability matrix per model for common roles (Admin IT, Tim Mutu, Unit Kerja, Basic/Guest).
+Steps
+- Add Unit tests for: UnitKerjaPolicy, ImutCategoryPolicy, ImutDataPolicy, ImutProfilePolicy, LaporanImutPolicy, UserPolicy (if applicable).
+- For each ability: viewAny, view, create, update, delete, deleteAny, restore, restoreAny, forceDelete, forceDeleteAny.
+Artifacts
+- tests/Unit/Policies/{Model}PolicyTest.php
+Acceptance
+- All abilities asserted allow/deny as expected for target roles; no implicit super-admins unless configured.
+
+Phase 2 — Request Validation & HTTP Contracts (P1)
+Goals
+- Validate inputs and stable HTTP responses on critical routes.
+Steps
+- Identify high-value endpoints (CRUD Unit Kerja, Imut Category/Data/Profile, auth flows exposed).
+- Add validation tests: required, type, size, format, unique, exists, forbidden fields; assert JSON errors shape for APIs or redirect/back for web.
+- Controller response contracts: status, JSON shape (keys/types), pagination/filter/sort behavior where applicable.
+Artifacts
+- tests/Feature/Http/Validation/{Resource}ValidationTest.php
+- tests/Feature/Http/Controllers/{Resource}ControllerTest.php
+Acceptance
+- Every required field and rule covered; negative cases return correct 4xx with error structure.
+
+Phase 3 — Filament/Livewire Resource Behavior (P1)
+Goals
+- Prove form/table actions, filters, and policy gating on key resources.
+Steps
+- For UserResource, UnitKerjaResource, ImutCategoryResource: test form validation, create/update/delete actions, bulk actions, visibility by role, table filters/search.
+- Use Livewire::test() and Filament testing utilities.
+Artifacts
+- tests/Feature/Filament/Resources/{Resource}ResourceTest.php
+Acceptance
+- All main CRUD actions pass/deny as per policy; UI-level validation mirrors FormRequest rules.
+
+Phase 4 — Database Schema & Data Integrity (P1)
+Goals
+- Guard schema (columns, indexes, FKs, cascades) and lifecycle (soft delete, observers).
+Steps
+- Schema tests for pivotal tables (including laporan_unit_kerja): columns exist, types reasonable, unique/compound indexes, FKs with onDelete behavior.
+- Soft delete lifecycle: delete/restore/forceDelete effects on relations.
+- Observer tests: folder creation on UnitKerja create; cache invalidation on model save/delete.
+Artifacts
+- tests/Feature/Database/SchemaTest.php
+- tests/Feature/Domain/ObserversTest.php
+Acceptance
+- All constraints present and enforced; observer side-effects verified.
+
+Phase 5 — Jobs, Events, Notifications, Mail (P2)
+Goals
+- Ensure async flows dispatch and execute correctly with proper payloads.
+Steps
+- Queue::fake(): assert ProsesPenilaianImut dispatched under correct conditions; handle idempotency (no duplicates), missing data resilience.
+- Event::fake(): domain events emitted when expected.
+- Notification::fake()/Mail::fake(): delivery channels and content assertions (subject/snippet, not exact HTML).
+Artifacts
+- tests/Feature/Jobs/*
+- tests/Feature/Events/*
+- tests/Feature/Notifications/*, tests/Feature/Mail/*
+Acceptance
+- All dispatches and side-effects asserted; jobs safe on empty datasets.
+
+Phase 6 — Caching & Performance (P2)
+Goals
+- Cache keys, TTL, invalidation correctness; prevent N+1.
+Steps
+- For LaporanImut facade/services: assert first call misses, second hits (using Cache::spy()), TTL configured where applicable.
+- DB::enableQueryLog(): assert query counts for list/detail pages; add with() eager loading where needed.
+Artifacts
+- tests/Feature/Cache/{Service}CacheTest.php
+- tests/Performance/NPlusOneTest.php (or keep under Feature if not adding suite)
+Acceptance
+- Cache hit/miss/invalidate paths covered; stable query ceilings.
+
+Phase 7 — Security (P2)
+Goals
+- Harden inputs and sensitive endpoints.
+Steps
+- Uploads: validate mime/size/extension, prevent path traversal, public/private disk behavior.
+- Mass assignment: ensure only fillable mutate; guard hidden/sensitive fields.
+- Rate limit: throttle sensitive endpoints (login/API) if applicable.
+Artifacts
+- tests/Feature/Security/UploadTest.php
+- tests/Unit/Security/MassAssignmentTest.php
+- tests/Feature/Security/RateLimitTest.php
+Acceptance
+- Invalid inputs rejected; guarded fields unmodified; limiter counters enforced.
+
+Phase 8 — Business Rules (P2)
+Goals
+- Validate domain calculations and time-bound logic.
+Steps
+- Indicator calculations: numerator/denominator edge cases (zero, rounding, large values).
+- Time windows: assessment_period_* boundaries with Carbon::setTestNow().
+Artifacts
+- tests/Unit/Domain/IndicatorCalcTest.php
+- tests/Feature/Domain/TimeRulesTest.php
+Acceptance
+- Deterministic results across edge cases; no divide-by-zero.
+
+Phase 9 — i18n & Snapshots (P3)
+Goals
+- Avoid missing translation keys; stabilize small JSON/view outputs.
+Steps
+- Traverse lang keys found in views/validation; assert present in lang files.
+- Snapshot small JSON DTOs or API samples (non-flaky fields only).
+Artifacts
+- tests/Unit/I18n/TranslationsTest.php
+- tests/Snapshots/* (via spatie/phpunit-snapshot)
+Acceptance
+- No missing translation; snapshots intentional and updated via review.
+
+Phase 10 — E2E (Optional) (P3)
+Goals
+- Validate golden paths in browser (Filament flows).
+Steps
+- Laravel Dusk: login → navigate → CRUD key entity; role-based visibility.
+Artifacts
+- tests/Browser/*
+Acceptance
+- Core journeys pass locally and in CI matrix (with xvfb/headless).
+
+Phase 11 — Tooling & CI (P1)
+Goals
+- Make quality measurable and enforced.
+Steps
+- Add GitHub Actions: run composer install, tests with coverage (pcov), phpstan, pint.
+- Configure coverage min threshold; publish coverage artifact.
+- Add Infection (mutation testing) as nightly or PR label job.
+Artifacts
+- .github/workflows/ci.yml (if not present or to extend)
+- infection.json.dist, phpstan.neon, pint config (if needed)
+Acceptance
+- CI fails below thresholds; fast feedback on PRs.
+
+Execution Order (condensed)
+1) Groundwork/harness stabilization
+2) Policies matrix (Unit)
+3) Request validation + HTTP contracts (Feature)
+4) Filament/Livewire resource behavior (Feature)
+5) DB schema + observers + soft deletes (Feature)
+6) Jobs/Events/Notifications/Mail (Feature)
+7) Cache + N+1 guards (Feature/Performance)
+8) Security (uploads, mass assignment, rate limit)
+9) Business rules (unit + feature)
+10) i18n + snapshots
+11) Optional Dusk E2E
+12) CI quality gates
+
+Conventions
+- Place HTTP/controller and integration-like tests in tests/Feature; pure logic/calculation and policies in tests/Unit.
+- Name tests with intent: {Area}/{Subject}{Verb}Test.php, methods as it()/test().
+- Prefer factories and database transactions; avoid relying on global seeders except explicit seeding tests.
+
+Immediate Next Actions (Week 1)
+- Fix/confirm Tests\TestCase bootstraps app.
+- Implement UnitKerjaPolicyTest and ImutCategoryPolicyTest matrices.
+- Add validation tests for Unit Kerja and Imut Category create/update flows.
+- Add UserResource basic Filament tests (index render, form validation, action visibility by role).
+- Add SchemaTest for laporan_unit_kerja, unit_kerja, imut related tables (columns, FKs, cascades).
+
+Notes
+- Keep LaporanImutService benchmark tests silenced in CI or mark as slow group; use explicit groups to include/exclude.
+- When adding new test subfolders (Integration/Performance), update phpunit.xml testsuites accordingly.
