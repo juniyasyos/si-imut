@@ -212,7 +212,7 @@
                 isProcessing = false
             })
         "
-        x-bind:class="{ 'enabled:opacity-70 enabled:cursor-wait': isProcessing }"
+        x-bind:class="{ 'enabled:opacity-70 enabled:cursor-wait': (typeof isProcessing !== 'undefined' && isProcessing) }"
     @endif
     {{
         $attributes
@@ -222,7 +222,7 @@
                 'type' => $tag === 'button' ? $type : null,
                 'wire:loading.attr' => $tag === 'button' ? 'disabled' : null,
                 'wire:target' => ($hasLoadingIndicator && $loadingIndicatorTarget) ? $loadingIndicatorTarget : null,
-                'x-bind:disabled' => $hasFormProcessingLoadingIndicator ? 'isProcessing' : null,
+                'x-bind:disabled' => $hasFormProcessingLoadingIndicator ? "(typeof isProcessing !== 'undefined' && isProcessing)" : null,
             ], escape: false)
             ->class([$buttonClasses])
             ->style([$buttonStyles])
@@ -260,7 +260,7 @@
         @if ($hasFormProcessingLoadingIndicator)
             <x-filament::loading-indicator
                 x-cloak="x-cloak"
-                x-show="isProcessing"
+                x-show="typeof isProcessing !== 'undefined' && isProcessing"
                 :class="$iconClasses"
             />
         @endif
@@ -268,21 +268,21 @@
 
     <span
         @if ($hasFormProcessingLoadingIndicator)
-            x-show="! isProcessing"
+            x-show="!(typeof isProcessing !== 'undefined' && isProcessing)"
         @endif
         class="{{ $labelClasses }}"
     >
         {{ $slot }}
     </span>
 
-    @if ($hasFormProcessingLoadingIndicator)
-        <span
-            x-cloak
-            x-show="isProcessing"
-            x-text="processingMessage"
-            class="{{ $labelClasses }}"
-        ></span>
-    @endif
+        @if ($hasFormProcessingLoadingIndicator)
+            <span
+                x-cloak
+                x-show="typeof isProcessing !== 'undefined' && isProcessing"
+                x-text="typeof processingMessage !== 'undefined' ? processingMessage : ''"
+                class="{{ $labelClasses }}"
+            ></span>
+        @endif
 
     @if ($iconPosition === IconPosition::After)
         @if ($icon)
@@ -316,7 +316,7 @@
         @if ($hasFormProcessingLoadingIndicator)
             <x-filament::loading-indicator
                 x-cloak="x-cloak"
-                x-show="isProcessing"
+                x-show="typeof isProcessing !== 'undefined' && isProcessing"
                 :class="$iconClasses"
             />
         @endif

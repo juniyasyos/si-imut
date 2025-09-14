@@ -21,6 +21,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Enums\ThemeMode;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -63,6 +64,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
+            // Theme baseline
+            ->font('Figtree')
+            ->colors([
+                'primary' => Color::Sky,
+                'gray' => Color::Zinc,
+            ])
+            ->defaultThemeMode(ThemeMode::System)
             ->when($this->settings->login_enabled ?? true, fn($panel) => $panel->login(Login::class))
             ->when($this->settings->registration_enabled ?? true, fn($panel) => $panel->registration())
             ->when($this->settings->password_reset_enabled ?? true, fn($panel) => $panel->passwordReset())
