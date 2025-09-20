@@ -6,5 +6,8 @@ return [
     App\Providers\Filament\AdminPanelProvider::class,
     App\Providers\LaporanImutServiceProvider::class,
     App\Providers\UnitKerjaProvider::class,
+    App\Providers\FactoryServiceProvider::class,
+    App\Providers\BusinessLogicServiceProvider::class,
+    App\Providers\CacheServiceProvider::class,
     SocialiteProviders\Manager\ServiceProvider::class,
 ];

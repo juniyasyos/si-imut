@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MediaCustomResource\Pages;
 
+use App\Filament\Resources\MediaCustomResource;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -10,12 +11,11 @@ use Juniyasyos\FilamentMediaManager\Resources\Actions\CreateMediaAction;
 use Juniyasyos\FilamentMediaManager\Resources\Actions\CreateSubFolderAction;
 use Juniyasyos\FilamentMediaManager\Resources\Actions\DeleteFolderAction;
 use Juniyasyos\FilamentMediaManager\Resources\Actions\EditCurrentFolderAction;
-use Juniyasyos\FilamentMediaManager\Resources\MediaResource;
 use Juniyasyos\FilamentMediaManager\Resources\MediaResource\Pages\ListMedia;
 
 class ListMediaCustom extends ListMedia
 {
-    protected static string $resource = MediaResource::class;
+    protected static string $resource = MediaCustomResource::class;
 
     public ?int $folder_id = null;
 

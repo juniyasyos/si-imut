@@ -115,5 +115,9 @@ class AppServiceProvider extends ServiceProvider
     {
         UnitKerja::observe(UnitKerjaObserver::class);
         Media::observe(MediaObserver::class);
+
+        // Register new observers
+        \App\Models\LaporanImut::observe(\App\Observers\LaporanImutObserver::class);
+        \App\Models\ImutProfile::observe(\App\Observers\ImutProfileObserver::class);
     }
 }

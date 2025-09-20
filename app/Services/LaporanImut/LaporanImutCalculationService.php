@@ -3,10 +3,25 @@
 namespace App\Services\LaporanImut;
 
 use App\Models\ImutPenilaian;
+use App\Strategies\CalculationContext;
 use Illuminate\Support\Collection;
 
 class LaporanImutCalculationService
 {
+    private CalculationContext $calculationContext;
+
+    public function __construct()
+    {
+        $this->calculationContext = new CalculationContext();
+    }
+
+    /**
+     * Set calculation strategy based on indicator type or category
+     */
+    public function setCalculationStrategy(string $type): void
+    {
+        $this->calculationContext = CalculationContext::createForIndicatorType($type);
+    }
     /**
      * Count tercapai indicators
      */
@@ -48,7 +63,19 @@ class LaporanImutCalculationService
     }
 
     /**
-     * Calculate achievement percentage
+     * Calculate achievement percentage using strategy pattern
+     */
+    public function calculateAchievementPercentageWithStrategy(float $numerator, float $denominator, ?string $strategyType = null): float
+    {
+        if ($strategyType) {
+            $this->setCalculationStrategy($strategyType);
+        }
+
+        return $this->calculationContext->calculatePercentage($numerator, $denominator);
+    }
+
+    /**
+     * Calculate achievement percentage (legacy method - maintained for backward compatibility)
      */
     public function calculateAchievementPercentage(float $numerator, float $denominator): float
     {
