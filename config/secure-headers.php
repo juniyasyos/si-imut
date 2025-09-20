@@ -46,7 +46,7 @@ return [
      *
      * Available Value: 'deny', 'sameorigin', 'allow-from <uri>'
      */
-    'x-frame-options' => 'sameorigin',
+    'x-frame-options' => 'sameorigin', // Changed for internal company use
 
     /**
      * X-Permitted-Cross-Domain-Policies
@@ -96,7 +96,7 @@ return [
      *
      * Available Value: 'unsafe-none', 'require-corp', 'credentialless'
      */
-    'cross-origin-embedder-policy' => 'unsafe-none',
+    'cross-origin-embedder-policy' => 'require-corp',
 
     /**
      * Cross-Origin-Opener-Policy
@@ -105,7 +105,7 @@ return [
      *
      * Available Value: 'unsafe-none', 'same-origin-allow-popups', 'same-origin'
      */
-    'cross-origin-opener-policy' => 'unsafe-none',
+    'cross-origin-opener-policy' => 'same-origin',
 
     /**
      * Cross-Origin-Resource-Policy
@@ -114,7 +114,7 @@ return [
      *
      * Available Value: 'same-site', 'same-origin', 'cross-origin'
      */
-    'cross-origin-resource-policy' => 'cross-origin',
+    'cross-origin-resource-policy' => 'same-origin',
 
     /**
      * Clear-Site-Data

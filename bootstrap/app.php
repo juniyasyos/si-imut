@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(\App\Http\Middleware\EnsureUserIsActive::class);
         $middleware->append(\Bepsvpt\SecureHeaders\SecureHeadersMiddleware::class);
+
+        // Basic security middleware
+        $middleware->alias([
+            'throttle.simple' => \App\Http\Middleware\SimpleRateLimiting::class,
+            'sanitize' => \App\Http\Middleware\BasicInputSanitization::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -9,5 +9,6 @@ return [
     App\Providers\FactoryServiceProvider::class,
     App\Providers\BusinessLogicServiceProvider::class,
     App\Providers\CacheServiceProvider::class,
+    App\Providers\OptimizationServiceProvider::class,
     SocialiteProviders\Manager\ServiceProvider::class,
 ];
