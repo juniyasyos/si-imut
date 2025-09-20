@@ -33,7 +33,8 @@ class UserCacheService extends BaseCacheService
     }
 
     /**
-     * Cache user profile with relations
+     * Cache user profile with relations using tagged approach
+     * Following Laravel pattern: Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
      */
     public function getUserProfile(int $userId): ?User
     {
@@ -42,6 +43,54 @@ class UserCacheService extends BaseCacheService
         return $this->remember($key, function () use ($userId) {
             return User::with(['roles', 'permissions', 'unitKerjas'])->find($userId);
         }, self::USER_PROFILE_TTL);
+    }
+
+    /**
+     * Cache user profile with specific tags for granular invalidation
+     * Example: Cache users by role and unit kerja
+     */
+    public function cacheUserByRoleAndUnit(User $user): bool
+    {
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $userUnits = $user->unitKerjas->pluck('id')->toArray();
+
+        // Create specific tags for this user
+        $tags = array_merge(
+            ['users'],
+            array_map(fn($role) => "role:{$role}", $userRoles),
+            array_map(fn($unitId) => "unit:{$unitId}", $userUnits)
+        );
+
+        // Following Laravel docs pattern: Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
+        return $this->cacheTaggedData($tags, "user:{$user->id}", $user, self::USER_PROFILE_TTL);
+    }
+
+    /**
+     * Get user by role and unit using tagged cache
+     * Following Laravel docs pattern: $john = Cache::tags(['people', 'artists'])->get('John');
+     */
+    public function getUserByRoleAndUnit(int $userId, string $role, int $unitId): ?User
+    {
+        $tags = ['users', "role:{$role}", "unit:{$unitId}"];
+        return $this->getTaggedData($tags, "user:{$userId}");
+    }
+
+    /**
+     * Invalidate all users with specific role
+     * Following Laravel docs pattern: Cache::tags('authors')->flush();
+     */
+    public function invalidateUsersByRole(string $role): bool
+    {
+        return $this->flushByTag("role:{$role}");
+    }
+
+    /**
+     * Invalidate all users in specific unit
+     * Following Laravel docs pattern: Cache::tags(['people', 'authors'])->flush();
+     */
+    public function invalidateUsersByUnit(int $unitId): bool
+    {
+        return $this->flushByTag("unit:{$unitId}");
     }
 
     /**

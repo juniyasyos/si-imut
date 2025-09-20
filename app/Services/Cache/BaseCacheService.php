@@ -68,13 +68,16 @@ abstract class BaseCacheService
         $ttl = $ttl ?? self::DEFAULT_TTL;
 
         try {
-            if ($this->supportsTagging() && !empty($this->tags)) {
-                return Cache::store($this->store)
-                    ->tags($this->tags)
-                    ->remember($cacheKey, $ttl, $callback);
+            $taggedCache = $this->getServiceTaggedCache();
+            if ($taggedCache !== null) {
+                $result = $taggedCache->remember($cacheKey, $ttl, $callback);
+                $this->logCacheMetrics('remember', $cacheKey, true);
+                return $result;
             }
 
-            return Cache::store($this->store)->remember($cacheKey, $ttl, $callback);
+            $result = Cache::store($this->store)->remember($cacheKey, $ttl, $callback);
+            $this->logCacheMetrics('remember', $cacheKey, true);
+            return $result;
         } catch (\Exception $e) {
             Log::warning('Cache remember failed', [
                 'key' => $cacheKey,
@@ -88,6 +91,92 @@ abstract class BaseCacheService
     }
 
     /**
+     * Get tagged cache instance with proper type handling
+     */
+    protected function getTaggedCacheInstance(array $tags): ?\Illuminate\Cache\TaggedCache
+    {
+        if (!$this->doesSupportTagging() || empty($tags)) {
+            return null;
+        }
+
+        $store = Cache::store($this->store);
+
+        // Use dynamic call to avoid IDE type checking issues
+        if (method_exists($store, 'tags')) {
+            return call_user_func([$store, 'tags'], $tags);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get tagged cache for current service tags
+     */
+    protected function getServiceTaggedCache(): ?\Illuminate\Cache\TaggedCache
+    {
+        return $this->getTaggedCacheInstance($this->tags);
+    }
+
+    /**
+     * Put a value in cache with specific tags
+     */
+    public function putWithTags(array $tags, string $key, mixed $value, ?int $ttl = null): bool
+    {
+        $cacheKey = $this->generateKey($key);
+        $ttl = $ttl ?? self::DEFAULT_TTL;
+
+        try {
+            $taggedCache = $this->getTaggedCacheInstance($tags);
+            if ($taggedCache !== null) {
+                $result = $taggedCache->put($cacheKey, $value, $ttl);
+                $this->logCacheMetrics('put_tagged', $cacheKey);
+                return $result;
+            }
+
+            // Fallback to regular put if tagging not supported
+            return $this->put($key, $value, $ttl);
+        } catch (\Exception $e) {
+            Log::warning('Cache putWithTags failed', [
+                'key' => $cacheKey,
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+                'service' => static::class
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Get a value from cache using specific tags
+     */
+    public function getWithTags(array $tags, string $key, mixed $default = null): mixed
+    {
+        $cacheKey = $this->generateKey($key);
+
+        try {
+            $taggedCache = $this->getTaggedCacheInstance($tags);
+            if ($taggedCache !== null) {
+                $result = $taggedCache->get($cacheKey, $default);
+                $this->logCacheMetrics('get_tagged', $cacheKey, $result !== $default);
+                return $result;
+            }
+
+            // Fallback to regular get if tagging not supported
+            return $this->get($key, $default);
+        } catch (\Exception $e) {
+            Log::warning('Cache getWithTags failed', [
+                'key' => $cacheKey,
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+                'service' => static::class
+            ]);
+
+            return $default;
+        }
+    }
+
+    /**
      * Put a value in cache
      */
     public function put(string $key, mixed $value, ?int $ttl = null): bool
@@ -96,13 +185,16 @@ abstract class BaseCacheService
         $ttl = $ttl ?? self::DEFAULT_TTL;
 
         try {
-            if ($this->supportsTagging() && !empty($this->tags)) {
-                return Cache::store($this->store)
-                    ->tags($this->tags)
-                    ->put($cacheKey, $value, $ttl);
+            $taggedCache = $this->getServiceTaggedCache();
+            if ($taggedCache !== null) {
+                $result = $taggedCache->put($cacheKey, $value, $ttl);
+                $this->logCacheMetrics('put', $cacheKey);
+                return $result;
             }
 
-            return Cache::store($this->store)->put($cacheKey, $value, $ttl);
+            $result = Cache::store($this->store)->put($cacheKey, $value, $ttl);
+            $this->logCacheMetrics('put', $cacheKey);
+            return $result;
         } catch (\Exception $e) {
             Log::warning('Cache put failed', [
                 'key' => $cacheKey,
@@ -122,13 +214,16 @@ abstract class BaseCacheService
         $cacheKey = $this->generateKey($key);
 
         try {
-            if ($this->supportsTagging() && !empty($this->tags)) {
-                return Cache::store($this->store)
-                    ->tags($this->tags)
-                    ->get($cacheKey, $default);
+            $taggedCache = $this->getServiceTaggedCache();
+            if ($taggedCache !== null) {
+                $result = $taggedCache->get($cacheKey, $default);
+                $this->logCacheMetrics('get', $cacheKey, $result !== $default);
+                return $result;
             }
 
-            return Cache::store($this->store)->get($cacheKey, $default);
+            $result = Cache::store($this->store)->get($cacheKey, $default);
+            $this->logCacheMetrics('get', $cacheKey, $result !== $default);
+            return $result;
         } catch (\Exception $e) {
             Log::warning('Cache get failed', [
                 'key' => $cacheKey,
@@ -148,10 +243,9 @@ abstract class BaseCacheService
         $cacheKey = $this->generateKey($key);
 
         try {
-            if ($this->supportsTagging() && !empty($this->tags)) {
-                return Cache::store($this->store)
-                    ->tags($this->tags)
-                    ->forget($cacheKey);
+            $taggedCache = $this->getServiceTaggedCache();
+            if ($taggedCache !== null) {
+                return $taggedCache->forget($cacheKey);
             }
 
             return Cache::store($this->store)->forget($cacheKey);
@@ -172,8 +266,10 @@ abstract class BaseCacheService
     public function flush(): bool
     {
         try {
-            if ($this->supportsTagging() && !empty($this->tags)) {
-                Cache::store($this->store)->tags($this->tags)->flush();
+            $taggedCache = $this->getServiceTaggedCache();
+            if ($taggedCache !== null) {
+                $taggedCache->flush();
+                $this->logCacheMetrics('flush', 'all_tags');
                 return true;
             }
 
@@ -194,9 +290,64 @@ abstract class BaseCacheService
     }
 
     /**
-     * Check if the current cache store supports tagging
+     * Flush cache by specific tags
+     * Following Laravel docs pattern: Cache::tags(['people', 'authors'])->flush();
      */
-    protected function supportsTagging(): bool
+    public function flushByTags(array $tags): bool
+    {
+        try {
+            $taggedCache = $this->getTaggedCacheInstance($tags);
+            if ($taggedCache !== null) {
+                $taggedCache->flush();
+
+                $this->logCacheMetrics('flush_by_tags', implode(',', $tags));
+
+                Log::info('Cache flushed by tags', [
+                    'tags' => $tags,
+                    'service' => static::class
+                ]);
+
+                return true;
+            }
+
+            Log::warning('Cannot flush cache by tags - tagging not supported', [
+                'tags' => $tags,
+                'service' => static::class
+            ]);
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Cache flush by tags failed', [
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+                'service' => static::class
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Flush cache for a single tag
+     * Following Laravel docs pattern: Cache::tags('authors')->flush();
+     */
+    public function flushByTag(string $tag): bool
+    {
+        return $this->flushByTags([$tag]);
+    }
+
+    /**
+     * Check if the current cache store supports tagging (public method)
+     */
+    public function supportsTagging(): bool
+    {
+        return $this->doesSupportTagging();
+    }
+
+    /**
+     * Check if the current cache store supports tagging (internal)
+     */
+    protected function doesSupportTagging(): bool
     {
         // Check if store type supports tagging
         if (!in_array($this->store, ['redis', 'memcached', 'array'])) {
@@ -255,9 +406,100 @@ abstract class BaseCacheService
     }
 
     /**
+     * Get cache instance with tags (following Laravel docs pattern)
+     * Examples:
+     * - Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
+     * - Cache::tags(['people', 'authors'])->put('Anne', $anne, $seconds);
+     */
+    protected function getCacheWithTags(array $tags = null): \Illuminate\Contracts\Cache\Repository
+    {
+        $cacheInstance = Cache::store($this->store);
+        $tagsToUse = $tags ?? $this->tags;
+
+        $taggedCache = $this->getTaggedCacheInstance($tagsToUse);
+        if ($taggedCache !== null) {
+            return $taggedCache;
+        }
+
+        return $cacheInstance;
+    }
+
+    /**
+     * Cache data using tagged approach (Laravel docs pattern)
+     * Usage: $this->cacheTaggedData(['people', 'artists'], 'John', $john, $seconds);
+     */
+    protected function cacheTaggedData(array $tags, string $key, mixed $value, ?int $ttl = null): bool
+    {
+        $cacheKey = $this->generateKey($key);
+        $ttl = $ttl ?? self::DEFAULT_TTL;
+
+        try {
+            $taggedCache = $this->getTaggedCacheInstance($tags);
+            if ($taggedCache !== null) {
+                // Following Laravel docs: Cache::tags(['people', 'artists'])->put('John', $john, $seconds);
+                $result = $taggedCache->put($cacheKey, $value, $ttl);
+
+                $this->logCacheMetrics('cache_tagged', $cacheKey);
+
+                Log::debug('Tagged cache stored', [
+                    'key' => $cacheKey,
+                    'tags' => $tags,
+                    'service' => static::class
+                ]);
+
+                return $result;
+            }
+
+            // Fallback to regular caching
+            return $this->put($key, $value, $ttl);
+        } catch (\Exception $e) {
+            Log::warning('Tagged cache storage failed', [
+                'key' => $cacheKey,
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+                'service' => static::class
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Retrieve data using tagged approach (Laravel docs pattern)
+     * Usage: $john = $this->getTaggedData(['people', 'artists'], 'John');
+     */
+    protected function getTaggedData(array $tags, string $key, mixed $default = null): mixed
+    {
+        $cacheKey = $this->generateKey($key);
+
+        try {
+            $taggedCache = $this->getTaggedCacheInstance($tags);
+            if ($taggedCache !== null) {
+                // Following Laravel docs: $john = Cache::tags(['people', 'artists'])->get('John');
+                $result = $taggedCache->get($cacheKey, $default);
+
+                $this->logCacheMetrics('get_tagged', $cacheKey, $result !== $default);
+                return $result;
+            }
+
+            // Fallback to regular get
+            return $this->get($key, $default);
+        } catch (\Exception $e) {
+            Log::warning('Tagged cache retrieval failed', [
+                'key' => $cacheKey,
+                'tags' => $tags,
+                'error' => $e->getMessage(),
+                'service' => static::class
+            ]);
+
+            return $default;
+        }
+    }
+
+    /**
      * Log cache operation metrics
      */
-    protected function logCacheMetrics(string $operation, string $key, bool $hit = null): void
+    protected function logCacheMetrics(string $operation, string $key, ?bool $hit = null): void
     {
         Log::debug('Cache operation', [
             'operation' => $operation,

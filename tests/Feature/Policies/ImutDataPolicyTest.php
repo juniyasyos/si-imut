@@ -12,36 +12,45 @@ beforeEach(function () {
     $this->seed(\Database\Seeders\ShieldSeeder::class);
 });
 
+function getImutDataAbilities(): array
+{
+    $identifier = FilamentShield::getPermissionIdentifier(ImutDataResource::class);
+    return [
+        'viewAny' => ['viewAny', "view_any_{$identifier}"],
+        'viewAll' => ['viewAll', "view_all_data_{$identifier}"],
+        'viewByUnitKerja' => ['viewByUnitKerja', "view_by_unit_kerja_{$identifier}"],
+        'create' => ['create', "create_{$identifier}"],
+        'update' => ['update', "update_{$identifier}"],
+        'deleteAny' => ['deleteAny', "delete_any_{$identifier}"],
+        'restoreAny' => ['restoreAny', "restore_any_{$identifier}"],
+        'forceDeleteAny' => ['forceDeleteAny', "force_delete_any_{$identifier}"],
+    ];
+}
+
 describe('ImutDataPolicy', function () {
-    dataset('imutDataAbilities', function () {
-        $identifier = FilamentShield::getPermissionIdentifier(ImutDataResource::class);
-        return [
-            'viewAny' => ['viewAny', "view_any_{$identifier}"],
-            'viewAll' => ['viewAll', "view_all_data_{$identifier}"],
-            'viewByUnitKerja' => ['viewByUnitKerja', "view_by_unit_kerja_{$identifier}"],
-            'create' => ['create', "create_{$identifier}"],
-            'update' => ['update', "update_{$identifier}"],
-            'deleteAny' => ['deleteAny', "delete_any_{$identifier}"],
-            'restoreAny' => ['restoreAny', "restore_any_{$identifier}"],
-            'forceDeleteAny' => ['forceDeleteAny', "force_delete_any_{$identifier}"],
-        ];
+    it('allows ability when permission granted', function () {
+        $abilities = getImutDataAbilities();
+
+        foreach ($abilities as $key => [$ability, $perm]) {
+            $user = User::factory()->create();
+            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
+            $user->givePermissionTo($perm);
+            $policy = new ImutDataPolicy;
+
+            expect($policy->{$ability}($user))->toBeTrue("Failed for ability: {$ability} with permission: {$perm}");
+        }
     });
 
-    it('allows ability when permission granted', function (string $ability, string $perm) {
-        $user = User::factory()->create();
-        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
-        $user->givePermissionTo($perm);
-        $policy = new ImutDataPolicy;
+    it('denies ability when permission missing', function () {
+        $abilities = getImutDataAbilities();
 
-        expect($policy->{$ability}($user))->toBeTrue();
-    })->with('imutDataAbilities');
+        foreach ($abilities as $key => [$ability, $perm]) {
+            $user = User::factory()->create();
+            $policy = new ImutDataPolicy;
 
-    it('denies ability when permission missing', function (string $ability, string $perm) {
-        $user = User::factory()->create();
-        $policy = new ImutDataPolicy;
-
-        expect($policy->{$ability}($user))->toBeFalse();
-    })->with('imutDataAbilities');
+            expect($policy->{$ability}($user))->toBeFalse("Failed for ability: {$ability}");
+        }
+    });
 
     it('allows model-specific delete/restore/forceDelete with permissions (from resource)', function () {
         $user = User::factory()->create();

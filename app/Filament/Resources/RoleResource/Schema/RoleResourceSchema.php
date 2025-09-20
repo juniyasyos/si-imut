@@ -52,7 +52,7 @@ class RoleResourceSchema extends RoleResource
                             'lg' => 3,
                         ]),
                 ]),
-            ...static::getShieldFormComponents(),
+            static::getShieldFormComponents(),
         ];
     }
 }
