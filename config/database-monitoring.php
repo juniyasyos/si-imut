@@ -21,7 +21,7 @@ return [
         | Should be false in production to avoid performance overhead.
         |
         */
-        'enabled' => env('DB_MONITORING_ENABLED', !app()->environment('production')),
+        'enabled' => env('DB_MONITORING_ENABLED', env('APP_ENV') !== 'production'),
 
         /*
         |--------------------------------------------------------------------------
