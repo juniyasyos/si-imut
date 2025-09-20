@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature\Cache;
-
 use App\Models\User;
 use App\Models\UnitKerja;
 use App\Models\ImutData;
@@ -13,265 +11,207 @@ use App\Services\Cache\ImutDataCacheService;
 use App\Services\Cache\UserCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-use PHPUnit\Framework\Attributes\Test;
-use Tests\TestCase;
 
-class CacheManagerTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private CacheManager $cacheManager;
+beforeEach(function () {
+    // Use array cache for testing
+    config(['cache.default' => 'array']);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->cacheManager = app(CacheManager::class);
+});
 
-        // Use array cache for testing
-        config(['cache.default' => 'array']);
+test('it can warm up caches', function () {
+    // Create some test data
+    $unitKerja = UnitKerja::factory()->create();
+    $category = ImutCategory::factory()->create();
+    $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
+    $imutData->unitKerja()->attach($unitKerja->id);
 
-        $this->cacheManager = app(CacheManager::class);
-    }
+    $user = User::factory()->create();
+    $user->unitKerjas()->attach($unitKerja->id);
+    LaporanImut::factory()->create(['created_by' => $user->id]);
 
-    #[Test]
-    public function it_can_warm_up_caches(): void
-    {
-        // Create some test data
-        $unitKerja = UnitKerja::factory()->create();
-        $category = ImutCategory::factory()->create();
-        $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
-        $imutData->unitKerja()->attach($unitKerja->id);
+    $result = $this->cacheManager->warmUp();
 
-        $user = User::factory()->create();
-        $user->unitKerjas()->attach($unitKerja->id);
-        LaporanImut::factory()->create(['created_by' => $user->id]);
+    expect($result)->toBeArray()
+        ->and($result)->toHaveKeys(['success', 'duration_seconds', 'results', 'timestamp'])
+        ->and($result['success'])->toBeTrue()
+        ->and($result['duration_seconds'])->toBeFloat()
+        ->and($result['results'])->toBeArray();
+});
 
-        $result = $this->cacheManager->warmUp();
+test('it can get health status', function () {
+    $status = $this->cacheManager->getHealthStatus();
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertArrayHasKey('duration_seconds', $result);
-        $this->assertArrayHasKey('results', $result);
-        $this->assertArrayHasKey('timestamp', $result);
+    expect($status)->toBeArray()
+        ->and($status)->toHaveKeys(['overall_status', 'timestamp', 'stores', 'services', 'metrics'])
+        ->and($status['overall_status'])->toBeIn(['healthy', 'degraded', 'unhealthy']);
+});
 
-        $this->assertTrue($result['success']);
-        $this->assertIsFloat($result['duration_seconds']);
-        $this->assertIsArray($result['results']);
-    }
+test('it can flush all caches', function () {
+    // Create and cache some data first
+    $unitKerja = UnitKerja::factory()->create();
+    $category = ImutCategory::factory()->create();
+    $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
+    $imutData->unitKerja()->attach($unitKerja->id);
 
-    #[Test]
-    public function it_can_get_health_status(): void
-    {
-        $status = $this->cacheManager->getHealthStatus();
+    $laporanCache = app(LaporanImutCacheService::class);
+    $laporanCache->getDashboardSummary();
 
-        $this->assertIsArray($status);
-        $this->assertArrayHasKey('overall_status', $status);
-        $this->assertArrayHasKey('timestamp', $status);
-        $this->assertArrayHasKey('stores', $status);
-        $this->assertArrayHasKey('services', $status);
-        $this->assertArrayHasKey('metrics', $status);
+    $result = $this->cacheManager->flushAll();
 
-        $this->assertContains($status['overall_status'], ['healthy', 'degraded', 'unhealthy']);
-    }
+    expect($result)->toBeArray()
+        ->and($result)->toHaveKeys(['success', 'results', 'timestamp'])
+        ->and($result['success'])->toBeTrue();
+});
 
-    #[Test]
-    public function it_can_flush_all_caches(): void
-    {
-        // Create and cache some data first
-        $unitKerja = UnitKerja::factory()->create();
-        $category = ImutCategory::factory()->create();
-        $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
-        $imutData->unitKerja()->attach($unitKerja->id);
+test('it can get statistics', function () {
+    $stats = $this->cacheManager->getStatistics();
 
-        $laporanCache = app(LaporanImutCacheService::class);
-        $laporanCache->getDashboardSummary();
+    expect($stats)->toBeArray()
+        ->and($stats)->toHaveKeys(['timestamp', 'default_store', 'stores'])
+        ->and($stats['default_store'])->toBe('array');
+});
 
-        $result = $this->cacheManager->flushAll();
+test('it can optimize cache', function () {
+    $result = $this->cacheManager->optimize();
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertArrayHasKey('results', $result);
-        $this->assertArrayHasKey('timestamp', $result);
+    expect($result)->toBeArray()
+        ->and($result)->toHaveKeys(['success', 'results', 'timestamp'])
+        ->and($result['success'])->toBeTrue();
+});
 
-        $this->assertTrue($result['success']);
-    }
+test('it handles laporan imut model events', function () {
+    $unitKerja = UnitKerja::factory()->create();
+    $category = ImutCategory::factory()->create();
+    $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
+    $imutData->unitKerja()->attach($unitKerja->id);
 
-    #[Test]
-    public function it_can_get_statistics(): void
-    {
-        $stats = $this->cacheManager->getStatistics();
+    $user = User::factory()->create();
+    $user->unitKerjas()->attach($unitKerja->id);
+    $laporan = LaporanImut::factory()->create(['created_by' => $user->id]);
 
-        $this->assertIsArray($stats);
-        $this->assertArrayHasKey('timestamp', $stats);
-        $this->assertArrayHasKey('default_store', $stats);
-        $this->assertArrayHasKey('stores', $stats);
+    // Test created event
+    $this->cacheManager->handleModelEvent('LaporanImut', 'created', $laporan);
 
-        $this->assertEquals('array', $stats['default_store']);
-    }
+    // Test updated event
+    $this->cacheManager->handleModelEvent('LaporanImut', 'updated', $laporan);
 
-    #[Test]
-    public function it_can_optimize_cache(): void
-    {
-        $result = $this->cacheManager->optimize();
+    // Test deleted event
+    $this->cacheManager->handleModelEvent('LaporanImut', 'deleted', $laporan);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertArrayHasKey('results', $result);
-        $this->assertArrayHasKey('timestamp', $result);
+    // All event handling should complete without errors
+    expect(true)->toBeTrue();
+});
 
-        $this->assertTrue($result['success']);
-    }
+test('it handles imut data model events', function () {
+    $unitKerja = UnitKerja::factory()->create();
+    $category = ImutCategory::factory()->create();
+    $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
+    $imutData->unitKerja()->attach($unitKerja->id);
 
-    #[Test]
-    public function it_handles_laporan_imut_model_events(): void
-    {
-        $unitKerja = UnitKerja::factory()->create();
-        $category = ImutCategory::factory()->create();
-        $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
-        $imutData->unitKerja()->attach($unitKerja->id);
+    // Test events
+    $this->cacheManager->handleModelEvent('ImutData', 'created', $imutData);
+    $this->cacheManager->handleModelEvent('ImutData', 'updated', $imutData);
+    $this->cacheManager->handleModelEvent('ImutData', 'deleted', $imutData);
 
-        $user = User::factory()->create();
-        $user->unitKerjas()->attach($unitKerja->id);
-        $laporan = LaporanImut::factory()->create(['created_by' => $user->id]);
+    expect(true)->toBeTrue();
+});
 
-        // Test created event
-        $this->cacheManager->handleModelEvent('LaporanImut', 'created', $laporan);
+test('it handles user model events', function () {
+    $user = User::factory()->create();
 
-        // Test updated event
-        $this->cacheManager->handleModelEvent('LaporanImut', 'updated', $laporan);
+    // Test events
+    $this->cacheManager->handleModelEvent('User', 'created', $user);
+    $this->cacheManager->handleModelEvent('User', 'updated', $user);
+    $this->cacheManager->handleModelEvent('User', 'deleted', $user);
 
-        // Test deleted event
-        $this->cacheManager->handleModelEvent('LaporanImut', 'deleted', $laporan);
+    expect(true)->toBeTrue();
+});
 
-        // All event handling should complete without errors
-        $this->assertTrue(true);
-    }
+test('it handles unit kerja model events', function () {
+    $unitKerja = UnitKerja::factory()->create();
 
-    #[Test]
-    public function it_handles_imut_data_model_events(): void
-    {
-        $unitKerja = UnitKerja::factory()->create();
-        $category = ImutCategory::factory()->create();
-        $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
-        $imutData->unitKerja()->attach($unitKerja->id);
+    // Test events
+    $this->cacheManager->handleModelEvent('UnitKerja', 'created', $unitKerja);
+    $this->cacheManager->handleModelEvent('UnitKerja', 'updated', $unitKerja);
+    $this->cacheManager->handleModelEvent('UnitKerja', 'deleted', $unitKerja);
 
-        // Test events
-        $this->cacheManager->handleModelEvent('ImutData', 'created', $imutData);
-        $this->cacheManager->handleModelEvent('ImutData', 'updated', $imutData);
-        $this->cacheManager->handleModelEvent('ImutData', 'deleted', $imutData);
+    expect(true)->toBeTrue();
+});
 
-        $this->assertTrue(true);
-    }
+test('it handles unknown model events gracefully', function () {
+    $user = User::factory()->create();
 
-    #[Test]
-    public function it_handles_user_model_events(): void
-    {
-        $user = User::factory()->create();
+    // Test with unknown model
+    $this->cacheManager->handleModelEvent('UnknownModel', 'created', $user);
 
-        // Test events
-        $this->cacheManager->handleModelEvent('User', 'created', $user);
-        $this->cacheManager->handleModelEvent('User', 'updated', $user);
-        $this->cacheManager->handleModelEvent('User', 'deleted', $user);
+    // Test with unknown event
+    $this->cacheManager->handleModelEvent('User', 'unknown_event', $user);
 
-        $this->assertTrue(true);
-    }
+    // Should handle gracefully without errors
+    expect(true)->toBeTrue();
+});
 
-    #[Test]
-    public function it_handles_unit_kerja_model_events(): void
-    {
-        $unitKerja = UnitKerja::factory()->create();
+test('it checks individual service health', function () {
+    $status = $this->cacheManager->getHealthStatus();
 
-        // Test events
-        $this->cacheManager->handleModelEvent('UnitKerja', 'created', $unitKerja);
-        $this->cacheManager->handleModelEvent('UnitKerja', 'updated', $unitKerja);
-        $this->cacheManager->handleModelEvent('UnitKerja', 'deleted', $unitKerja);
+    expect($status)->toHaveKey('services')
+        ->and($status['services'])->toHaveKeys(['laporan_imut', 'imut_data', 'user']);
 
-        $this->assertTrue(true);
-    }
+    // Each service should have status and operations info
+    foreach ($status['services'] as $serviceName => $serviceStatus) {
+        expect($serviceStatus)->toHaveKey('status')
+            ->and($serviceStatus['status'])->toBeIn(['healthy', 'degraded', 'unhealthy']);
 
-    #[Test]
-    public function it_handles_unknown_model_events_gracefully(): void
-    {
-        $user = User::factory()->create();
-
-        // Test with unknown model
-        $this->cacheManager->handleModelEvent('UnknownModel', 'created', $user);
-
-        // Test with unknown event
-        $this->cacheManager->handleModelEvent('User', 'unknown_event', $user);
-
-        // Should handle gracefully without errors
-        $this->assertTrue(true);
-    }
-
-    #[Test]
-    public function it_checks_individual_service_health(): void
-    {
-        $status = $this->cacheManager->getHealthStatus();
-
-        $this->assertArrayHasKey('services', $status);
-        $this->assertArrayHasKey('laporan_imut', $status['services']);
-        $this->assertArrayHasKey('imut_data', $status['services']);
-        $this->assertArrayHasKey('user', $status['services']);
-
-        // Each service should have status and operations info
-        foreach ($status['services'] as $serviceName => $serviceStatus) {
-            $this->assertArrayHasKey('status', $serviceStatus);
-            $this->assertContains($serviceStatus['status'], ['healthy', 'degraded', 'unhealthy']);
-
-            if ($serviceStatus['status'] === 'healthy') {
-                $this->assertArrayHasKey('operations', $serviceStatus);
-                $this->assertArrayHasKey('put', $serviceStatus['operations']);
-                $this->assertArrayHasKey('get', $serviceStatus['operations']);
-                $this->assertArrayHasKey('forget', $serviceStatus['operations']);
-            }
+        if ($serviceStatus['status'] === 'healthy') {
+            expect($serviceStatus)->toHaveKey('operations')
+                ->and($serviceStatus['operations'])->toHaveKeys(['put', 'get', 'forget']);
         }
     }
+});
 
-    #[Test]
-    public function it_measures_cache_performance(): void
-    {
-        $startTime = microtime(true);
+test('it measures cache performance', function () {
+    $startTime = microtime(true);
 
-        // Perform multiple cache operations
-        $laporanCache = app(LaporanImutCacheService::class);
-        $imutDataCache = app(ImutDataCacheService::class);
-        $userCache = app(UserCacheService::class);
+    // Perform multiple cache operations
+    $laporanCache = app(LaporanImutCacheService::class);
+    $imutDataCache = app(ImutDataCacheService::class);
+    $userCache = app(UserCacheService::class);
 
-        // Create test data
-        $unitKerja = UnitKerja::factory()->create();
-        $category = ImutCategory::factory()->create();
-        $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
-        $imutData->unitKerja()->attach($unitKerja->id);
+    // Create test data
+    $unitKerja = UnitKerja::factory()->create();
+    $category = ImutCategory::factory()->create();
+    $imutData = ImutData::factory()->create(['imut_kategori_id' => $category->id]);
+    $imutData->unitKerja()->attach($unitKerja->id);
 
-        $user = User::factory()->create();
-        $user->unitKerjas()->attach($unitKerja->id);
-        $laporan = LaporanImut::factory()->create(['created_by' => $user->id]);
+    $user = User::factory()->create();
+    $user->unitKerjas()->attach($unitKerja->id);
+    $laporan = LaporanImut::factory()->create(['created_by' => $user->id]);
 
-        // Perform cache operations
-        $laporanCache->getDashboardSummary();
-        $imutDataCache->getGlobalMetrics();
-        $userCache->getRoleStatistics();
+    // Perform cache operations
+    $laporanCache->getDashboardSummary();
+    $imutDataCache->getGlobalMetrics();
+    $userCache->getRoleStatistics();
 
-        $endTime = microtime(true);
-        $duration = $endTime - $startTime;
+    $endTime = microtime(true);
+    $duration = $endTime - $startTime;
 
-        // Cache operations should complete within reasonable time (< 1 second for array cache)
-        $this->assertLessThan(1.0, $duration);
-    }
+    // Cache operations should complete within reasonable time (< 1 second for array cache)
+    expect($duration)->toBeLessThan(1.0);
+});
 
-    #[Test]
-    public function it_handles_cache_failures_gracefully(): void
-    {
-        // Test with invalid cache store to simulate failures
-        config(['cache.default' => 'invalid_store']);
+test('it handles cache failures gracefully', function () {
+    // Test with invalid cache store to simulate failures
+    config(['cache.default' => 'invalid_store']);
 
-        $cacheManager = app(CacheManager::class);
+    $cacheManager = app(CacheManager::class);
 
-        // These operations should not throw exceptions
-        $healthStatus = $cacheManager->getHealthStatus();
-        $this->assertEquals('unhealthy', $healthStatus['overall_status']);
+    // These operations should not throw exceptions
+    $healthStatus = $cacheManager->getHealthStatus();
+    expect($healthStatus['overall_status'])->toBe('unhealthy');
 
-        $stats = $cacheManager->getStatistics();
-        $this->assertArrayHasKey('error', $stats);
-    }
-}
+    $stats = $cacheManager->getStatistics();
+    expect($stats)->toHaveKey('error');
+});
