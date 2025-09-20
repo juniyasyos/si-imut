@@ -20,8 +20,8 @@ return new class extends Migration
             $driver = Schema::getConnection()->getDriverName();
 
             if ($driver === 'mysql') {
-                // MySQL doesn't support partial indexes, but we can optimize with functional indexes
-                DB::statement('CREATE INDEX idx_imut_data_active_only ON imut_data (id) WHERE status = 1');
+                // MySQL doesn't support partial indexes, create regular composite index instead
+                DB::statement('CREATE INDEX idx_imut_data_status_id ON imut_data (status, id)');
             } elseif ($driver === 'pgsql') {
                 // PostgreSQL supports partial indexes
                 DB::statement('CREATE INDEX idx_imut_data_active_only ON imut_data (id) WHERE status = true');
@@ -95,7 +95,7 @@ return new class extends Migration
 
         // Drop partial indexes
         if ($driver === 'mysql') {
-            DB::statement('DROP INDEX IF EXISTS idx_imut_data_active_only ON imut_data');
+            DB::statement('DROP INDEX IF EXISTS idx_imut_data_status_id ON imut_data');
         } elseif ($driver === 'pgsql') {
             DB::statement('DROP INDEX IF EXISTS idx_imut_data_active_only');
             DB::statement('DROP INDEX IF EXISTS idx_imut_data_deleted_only');
