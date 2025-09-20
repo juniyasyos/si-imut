@@ -8,6 +8,7 @@ use App\Models\UnitKerja;
 use App\Services\Cache\LaporanImutCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class LaporanImutCacheServiceTest extends TestCase
@@ -25,14 +26,14 @@ class LaporanImutCacheServiceTest extends TestCase
         config(['cache.default' => 'array']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_laporan_list(): void
     {
         // Create test data
         $unitKerja = UnitKerja::factory()->create();
         $imutData = ImutData::factory()->create();
         $imutData->unitKerja()->attach($unitKerja->id);
-        $laporan = LaporanImut::factory()->create(['imut_data_id' => $imutData->id]);
+        $laporan = LaporanImut::factory()->create([]);
 
         // First call should hit database
         $result1 = $this->cacheService->getLaporanList();
@@ -44,13 +45,13 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertEquals($result1->first()->id, $result2->first()->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_laporan_detail(): void
     {
         $unitKerja = UnitKerja::factory()->create();
         $imutData = ImutData::factory()->create();
         $imutData->unitKerja()->attach($unitKerja->id);
-        $laporan = LaporanImut::factory()->create(['imut_data_id' => $imutData->id]);
+        $laporan = LaporanImut::factory()->create([]);
 
         // First call
         $result1 = $this->cacheService->getLaporanDetail($laporan->id);
@@ -63,7 +64,7 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertEquals($result1->id, $result2->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_dashboard_summary(): void
     {
         // Create test data
@@ -71,7 +72,6 @@ class LaporanImutCacheServiceTest extends TestCase
         $imutData = ImutData::factory()->create();
         $imutData->unitKerja()->attach($unitKerja->id);
         LaporanImut::factory()->create([
-            'imut_data_id' => $imutData->id,
             'status' => 'completed',
             'total_score' => 85.5
         ]);
@@ -86,14 +86,13 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertEquals(1, $summary['completed_reports']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_statistics_by_period(): void
     {
         $unitKerja = UnitKerja::factory()->create();
         $imutData = ImutData::factory()->create();
         $imutData->unitKerja()->attach($unitKerja->id);
         $laporan = LaporanImut::factory()->create([
-            'imut_data_id' => $imutData->id,
             'assessment_period' => '2024-Q1',
             'status' => 'completed'
         ]);
@@ -107,13 +106,13 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertEquals(1, $stats['total_reports']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_invalidate_laporan_cache(): void
     {
         $unitKerja = UnitKerja::factory()->create();
         $imutData = ImutData::factory()->create();
         $imutData->unitKerja()->attach($unitKerja->id);
-        $laporan = LaporanImut::factory()->create(['imut_data_id' => $imutData->id]);
+        $laporan = LaporanImut::factory()->create([]);
 
         // Cache the laporan
         $this->cacheService->getLaporanDetail($laporan->id);
@@ -128,7 +127,7 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertNull(Cache::get("laporan_imut:detail:{$laporan->id}"));
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_filters_correctly(): void
     {
         $unitKerja1 = UnitKerja::factory()->create();
@@ -139,8 +138,8 @@ class LaporanImutCacheServiceTest extends TestCase
         $imutData2 = ImutData::factory()->create();
         $imutData2->unitKerja()->attach($unitKerja2->id);
 
-        LaporanImut::factory()->create(['imut_data_id' => $imutData1->id, 'status' => 'completed']);
-        LaporanImut::factory()->create(['imut_data_id' => $imutData2->id, 'status' => 'pending']);
+        LaporanImut::factory()->create(['status' => 'completed']);
+        LaporanImut::factory()->create(['status' => 'pending']);
 
         // Test without filters
         $allResults = $this->cacheService->getLaporanList();
@@ -156,7 +155,7 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertEquals(1, $unitResults->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_assessment_periods(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -164,11 +163,9 @@ class LaporanImutCacheServiceTest extends TestCase
         $imutData->unitKerja()->attach($unitKerja->id);
 
         LaporanImut::factory()->create([
-            'imut_data_id' => $imutData->id,
             'assessment_period' => '2024-Q1'
         ]);
         LaporanImut::factory()->create([
-            'imut_data_id' => $imutData->id,
             'assessment_period' => '2024-Q2'
         ]);
 
@@ -180,13 +177,13 @@ class LaporanImutCacheServiceTest extends TestCase
         $this->assertEquals(2, count($periods));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_flush_cache(): void
     {
         $unitKerja = UnitKerja::factory()->create();
         $imutData = ImutData::factory()->create();
         $imutData->unitKerja()->attach($unitKerja->id);
-        $laporan = LaporanImut::factory()->create(['imut_data_id' => $imutData->id]);
+        $laporan = LaporanImut::factory()->create([]);
 
         // Cache some data
         $this->cacheService->getLaporanDetail($laporan->id);

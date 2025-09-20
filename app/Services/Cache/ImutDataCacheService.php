@@ -46,7 +46,9 @@ class ImutDataCacheService extends BaseCacheService
 
             // Apply filters
             if (isset($filters['unit_kerja_id'])) {
-                $query->where('unit_kerja_id', $filters['unit_kerja_id']);
+                $query->whereHas('unitKerja', function ($q) use ($filters) {
+                    $q->where('unit_kerja.id', $filters['unit_kerja_id']);
+                });
             }
 
             if (isset($filters['status'])) {
@@ -75,8 +77,8 @@ class ImutDataCacheService extends BaseCacheService
         return $this->remember($key, function () use ($imutDataId) {
             return ImutData::with([
                 'unitKerja',
-                'profiles.category',
-                'laporan'
+                'profiles',
+                'categories'
             ])->find($imutDataId);
         }, self::DATA_DETAIL_TTL);
     }
@@ -89,21 +91,24 @@ class ImutDataCacheService extends BaseCacheService
         $key = "unit_overview:{$unitKerjaId}";
 
         return $this->remember($key, function () use ($unitKerjaId) {
-            $imutData = ImutData::where('unit_kerja_id', $unitKerjaId)
-                ->with(['profiles.category', 'laporan'])
+            $data = ImutData::query()
+                ->with(['profiles', 'categories'])
+                ->whereHas('unitKerja', function ($query) use ($unitKerjaId) {
+                    $query->where('unit_kerja.id', $unitKerjaId);
+                })
                 ->get();
 
             $unitKerja = UnitKerja::find($unitKerjaId);
 
             return [
                 'unit_kerja' => $unitKerja,
-                'total_imut_data' => $imutData->count(),
-                'completed_profiles' => $imutData->sum(fn($data) => $data->profiles->count()),
-                'pending_assessments' => $imutData->where('status', 'pending')->count(),
-                'average_completion_rate' => $this->calculateCompletionRate($imutData),
-                'category_distribution' => $this->calculateCategoryDistribution($imutData),
-                'recent_activity' => $imutData->sortByDesc('updated_at')->take(5)->values(),
-                'performance_trends' => $this->calculatePerformanceTrends($imutData)
+                'total_imut_data' => $data->count(),
+                'completed_profiles' => $data->sum(fn($item) => $item->profiles->count()),
+                'pending_assessments' => $data->where('status', false)->count(),
+                'average_completion_rate' => $this->calculateCompletionRate($data),
+                'category_distribution' => $this->calculateCategoryDistribution($data),
+                'recent_activity' => $data->sortByDesc('updated_at')->take(5)->values(),
+                'performance_trends' => $this->calculatePerformanceTrends($data)
             ];
         }, self::METRICS_TTL);
     }
@@ -161,19 +166,28 @@ class ImutDataCacheService extends BaseCacheService
         $key = 'global_metrics';
 
         return $this->remember($key, function () {
-            $allImutData = ImutData::with(['profiles', 'unitKerja'])->get();
-            $allProfiles = ImutProfile::with(['category'])->get();
+            $allImutData = ImutData::with(['profiles', 'unitKerja', 'categories'])->get();
+            $allProfiles = ImutProfile::with(['imutData.categories'])->get();
+
+            // Calculate unique unit kerja count from the many-to-many relationship
+            $totalUnitKerja = $allImutData->flatMap(function ($imutData) {
+                return $imutData->unitKerja->pluck('id');
+            })->unique()->count();
+
+            // Calculate category breakdown through ImutData
+            $categoryBreakdown = $allImutData->groupBy(function ($imutData) {
+                return $imutData->categories ? $imutData->categories->id : 'uncategorized';
+            })->map->count();
 
             return [
                 'total_imut_data' => $allImutData->count(),
                 'total_profiles' => $allProfiles->count(),
-                'total_unit_kerja' => $allImutData->pluck('unit_kerja_id')->unique()->count(),
-                'average_profiles_per_unit' => round($allProfiles->count() / max($allImutData->pluck('unit_kerja_id')->unique()->count(), 1), 2),
-                'category_breakdown' => $allProfiles->groupBy('imut_category_id')->map->count(),
+                'total_unit_kerja' => $totalUnitKerja,
+                'average_profiles_per_unit' => round($allProfiles->count() / max($totalUnitKerja, 1), 2),
+                'category_breakdown' => $categoryBreakdown,
                 'completion_status' => [
-                    'completed' => $allImutData->where('status', 'completed')->count(),
-                    'pending' => $allImutData->where('status', 'pending')->count(),
-                    'in_progress' => $allImutData->where('status', 'in_progress')->count()
+                    'active' => $allImutData->where('status', true)->count(),
+                    'inactive' => $allImutData->where('status', false)->count(),
                 ],
                 'quality_metrics' => $this->calculateQualityMetrics($allProfiles),
                 'last_updated' => now()->toISOString()

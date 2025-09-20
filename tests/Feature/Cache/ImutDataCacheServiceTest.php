@@ -10,6 +10,7 @@ use App\Models\UnitKerja;
 use App\Services\Cache\ImutDataCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ImutDataCacheServiceTest extends TestCase
 {
@@ -26,7 +27,7 @@ class ImutDataCacheServiceTest extends TestCase
         config(['cache.default' => 'array']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_imut_data_list(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -43,7 +44,7 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals($result1->first()->id, $result2->first()->id);
     }
 
-        /** @test */
+        #[Test]
     public function it_can_cache_imut_data_detail(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -60,7 +61,7 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals($result1->title, $result2->title);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_unit_kerja_overview(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -70,7 +71,6 @@ class ImutDataCacheServiceTest extends TestCase
         $category = ImutCategory::factory()->create();
         ImutProfile::factory()->create([
             'imut_data_id' => $imutData->id,
-            'imut_category_id' => $category->id,
         ]);
 
         $overview = $this->cacheService->getUnitKerjaOverview($unitKerja->id);
@@ -83,19 +83,18 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals(1, $overview['total_imut_data']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_global_metrics(): void
     {
         $unitKerja = UnitKerja::factory()->create();
         $imutData = ImutData::factory()->create([
-            'status' => 'completed'
+            'status' => true
         ]);
         $imutData->unitKerja()->attach($unitKerja->id);
 
         $category = ImutCategory::factory()->create();
         ImutProfile::factory()->create([
             'imut_data_id' => $imutData->id,
-            'imut_category_id' => $category->id,
         ]);
 
         $metrics = $this->cacheService->getGlobalMetrics();
@@ -110,21 +109,28 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals(1, $metrics['total_imut_data']);
         $this->assertEquals(1, $metrics['total_profiles']);
         $this->assertEquals(1, $metrics['total_unit_kerja']);
-        $this->assertEquals(1, $metrics['completion_status']['completed']);
+        $this->assertEquals(1, $metrics['completion_status']['active']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_profile_stats_by_category(): void
     {
         $unitKerja = UnitKerja::factory()->create();
-        $imutData = ImutData::factory()->create();
-        $imutData->unitKerja()->attach($unitKerja->id);
         $category = ImutCategory::factory()->create();
+        $imutData = ImutData::factory()->create([
+            'imut_kategori_id' => $category->id
+        ]);
+        $imutData->unitKerja()->attach($unitKerja->id);
 
-        ImutProfile::factory()->create([
+        $profile = ImutProfile::factory()->create([
             'imut_data_id' => $imutData->id,
-            'imut_category_id' => $category->id,
-            'description' => 'Test profile'
+        ]);
+
+        // Create ImutPenilaian with score calculation that results in 85%
+        ImutPenilaian::factory()->create([
+            'imut_profil_id' => $profile->id,
+            'numerator_value' => 85,
+            'denominator_value' => 100
         ]);
 
         $stats = $this->cacheService->getProfileStatsByCategory($category->id);
@@ -140,7 +146,7 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals(85, $stats['average_score']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_benchmarking_data(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -169,7 +175,7 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals(1, $benchmarkData['dataset_size']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_invalidate_specific_caches(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -192,19 +198,19 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_filters_in_data_list(): void
     {
         $unitKerja1 = UnitKerja::factory()->create();
         $unitKerja2 = UnitKerja::factory()->create();
 
         $imutData1 = ImutData::factory()->create([
-            'status' => 'completed'
+            'status' => true
         ]);
         $imutData1->unitKerja()->attach($unitKerja1->id);
 
         $imutData2 = ImutData::factory()->create([
-            'status' => 'pending'
+            'status' => false
         ]);
         $imutData2->unitKerja()->attach($unitKerja2->id);
 
@@ -217,12 +223,12 @@ class ImutDataCacheServiceTest extends TestCase
         $this->assertEquals(1, $unitResults->count());
 
         // Test with status filter
-        $statusResults = $this->cacheService->getImutDataList(['status' => 'completed']);
+        $statusResults = $this->cacheService->getImutDataList(['status' => true]);
         $this->assertEquals(1, $statusResults->count());
-        $this->assertEquals('completed', $statusResults->first()->status);
+        $this->assertTrue($statusResults->first()->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_score_distribution_correctly(): void
     {
         $unitKerja = UnitKerja::factory()->create();

@@ -13,6 +13,7 @@ use App\Services\Cache\ImutDataCacheService;
 use App\Services\Cache\UserCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CacheManagerTest extends TestCase
@@ -31,7 +32,7 @@ class CacheManagerTest extends TestCase
         $this->cacheManager = app(CacheManager::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_warm_up_caches(): void
     {
         // Create some test data
@@ -41,7 +42,7 @@ class CacheManagerTest extends TestCase
         $imutData->unitKerja()->attach($unitKerja->id);
 
         $user = User::factory()->create();
-        $user->unitKerja()->attach($unitKerja->id);
+        $user->unitKerjas()->attach($unitKerja->id);
         LaporanImut::factory()->create(['created_by' => $user->id]);
 
         $result = $this->cacheManager->warmUp();
@@ -57,7 +58,7 @@ class CacheManagerTest extends TestCase
         $this->assertIsArray($result['results']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_health_status(): void
     {
         $status = $this->cacheManager->getHealthStatus();
@@ -72,7 +73,7 @@ class CacheManagerTest extends TestCase
         $this->assertContains($status['overall_status'], ['healthy', 'degraded', 'unhealthy']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_flush_all_caches(): void
     {
         // Create and cache some data first
@@ -94,7 +95,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue($result['success']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_statistics(): void
     {
         $stats = $this->cacheManager->getStatistics();
@@ -107,7 +108,7 @@ class CacheManagerTest extends TestCase
         $this->assertEquals('array', $stats['default_store']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_optimize_cache(): void
     {
         $result = $this->cacheManager->optimize();
@@ -120,7 +121,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue($result['success']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_laporan_imut_model_events(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -129,7 +130,7 @@ class CacheManagerTest extends TestCase
         $imutData->unitKerja()->attach($unitKerja->id);
 
         $user = User::factory()->create();
-        $user->unitKerja()->attach($unitKerja->id);
+        $user->unitKerjas()->attach($unitKerja->id);
         $laporan = LaporanImut::factory()->create(['created_by' => $user->id]);
 
         // Test created event
@@ -145,7 +146,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_imut_data_model_events(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -161,7 +162,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_user_model_events(): void
     {
         $user = User::factory()->create();
@@ -174,7 +175,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_unit_kerja_model_events(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -187,7 +188,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_unknown_model_events_gracefully(): void
     {
         $user = User::factory()->create();
@@ -202,7 +203,7 @@ class CacheManagerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_individual_service_health(): void
     {
         $status = $this->cacheManager->getHealthStatus();
@@ -226,7 +227,7 @@ class CacheManagerTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_measures_cache_performance(): void
     {
         $startTime = microtime(true);
@@ -243,7 +244,7 @@ class CacheManagerTest extends TestCase
         $imutData->unitKerja()->attach($unitKerja->id);
 
         $user = User::factory()->create();
-        $user->unitKerja()->attach($unitKerja->id);
+        $user->unitKerjas()->attach($unitKerja->id);
         $laporan = LaporanImut::factory()->create(['created_by' => $user->id]);
 
         // Perform cache operations
@@ -258,7 +259,7 @@ class CacheManagerTest extends TestCase
         $this->assertLessThan(1.0, $duration);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_cache_failures_gracefully(): void
     {
         // Test with invalid cache store to simulate failures

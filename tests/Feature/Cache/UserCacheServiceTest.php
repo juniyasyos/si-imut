@@ -8,6 +8,7 @@ use App\Services\Cache\UserCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class UserCacheServiceTest extends TestCase
@@ -30,7 +31,7 @@ class UserCacheServiceTest extends TestCase
         $this->artisan('permission:create-permission view_imut_data');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_user_profile(): void
     {
                 $unitKerja = UnitKerja::factory()->create();
@@ -49,7 +50,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertTrue($profile1->hasRole('admin'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_user_permissions(): void
     {
         $user = User::factory()->create();
@@ -68,7 +69,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertContains('edit_content', $permissions1);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_accessible_unit_kerja(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -83,7 +84,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertEquals($unitKerja->id, $accessibleUnits1->first()->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_super_admin_access_correctly(): void
     {
         $unitKerja1 = UnitKerja::factory()->create();
@@ -99,7 +100,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertEquals(2, $accessibleUnits->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_user_dashboard_data(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -121,7 +122,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertEquals('user', $dashboardData['user_role']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_user_preferences(): void
     {
         $user = User::factory()->create();
@@ -141,7 +142,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertTrue($preferences['notifications_enabled']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_user_preferences(): void
     {
         $user = User::factory()->create();
@@ -160,7 +161,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertFalse($cachedPreferences['notifications_enabled']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_users_list(): void
     {
         $unitKerja = UnitKerja::factory()->create();
@@ -176,7 +177,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertEquals(2, $usersList1->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_user_list_filters(): void
     {
         $unitKerja1 = UnitKerja::factory()->create();
@@ -211,7 +212,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertEquals('John Doe', $searchFiltered->first()->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_cache_role_statistics(): void
     {
         $adminRole = Role::create(['name' => 'admin']);
@@ -245,7 +246,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertEquals(1, $stats['role_breakdown']['admin']['permissions_count']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_invalidate_user_cache(): void
     {
         $user = User::factory()->create();
@@ -262,7 +263,7 @@ class UserCacheServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_user_activity_summary(): void
     {
         $user = User::factory()->create();
