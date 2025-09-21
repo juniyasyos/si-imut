@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\UnitKerja;
 use App\Observers\MediaObserver;
-use App\Observers\UnitKerjaObserver;
 use BezhanSalleh\FilamentLanguageSwitch\Enums\Placement;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Support\Facades\FilamentView;
@@ -113,7 +111,6 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerObservers(): void
     {
-        UnitKerja::observe(UnitKerjaObserver::class);
         Media::observe(MediaObserver::class);
 
         // Register new observers
