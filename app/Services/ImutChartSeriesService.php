@@ -94,18 +94,18 @@ class ImutChartSeriesService
                     }
 
                     $shortName = $category->short_name;
-                    
+
                     // Use Strategy Pattern for calculation based on category
                     $context = CalculationContext::createForCategory($shortName);
-                    
+
                     $nilai = $context->calculatePercentage(
-                        $penilaian->numerator_value, 
+                        $penilaian->numerator_value,
                         $penilaian->denominator_value
                     );
 
                     $isTargetAchieved = $context->isTargetAchieved(
-                        $nilai, 
-                        $profile->target_value, 
+                        $nilai,
+                        $profile->target_value,
                         '>='
                     );
 
