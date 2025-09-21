@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Console\Commands\OptimizeCacheCommand;
-use App\Services\Cache\SimpleCacheOptimizer;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -17,10 +15,7 @@ class OptimizationServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register cache optimizer
-        $this->app->singleton(SimpleCacheOptimizer::class, function ($app) {
-            return new SimpleCacheOptimizer();
-        });
+        // Simplified - removed complex cache optimizers
     }
 
     /**
@@ -28,10 +23,6 @@ class OptimizationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                OptimizeCacheCommand::class,
-            ]);
-        }
+        // Simplified - removed complex optimization commands
     }
 }

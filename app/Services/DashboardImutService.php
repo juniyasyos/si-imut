@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Models\LaporanImut;
+use App\Strategies\CalculationContext;
 use App\Support\CacheKey;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Log;
  */
 class DashboardImutService
 {
+    protected CalculationContext $calculationContext;
+
+    public function __construct()
+    {
+        $this->calculationContext = new CalculationContext();
+    }
     /**
      * Mengambil ID laporan terbaru, menggunakan cache jika tersedia.
      */
@@ -165,7 +172,8 @@ class DashboardImutService
      */
     protected function resolveIcon(int $value, int $total): string
     {
-        $percentage = $total ? round($value / $total * 100) : 0;
+        // Use Strategy Pattern for percentage calculation
+        $percentage = $this->calculationContext->calculatePercentage($value, $total);
 
         return $percentage >= 80 ? 'heroicon-o-check-circle' : 'heroicon-o-adjustments-vertical';
     }
@@ -175,7 +183,8 @@ class DashboardImutService
      */
     protected function resolvePercentageColor(int $value, int $total): string
     {
-        $percentage = $total ? round($value / $total * 100) : 0;
+        // Use Strategy Pattern for percentage calculation
+        $percentage = $this->calculationContext->calculatePercentage($value, $total);
 
         return match (true) {
             $percentage >= 80 => 'success',

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ImutCategory;
+use App\Strategies\CalculationContext;
 use App\Support\CacheKey;
 use Illuminate\Support\Facades\Cache;
 
@@ -22,6 +23,13 @@ class ImutChartSeriesService
             '#22c55e',
         ],
     ];
+
+    protected CalculationContext $calculationContext;
+
+    public function __construct()
+    {
+        $this->calculationContext = new CalculationContext();
+    }
 
     public function getDefaultColors(): array
     {
@@ -86,9 +94,22 @@ class ImutChartSeriesService
                     }
 
                     $shortName = $category->short_name;
-                    $nilai = ($penilaian->numerator_value / $penilaian->denominator_value) * 100;
+                    
+                    // Use Strategy Pattern for calculation based on category
+                    $context = CalculationContext::createForCategory($shortName);
+                    
+                    $nilai = $context->calculatePercentage(
+                        $penilaian->numerator_value, 
+                        $penilaian->denominator_value
+                    );
 
-                    if ($nilai >= $profile->target_value) {
+                    $isTargetAchieved = $context->isTargetAchieved(
+                        $nilai, 
+                        $profile->target_value, 
+                        '>='
+                    );
+
+                    if ($isTargetAchieved) {
                         $result[$shortName] = ($result[$shortName] ?? 0) + 1;
                     }
                 }
