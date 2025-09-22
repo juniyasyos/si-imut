@@ -41,11 +41,17 @@ class ImutDataLineChart extends ApexChartWidget
 
     protected function getFormSchema(): array
     {
-        $years = LaporanImut::selectRaw('YEAR(assessment_period_start) as year')
+        $years = LaporanImut::select('report_year as year')
             ->distinct()
-            ->orderBy('year', 'desc')
+            ->orderBy('report_year', 'desc')
             ->pluck('year', 'year')
             ->toArray();
+
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
 
         $regionTypes = RegionType::pluck('type', 'id')->toArray();
 
@@ -55,6 +61,8 @@ class ImutDataLineChart extends ApexChartWidget
             Section::make('Filter Data')
                 ->schema([
                     Select::make('year')->label('Tahun')->options($years)->default(now()->year)->reactive(),
+                    Select::make('end_month')->label('Sampai Bulan')->options($months)->default(now()->month)->reactive()
+                        ->helperText('Tampilkan data dari Januari sampai bulan yang dipilih'),
                     Select::make('region_type_id')->label('Benchmarking Region')->options($regionTypes)->multiple()->searchable()->reactive(),
                     Checkbox::make('show_benchmarking')->label('Tampilkan Benchmarking')->default(false)->reactive()->visible($is_benchmarking),
                     Checkbox::make('show_dataLabels')->label('Tampilkan Nilai')->default(true)->reactive(),
@@ -63,7 +71,7 @@ class ImutDataLineChart extends ApexChartWidget
                         ->default('transparent')
                         ->reactive(),
                 ])
-                ->columns(2),
+                ->columns(3),
 
             Section::make('Konfigurasi Chart Utama')
                 ->schema([
@@ -151,11 +159,13 @@ class ImutDataLineChart extends ApexChartWidget
     protected function getMonthLabels(): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
+        $endMonth = $this->filterFormData['end_month'] ?? now()->month;
 
-        return LaporanImut::whereYear('assessment_period_start', $year)
-            ->orderBy('assessment_period_start')
-            ->pluck('assessment_period_start')
-            ->map(fn($date) => \Carbon\Carbon::parse($date)->translatedFormat('F Y'))
+        return LaporanImut::where('report_year', $year)
+            ->where('report_month', '<=', $endMonth)
+            ->orderBy('report_month')
+            ->get()
+            ->map(fn($laporan) => $laporan->period_name)
             ->unique()
             ->values()
             ->toArray();
@@ -164,12 +174,13 @@ class ImutDataLineChart extends ApexChartWidget
     protected function getChartSeries(string $chartType = 'mixed'): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
+        $endMonth = $this->filterFormData['end_month'] ?? now()->month;
         $regionTypeId = $this->filterFormData['region_type_id'] ?? null;
         $imutDataId = $this->imutData->id;
         $showBenchmarking = $this->filterFormData['show_benchmarking'] ?? true;
 
         $penilaianData = Cache::remember(
-            CacheKey::imutPenilaian($imutDataId, $year),
+            CacheKey::imutPenilaian($imutDataId, $year, $endMonth),
             now()->addMinutes(30),
             fn() => DB::table('imut_penilaians')
                 ->join('laporan_unit_kerjas', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
@@ -177,23 +188,33 @@ class ImutDataLineChart extends ApexChartWidget
                 ->join('imut_profil', 'imut_profil.id', '=', 'imut_penilaians.imut_profil_id')
                 ->join('imut_data', 'imut_data.id', '=', 'imut_profil.imut_data_id')
                 ->where('imut_data.id', $imutDataId)
-                ->whereYear('laporan_imuts.assessment_period_start', $year)
+                ->where('laporan_imuts.report_year', $year)
+                ->where('laporan_imuts.report_month', '<=', $endMonth)
                 ->whereNull('laporan_imuts.deleted_at')
                 ->selectRaw("
-                DATE_FORMAT(laporan_imuts.assessment_period_start, '%Y-%m') as periode,
+                CONCAT(laporan_imuts.report_year, '-', LPAD(laporan_imuts.report_month, 2, '0')) as periode,
+                laporan_imuts.report_month,
+                laporan_imuts.report_year,
                 SUM(imut_penilaians.numerator_value) as total_num,
                 SUM(imut_penilaians.denominator_value) as total_denum,
                 AVG(imut_profil.target_value) as target")
-                ->groupBy('periode')
-                ->orderBy('periode')
+                ->groupBy('periode', 'laporan_imuts.report_month', 'laporan_imuts.report_year')
+                ->orderBy('laporan_imuts.report_year')
+                ->orderBy('laporan_imuts.report_month')
                 ->get()
         );
 
         $dataNilai = [];
         $dataTarget = [];
 
+        $monthNames = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
         foreach ($penilaianData as $row) {
-            $label = \Carbon\Carbon::parse($row->periode . '-01')->translatedFormat('F Y');
+            $label = $monthNames[$row->report_month] . ' ' . $row->report_year;
             $nilai = $row->total_denum > 0 ? round(($row->total_num / $row->total_denum) * 100, 2) : 0;
             $target = round($row->target, 2);
 
@@ -222,7 +243,7 @@ class ImutDataLineChart extends ApexChartWidget
         ];
 
         if ($showBenchmarking) {
-            $benchmarkKey = CacheKey::imutBenchmarking($year, $regionTypeId);
+            $benchmarkKey = CacheKey::imutBenchmarking($year, $regionTypeId, null, $endMonth);
             $benchmarking = Cache::remember(
                 $benchmarkKey,
                 now()->addMinutes(30),
@@ -230,6 +251,7 @@ class ImutDataLineChart extends ApexChartWidget
                     ->with('regionType:id,type')
                     ->select('year', 'month', 'benchmark_value', 'region_type_id')
                     ->where('year', $year)
+                    ->where('month', '<=', $endMonth)
                     ->when($regionTypeId, fn($q) => $q->whereIn('region_type_id', (array) $regionTypeId))
                     ->get()
             );
@@ -238,7 +260,8 @@ class ImutDataLineChart extends ApexChartWidget
             $regionSeries = [];
 
             foreach ($benchmarkGrouped as $periodeKey => $items) {
-                $label = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey)->translatedFormat('F Y');
+                $date = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey);
+                $label = $monthNames[$date->month] . ' ' . $date->year;
 
                 foreach ($items as $item) {
                     $typeName = $item->regionType->type ?? 'Unknown';

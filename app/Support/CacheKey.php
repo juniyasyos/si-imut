@@ -54,9 +54,9 @@ class CacheKey
         return "imut:benchmarking:{$year}:region:{$regionPart}:imut:{$imutPart}";
     }
 
-    public static function imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId = null): string
+    public static function imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId = null, $endMonth = 12): string
     {
-        return 'imut_penilaian_' . $imutDataId . '_' . $year . ($unitKerjaId ? '_uk_' . $unitKerjaId : '');
+        return 'imut_penilaian_' . $imutDataId . '_' . $year . ($unitKerjaId ? '_uk_' . $unitKerjaId : '') . '_end_month_' . $endMonth;
     }
 
     public static function recentLaporanList(int $limit = 6): string
