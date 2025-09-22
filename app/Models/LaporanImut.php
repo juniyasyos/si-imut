@@ -54,6 +54,8 @@ class LaporanImut extends Model
         'status',
         'assessment_period_start',
         'assessment_period_end',
+        'report_month',
+        'report_year',
         'created_by',
     ];
 
@@ -84,6 +86,8 @@ class LaporanImut extends Model
         'deleted_at' => 'datetime',
         'assessment_period_start' => 'date',
         'assessment_period_end' => 'date',
+        'report_month' => 'integer',
+        'report_year' => 'integer',
     ];
 
     /**
@@ -93,7 +97,31 @@ class LaporanImut extends Model
     {
         static::creating(function (self $laporan): void {
             if (empty($laporan->slug)) {
-                $laporan->slug = Str::slug($laporan->name ?? $laporan->id . '-' . now()->timestamp);
+                // Buat slug dengan periode untuk memastikan unik berdasarkan bulan-tahun
+                $baseSlug = Str::slug($laporan->name ?? 'laporan-imut');
+                $periodSlug = ($laporan->report_year ?? now()->year) . '-' .
+                             str_pad($laporan->report_month ?? now()->month, 2, '0', STR_PAD_LEFT);
+                $laporan->slug = $baseSlug . '-' . $periodSlug;
+            }
+
+            // Auto-fill report_month dan report_year dari assessment_period_start
+            if ($laporan->assessment_period_start) {
+                $date = Carbon::parse($laporan->assessment_period_start);
+                if (empty($laporan->report_month)) {
+                    $laporan->report_month = $date->month;
+                }
+                if (empty($laporan->report_year)) {
+                    $laporan->report_year = $date->year;
+                }
+            }
+        });
+
+        static::updating(function (self $laporan): void {
+            // Auto-update report_month dan report_year jika assessment_period_start berubah
+            if ($laporan->isDirty('assessment_period_start') && $laporan->assessment_period_start) {
+                $date = Carbon::parse($laporan->assessment_period_start);
+                $laporan->report_month = $date->month;
+                $laporan->report_year = $date->year;
             }
         });
 
@@ -184,5 +212,40 @@ class LaporanImut extends Model
         }
 
         return $newStatus;
+    }
+
+    /**
+     * Mendapatkan nama periode yang jelas berdasarkan bulan dan tahun
+     */
+    public function getPeriodNameAttribute(): string
+    {
+        if ($this->report_month && $this->report_year) {
+            $monthNames = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+
+            return $monthNames[$this->report_month] . ' ' . $this->report_year;
+        }
+
+        // Fallback ke format lama
+        return $this->assessment_period_start->translatedFormat('F Y');
+    }
+
+    /**
+     * Scope untuk filter berdasarkan periode tertentu
+     */
+    public function scopeForPeriod($query, int $year, int $month)
+    {
+        return $query->where('report_year', $year)->where('report_month', $month);
+    }
+
+    /**
+     * Scope untuk filter berdasarkan tahun
+     */
+    public function scopeForYear($query, int $year)
+    {
+        return $query->where('report_year', $year);
     }
 }

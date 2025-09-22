@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -26,13 +27,46 @@ class LaporanImutSchema extends LaporanImutResource
                         ->label('Nama Laporan')
                         ->required()
                         ->maxLength(255)
-                        ->unique('laporan_imuts', 'name', ignoreRecord: true)
                         ->columnSpanFull()
                         ->default(function () {
                             $now = Carbon::now();
 
-                            return 'Laporan IMUT Periode ' . $now->translatedFormat('m/Y');
-                        }),
+                            return 'Laporan IMUT Periode ' . $now->translatedFormat('F Y');
+                        })
+                        ->helperText('Nama laporan dapat diubah dan tidak harus unik.'),
+
+                    Grid::make(2)
+                        ->schema([
+                            Select::make('report_month')
+                                ->label('Bulan Laporan')
+                                ->options([
+                                    1 => 'Januari',
+                                    2 => 'Februari',
+                                    3 => 'Maret',
+                                    4 => 'April',
+                                    5 => 'Mei',
+                                    6 => 'Juni',
+                                    7 => 'Juli',
+                                    8 => 'Agustus',
+                                    9 => 'September',
+                                    10 => 'Oktober',
+                                    11 => 'November',
+                                    12 => 'Desember'
+                                ])
+                                ->required()
+                                ->default(now()->month)
+                                ->helperText('Bulan periode laporan ini.'),
+
+                            TextInput::make('report_year')
+                                ->label('Tahun Laporan')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(now()->year + 1)
+                                ->required()
+                                ->default(now()->year)
+                                ->helperText('Tahun periode laporan ini.'),
+                        ]),
+
 
                     DatePicker::make('assessment_period_start')
                         ->label('Dimulainya Periode Asesmen')
@@ -45,6 +79,13 @@ class LaporanImutSchema extends LaporanImutResource
                                 $set('status', 'coming_soon');
                             } else {
                                 $set('status', 'process');
+                            }
+
+                            // Auto-update report_month dan report_year
+                            if ($state) {
+                                $date = Carbon::parse($state);
+                                $set('report_month', $date->month);
+                                $set('report_year', $date->year);
                             }
                         }),
 
