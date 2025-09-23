@@ -4,10 +4,11 @@ namespace App\Filament\Widgets;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
+use App\Services\Chart\UnitKerjaChartDataService;
+use App\Services\Data\DateFormattingService;
 use App\Services\ImutChartSeriesService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
-use Carbon\Carbon;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Fieldset;
@@ -26,6 +27,16 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
 
+    public function getUnitKerjaChartService(): UnitKerjaChartDataService
+    {
+        return app(UnitKerjaChartDataService::class);
+    }
+
+    public function getDateFormattingService(): DateFormattingService
+    {
+        return app(DateFormattingService::class);
+    }
+
     protected function getChartService(): ImutChartSeriesService
     {
         return new ImutChartSeriesService();
@@ -42,20 +53,16 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getHeading(): ?string
     {
-        $user = Auth::user();
-
-        $unitKerja = $user->unitKerjas->first();
-
-        return $unitKerja
-            ? 'Capaian IMUT setiap Kategori Untuk Unit ' . $unitKerja->unit_name
-            : static::$heading;
+        return $this->getUnitKerjaChartService()->generateUnitKerjaHeading();
     }
-
 
     protected function getFormSchema(): array
     {
         $categories = $this->getChartService()->getCategories();
-        $colors = $this->getChartService()->getDefaultColors();
+        $colors = [
+            '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
+            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
+        ];
 
         return [
             Section::make('Konfigurasi Series')
@@ -93,65 +100,72 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $laporans = $this->getCachedLaporans();
-        $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
+        $cacheKey = 'imut_capaian_unit_kerja_' . md5(serialize($this->filters));
 
-        if ($laporans->isEmpty()) {
-            return ApexChartConfig::noDataOptions();
-        }
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () {
+            // Get categories once and pass to service
+            $categories = ImutCategory::all();
+            $laporans = $this->chartDataService->getCachedLaporans();
+            $chartSeries = $this->chartDataService->buildUnitKerjaChartSeries($laporans, $this->filters, $categories);
 
-        $xLabels = $this->generateXLabels($laporans);
-        $series = $this->getChartService()->buildSeries($laporans, $this->filterFormData ?? []);
-
-        return ApexChartConfig::defaultOptions(
-            $series,
-            $xLabels,
-            xLabelTitle: 'IMUT Kategori',
-            yLabelTitle: 'Capaian (%)',
-            showDataLabels: $showdataLabels
-        );
+            return [
+                'chart' => [
+                    'type' => 'line',
+                    'height' => 400,
+                    'toolbar' => [
+                        'show' => false,
+                    ],
+                ],
+                'series' => $chartSeries,
+                'xaxis' => [
+                    'categories' => $this->dateFormattingService->generateTimeLabels(),
+                ],
+                'yaxis' => [
+                    'title' => [
+                        'text' => 'Capaian (%)'
+                    ],
+                    'min' => 0,
+                    'max' => 100,
+                ],
+                'dataLabels' => [
+                    'enabled' => false,
+                ],
+                'stroke' => [
+                    'curve' => 'smooth',
+                    'width' => 3,
+                ],
+                'tooltip' => [
+                    'y' => [
+                        'formatter' => 'function (value) { return value.toFixed(1) + "%"; }',
+                    ],
+                ],
+            ];
+        });
     }
 
     protected function getCachedLaporans()
     {
         $unitKerjaIds = Auth::user()->unitKerjas->pluck('id')->toArray();
 
-        return
-            Cache::remember(
-                CacheKey::imutLaporansForUnitKerjas($unitKerjaIds),
-                now()->addDay(1),
-                fn() => LaporanImut::with([
-                    'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    },
-                    'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
+        return Cache::remember(
+            CacheKey::imutLaporansForUnitKerjas($unitKerjaIds),
+            now()->addDay(1),
+            fn() => LaporanImut::with([
+                'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
+                    $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                },
+                'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
+            ])
+                ->whereHas('laporanUnitKerjas', function ($query) use ($unitKerjaIds) {
+                    $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                })
+                ->where('assessment_period_start', '>=', now()->subMonths(6))
+                ->whereIn('status', [
+                    LaporanImut::STATUS_COMPLETE,
+                    LaporanImut::STATUS_COMINGSOON
                 ])
-                    ->whereHas('laporanUnitKerjas', function ($query) use ($unitKerjaIds) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    })
-                    ->where('assessment_period_start', '>=', now()->subMonths(6))
-                    ->whereIn('status', [
-                        LaporanImut::STATUS_COMPLETE,
-                        LaporanImut::STATUS_COMINGSOON
-                    ])
-                    ->orderBy('assessment_period_start')
-                    ->get()
-            );
-    }
-
-    protected function generateXLabels($laporans): array
-    {
-        return $laporans->map(function ($laporan) {
-            $start = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
-            $end = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
-
-            if (! $start || ! $end) {
-                return 'Tidak diketahui';
-            }
-
-            return $start->month === $end->month
-                ? $start->day . ' - ' . $end->day . ' ' . $start->translatedFormat('F Y')
-                : $start->translatedFormat('j F') . ' - ' . $end->translatedFormat('j F Y');
-        })->toArray();
+                ->orderBy('assessment_period_start')
+                ->get()
+        );
     }
 }
