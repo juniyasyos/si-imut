@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ImutPenilaianResource\Schema;
 
 use App\Filament\Resources\ImutPenilaianResource;
 use App\Models\ImutProfile;
+use App\Services\Form\FormCalculationService;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
@@ -435,14 +436,8 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
 
     protected static function updateResult(callable $set, callable $get): void
     {
-        $numerator = floatval($get('numerator_value') ?? 0);
-        $denominator = floatval($get('denominator_value') ?? 0);
-
-        $result = $denominator > 0
-            ? round(($numerator / $denominator) * 100, 2)
-            : 0;
-
-        $set('result_operation', $result);
+        $formCalculationService = app(FormCalculationService::class);
+        $formCalculationService->updatePenilaianResult($set, $get);
     }
 }
 

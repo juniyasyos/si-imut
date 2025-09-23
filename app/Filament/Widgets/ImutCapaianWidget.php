@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
 use App\Services\ImutChartSeriesService;
+use App\Services\Chart\ChartDataProcessorService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Carbon\Carbon;
@@ -26,6 +27,11 @@ class ImutCapaianWidget extends ApexChartWidget
     protected static ?int $sort = 4;
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
+
+    public function getChartProcessor(): ChartDataProcessorService
+    {
+        return app(ChartDataProcessorService::class);
+    }
 
     protected function getChartService(): ImutChartSeriesService
     {
@@ -76,7 +82,7 @@ class ImutCapaianWidget extends ApexChartWidget
         ];
     }
 
-    protected function getOptions(): array
+    public function getOptions(): array
     {
         $laporans = $this->getCachedLaporans();
         $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
@@ -85,8 +91,13 @@ class ImutCapaianWidget extends ApexChartWidget
             return ApexChartConfig::noDataOptions();
         }
 
-        $xLabels = $this->generateXLabels($laporans);
-        $series = $this->getChartService()->buildSeries($laporans, $this->filterFormData ?? []);
+        // Use service untuk processing data
+        $categories = $this->getChartService()->getCategories();
+        $colors = $this->getChartService()->getDefaultColors();
+
+        $xLabels = $this->getChartProcessor()->generateTimeLabels($laporans);
+        $processedData = $this->getChartProcessor()->processCapaianData($laporans, $categories);
+        $series = $this->getChartProcessor()->buildChartSeries($processedData, $this->filterFormData ?? [], $colors);
 
         return ApexChartConfig::defaultOptions(
             $series,
@@ -110,21 +121,5 @@ class ImutCapaianWidget extends ApexChartWidget
                 ->orderBy('assessment_period_start')
                 ->get()
         );
-    }
-
-    protected function generateXLabels($laporans): array
-    {
-        return $laporans->map(function ($laporan) {
-            $start = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
-            $end = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
-
-            if (! $start || ! $end) {
-                return 'Tidak diketahui';
-            }
-
-            return $start->month === $end->month
-                ? $start->day . ' - ' . $end->day . ' ' . $start->translatedFormat('F Y')
-                : $start->translatedFormat('j F') . ' - ' . $end->translatedFormat('j F Y');
-        })->toArray();
     }
 }
