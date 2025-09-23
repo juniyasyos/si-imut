@@ -64,12 +64,12 @@ class ImutCategoryResource extends Resource implements HasShieldPermissions
 
     public static function getPluralLabel(): ?string
     {
-        return __('filament-forms::imut-category.navigation.plural');
+        return __('filament-forms::imut-category.navigation.label');
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('filament-forms::imut-category.navigation.group');
+        return __('filament-forms::imut-data.navigation.group');
     }
 
     public static function form(Form $form): Form

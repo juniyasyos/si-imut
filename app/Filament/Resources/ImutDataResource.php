@@ -9,12 +9,12 @@ use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationMan
 use App\Filament\Resources\ImutDataResource\Schema\ImutDataSchema;
 use App\Filament\Resources\ImutDataResource\Table\ImutDataTable;
 use App\Models\ImutData;
+use App\Services\Filament\ImutDataFilamentService;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 
 class ImutDataResource extends Resource implements HasShieldPermissions
 {
@@ -28,7 +28,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['title'];
+        return app(ImutDataFilamentService::class)->getGloballySearchableAttributes();
     }
 
     public static function getGlobalSearchResultTitle(Model $record): string
@@ -43,9 +43,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
-        return [
-            __('filament-forms::imut-data.fields.imut_kategori_id') => $record->kategori->category_name ?? '-',
-        ];
+        return app(ImutDataFilamentService::class)->getGlobalSearchResultDetails($record);
     }
 
     public static function getPermissionPrefixes(): array
@@ -101,20 +99,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
 
     public static function getTableQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        $query = static::getModel()::query();
-        $user = \Illuminate\Support\Facades\Auth::user();
-
-        if ($user->can('view_all_data_imut::data')) {
-            return $query;
-        }
-
-        if ($user->can('view_by_unit_kerja_imut::data')) {
-            return $query->whereHas('unitKerja', function ($q) use ($user) {
-                $q->where('unit_kerja_id', $user->unit_kerja_id);
-            });
-        }
-
-        return $query->whereRaw('1 = 0');
+        return app(ImutDataFilamentService::class)->getTableQuery();
     }
 
     public static function getRelations(): array

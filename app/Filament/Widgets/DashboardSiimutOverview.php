@@ -2,10 +2,9 @@
 
 namespace App\Filament\Widgets;
 
-use App\Services\DashboardImutService;
+use App\Services\Filament\Widgets\DashboardWidgetService;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Facades\Auth;
 
 class DashboardSiimutOverview extends BaseWidget
 {
@@ -15,37 +14,21 @@ class DashboardSiimutOverview extends BaseWidget
 
     public static function canView(): bool
     {
-        return Auth::user()?->can('widget_DashboardSiimutOverview');
-    }
-
-    protected function getDashboardService(): DashboardImutService
-    {
-        return app(DashboardImutService::class);
+        return app(DashboardWidgetService::class)->canViewDashboard();
     }
 
     protected function getStats(): array
     {
-        $service = $this->getDashboardService();
-        $data = $service->getAllDashboardData();
+        $service = app(DashboardWidgetService::class);
+        $statsData = $service->getDashboardStats();
 
-        if (($data['totalIndikator'] ?? 0) === 0) {
-            return [
-                Stat::make('📢 Belum Ada Laporan Aktif', '')
-                    ->description('Tidak dapat menampilkan data karena belum ada laporan aktif.')
-                    ->icon('heroicon-o-exclamation-triangle')
-                    ->color('gray'),
-            ];
-        }
-
-        return collect($service->getStatsConfig($data))->map(fn ($config) => Stat::make(
-            $config['label'],
-            $service->formatValue(data_get($data, $config['key']), $config['format'] ?? null)
-        )
-            ->icon($config['icon'] ?? null)
-            ->description($config['description'])
-            ->descriptionIcon($config['descriptionIcon'] ?? null)
-            ->chart($data['chart'][$config['chart']] ?? [])
-            ->color(is_callable($config['color']) ? $config['color']($data) : $config['color'])
-        )->toArray();
+        return collect($statsData)->map(function ($stat) {
+            return Stat::make($stat['label'], $stat['value'])
+                ->icon($stat['icon'] ?? null)
+                ->description($stat['description'])
+                ->descriptionIcon($stat['descriptionIcon'] ?? null)
+                ->chart($stat['chart'] ?? [])
+                ->color($stat['color']);
+        })->toArray();
     }
 }

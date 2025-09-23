@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
+use App\Services\Filament\Widgets\ImutCapaianAllUnitWidgetService;
 use App\Services\ImutChartSeriesService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
@@ -27,20 +28,21 @@ class ImutCapaianWidget extends ApexChartWidget
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
 
-    protected function getChartService(): ImutChartSeriesService
-    {
-        return new ImutChartSeriesService();
+    public function __construct(
+        private ImutCapaianAllUnitWidgetService $widgetService
+    ) {
+        parent::__construct();
     }
 
     public static function canView(): bool
     {
-        return Auth::user()?->can('widget_ImutCapaianWidget');
+        return app(ImutCapaianAllUnitWidgetService::class)->canView();
     }
 
     protected function getFormSchema(): array
     {
-        $categories = $this->getChartService()->getCategories();
-        $colors = $this->getChartService()->getDefaultColors();
+        $categories = $this->widgetService->getCategories();
+        $colors = $this->widgetService->getDefaultColors();
 
         return [
             Section::make('Konfigurasi Series')
@@ -50,7 +52,7 @@ class ImutCapaianWidget extends ApexChartWidget
                         ->default(false)
                         ->reactive(),
                     ...collect($categories)->values()->map(function ($shortName, $i) use ($colors) {
-                        return Fieldset::make($shortName)
+                        return Fieldset::make((string) $shortName)
                             ->schema([
                                 Grid::make()
                                     ->schema([
@@ -78,53 +80,6 @@ class ImutCapaianWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $laporans = $this->getCachedLaporans();
-        $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
-
-        if ($laporans->isEmpty()) {
-            return ApexChartConfig::noDataOptions();
-        }
-
-        $xLabels = $this->generateXLabels($laporans);
-        $series = $this->getChartService()->buildSeries($laporans, $this->filterFormData ?? []);
-
-        return ApexChartConfig::defaultOptions(
-            $series,
-            $xLabels,
-            xLabelTitle: 'IMUT Kategori',
-            yLabelTitle: 'Capaian (%)',
-            showDataLabels: $showdataLabels
-        );
-    }
-
-    protected function getCachedLaporans()
-    {
-        return Cache::remember(
-            CacheKey::imutLaporans(),
-            now()->addMinutes(5),
-            fn() => LaporanImut::with([
-                'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-            ])
-                ->where('assessment_period_start', '>=', now()->subMonths(6))
-                ->where('status', [LaporanImut::STATUS_COMPLETE, LaporanImut::STATUS_COMINGSOON])
-                ->orderBy('assessment_period_start')
-                ->get()
-        );
-    }
-
-    protected function generateXLabels($laporans): array
-    {
-        return $laporans->map(function ($laporan) {
-            $start = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
-            $end = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
-
-            if (! $start || ! $end) {
-                return 'Tidak diketahui';
-            }
-
-            return $start->month === $end->month
-                ? $start->day . ' - ' . $end->day . ' ' . $start->translatedFormat('F Y')
-                : $start->translatedFormat('j F') . ' - ' . $end->translatedFormat('j F Y');
-        })->toArray();
+        return $this->widgetService->getChartOptions($this->filterFormData ?? []);
     }
 }

@@ -9,6 +9,7 @@ use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Models\ImutData;
 use App\Models\User;
+use App\Services\Filament\ImutDataFilamentService;
 use Filament\Tables\Actions\Action as ActionTable;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -31,22 +32,7 @@ class ImutDataTable extends ImutDataResource
 {
     public static function query(): Builder
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
-
-        if ($user->can('view_all_data_imut::data')) {
-            return ImutData::query();
-        }
-
-        if ($user->can('view_by_unit_kerja_imut::data')) {
-            $unitKerjaIds = $user->unitKerjas->pluck('id')->toArray();
-
-            return ImutData::query()
-                ->whereHas('unitKerja', function ($query) use ($unitKerjaIds) {
-                    $query->whereIn('unit_kerja.id', $unitKerjaIds);
-                })->orWhere('created_by', $user->id);
-        }
-
-        return ImutData::query()->whereRaw('1 = 0');
+        return app(ImutDataFilamentService::class)->getTableQuery();
     }
 
     public static function columns(): array
@@ -64,10 +50,8 @@ class ImutDataTable extends ImutDataResource
                 ->badge()
                 ->sortable()
                 ->color(function ($record) {
-                    $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-                    $id = $record->categories->id ?? 0;
-
-                    return $colors[$id % count($colors)];
+                    $categoryId = $record->categories->id ?? 0;
+                    return app(ImutDataFilamentService::class)->getCategoryBadgeColor($categoryId);
                 })
                 ->toggleable(isToggledHiddenByDefault: false),
 
@@ -76,9 +60,7 @@ class ImutDataTable extends ImutDataResource
                 ->translateLabel()
                 ->alignCenter()
                 ->size('xl')
-                ->disabled(fn() => \Illuminate\Support\Facades\Gate::any([
-                    'update_imut::data',
-                ]))
+                ->disabled(fn() => !app(ImutDataFilamentService::class)->canToggleStatus())
                 ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
                 ->sortable(),
 

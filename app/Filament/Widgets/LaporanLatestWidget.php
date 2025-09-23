@@ -2,34 +2,29 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\LaporanImut;
+use App\Services\Filament\Widgets\LaporanWidgetService;
 use Filament\Widgets\Widget;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 class LaporanLatestWidget extends Widget
 {
     protected static string $view = 'filament.widgets.laporan-latest-widget';
 
-    public static function canView(): bool
-    {
-        return Auth::user()?->can('widget_LaporanLatestWidget');
-    }
-
     protected static ?int $sort = 1;
 
     protected int|string|array $columnSpan = 'full';
 
-    public function getLaporan(): ?LaporanImut
+    public static function canView(): bool
     {
-        $today = Carbon::today();
+        return app(LaporanWidgetService::class)->canViewLaporan();
+    }
 
-        return LaporanImut::where('status', LaporanImut::STATUS_PROCESS)
-            ->whereDate('assessment_period_start', '<=', $today)
-            ->whereDate('assessment_period_end', '>=', $today)
-            ->orderByDesc('assessment_period_start')
-            ->first()
+    public function getLaporan()
+    {
+        return app(LaporanWidgetService::class)->getLatestLaporan();
+    }
 
-            ?? LaporanImut::latest('assessment_period_start')->where('status', LaporanImut::STATUS_COMPLETE)->first();
+    public function getLaporanData(): array
+    {
+        return app(LaporanWidgetService::class)->getLaporanWidgetData();
     }
 }

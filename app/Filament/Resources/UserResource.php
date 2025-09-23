@@ -81,22 +81,22 @@ class UserResource extends Resource implements HasShieldPermissions
 
     public static function getGlobalSearchResultImage(Model $record): ?string
     {
-        return $record->profile_photo_url ?? null;
+        return $record->avatar_url;
     }
 
     public static function getLabel(): ?string
     {
-        return __('filament-navigation::navigation.resources.users');
+        return __('filament-forms::user.navigation.title');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('');
+        return __('filament-forms::user.navigation.label');
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('filament-navigation::navigation.group.user_access');
+        return __('filament-forms::user.navigation.group');
     }
 
     public static function form(Form $form): Form

@@ -34,19 +34,20 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['assessment_period'];
+        return ['title'];
     }
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Periode Asesmen' => $record->assessment_period,
+            'User' => $record->user?->name,
+            'Category' => $record->category?->category_name,
         ];
     }
 
     public static function getGlobalSearchResultTitle(Model $record): string
     {
-        return "Laporan {$record->assessment_period}";
+        return $record->title;
     }
 
     public static function getGlobalSearchResultUrl(Model $record): ?string
@@ -81,17 +82,17 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
 
     public static function getLabel(): ?string
     {
-        return __('Laporan IMUT');
+        return __('filament-forms::laporan-imut.navigation.title');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('Daftar Laporan IMUT');
+        return __('filament-forms::laporan-imut.navigation.label');
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('filament-forms::imut-data.navigation.group');
+        return __('filament-forms::laporan-imut.navigation.group');
     }
 
     public static function form(Form $form): Form
@@ -132,7 +133,6 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return parent::getEloquentQuery()
-            ->orderByDesc('assessment_period_start');
+        return LaporanImut::query()->with(['user', 'category']);
     }
 }
