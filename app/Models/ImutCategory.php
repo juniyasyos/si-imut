@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\HasUniqueWithSoftDeletes;
 
 class ImutCategory extends Model
 {
-    use SoftDeletes, LogsActivity, HasFactory;
+    use SoftDeletes, LogsActivity, HasFactory, HasUniqueWithSoftDeletes;
 
     /**
      * Table terkait dengan model ini.
@@ -61,6 +62,19 @@ class ImutCategory extends Model
     public function imutData(): HasMany
     {
         return $this->hasMany(ImutData::class, 'imut_kategori_id');
+    }
+
+    /**
+     * Get validation rules for unique fields with soft deletes
+     *
+     * @param int|null $ignoreId
+     * @return array
+     */
+    public function getUniqueValidationRules(?int $ignoreId = null): array
+    {
+        return [
+            'category_name' => ['required', 'string', 'max:100', $this->uniqueRule('category_name', $ignoreId)],
+        ];
     }
 
     /**

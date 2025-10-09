@@ -17,6 +17,15 @@ Dengan meningkatnya tuntutan transparansi, akuntabilitas, dan efisiensi dalam pe
 
 SIIMUT dirancang untuk membantu rumah sakit dalam:  
 
+## 📚 Analisis Proyek (auto-generated)
+
+Ringkasan analisis struktural dan alur kerja aplikasi disimpan di folder `docs/`:
+
+- `docs/ANALYSIS.md` — ringkasan analisis (gambaran umum, komponen, mapping ke LARS, aspek teknis).
+- `docs/flow.mmd` — diagram alur (Mermaid) yang menggambarkan lifecycle data indikator → laporan → eviden.
+- `docs/module-map.json` — peta modul aplikasi dan kaitannya ke elemen LARS (format JSON).
+
+Silakan lihat file-file tersebut untuk dokumentasi teknis dan peta modul.
 ✅ **Efisiensi & Akurasi** – Digitalisasi pencatatan dan analisis untuk mengurangi kesalahan manual.  
 ✅ **Kepatuhan Standar** – Memastikan standar **KARS & SNARS** melalui pemantauan sistematis.  
 ✅ **Analisis Data** – Laporan real-time dan visualisasi untuk keputusan berbasis bukti.  

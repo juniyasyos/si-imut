@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Jeffgreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
+use App\Traits\HasUniqueWithSoftDeletes;
 
 /**
  * Model User
@@ -67,7 +68,7 @@ use Jeffgreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, TwoFactorAuthenticatable, LogsActivity, SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, TwoFactorAuthenticatable, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -173,5 +174,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getStatusLabelAttribute(): string
     {
         return ucfirst($this->status);
+    }
+
+    /**
+     * Get validation rules for unique fields with soft deletes
+     *
+     * @param int|null $ignoreId
+     * @return array
+     */
+    public function getUniqueValidationRules(?int $ignoreId = null): array
+    {
+        return [
+            'nik' => ['required', 'string', $this->uniqueRule('nik', $ignoreId)],
+            'email' => ['nullable', 'email', $this->uniqueRule('email', $ignoreId)],
+        ];
     }
 }

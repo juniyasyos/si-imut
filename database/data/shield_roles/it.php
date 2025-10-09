@@ -35,13 +35,11 @@ return [
         'restore_folder', 'restore_any_folder', 'replicate_folder', 'reorder_folder',
         'delete_folder', 'delete_any_folder', 'force_delete_folder', 'force_delete_any_folder',
 
-        // Region Benchmarking
+        // Region Benchmarking (Cleaned - removed soft delete permissions)
         'view_region::type::bencmarking', 'view_any_region::type::bencmarking',
         'create_region::type::bencmarking', 'update_region::type::bencmarking',
-        'restore_region::type::bencmarking', 'restore_any_region::type::bencmarking',
         'replicate_region::type::bencmarking', 'reorder_region::type::bencmarking',
         'delete_region::type::bencmarking', 'delete_any_region::type::bencmarking',
-        'force_delete_region::type::bencmarking', 'force_delete_any_region::type::bencmarking',
 
         // Optional (akses penuh entitas unit kerja)
         'view_unit::kerja', 'view_any_unit::kerja',

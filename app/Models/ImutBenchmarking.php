@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -19,7 +18,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $year
  * @property int $month
  * @property float $benchmark_value
- * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\ImutProfile $imutProfile
@@ -29,7 +27,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class ImutBenchmarking extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -53,7 +51,6 @@ class ImutBenchmarking extends Model
     protected $hidden = [
         'created_at',
         'updated_at',
-        'deleted_at',
     ];
 
     /**
@@ -63,9 +60,7 @@ class ImutBenchmarking extends Model
      */
     protected function casts(): array
     {
-        return [
-            'deleted_at' => 'datetime',
-        ];
+        return [];
     }
 
     /**

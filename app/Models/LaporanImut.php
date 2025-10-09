@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\{User, UnitKerja, ImutPenilaian, LaporanUnitKerja};
+use App\Traits\HasUniqueWithSoftDeletes;
 
 /**
  * Class LaporanImut
@@ -33,7 +34,7 @@ use App\Models\{User, UnitKerja, ImutPenilaian, LaporanUnitKerja};
  */
 class LaporanImut extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
     /** @var string Status sedang berlangsung */
     public const STATUS_PROCESS = 'process';
@@ -247,5 +248,21 @@ class LaporanImut extends Model
     public function scopeForYear($query, int $year)
     {
         return $query->where('report_year', $year);
+    }
+
+    /**
+     * Get validation rules for unique fields with soft deletes
+     * Note: LaporanImut now uses period-based uniqueness instead of name
+     *
+     * @param int|null $ignoreId
+     * @return array
+     */
+    public function getUniqueValidationRules(?int $ignoreId = null): array
+    {
+        return [
+            'slug' => ['required', 'string', 'max:255', $this->uniqueRule('slug', $ignoreId)],
+            // Note: name is no longer unique due to migration 2025_09_22_135922
+            // Period uniqueness is handled by database constraint on [report_year, report_month]
+        ];
     }
 }

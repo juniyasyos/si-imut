@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\HasUniqueWithSoftDeletes;
 
 /**
  * Class UnitKerja
@@ -24,7 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class UnitKerja extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
     /**
      * Table name.
@@ -108,5 +109,18 @@ class UnitKerja extends Model
     public function laporanUnitKerjas()
     {
         return $this->hasMany(\App\Models\LaporanUnitKerja::class, 'unit_kerja_id');
+    }
+
+    /**
+     * Get validation rules for unique fields with soft deletes
+     *
+     * @param int|null $ignoreId
+     * @return array
+     */
+    public function getUniqueValidationRules(?int $ignoreId = null): array
+    {
+        return [
+            'unit_name' => ['required', 'string', 'max:100', $this->uniqueRule('unit_name', $ignoreId)],
+        ];
     }
 }

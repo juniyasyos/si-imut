@@ -66,17 +66,13 @@ return [
         'force_delete_any_imut::profile',
         'force_editable_imut::profile',
 
-        // Region Type
+        // Region Type (Cleaned - removed soft delete permissions)
         'view_any_region::type::bencmarking',
         'view_region::type::bencmarking',
         'create_region::type::bencmarking',
         'update_region::type::bencmarking',
         'delete_region::type::bencmarking',
         'delete_any_region::type::bencmarking',
-        'force_delete_region::type::bencmarking',
-        'force_delete_any_region::type::bencmarking',
-        'restore_region::type::bencmarking',
-        'restore_any_region::type::bencmarking',
 
         // Laporan
         'view_laporan::imut',

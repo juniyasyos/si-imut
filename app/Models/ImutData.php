@@ -14,11 +14,12 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\HasUniqueWithSoftDeletes;
 
 class ImutData extends Model
 {
     /** @use HasFactory<\Database\Factories\ImutDataFactory> */
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -158,5 +159,18 @@ class ImutData extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get validation rules for unique fields with soft deletes
+     *
+     * @param int|null $ignoreId
+     * @return array
+     */
+    public function getUniqueValidationRules(?int $ignoreId = null): array
+    {
+        return [
+            'title' => ['required', 'string', 'max:255', $this->uniqueRule('title', $ignoreId)],
+        ];
     }
 }

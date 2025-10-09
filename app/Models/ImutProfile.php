@@ -10,10 +10,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\HasUniqueWithSoftDeletes;
 
 class ImutProfile extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, SoftDeletes, LogsActivity, HasUniqueWithSoftDeletes;
 
     /**
      * The table associated with the model.
@@ -162,5 +163,18 @@ class ImutProfile extends Model
             ->whereHas('laporanUnitKerja', fn($q) => $q->where('laporan_imut_id', $laporanId))
             ->whereNotNull('numerator_value')
             ->whereNotNull('denominator_value');
+    }
+
+    /**
+     * Get validation rules for unique fields with soft deletes
+     *
+     * @param int|null $ignoreId
+     * @return array
+     */
+    public function getUniqueValidationRules(?int $ignoreId = null): array
+    {
+        return [
+            'slug' => ['nullable', 'string', 'max:255', $this->uniqueRule('slug', $ignoreId)],
+        ];
     }
 }
