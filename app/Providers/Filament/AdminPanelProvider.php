@@ -52,6 +52,18 @@ class AdminPanelProvider extends PanelProvider
             }
         } catch (\Exception $e) {
             $this->settings = null;
+            // Log the error for debugging
+            logger()->warning('KaidoSetting could not be loaded: ' . $e->getMessage());
+        }
+    }
+
+    private function getSettingValue(string $key, mixed $default = null): mixed
+    {
+        try {
+            return $this->settings?->{$key} ?? $default;
+        } catch (\Exception $e) {
+            logger()->warning("Setting '{$key}' could not be accessed: " . $e->getMessage());
+            return $default;
         }
     }
 
@@ -63,9 +75,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->when($this->settings->login_enabled ?? true, fn($panel) => $panel->login(Login::class))
-            ->when($this->settings->registration_enabled ?? true, fn($panel) => $panel->registration())
-            ->when($this->settings->password_reset_enabled ?? true, fn($panel) => $panel->passwordReset())
+            ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(Login::class))
+            ->when($this->getSettingValue('registration_enabled', false), fn($panel) => $panel->registration())
+            ->when($this->getSettingValue('password_reset_enabled', true), fn($panel) => $panel->passwordReset())
             // ->emailVerification()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

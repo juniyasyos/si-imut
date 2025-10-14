@@ -41,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerLanguageSwitch();
         $this->registerTranslationNamespaces();
         $this->registerObservers();
+        $this->ensureKaidoSettings();
 
         // Uncomment if you want to force HTTPS in production
         // if (config('app.env') === 'production') {
@@ -115,5 +116,54 @@ class AppServiceProvider extends ServiceProvider
     {
         UnitKerja::observe(UnitKerjaObserver::class);
         Media::observe(MediaObserver::class);
+    }
+
+    /**
+     * Ensure KaidoSetting has all required properties.
+     */
+    protected function ensureKaidoSettings(): void
+    {
+        try {
+            // Only run this in web/console context, not during migrations
+            if (!app()->runningInConsole() || app()->runningUnitTests()) {
+                return;
+            }
+
+            if (!\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                return;
+            }
+
+            $defaultSettings = [
+                'site_name' => 'SIIMUT',
+                'site_active' => true,
+                'registration_enabled' => false,
+                'login_enabled' => true,
+                'password_reset_enabled' => true,
+                'sso_enabled' => false,
+            ];
+
+            $existingSettings = \Illuminate\Support\Facades\DB::table('settings')
+                ->where('group', 'KaidoSetting')
+                ->pluck('name')
+                ->toArray();
+
+            foreach ($defaultSettings as $key => $value) {
+                $settingName = "KaidoSetting.{$key}";
+
+                if (!in_array($settingName, $existingSettings)) {
+                    \Illuminate\Support\Facades\DB::table('settings')->insert([
+                        'group' => 'KaidoSetting',
+                        'name' => $settingName,
+                        'locked' => false,
+                        'payload' => json_encode($value),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Silently handle errors to prevent boot failures
+            logger()->warning('Failed to ensure KaidoSettings: ' . $e->getMessage());
+        }
     }
 }

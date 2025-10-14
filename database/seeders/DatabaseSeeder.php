@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(
             [
+                KaidoSettingSeeder::class,
                 PositionSeeder::class,
                 ShieldSeeder::class,
                 UserSeeder::class,
