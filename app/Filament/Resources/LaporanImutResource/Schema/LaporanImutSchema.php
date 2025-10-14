@@ -172,11 +172,11 @@ class LaporanImutSchema extends LaporanImutResource
     {
         $month = $get('report_month');
         $year = $get('report_year');
-        
+
         if ($month && $year) {
             $monthNames = [
                 1 => 'Januari',
-                2 => 'Februari', 
+                2 => 'Februari',
                 3 => 'Maret',
                 4 => 'April',
                 5 => 'Mei',
@@ -188,10 +188,10 @@ class LaporanImutSchema extends LaporanImutResource
                 11 => 'November',
                 12 => 'Desember'
             ];
-            
+
             $monthName = $monthNames[$month] ?? '';
             $generatedName = "Laporan IMUT {$monthName} {$year}";
-            
+
             $set('name', $generatedName);
         }
     }
