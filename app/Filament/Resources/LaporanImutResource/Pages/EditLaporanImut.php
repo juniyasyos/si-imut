@@ -43,21 +43,21 @@ class EditLaporanImut extends EditRecord
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
             ];
-            
+
             $monthName = $monthNames[$data['report_month']] ?? $data['report_month'];
-            
+
             // Show user-friendly notification instead of debug bar
             Notification::make()
                 ->title('Laporan Periode Sudah Ada')
                 ->body("Laporan untuk periode {$monthName} {$data['report_year']} sudah dibuat dengan nama: \"{$existingReport->name}\"")
                 ->warning()
                 ->persistent()
-                ->actions([
-                    \Filament\Notifications\Actions\Action::make('lihat')
-                        ->label('Lihat Laporan Existing')
-                        ->url(route('filament.admin.resources.laporan-imuts.view', $existingReport->id))
-                        ->button(),
-                ])
+                // ->actions([
+                //     \Filament\Notifications\Actions\Action::make('lihat')
+                //         ->label('Lihat Laporan Existing')
+                //         ->url(route('filament.admin.resources.laporan-imuts.view', $existingReport->id))
+                //         ->button(),
+                // ])
                 ->send();
 
             // Throw validation exception to prevent update
@@ -82,9 +82,9 @@ class EditLaporanImut extends EditRecord
                     5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
                     9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                 ];
-                
+
                 $monthName = $monthNames[$data['report_month']] ?? $data['report_month'];
-                
+
                 // Find existing report to show in notification
                 $existingReport = LaporanImut::where('report_month', $data['report_month'])
                     ->where('report_year', $data['report_year'])
@@ -93,14 +93,14 @@ class EditLaporanImut extends EditRecord
 
                 Notification::make()
                     ->title('Laporan Periode Sudah Ada')
-                    ->body("Laporan untuk periode {$monthName} {$data['report_year']} sudah dibuat" . 
+                    ->body("Laporan untuk periode {$monthName} {$data['report_year']} sudah dibuat" .
                            ($existingReport ? " dengan nama: \"{$existingReport->name}\"" : '.'))
                     ->warning()
                     ->persistent()
                     ->actions([
                         \Filament\Notifications\Actions\Action::make('lihat')
                             ->label('Lihat Laporan Existing')
-                            ->url($existingReport ? 
+                            ->url($existingReport ?
                                 route('filament.admin.resources.laporan-imuts.view', $existingReport->id) :
                                 route('filament.admin.resources.laporan-imuts.index')
                             )

@@ -3,10 +3,8 @@
 namespace App\Filament\Resources\LaporanImutResource\Schema;
 
 use App\Filament\Resources\LaporanImutResource;
-use App\Models\LaporanImut;
 use App\Models\UnitKerja;
 use App\Models\User;
-use App\Rules\UniqueLaporanPeriode;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
@@ -15,10 +13,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Forms\Get;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class LaporanImutSchema extends LaporanImutResource
 {
@@ -28,17 +23,17 @@ class LaporanImutSchema extends LaporanImutResource
             Section::make('Informasi Laporan')
                 ->description('Lengkapi data laporan di bawah ini.')
                 ->schema([
+                    // Auto-generated name - tidak perlu input manual
                     TextInput::make('name')
                         ->label('Nama Laporan')
-                        ->required()
-                        ->maxLength(255)
                         ->columnSpanFull()
+                        ->disabled()
+                        ->dehydrated() // tetap ikut terkirim ke server
                         ->default(function () {
                             $now = Carbon::now();
-
                             return 'Laporan IMUT Periode ' . $now->translatedFormat('F Y');
                         })
-                        ->helperText('Nama laporan dapat diubah dan tidak harus unik.'),
+                        ->helperText('Nama laporan dibuat otomatis berdasarkan periode yang dipilih.'),
 
                     Grid::make(2)
                         ->schema([
@@ -61,38 +56,27 @@ class LaporanImutSchema extends LaporanImutResource
                                 ->required()
                                 ->default(now()->month)
                                 ->reactive()
-                                ->live()
                                 ->afterStateUpdated(function (callable $get, callable $set, $state) {
-                                    static::validateUniquePeriod($get, $set, $state, $get('report_year'));
+                                    static::updateLaporanName($get, $set);
                                 })
-                                ->rules([
-                                    fn (Get $get): UniqueLaporanPeriode => new UniqueLaporanPeriode(
-                                        $get('id'), // ignore current record ID
-                                        $get('report_year'), // pass current year
-                                        null // month will be passed by the rule
-                                    ),
-                                ])
                                 ->helperText('Bulan periode laporan ini.'),
 
-                            TextInput::make('report_year')
+                            Select::make('report_year')
                                 ->label('Tahun Laporan')
-                                ->numeric()
-                                ->minValue(2020)
-                                ->maxValue(now()->year + 1)
+                                ->options(function () {
+                                    $currentYear = now()->year;
+                                    $years = [];
+                                    for ($i = $currentYear - 2; $i <= $currentYear + 2; $i++) {
+                                        $years[$i] = $i;
+                                    }
+                                    return $years;
+                                })
                                 ->required()
                                 ->default(now()->year)
                                 ->reactive()
-                                ->live()
                                 ->afterStateUpdated(function (callable $get, callable $set, $state) {
-                                    static::validateUniquePeriod($get, $set, $get('report_month'), $state);
+                                    static::updateLaporanName($get, $set);
                                 })
-                                ->rules([
-                                    fn (Get $get): UniqueLaporanPeriode => new UniqueLaporanPeriode(
-                                        $get('id'), // ignore current record ID
-                                        null, // year will be passed by the rule
-                                        $get('report_month') // pass current month
-                                    ),
-                                ])
                                 ->helperText('Tahun periode laporan ini.'),
                         ]),
 
@@ -182,46 +166,33 @@ class LaporanImutSchema extends LaporanImutResource
     }
 
     /**
-     * Validate unique period combination of month and year
+     * Auto-generate laporan name based on selected period
      */
-    protected static function validateUniquePeriod(callable $get, callable $set, $month, $year): void
+    private static function updateLaporanName(callable $get, callable $set): void
     {
-        if (!$month || !$year) {
-            return;
-        }
-
-        // Check if combination already exists (excluding current record if editing)
-        $existingReport = LaporanImut::where('report_month', $month)
-            ->where('report_year', $year)
-            ->when($get('id'), function ($query, $id) {
-                return $query->where('id', '!=', $id);
-            })
-            ->first();
-
-        if ($existingReport) {
-            $monthName = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-            ][$month] ?? $month;
-
-            // Show user-friendly notification
-            Notification::make()
-                ->title('Periode Laporan Sudah Ada')
-                ->body("Laporan untuk periode {$monthName} {$year} sudah dibuat dengan nama: \"{$existingReport->name}\"")
-                ->warning()
-                ->persistent()
-                ->actions([
-                    \Filament\Notifications\Actions\Action::make('lihat')
-                        ->label('Lihat Laporan')
-                        ->url(route('filament.admin.resources.laporan-imuts.view', $existingReport->id))
-                        ->button(),
-                ])
-                ->send();
-
-            // Reset to previous valid values or current month/year
-            $set('report_month', now()->month);
-            $set('report_year', now()->year);
+        $month = $get('report_month');
+        $year = $get('report_year');
+        
+        if ($month && $year) {
+            $monthNames = [
+                1 => 'Januari',
+                2 => 'Februari', 
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
+            ];
+            
+            $monthName = $monthNames[$month] ?? '';
+            $generatedName = "Laporan IMUT {$monthName} {$year}";
+            
+            $set('name', $generatedName);
         }
     }
 }
