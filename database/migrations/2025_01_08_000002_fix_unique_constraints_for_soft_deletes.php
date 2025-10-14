@@ -21,91 +21,103 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check and fix ImutKategori unique constraints
-        $indexes = DB::select("SHOW INDEXES FROM imut_kategori WHERE Key_name LIKE '%category_name%'");
-        if (count($indexes) > 0) {
+        // Check and fix ImutKategori unique constraints - only if table exists
+        if (Schema::hasTable('imut_kategori')) {
+            $indexes = DB::select("SHOW INDEXES FROM imut_kategori WHERE Key_name LIKE '%category_name%'");
+            if (count($indexes) > 0) {
+                Schema::table('imut_kategori', function (Blueprint $table) {
+                    $table->dropUnique(['category_name']);
+                });
+            }
+
+            // Create composite unique index that includes deleted_at
             Schema::table('imut_kategori', function (Blueprint $table) {
-                $table->dropUnique(['category_name']);
+                $table->unique(['category_name', 'deleted_at'], 'imut_kategori_name_deleted_unique');
             });
         }
 
-        // Create composite unique index that includes deleted_at
-        Schema::table('imut_kategori', function (Blueprint $table) {
-            $table->unique(['category_name', 'deleted_at'], 'imut_kategori_name_deleted_unique');
-        });
+        // Check and fix ImutData unique constraints - only if table exists
+        if (Schema::hasTable('imut_data')) {
+            $indexes = DB::select("SHOW INDEXES FROM imut_data WHERE Key_name LIKE '%title%'");
+            if (count($indexes) > 0) {
+                Schema::table('imut_data', function (Blueprint $table) {
+                    $table->dropUnique(['title']);
+                });
+            }
 
-        // Check and fix ImutData unique constraints
-        $indexes = DB::select("SHOW INDEXES FROM imut_data WHERE Key_name LIKE '%title%'");
-        if (count($indexes) > 0) {
+            // Create composite unique index that includes deleted_at
             Schema::table('imut_data', function (Blueprint $table) {
-                $table->dropUnique(['title']);
+                $table->unique(['title', 'deleted_at'], 'imut_data_title_deleted_unique');
             });
         }
 
-        // Create composite unique index that includes deleted_at
-        Schema::table('imut_data', function (Blueprint $table) {
-            $table->unique(['title', 'deleted_at'], 'imut_data_title_deleted_unique');
-        });
+        // Check and fix ImutProfil unique constraints - only if table exists
+        if (Schema::hasTable('imut_profil')) {
+            $indexes = DB::select("SHOW INDEXES FROM imut_profil WHERE Key_name LIKE '%slug%'");
+            if (count($indexes) > 0) {
+                Schema::table('imut_profil', function (Blueprint $table) {
+                    $table->dropUnique(['slug']);
+                });
+            }
 
-        // Check and fix ImutProfil unique constraints
-        $indexes = DB::select("SHOW INDEXES FROM imut_profil WHERE Key_name LIKE '%slug%'");
-        if (count($indexes) > 0) {
+            // Create composite unique index that includes deleted_at
             Schema::table('imut_profil', function (Blueprint $table) {
-                $table->dropUnique(['slug']);
+                $table->unique(['slug', 'deleted_at'], 'imut_profil_slug_deleted_unique');
             });
         }
 
-        // Create composite unique index that includes deleted_at
-        Schema::table('imut_profil', function (Blueprint $table) {
-            $table->unique(['slug', 'deleted_at'], 'imut_profil_slug_deleted_unique');
-        });
+        // Check and fix UnitKerja unique constraints - only if table exists
+        if (Schema::hasTable('unit_kerja')) {
+            $indexes = DB::select("SHOW INDEXES FROM unit_kerja WHERE Key_name LIKE '%unit_name%'");
+            if (count($indexes) > 0) {
+                Schema::table('unit_kerja', function (Blueprint $table) {
+                    $table->dropUnique(['unit_name']);
+                });
+            }
 
-        // Check and fix UnitKerja unique constraints
-        $indexes = DB::select("SHOW INDEXES FROM unit_kerja WHERE Key_name LIKE '%unit_name%'");
-        if (count($indexes) > 0) {
+            // Create composite unique index that includes deleted_at
             Schema::table('unit_kerja', function (Blueprint $table) {
-                $table->dropUnique(['unit_name']);
+                $table->unique(['unit_name', 'deleted_at'], 'unit_kerja_name_deleted_unique');
             });
         }
 
-        // Create composite unique index that includes deleted_at
-        Schema::table('unit_kerja', function (Blueprint $table) {
-            $table->unique(['unit_name', 'deleted_at'], 'unit_kerja_name_deleted_unique');
-        });
+        // Check and fix User unique constraints - only if table exists
+        if (Schema::hasTable('users')) {
+            $nikIndexes = DB::select("SHOW INDEXES FROM users WHERE Key_name LIKE '%nik%'");
+            if (count($nikIndexes) > 0) {
+                Schema::table('users', function (Blueprint $table) {
+                    $table->dropUnique(['nik']);
+                });
+            }
 
-        // Check and fix User unique constraints
-        $nikIndexes = DB::select("SHOW INDEXES FROM users WHERE Key_name LIKE '%nik%'");
-        if (count($nikIndexes) > 0) {
+            $emailIndexes = DB::select("SHOW INDEXES FROM users WHERE Key_name LIKE '%email%'");
+            if (count($emailIndexes) > 0) {
+                Schema::table('users', function (Blueprint $table) {
+                    $table->dropUnique(['email']);
+                });
+            }
+
+            // Create composite unique indexes that include deleted_at
             Schema::table('users', function (Blueprint $table) {
-                $table->dropUnique(['nik']);
+                $table->unique(['nik', 'deleted_at'], 'users_nik_deleted_unique');
+                $table->unique(['email', 'deleted_at'], 'users_email_deleted_unique');
             });
         }
 
-        $emailIndexes = DB::select("SHOW INDEXES FROM users WHERE Key_name LIKE '%email%'");
-        if (count($emailIndexes) > 0) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->dropUnique(['email']);
-            });
-        }
+        // Check and fix LaporanImuts unique constraints - only if table exists
+        if (Schema::hasTable('laporan_imuts')) {
+            $indexes = DB::select("SHOW INDEXES FROM laporan_imuts WHERE Key_name LIKE '%slug%'");
+            if (count($indexes) > 0) {
+                Schema::table('laporan_imuts', function (Blueprint $table) {
+                    $table->dropUnique(['slug']);
+                });
+            }
 
-        // Create composite unique indexes that include deleted_at
-        Schema::table('users', function (Blueprint $table) {
-            $table->unique(['nik', 'deleted_at'], 'users_nik_deleted_unique');
-            $table->unique(['email', 'deleted_at'], 'users_email_deleted_unique');
-        });
-
-        // Check and fix LaporanImuts unique constraints
-        $indexes = DB::select("SHOW INDEXES FROM laporan_imuts WHERE Key_name LIKE '%slug%'");
-        if (count($indexes) > 0) {
+            // Create composite unique index that includes deleted_at
             Schema::table('laporan_imuts', function (Blueprint $table) {
-                $table->dropUnique(['slug']);
+                $table->unique(['slug', 'deleted_at'], 'laporan_imuts_slug_deleted_unique');
             });
         }
-
-        // Create composite unique index that includes deleted_at
-        Schema::table('laporan_imuts', function (Blueprint $table) {
-            $table->unique(['slug', 'deleted_at'], 'laporan_imuts_slug_deleted_unique');
-        });
     }
 
     /**
@@ -119,42 +131,54 @@ return new class extends Migration
     {
         // Drop composite unique indexes and restore regular unique constraints
 
-        // ImutKategori
-        Schema::table('imut_kategori', function (Blueprint $table) {
-            $table->dropUnique('imut_kategori_name_deleted_unique');
-            $table->unique('category_name');
-        });
+        // ImutKategori - only if table exists
+        if (Schema::hasTable('imut_kategori')) {
+            Schema::table('imut_kategori', function (Blueprint $table) {
+                $table->dropUnique('imut_kategori_name_deleted_unique');
+                $table->unique('category_name');
+            });
+        }
 
-        // ImutData
-        Schema::table('imut_data', function (Blueprint $table) {
-            $table->dropUnique('imut_data_title_deleted_unique');
-            $table->unique('title');
-        });
+        // ImutData - only if table exists
+        if (Schema::hasTable('imut_data')) {
+            Schema::table('imut_data', function (Blueprint $table) {
+                $table->dropUnique('imut_data_title_deleted_unique');
+                $table->unique('title');
+            });
+        }
 
-        // ImutProfil
-        Schema::table('imut_profil', function (Blueprint $table) {
-            $table->dropUnique('imut_profil_slug_deleted_unique');
-            $table->unique('slug');
-        });
+        // ImutProfil - only if table exists
+        if (Schema::hasTable('imut_profil')) {
+            Schema::table('imut_profil', function (Blueprint $table) {
+                $table->dropUnique('imut_profil_slug_deleted_unique');
+                $table->unique('slug');
+            });
+        }
 
-        // UnitKerja
-        Schema::table('unit_kerja', function (Blueprint $table) {
-            $table->dropUnique('unit_kerja_name_deleted_unique');
-            $table->unique('unit_name');
-        });
+        // UnitKerja - only if table exists
+        if (Schema::hasTable('unit_kerja')) {
+            Schema::table('unit_kerja', function (Blueprint $table) {
+                $table->dropUnique('unit_kerja_name_deleted_unique');
+                $table->unique('unit_name');
+            });
+        }
 
-        // Users
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropUnique('users_nik_deleted_unique');
-            $table->dropUnique('users_email_deleted_unique');
-            $table->unique('nik');
-            $table->unique('email');
-        });
+        // Users - only if table exists
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropUnique('users_nik_deleted_unique');
+                $table->dropUnique('users_email_deleted_unique');
+                $table->unique('nik');
+                $table->unique('email');
+            });
+        }
 
-        // LaporanImuts
-        Schema::table('laporan_imuts', function (Blueprint $table) {
-            $table->dropUnique('laporan_imuts_slug_deleted_unique');
-            $table->unique('slug');
-        });
+        // LaporanImuts - only if table exists
+        if (Schema::hasTable('laporan_imuts')) {
+            Schema::table('laporan_imuts', function (Blueprint $table) {
+                $table->dropUnique('laporan_imuts_slug_deleted_unique');
+                $table->unique('slug');
+            });
+        }
     }
 };
