@@ -115,6 +115,9 @@ class LaporanImut extends Model
                     $laporan->report_year = $date->year;
                 }
             }
+
+            // Validate unique period before creating
+            static::validateUniquePeriod($laporan);
         });
 
         static::updating(function (self $laporan): void {
@@ -123,6 +126,11 @@ class LaporanImut extends Model
                 $date = Carbon::parse($laporan->assessment_period_start);
                 $laporan->report_month = $date->month;
                 $laporan->report_year = $date->year;
+            }
+
+            // Validate unique period before updating if period fields changed
+            if ($laporan->isDirty(['report_month', 'report_year'])) {
+                static::validateUniquePeriod($laporan);
             }
         });
 
@@ -264,5 +272,40 @@ class LaporanImut extends Model
             // Note: name is no longer unique due to migration 2025_09_22_135922
             // Period uniqueness is handled by database constraint on [report_year, report_month]
         ];
+    }
+
+    /**
+     * Validate unique period combination
+     * 
+     * @param LaporanImut $laporan
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected static function validateUniquePeriod(self $laporan): void
+    {
+        $existingQuery = static::where('report_month', $laporan->report_month)
+            ->where('report_year', $laporan->report_year);
+
+        // Exclude current record if updating
+        if ($laporan->exists) {
+            $existingQuery->where('id', '!=', $laporan->id);
+        }
+
+        $existingReport = $existingQuery->first();
+
+        if ($existingReport) {
+            $monthNames = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+
+            $monthName = $monthNames[$laporan->report_month] ?? $laporan->report_month;
+            $message = "Laporan untuk periode {$monthName} {$laporan->report_year} sudah ada dengan nama: \"{$existingReport->name}\"";
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'report_month' => [$message],
+                'report_year' => [$message],
+            ]);
+        }
     }
 }

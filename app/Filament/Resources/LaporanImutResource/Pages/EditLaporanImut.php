@@ -5,11 +5,15 @@ namespace App\Filament\Resources\LaporanImutResource\Pages;
 use App\Filament\Resources\LaporanImutResource;
 use App\Jobs\ProsesPenilaianImut;
 use App\Models\ImutPenilaian;
+use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class EditLaporanImut extends EditRecord
 {
@@ -27,7 +31,92 @@ class EditLaporanImut extends EditRecord
         // Simpan daftar unit_kerja_id sebelum update
         $this->originalUnitKerjaIds = $this->record->unitKerjas->pluck('id')->toArray();
 
+        // Check for existing report with same period before updating (excluding current record)
+        $existingReport = LaporanImut::where('report_month', $data['report_month'])
+            ->where('report_year', $data['report_year'])
+            ->where('id', '!=', $this->record->id)
+            ->first();
+
+        if ($existingReport) {
+            $monthNames = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            
+            $monthName = $monthNames[$data['report_month']] ?? $data['report_month'];
+            
+            // Show user-friendly notification instead of debug bar
+            Notification::make()
+                ->title('Laporan Periode Sudah Ada')
+                ->body("Laporan untuk periode {$monthName} {$data['report_year']} sudah dibuat dengan nama: \"{$existingReport->name}\"")
+                ->warning()
+                ->persistent()
+                ->actions([
+                    \Filament\Notifications\Actions\Action::make('lihat')
+                        ->label('Lihat Laporan Existing')
+                        ->url(route('filament.admin.resources.laporan-imuts.view', $existingReport->id))
+                        ->button(),
+                ])
+                ->send();
+
+            // Throw validation exception to prevent update
+            throw ValidationException::withMessages([
+                'report_month' => "Laporan untuk periode {$monthName} {$data['report_year']} sudah ada.",
+                'report_year' => "Laporan untuk periode {$monthName} {$data['report_year']} sudah ada.",
+            ]);
+        }
+
         return $data;
+    }
+
+    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    {
+        try {
+            return parent::handleRecordUpdate($record, $data);
+        } catch (QueryException $e) {
+            // Handle duplicate entry error specifically
+            if ($e->getCode() === '23000' && strpos($e->getMessage(), 'unique_periode_laporan') !== false) {
+                $monthNames = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+                
+                $monthName = $monthNames[$data['report_month']] ?? $data['report_month'];
+                
+                // Find existing report to show in notification
+                $existingReport = LaporanImut::where('report_month', $data['report_month'])
+                    ->where('report_year', $data['report_year'])
+                    ->where('id', '!=', $record->id)
+                    ->first();
+
+                Notification::make()
+                    ->title('Laporan Periode Sudah Ada')
+                    ->body("Laporan untuk periode {$monthName} {$data['report_year']} sudah dibuat" . 
+                           ($existingReport ? " dengan nama: \"{$existingReport->name}\"" : '.'))
+                    ->warning()
+                    ->persistent()
+                    ->actions([
+                        \Filament\Notifications\Actions\Action::make('lihat')
+                            ->label('Lihat Laporan Existing')
+                            ->url($existingReport ? 
+                                route('filament.admin.resources.laporan-imuts.view', $existingReport->id) :
+                                route('filament.admin.resources.laporan-imuts.index')
+                            )
+                            ->button(),
+                    ])
+                    ->send();
+
+                throw ValidationException::withMessages([
+                    'report_month' => "Laporan untuk periode {$monthName} {$data['report_year']} sudah ada.",
+                    'report_year' => "Laporan untuk periode {$monthName} {$data['report_year']} sudah ada.",
+                ]);
+            }
+
+            // Re-throw other exceptions
+            throw $e;
+        }
     }
 
     public function getRedirectUrl(): string

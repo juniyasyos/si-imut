@@ -16,5 +16,33 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\Bepsvpt\SecureHeaders\SecureHeadersMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
+            // Handle integrity constraint violations (duplicate entries)
+            if ($e->getCode() === '23000' && 
+                (strpos($e->getMessage(), 'unique_periode_laporan') !== false ||
+                 strpos($e->getMessage(), 'Duplicate entry') !== false)) {
+                
+                // Extract error details
+                $isDuplicatePeriod = strpos($e->getMessage(), 'unique_periode_laporan') !== false;
+                
+                if ($isDuplicatePeriod && $request->wantsJson()) {
+                    return response()->json([
+                        'message' => 'Laporan untuk periode tersebut sudah ada',
+                        'errors' => [
+                            'report_month' => ['Laporan untuk periode ini sudah dibuat sebelumnya'],
+                            'report_year' => ['Laporan untuk periode ini sudah dibuat sebelumnya'],
+                        ]
+                    ], 422);
+                }
+                
+                if ($isDuplicatePeriod) {
+                    // For web requests, let Filament handle with custom error handling we've added
+                    // This prevents debug bar from showing
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'report_month' => ['Laporan untuk periode ini sudah dibuat sebelumnya'],
+                        'report_year' => ['Laporan untuk periode ini sudah dibuat sebelumnya'],
+                    ]);
+                }
+            }
+        });
     })->create();
