@@ -151,6 +151,52 @@ class ImutData extends Model
         return $this->hasOne(ImutProfile::class)->latestOfMany('version');
     }
 
+    /**
+     * Dapatkan profil yang valid pada tanggal tertentu
+     */
+    public function profileValidOnDate($date)
+    {
+        return $this->hasOne(ImutProfile::class)
+                    ->validOnDate($date)
+                    ->latestOfMany('version');
+    }
+
+    /**
+     * Dapatkan profil yang valid untuk periode laporan
+     */
+    public function profileValidForPeriod($startDate, $endDate)
+    {
+        return $this->hasOne(ImutProfile::class)
+                    ->validForPeriod($startDate, $endDate)
+                    ->latestOfMany('version');
+    }
+
+    /**
+     * Dapatkan profil yang tepat untuk laporan tertentu
+     * Pertama cek apakah sudah ada profil yang dipilih khusus untuk laporan ini
+     * Jika tidak ada, ambil profil yang valid untuk periode laporan
+     */
+    public function profileForLaporan($laporanImut)
+    {
+        // Cek apakah sudah ada profil yang dipilih khusus untuk laporan ini
+        $selectedProfile = LaporanImutProfile::where('laporan_imut_id', $laporanImut->id)
+                                           ->where('imut_data_id', $this->id)
+                                           ->with('imutProfile')
+                                           ->first();
+
+        if ($selectedProfile) {
+            return $selectedProfile->imutProfile;
+        }
+
+        // Jika tidak ada, ambil profil yang valid untuk periode laporan
+        $profileRelation = $this->profileValidForPeriod(
+            $laporanImut->assessment_period_start,
+            $laporanImut->assessment_period_end
+        );
+
+        return $profileRelation->first();
+    }
+
     public function profileById($profileId): HasOne
     {
         return $this->hasOne(ImutProfile::class)->where('id', $profileId);

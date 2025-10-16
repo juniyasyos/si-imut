@@ -32,6 +32,8 @@ class ImutProfile extends Model
         'slug',
         'imut_data_id',
         'version',
+        'valid_from',
+        'valid_until',
         'rationale',
         'quality_dimension',
         'objective',
@@ -56,6 +58,16 @@ class ImutProfile extends Model
         'responsible_person',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'valid_from' => 'date',
+        'valid_until' => 'date',
+        'start_period' => 'date',
+        'end_period' => 'date',
+    ];
+
     protected static function boot()
     {
         parent::boot();
@@ -63,6 +75,11 @@ class ImutProfile extends Model
         static::saving(function ($model) {
             if ($model->isDirty('version') || empty($model->slug)) {
                 $model->slug = $model->generateSlug($model->version);
+            }
+
+            // Auto-set valid_from jika belum diset
+            if (empty($model->valid_from)) {
+                $model->valid_from = now()->toDateString();
             }
         });
     }
@@ -87,6 +104,82 @@ class ImutProfile extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    /**
+     * Cek apakah profil valid pada tanggal tertentu
+     */
+    public function isValidOnDate($date): bool
+    {
+        $checkDate = is_string($date) ? \Carbon\Carbon::parse($date) : $date;
+
+        // Harus sudah mulai berlaku
+        if ($this->valid_from && $checkDate->lt($this->valid_from)) {
+            return false;
+        }
+
+        // Jika ada tanggal berakhir, harus belum berakhir
+        if ($this->valid_until && $checkDate->gt($this->valid_until)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Cek apakah profil valid pada periode tertentu
+     */
+    public function isValidForPeriod($startDate, $endDate): bool
+    {
+        $start = is_string($startDate) ? \Carbon\Carbon::parse($startDate) : $startDate;
+        $end = is_string($endDate) ? \Carbon\Carbon::parse($endDate) : $endDate;
+
+        // Profil harus berlaku sebelum atau pada akhir periode
+        if ($this->valid_from && $this->valid_from->gt($end)) {
+            return false;
+        }
+
+        // Profil harus belum berakhir sebelum atau pada awal periode
+        if ($this->valid_until && $this->valid_until->lt($start)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Scope untuk profil yang valid pada tanggal tertentu
+     */
+    public function scopeValidOnDate($query, $date)
+    {
+        $checkDate = is_string($date) ? \Carbon\Carbon::parse($date)->toDateString() : $date->toDateString();
+
+        return $query->where(function($q) use ($checkDate) {
+                        $q->whereNull('valid_from')
+                          ->orWhere('valid_from', '<=', $checkDate);
+                    })
+                    ->where(function($q) use ($checkDate) {
+                        $q->whereNull('valid_until')
+                          ->orWhere('valid_until', '>=', $checkDate);
+                    });
+    }    /**
+     * Scope untuk profil yang valid pada periode tertentu
+     */
+    public function scopeValidForPeriod($query, $startDate, $endDate)
+    {
+        $start = is_string($startDate) ? \Carbon\Carbon::parse($startDate)->startOfDay() : $startDate;
+        $end = is_string($endDate) ? \Carbon\Carbon::parse($endDate)->endOfDay() : $endDate;
+
+        return $query->where(function($q) use ($end) {
+                        // Profil harus sudah mulai berlaku sebelum atau pada akhir periode
+                        $q->whereNull('valid_from')
+                          ->orWhere('valid_from', '<=', $end->toDateString());
+                    })
+                    ->where(function($q) use ($start) {
+                        // Profil harus belum berakhir setelah atau pada awal periode
+                        $q->whereNull('valid_until')
+                          ->orWhere('valid_until', '>=', $start->toDateString());
+                    });
     }
 
     /**

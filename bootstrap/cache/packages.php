@@ -173,13 +173,6 @@
       0 => 'Filament\\Tables\\TablesServiceProvider',
     ),
   ),
-  'filament/upgrade' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Filament\\Upgrade\\UpgradeServiceProvider',
-    ),
-  ),
   'filament/widgets' => 
   array (
     'providers' => 

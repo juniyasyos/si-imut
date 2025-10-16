@@ -202,6 +202,27 @@ class LaporanImut extends Model
     }
 
     /**
+     * Relasi ke profil yang digunakan dalam laporan ini
+     */
+    public function selectedProfiles(): HasMany
+    {
+        return $this->hasMany(LaporanImutProfile::class);
+    }
+
+    /**
+     * Dapatkan profil yang dipilih untuk imut data tertentu
+     */
+    public function getSelectedProfileFor($imutDataId): ?ImutProfile
+    {
+        $selectedProfile = $this->selectedProfiles()
+                               ->where('imut_data_id', $imutDataId)
+                               ->with('imutProfile')
+                               ->first();
+
+        return $selectedProfile?->imutProfile;
+    }
+
+    /**
      * Accessor otomatis update status menjadi sesuai dengan kasus real
      */
     public function getStatusAttribute(string $value): string
@@ -276,7 +297,7 @@ class LaporanImut extends Model
 
     /**
      * Validate unique period combination
-     * 
+     *
      * @param LaporanImut $laporan
      * @throws \Illuminate\Validation\ValidationException
      */
