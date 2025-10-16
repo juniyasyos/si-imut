@@ -24,8 +24,9 @@ describe('ImutData Model', function () {
 
         expect($model->getFillable())->toMatchArray([
             'title',
-            'imut_kategori_id',
             'slug',
+            'imut_kategori_id',
+            'description',
             'status',
             'created_by',
         ]);

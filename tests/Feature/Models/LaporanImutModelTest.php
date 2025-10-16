@@ -22,6 +22,8 @@ describe('LaporanImut Model', function () {
             'status',
             'assessment_period_start',
             'assessment_period_end',
+            'report_month',
+            'report_year',
             'created_by',
         ]);
     });
@@ -49,9 +51,11 @@ describe('LaporanImut Model', function () {
         $model = LaporanImut::factory()->create([
             'name' => 'Evaluasi Tahunan',
             'slug' => null,
+            'report_month' => 10,
+            'report_year' => 2025,
         ]);
 
-        expect($model->slug)->toBe(Str::slug('Evaluasi Tahunan'));
+        expect($model->slug)->toBe('evaluasi-tahunan-2025-10');
     });
 
     it('belongs to createdBy (User)', function () {

@@ -166,9 +166,10 @@ class ImutData extends Model
      */
     public function profileValidForPeriod($startDate, $endDate)
     {
-        return $this->hasOne(ImutProfile::class)
+        return $this->profiles()
                     ->validForPeriod($startDate, $endDate)
-                    ->latestOfMany('version');
+                    ->orderBy('version', 'desc')
+                    ->first();
     }
 
     /**
@@ -189,12 +190,10 @@ class ImutData extends Model
         }
 
         // Jika tidak ada, ambil profil yang valid untuk periode laporan
-        $profileRelation = $this->profileValidForPeriod(
+        return $this->profileValidForPeriod(
             $laporanImut->assessment_period_start,
             $laporanImut->assessment_period_end
         );
-
-        return $profileRelation->first();
     }
 
     public function profileById($profileId): HasOne

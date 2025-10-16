@@ -15,6 +15,10 @@ beforeEach(function () {
     $this->user = User::factory()->create();
     $this->laporan = LaporanImut::factory()->create([
         'created_by' => $this->user->id,
+        'assessment_period_start' => '2024-10-01',
+        'assessment_period_end' => '2024-10-31',
+        'report_month' => 10,
+        'report_year' => 2024,
     ]);
 });
 
@@ -26,10 +30,10 @@ test('imut penilaian hanya dibuat untuk imut data yang aktif', function () {
     $unit->users()->attach($this->user);
     $this->laporan->unitKerjas()->attach($unit);
 
-    // ✅ Imut aktif
+    // ✅ Imut aktif dengan profil yang valid untuk periode laporan
     $imutAktif = ImutData::factory()->create(['status' => true]);
     $unit->imutData()->attach($imutAktif);
-    $profilAktif = ImutProfile::factory()->create([
+    $profilAktif = ImutProfile::factory()->validForPeriod('2024-10-01', '2024-10-31')->create([
         'imut_data_id' => $imutAktif->id,
         'version' => 1,
     ]);
@@ -37,7 +41,7 @@ test('imut penilaian hanya dibuat untuk imut data yang aktif', function () {
     // ❌ Imut tidak aktif
     $imutNonAktif = ImutData::factory()->create(['status' => false]);
     $unit->imutData()->attach($imutNonAktif);
-    $profilNonAktif = ImutProfile::factory()->create([
+    $profilNonAktif = ImutProfile::factory()->validForPeriod('2024-10-01', '2024-10-31')->create([
         'imut_data_id' => $imutNonAktif->id,
         'version' => 1,
     ]);
@@ -90,12 +94,12 @@ test('profile versi terbaru yang dipilih', function () {
     $imut = ImutData::factory()->create(['status' => true]);
     $unit->imutData()->attach($imut);
 
-    ImutProfile::factory()->create([
+    ImutProfile::factory()->validForPeriod('2024-10-01', '2024-10-31')->create([
         'imut_data_id' => $imut->id,
         'version' => 1,
     ]);
 
-    $latest = ImutProfile::factory()->create([
+    $latest = ImutProfile::factory()->validForPeriod('2024-10-01', '2024-10-31')->create([
         'imut_data_id' => $imut->id,
         'version' => 2,
     ]);
@@ -116,10 +120,10 @@ test('hanya imut aktif yang punya profile yang dinilai', function () {
     $unit = UnitKerja::factory()->create();
     $this->laporan->unitKerjas()->attach($unit);
 
-    // ✅ Imut aktif & punya profil
+    // ✅ Imut aktif & punya profil yang valid
     $imut1 = ImutData::factory()->create(['status' => true]);
     $unit->imutData()->attach($imut1);
-    $profil1 = ImutProfile::factory()->create([
+    $profil1 = ImutProfile::factory()->validForPeriod('2024-10-01', '2024-10-31')->create([
         'imut_data_id' => $imut1->id,
         'version' => 1,
     ]);
@@ -132,7 +136,7 @@ test('hanya imut aktif yang punya profile yang dinilai', function () {
     // ❌ Imut tidak aktif, tapi punya profil
     $imut3 = ImutData::factory()->create(['status' => false]);
     $unit->imutData()->attach($imut3);
-    ImutProfile::factory()->create([
+    ImutProfile::factory()->validForPeriod('2024-10-01', '2024-10-31')->create([
         'imut_data_id' => $imut3->id,
         'version' => 1,
     ]);

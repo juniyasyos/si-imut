@@ -15,6 +15,8 @@ class ImutProfileFactory extends Factory
         return [
             'version' => $this->faker->word(),
             'imut_data_id' => ImutData::factory(),
+            'valid_from' => $this->faker->dateTimeBetween('-1 year', 'now')->format('Y-m-d'),
+            'valid_until' => null, // Most profiles are valid indefinitely
             'rationale' => $this->faker->paragraph(),
             'quality_dimension' => $this->faker->word(),
             'objective' => $this->faker->sentence(),
@@ -36,5 +38,31 @@ class ImutProfileFactory extends Factory
             'data_collection_tool' => $this->faker->paragraph(),
             'responsible_person' => $this->faker->name(),
         ];
+    }
+
+    /**
+     * Create a profile that is valid for a specific period
+     */
+    public function validForPeriod($startDate, $endDate = null)
+    {
+        return $this->state(function (array $attributes) use ($startDate, $endDate) {
+            return [
+                'valid_from' => is_string($startDate) ? $startDate : $startDate->format('Y-m-d'),
+                'valid_until' => $endDate ? (is_string($endDate) ? $endDate : $endDate->format('Y-m-d')) : null,
+            ];
+        });
+    }
+
+    /**
+     * Create a profile that is valid from a specific date
+     */
+    public function validFrom($date)
+    {
+        return $this->state(function (array $attributes) use ($date) {
+            return [
+                'valid_from' => is_string($date) ? $date : $date->format('Y-m-d'),
+                'valid_until' => null,
+            ];
+        });
     }
 }
