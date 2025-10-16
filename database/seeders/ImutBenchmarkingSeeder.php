@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Traits\ImutInitializer;
-use App\Models\ImutData;
-use App\Models\ImutBenchmarking;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutBenchmarking;
 use App\Models\RegionType;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
@@ -17,7 +17,7 @@ class ImutBenchmarkingSeeder extends Seeder
     {
         $this->initImut();
         $regions = RegionType::all();
-        $laporans = \App\Models\LaporanImut::all();
+        $laporans = \App\Domains\Reporting\Models\LaporanImut::all();
 
         ImutData::whereHas('categories', fn($q) => $q->where('is_benchmark_category', true))
             ->get()

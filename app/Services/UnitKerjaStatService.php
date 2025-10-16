@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\ImutPenilaian;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use Illuminate\Support\Facades\Auth;
 
 class UnitKerjaStatService

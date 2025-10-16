@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\LaporanImutResource\Schema;
 
 use App\Filament\Resources\LaporanImutResource;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;

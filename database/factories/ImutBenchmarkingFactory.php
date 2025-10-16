@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ImutBenchmarking;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutBenchmarking;
+use App\Domains\Imut\Models\ImutData;
 use App\Models\RegionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

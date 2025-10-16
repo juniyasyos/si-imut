@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\ImutBenchmarking;
-use App\Models\ImutCategory;
-use App\Models\ImutData;
-use App\Models\ImutPenilaian;
-use App\Models\ImutProfile;
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutBenchmarking;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Imut\Models\ImutProfile;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use App\Models\RegionType;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
 use Faker\Factory as Faker;

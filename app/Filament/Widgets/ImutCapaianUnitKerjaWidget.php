@@ -2,11 +2,11 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\ImutCategory;
-use App\Models\LaporanImut;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Reporting\Models\LaporanImut;
 use App\Services\Chart\UnitKerjaChartDataService;
 use App\Services\Data\DateFormattingService;
-use App\Services\ImutChartSeriesService;
+use App\Domains\Imut\Services\ImutChartSeriesService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;

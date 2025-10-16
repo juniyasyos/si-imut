@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\ImutCategoryResource\Tables;
 
 use App\Filament\Resources\ImutCategoryResource;
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutCategory;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;

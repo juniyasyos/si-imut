@@ -2,14 +2,16 @@
 
 namespace Database\Factories;
 
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ImutProfile>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Imut\Models\ImutProfile>
  */
 class ImutProfileFactory extends Factory
 {
+    protected $model = \App\Domains\Imut\Models\ImutProfile::class;
+
     public function definition(): array
     {
         return [

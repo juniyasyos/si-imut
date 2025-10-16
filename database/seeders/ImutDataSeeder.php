@@ -3,8 +3,8 @@
 namespace Database\seeders;
 
 use App\Traits\ImutInitializer;
-use App\Models\ImutCategory;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\ImutDataResource\Widgets;
 
-use App\Models\ImutBenchmarking;
-use App\Models\ImutData;
-use App\Models\LaporanImut;
+use App\Domains\Imut\Models\ImutBenchmarking;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Reporting\Models\LaporanImut;
 use App\Models\RegionType;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;

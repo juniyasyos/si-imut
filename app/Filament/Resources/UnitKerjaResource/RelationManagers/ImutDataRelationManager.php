@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\UnitKerjaResource\RelationManagers;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Resources\RelationManagers\RelationManager;

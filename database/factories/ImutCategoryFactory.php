@@ -6,10 +6,12 @@ use App\Models\RegionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ImutCategory>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Imut\Models\ImutCategory>
  */
 class ImutCategoryFactory extends Factory
 {
+    protected $model = \App\Domains\Imut\Models\ImutCategory::class;
+
     /**
      * Define the model's default state.
      *

@@ -3,12 +3,14 @@
 
 namespace Database\Factories;
 
-use App\Models\LaporanImut;
-use App\Models\UnitKerja;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Organization\Models\UnitKerja;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class LaporanUnitKerjaFactory extends Factory
 {
+    protected $model = \App\Domains\Reporting\Models\LaporanUnitKerja::class;
+
     public function definition(): array
     {
         return [

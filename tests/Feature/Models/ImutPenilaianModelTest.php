@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\ImutPenilaian;
-use App\Models\ImutProfile;
-use App\Models\LaporanUnitKerja;
-use App\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Imut\Models\ImutProfile;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

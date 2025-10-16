@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use App\Repositories\Interfaces\UnitKerjaFolderRepositoryInterface;
 use Illuminate\Support\Facades\Auth;

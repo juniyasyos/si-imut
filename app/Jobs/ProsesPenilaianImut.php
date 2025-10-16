@@ -4,9 +4,9 @@ namespace App\Jobs;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\LaporanImutResource;
-use App\Models\ImutPenilaian;
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;

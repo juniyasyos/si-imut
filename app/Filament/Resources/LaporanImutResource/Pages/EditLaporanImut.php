@@ -4,9 +4,9 @@ namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Filament\Resources\LaporanImutResource;
 use App\Jobs\ProsesPenilaianImut;
-use App\Models\ImutPenilaian;
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -23,7 +23,7 @@ class EditLaporanImut extends EditRecord
 
     protected function resolveRecord(int|string $key): \Illuminate\Database\Eloquent\Model
     {
-        return \App\Models\LaporanImut::where('slug', $key)->firstOrFail();
+        return \App\Domains\Reporting\Models\LaporanImut::where('slug', $key)->firstOrFail();
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
@@ -141,7 +141,7 @@ class EditLaporanImut extends EditRecord
                 ->label('Summary IMUT Data')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->color('primary')
-                ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForImutData($record->id))
+                ->url(fn($record) => \App\Domains\Reporting\Services\LaporanRedirectService::getRedirectUrlForImutData($record->id))
                 ->disabled(fn($record) => is_null($record->imutPenilaians))
                 ->visible(fn() => Gate::any([
                     'view_imut_data_report_laporan::imut',
@@ -152,7 +152,7 @@ class EditLaporanImut extends EditRecord
                 ->label('Summary Unit Kerja')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->color('success')
-                ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
+                ->url(fn($record) => \App\Domains\Reporting\Services\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
 
                 ->visible(fn() => Gate::any([
                     'view_unit_kerja_report_laporan::imut',

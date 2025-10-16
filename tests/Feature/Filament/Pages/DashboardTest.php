@@ -101,16 +101,16 @@ class DashboardTest extends TestCase
         // Create minimal test data that widgets might need
         // This prevents widgets from failing due to missing relationships
 
-        if (class_exists('App\Models\ImutCategory')) {
-            \App\Models\ImutCategory::factory()->create([
+        if (class_exists('App\Domains\Imut\Models\ImutCategory')) {
+            \App\Domains\Imut\Models\ImutCategory::factory()->create([
                 'category_name' => 'Test Category',
                 'short_name' => 'TEST',
                 'is_use_global' => true,
             ]);
         }
 
-        if (class_exists('App\Models\UnitKerja')) {
-            \App\Models\UnitKerja::factory()->create([
+        if (class_exists('App\Domains\Organization\Models\UnitKerja')) {
+            \App\Domains\Organization\Models\UnitKerja::factory()->create([
                 'unit_name' => 'Test Unit',
                 'description' => 'Test Unit Description',
             ]);

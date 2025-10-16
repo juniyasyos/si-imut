@@ -2,7 +2,7 @@
 
 namespace App\Filament\Exports;
 
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;

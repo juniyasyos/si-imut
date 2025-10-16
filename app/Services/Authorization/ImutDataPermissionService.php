@@ -66,7 +66,7 @@ class ImutDataPermissionService
      */
     public function getAvailableImutCategories(): \Illuminate\Database\Eloquent\Collection
     {
-        $query = \App\Models\ImutCategory::query();
+        $query = \App\Domains\Imut\Models\ImutCategory::query();
 
         if (!$this->canManageImutCategories()) {
             $query->where('is_use_global', true);

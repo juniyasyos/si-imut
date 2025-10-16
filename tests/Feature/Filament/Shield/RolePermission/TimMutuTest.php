@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

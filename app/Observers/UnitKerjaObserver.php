@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Repositories\Interfaces\UnitKerjaFolderRepositoryInterface;
 use Illuminate\Support\Facades\Log;
 use Throwable;

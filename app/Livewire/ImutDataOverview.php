@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;

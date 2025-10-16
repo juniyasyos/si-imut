@@ -6,10 +6,12 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LaporanImut>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Reporting\Models\LaporanImut>
  */
 class LaporanImutFactory extends Factory
 {
+    protected $model = \App\Domains\Reporting\Models\LaporanImut::class;
+
     /**
      * Define the model's default state.
      *

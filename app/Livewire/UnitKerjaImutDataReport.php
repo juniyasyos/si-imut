@@ -3,9 +3,9 @@
 namespace App\Livewire;
 
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
-use App\Models\ImutCategory;
-use App\Models\LaporanUnitKerja;
-use App\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -172,7 +172,7 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
                     ->icon('heroicon-o-pencil-square')
                     ->color('info')
                     ->url(function ($record) {
-                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+                        $laporanSlug = \App\Domains\Reporting\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
 
                         return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
                             'laporanSlug' => $laporanSlug,
@@ -181,7 +181,7 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
                     }),
             ])
             ->recordUrl(function ($record) {
-                $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+                $laporanSlug = \App\Domains\Reporting\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
 
                 return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
                     'laporanSlug' => $laporanSlug,

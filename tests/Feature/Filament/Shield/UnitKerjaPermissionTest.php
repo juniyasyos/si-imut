@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;

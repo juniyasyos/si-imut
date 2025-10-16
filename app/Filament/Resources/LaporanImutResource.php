@@ -9,7 +9,7 @@ use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaReport;
 use App\Filament\Resources\LaporanImutResource\Schema\LaporanImutSchema;
 use App\Filament\Resources\LaporanImutResource\Table\LaporanImutTable;
-use App\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanImut;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;

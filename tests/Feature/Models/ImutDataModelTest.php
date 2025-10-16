@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\ImutBenchmarking;
-use App\Models\ImutCategory;
-use App\Models\ImutData;
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutBenchmarking;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutProfile;
 use App\Models\RegionType;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;

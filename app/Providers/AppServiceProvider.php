@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
-use App\Models\UnitKerja;
+use App\Domains\Imut\Events\ImutPenilaianSubmitted;
+use App\Domains\Imut\Listeners\InvalidateImutCache;
+use App\Domains\Organization\Models\UnitKerja;
+use App\Domains\Reporting\Events\LaporanGenerated;
+use App\Domains\Reporting\Listeners\InvalidateLaporanCache;
 use App\Observers\MediaObserver;
 use App\Observers\UnitKerjaObserver;
 use BezhanSalleh\FilamentLanguageSwitch\Enums\Placement;
@@ -41,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerLanguageSwitch();
         $this->registerTranslationNamespaces();
         $this->registerObservers();
+        $this->registerDomainEventListeners();
         $this->ensureKaidoSettings();
 
         // Uncomment if you want to force HTTPS in production
@@ -54,15 +59,35 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerModelPolicies(): void
     {
-        collect(glob(app_path('Models').'/*.php'))
+        $mappings = collect(glob(app_path('Models') . '/*.php'))
             ->map(fn ($file) => [
-                'model' => 'App\\Models\\'.pathinfo($file, PATHINFO_FILENAME),
-                'policy' => 'App\\Policies\\'.pathinfo($file, PATHINFO_FILENAME).'Policy',
-            ])
-            ->each(fn ($item) => class_exists($item['model']) && class_exists($item['policy'])
-                ? Gate::policy($item['model'], $item['policy'])
-                : null
-            );
+                'model' => 'App\\Models\\' . pathinfo($file, PATHINFO_FILENAME),
+                'policy' => 'App\\Policies\\' . pathinfo($file, PATHINFO_FILENAME) . 'Policy',
+            ]);
+
+        foreach (glob(app_path('Domains') . '/*', GLOB_ONLYDIR) as $domainPath) {
+            $domain = basename($domainPath);
+            $modelDirectory = $domainPath . '/Models';
+            $policyDirectory = $domainPath . '/Policies';
+
+            if (! is_dir($modelDirectory) || ! is_dir($policyDirectory)) {
+                continue;
+            }
+
+            $domainMappings = collect(glob($modelDirectory . '/*.php'))
+                ->map(fn ($file) => [
+                    'model' => "App\\Domains\\{$domain}\\Models\\" . pathinfo($file, PATHINFO_FILENAME),
+                    'policy' => "App\\Domains\\{$domain}\\Policies\\" . pathinfo($file, PATHINFO_FILENAME) . 'Policy',
+                ]);
+
+            $mappings = $mappings->merge($domainMappings);
+        }
+
+        $mappings->each(function (array $item): void {
+            if (class_exists($item['model']) && class_exists($item['policy'])) {
+                Gate::policy($item['model'], $item['policy']);
+            }
+        });
     }
 
     /**
@@ -116,6 +141,12 @@ class AppServiceProvider extends ServiceProvider
     {
         UnitKerja::observe(UnitKerjaObserver::class);
         Media::observe(MediaObserver::class);
+    }
+
+    private function registerDomainEventListeners(): void
+    {
+        Event::listen(ImutPenilaianSubmitted::class, InvalidateImutCache::class);
+        Event::listen(LaporanGenerated::class, InvalidateLaporanCache::class);
     }
 
     /**

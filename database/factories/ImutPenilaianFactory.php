@@ -2,16 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\UnitKerja;
-use App\Models\ImutProfile;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutProfile;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ImutPenilaian>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Imut\Models\ImutPenilaian>
  */
 class ImutPenilaianFactory extends Factory
 {
+    protected $model = \App\Domains\Imut\Models\ImutPenilaian::class;
+
     /**
      * Define the model's default state.
      *

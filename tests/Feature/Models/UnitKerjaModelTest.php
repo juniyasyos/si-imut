@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ImutCategory;
-use App\Models\ImutData;
-use App\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;

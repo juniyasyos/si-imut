@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Models\User;
-use App\Models\UnitKerja;
-use App\Models\LaporanImut;
+use App\Domains\Organization\Models\UnitKerja;
+use App\Domains\Reporting\Models\LaporanImut;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;

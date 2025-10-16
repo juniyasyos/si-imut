@@ -2,8 +2,10 @@
 
 namespace App\Services\Chart;
 
-use App\Models\ImutCategory;
-use App\Models\LaporanImut;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Presenters\ImutCapaianPresenter;
+use App\Domains\Imut\Queries\ImutCapaianByUnitSpec;
+use App\Domains\Reporting\Models\LaporanImut;
 use App\Services\Calculator\ImutCalculatorService;
 use App\Support\ApexChartConfig;
 use Illuminate\Support\Collection;
@@ -44,37 +46,22 @@ class UnitKerjaChartDataService
     public function buildUnitKerjaChartSeries(Collection $laporans, array $filterData = [], ?Collection $categories = null): array
     {
         $categories = $categories ?? ImutCategory::all();
-        $series = [];
-        $colors = $filterData['series_colors'] ?? [];
-        $defaultColors = [
-            '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
-            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
-        ];
+        $dataset = app(ImutCapaianByUnitSpec::class)->build($laporans, $categories);
 
-        foreach ($categories as $index => $category) {
-            $categoryData = $laporans->map(function ($laporan) use ($category) {
-                $penilaians = $laporan->laporanUnitKerjas
-                    ->flatMap(fn($luk) => $luk->imutPenilaians)
-                    ->filter(fn($penilaian) => $penilaian->imutProfil->imutData->imut_kategori_id === $category->id);
+        $seriesDataset = array_map(function (array $series) {
+            $values = array_map(function (array $point) {
+                return $this->calculator->calculatePercentage($point['numerator'], $point['denominator']);
+            }, $series['points']);
 
-                if ($penilaians->isEmpty()) {
-                    return 0;
-                }
-
-                $totalNumerator = $penilaians->sum('numerator_value');
-                $totalDenominator = $penilaians->sum('denominator_value');
-
-                return $this->calculator->calculatePercentage($totalNumerator, $totalDenominator);
-            })->toArray();
-
-            $series[] = [
-                'name' => $category->short_name,
-                'data' => $categoryData,
-                'color' => $colors[$category->short_name] ?? $defaultColors[$index % count($defaultColors)]
+            return [
+                'name' => $series['name'],
+                'values' => $values,
             ];
-        }
+        }, $dataset);
 
-        return $series;
+        $presenter = app(ImutCapaianPresenter::class);
+
+        return $presenter->present($seriesDataset, $filterData['series_colors'] ?? []);
     }
 
     /**

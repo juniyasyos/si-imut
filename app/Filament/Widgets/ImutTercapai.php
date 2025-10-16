@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use Filament\Tables;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;

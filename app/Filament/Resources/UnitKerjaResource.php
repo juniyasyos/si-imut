@@ -6,7 +6,7 @@ use App\Filament\Resources\UnitKerjaResource\Pages;
 use App\Filament\Resources\UnitKerjaResource\RelationManagers\ImutDataRelationManager;
 use App\Filament\Resources\UnitKerjaResource\Schema\UnitKerjaResourceSchema;
 use App\Filament\Resources\UnitKerjaResource\Tables\UnitKerjaResourceTable;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

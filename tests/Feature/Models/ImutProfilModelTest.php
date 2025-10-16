@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ImutData;
-use App\Models\ImutPenilaian;
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Imut\Models\ImutProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 

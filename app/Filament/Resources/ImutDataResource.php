@@ -8,7 +8,7 @@ use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Filament\Resources\ImutDataResource\Schema\ImutDataSchema;
 use App\Filament\Resources\ImutDataResource\Table\ImutDataTable;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

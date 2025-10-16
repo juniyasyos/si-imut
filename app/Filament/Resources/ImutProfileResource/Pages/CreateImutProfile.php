@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ImutProfileResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use Filament\Actions;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\ImutProfileResource;
@@ -80,7 +80,7 @@ class CreateImutProfile extends CreateRecord
         // ]);
     }
 
-    protected function handleRecordCreation(array $data): \App\Models\ImutProfile
+    protected function handleRecordCreation(array $data): \App\Domains\Imut\Models\ImutProfile
     {
         $record = parent::handleRecordCreation($data);
 

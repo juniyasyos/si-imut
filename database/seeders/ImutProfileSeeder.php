@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Traits\ImutInitializer;
-use App\Models\ImutData;
-use App\Models\ImutProfile;
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;

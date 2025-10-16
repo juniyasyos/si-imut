@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanImut;
 use Filament\Notifications\Notification;
 use Illuminate\Console\Command;
 

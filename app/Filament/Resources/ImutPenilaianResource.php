@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ImutPenilaianResource\Pages;
 use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSchema;
-use App\Models\ImutPenilaian;
+use App\Domains\Imut\Models\ImutPenilaian;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

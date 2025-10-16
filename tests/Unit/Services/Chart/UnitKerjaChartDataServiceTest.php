@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Services\Chart\UnitKerjaChartDataService;
 use App\Services\Calculator\ImutCalculatorService;
 use App\Services\Chart\ChartDataProcessorService;
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Mockery;

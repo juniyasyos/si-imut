@@ -3,7 +3,7 @@
 namespace App\Traits;
 
 use App\Models\User;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Carbon\Carbon;
 use Faker\Factory as Faker;
 

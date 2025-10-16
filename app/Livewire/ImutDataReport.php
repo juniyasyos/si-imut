@@ -4,8 +4,8 @@ namespace App\Livewire;
 
 use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
-use App\Models\ImutCategory;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;

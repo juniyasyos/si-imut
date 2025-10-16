@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutCategory;
 
 class ImutCategorySeeder extends Seeder
 {

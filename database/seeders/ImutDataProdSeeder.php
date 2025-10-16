@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\ImutCategory;
-use App\Models\ImutData;
-use App\Models\ImutProfile;
-use App\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutProfile;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -197,7 +197,7 @@ class ImutDataProdSeeder extends Seeder
                 // Cocokkan dengan title dari imutData
                 if ($imutTitles->contains($imutData->title)) {
                     // Cari unit kerja berdasarkan nama singkat (short_name)
-                    $unitKerja = \App\Models\UnitKerja::where('unit_name', $unitName)->first();
+                    $unitKerja = \App\Domains\Organization\Models\UnitKerja::where('unit_name', $unitName)->first();
 
                     if ($unitKerja) {
                         // Sinkronisasi tanpa detach

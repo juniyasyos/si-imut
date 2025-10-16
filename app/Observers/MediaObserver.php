@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\ImutPenilaian;
+use App\Domains\Imut\Models\ImutPenilaian;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Juniyasyos\FilamentMediaManager\Models\Media;

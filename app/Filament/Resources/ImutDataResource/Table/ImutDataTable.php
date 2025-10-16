@@ -7,7 +7,7 @@ use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use App\Models\User;
 use Filament\Tables\Actions\Action as ActionTable;
 use Filament\Tables\Actions\ActionGroup;

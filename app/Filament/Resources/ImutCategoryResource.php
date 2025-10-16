@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ImutCategoryResource\Pages;
 use App\Filament\Resources\ImutCategoryResource\Schema\ImutCategoryResourceSchema;
 use App\Filament\Resources\ImutCategoryResource\Tables\ImutCategoryResourceTable;
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutCategory;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

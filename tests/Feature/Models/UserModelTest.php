@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Position;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\Position;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

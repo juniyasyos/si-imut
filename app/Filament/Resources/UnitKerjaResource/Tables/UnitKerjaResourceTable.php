@@ -4,7 +4,7 @@ namespace App\Filament\Resources\UnitKerjaResource\Tables;
 
 use App\Filament\Exports\UnitKerjaExporter;
 use App\Filament\Resources\UnitKerjaResource;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;

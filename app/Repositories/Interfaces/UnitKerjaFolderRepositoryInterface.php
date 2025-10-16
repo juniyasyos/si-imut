@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Interfaces;
 
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 
 interface UnitKerjaFolderRepositoryInterface
 {

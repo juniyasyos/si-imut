@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\RelationManagers;
 
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutProfile;
 use Illuminate\Support\Facades\Gate;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;

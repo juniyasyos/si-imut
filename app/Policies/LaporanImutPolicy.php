@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\LaporanImut;
-use App\Models\ImutPenilaian;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Imut\Models\ImutPenilaian;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class LaporanImutPolicy

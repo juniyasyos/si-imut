@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ImutPenilaianResource\Forms;
 
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutProfile;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;

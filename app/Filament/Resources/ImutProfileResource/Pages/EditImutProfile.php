@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
 use App\Filament\Resources\ImutProfileResource;
-use App\Models\ImutData;
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutProfile;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;

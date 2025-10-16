@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use App\Traits\ImutInitializer;
 use Illuminate\Database\Seeder;
 

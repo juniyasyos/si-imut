@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\LaporanImut;
-use App\Models\UnitKerja;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
-use App\Models\LaporanUnitKerja;
-use App\Models\ImutPenilaian;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutPenilaian;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +22,8 @@ describe('LaporanImut Model', function () {
             'status',
             'assessment_period_start',
             'assessment_period_end',
+            'report_month',
+            'report_year',
             'created_by',
         ]);
     });

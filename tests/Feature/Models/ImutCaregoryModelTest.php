@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\ImutCategory;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutData;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

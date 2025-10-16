@@ -2,9 +2,9 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\ImutCategory;
-use App\Models\LaporanImut;
-use App\Services\ImutChartSeriesService;
+use App\Domains\Imut\Models\ImutCategory;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Imut\Services\ImutChartSeriesService;
 use App\Services\Chart\ChartDataProcessorService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;

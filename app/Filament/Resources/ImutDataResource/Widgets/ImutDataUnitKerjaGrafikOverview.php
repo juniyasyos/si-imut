@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\ImutDataResource\Widgets;
 
-use App\Models\ImutBenchmarking;
-use App\Models\LaporanImut;
+use App\Domains\Imut\Models\ImutBenchmarking;
+use App\Domains\Reporting\Models\LaporanImut;
 use App\Models\RegionType;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey as SupportCacheKey;
 use Filament\Forms\Components\Checkbox;
@@ -30,9 +30,9 @@ class ImutDataUnitKerjaGrafikOverview extends ApexChartWidget
 
     protected static bool $isLazy = false;
 
-    public \App\Models\ImutData $imutData;
+    public \App\Domains\Imut\Models\ImutData $imutData;
 
-    public \App\Models\UnitKerja $unitKerja;
+    public \App\Domains\Organization\Models\UnitKerja $unitKerja;
 
     protected function getHeading(): ?string
     {

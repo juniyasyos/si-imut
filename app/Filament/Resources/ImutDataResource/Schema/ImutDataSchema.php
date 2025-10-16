@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Schema;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Models\RegionType;
-use App\Models\UnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use App\Models\User;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
@@ -88,7 +88,7 @@ class ImutDataSchema extends ImutDataResource
                                     ->options(function () {
                                         $user = Auth::user();
 
-                                        $query = \App\Models\ImutCategory::query();
+                                        $query = \App\Domains\Imut\Models\ImutCategory::query();
 
                                         if (! ($user->can('create_imut::category') && $user->can('update_imut::category'))) {
                                             $query->where('is_use_global', true);

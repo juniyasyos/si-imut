@@ -4,7 +4,7 @@ namespace App\Filament\Resources\UnitKerjaResource\RelationManagers;
 
 use App\Models\User;
 use Filament\Tables;
-use App\Models\Position;
+use App\Domains\Organization\Models\Position;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\FontWeight;

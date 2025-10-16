@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\ImutPenilaianResource\Schema;
 
 use App\Filament\Resources\ImutPenilaianResource;
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutProfile;
 use App\Services\Form\FormCalculationService;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;

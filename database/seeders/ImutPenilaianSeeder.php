@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\ImutPenilaian;
+use App\Domains\Imut\Models\ImutPenilaian;
 use App\Traits\ImutInitializer;
-use App\Models\ImutProfile;
+use App\Domains\Imut\Models\ImutProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;

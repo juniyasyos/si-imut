@@ -1,7 +1,7 @@
 <?php
 
 use App\Facades\LaporanImut as LaporanImutFacade;
-use App\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanImut;
 use Database\Seeders\DatabaseProductionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

@@ -5,10 +5,12 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UnitKerja>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Organization\Models\UnitKerja>
  */
 class UnitKerjaFactory extends Factory
 {
+    protected $model = \App\Domains\Organization\Models\UnitKerja::class;
+
     /**
      * Define the model's default state.
      *

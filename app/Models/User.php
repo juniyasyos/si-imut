@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
+use App\Domains\Organization\Models\UnitKerja;
+use App\Domains\Organization\Models\Position;
 use Filament\Panel;
-use App\Models\UnitKerja;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;

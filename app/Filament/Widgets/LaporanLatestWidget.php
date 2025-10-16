@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanImut;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Exports;
 
-use App\Models\ImutData;
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
-use App\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
+use App\Domains\Organization\Models\UnitKerja;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;

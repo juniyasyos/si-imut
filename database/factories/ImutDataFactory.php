@@ -2,15 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutCategory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ImutData>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Imut\Models\ImutData>
  */
 class ImutDataFactory extends Factory
 {
+    protected $model = \App\Domains\Imut\Models\ImutData::class;
+
     /**
      * Define the model's default state.
      *

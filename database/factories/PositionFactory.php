@@ -5,10 +5,12 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Position>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Organization\Models\Position>
  */
 class PositionFactory extends Factory
 {
+    protected $model = \App\Domains\Organization\Models\Position::class;
+
     /**
      * Define the model's default state.
      *

@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use Filament\Actions;
-use App\Models\ImutData;
-use App\Models\ImutPenilaian;
-use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Reporting\Actions\GenerateLaporanBulanan;
+use App\Domains\Reporting\Models\LaporanImut;
+use App\Domains\Reporting\Models\LaporanUnitKerja;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\LaporanImutResource;
@@ -75,7 +76,7 @@ class CreateLaporanImut extends CreateRecord
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
         try {
-            return parent::handleRecordCreation($data);
+            return app(GenerateLaporanBulanan::class)->execute($data);
         } catch (QueryException $e) {
             // Handle duplicate entry error specifically
             if ($e->getCode() === '23000' && strpos($e->getMessage(), 'unique_periode_laporan') !== false) {

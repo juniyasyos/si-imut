@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\UserResource\Schema;
 
 use App\Filament\Resources\UserResource;
-use App\Models\Position;
+use App\Domains\Organization\Models\Position;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Actions\Action as FieldAction;

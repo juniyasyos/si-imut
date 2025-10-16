@@ -4,8 +4,8 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\ImutDataUnitKerjaGrafikOverview;
-use App\Models\ImutData;
-use App\Models\UnitKerja;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Organization\Models\UnitKerja;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 

@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\ImutPenilaianResource\Pages;
 
+use App\Domains\Imut\Actions\SubmitImutPenilaian;
 use App\Filament\Resources\ImutPenilaianResource;
-use App\Models\ImutPenilaian;
-use App\Models\LaporanImut;
+use App\Domains\Imut\Models\ImutPenilaian;
+use App\Domains\Reporting\Models\LaporanImut;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -115,6 +116,11 @@ class EditImutPenilaian extends EditRecord
     protected function getHeaderActions(): array
     {
         return [];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        return app(SubmitImutPenilaian::class)->execute($record, $data);
     }
 
     public function isLaporanPeriodClosed(): bool

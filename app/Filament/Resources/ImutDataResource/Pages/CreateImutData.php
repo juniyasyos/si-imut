@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Models\ImutData;
-use App\Models\ImutDataUnitKerja;
+use App\Domains\Imut\Models\ImutData;
+use App\Domains\Imut\Models\ImutDataUnitKerja;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +38,7 @@ class CreateImutData extends CreateRecord
             : $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
 
         foreach ($unitKerjaIds as $unitKerjaId) {
-            \App\Models\ImutDataUnitKerja::firstOrCreate([
+            \App\Domains\Imut\Models\ImutDataUnitKerja::firstOrCreate([
                 'imut_data_id' => $record->id,
                 'unit_kerja_id' => $unitKerjaId,
             ], [

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\ImutDataLineChart;
-use App\Models\ImutData;
+use App\Domains\Imut\Models\ImutData;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;

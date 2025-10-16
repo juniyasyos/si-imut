@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\ImutCategoryResource\Pages;
 
 use Filament\Actions;
-use App\Models\ImutCategory;
+use App\Domains\Imut\Models\ImutCategory;
 use Illuminate\Support\Facades\Gate;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\ImutCategoryResource;
