@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+/database/prod/
 .env
 .env.ngrok
 .env.backup
