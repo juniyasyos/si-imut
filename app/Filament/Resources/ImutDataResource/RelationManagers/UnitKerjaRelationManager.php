@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ImutDataResource\RelationManagers;
 
-use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
+use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
 use App\Models\UnitKerja;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
@@ -80,7 +80,7 @@ class UnitKerjaRelationManager extends RelationManager
                     ->label('🏢 Lihat Unit Kerja')
                     ->color('success')
                     ->url(function ($record) {
-                        return ImutDataUnitKerjaOverview::getUrl([
+                        return UnitKerjaOverview::getUrl([
                             'record_imut_data' => $record->imut_data_id,
                             'record_unit_kerja' => $record->unit_kerja_id
                         ]);

@@ -8,7 +8,8 @@
 app/Livewire/
 ├── Overview/
 │   ├── ImutDataOverview.php
-│   └── ImutDataUnitKerjaTable.php
+│   ├── ImutDataUnitKerjaTable.php
+│   └── ImutDataSummaryTable.php
 └── Reports/
     ├── ImutDataSummaryReport.php
     ├── ImutDataUnitKerjaDetailReport.php
@@ -22,7 +23,8 @@ app/Livewire/
 resources/views/livewire/
 ├── overview/
 │   ├── imut-data-overview.blade.php
-│   └── imut-data-unit-kerja-table.blade.php
+│   ├── imut-data-unit-kerja-table.blade.php
+│   └── imut-data-summary-table.blade.php
 └── reports/
     ├── imut-data-summary-report.blade.php
     ├── imut-data-unit-kerja-detail-report.blade.php
@@ -47,6 +49,7 @@ resources/views/livewire/
 #### Komponen Overview:
 - `ImutDataOverview` → tetap sama (sudah deskriptif)
 - `ImutDataUnitKerjaOverviewTable` → `ImutDataUnitKerjaTable` (lebih ringkas)
+- `ImutDataSummaryTable` → komponen baru untuk tabel summary di diagram
 
 ### 3. **Namespace Updates**
 - Semua komponen Reports menggunakan namespace `App\Livewire\Reports`
@@ -81,6 +84,7 @@ resources/views/livewire/
 {{-- Overview Components --}}
 <livewire:overview.imut-data-overview />
 <livewire:overview.imut-data-unit-kerja-table :imut-data-id="$id" :unit-kerja-id="$unitId" />
+<livewire:overview.imut-data-summary-table :imut-data-id="$id" />
 
 {{-- Report Components --}}
 <livewire:reports.imut-data-summary-report :laporan-id="$laporanId" />
@@ -91,13 +95,31 @@ resources/views/livewire/
 
 ## File Yang Telah Diperbarui
 
-### 📝 **View Files Updated:**
+### 📝 **File Yang Diperbarui:**
 - `resources/views/filament/resources/laporan-imut-resource/pages/imut-data-report.blade.php`
 - `resources/views/filament/resources/laporan-imut-resource/pages/unit-kerja-report.blade.php`
 - `resources/views/filament/resources/laporan-imut-resource/pages/imut-data-unit-kerja-report.blade.php`
 - `resources/views/filament/resources/laporan-imut-resource/pages/unit-kerja-imut-data-report.blade.php`
 - `resources/views/filament/resources/imut-data-resource/pages/imut-data-overview.blade.php`
 - `resources/views/filament/resources/imut-data-resource/pages/imut-data-unit-kerja-overview.blade.php`
+- `resources/views/filament/resources/imut-data-resource/pages/summary-imut-data-diagram.blade.php` (ditambahkan tabel)
+
+### 📝 **File Baru Yang Dibuat:**
+- `app/Livewire/Overview/ImutDataSummaryTable.php` - Komponen tabel untuk summary diagram (diupdate untuk grouping by laporan)
+- `resources/views/livewire/overview/imut-data-summary-table.blade.php` - View untuk tabel summary
+- `app/Models/LaporanUnitKerja.php` - Ditambahkan method `getSummaryByImutData()` dan `getSummaryByImutDataGrouped()`
+
+### 📊 **Fitur Tabel Summary Diagram:**
+**Struktur Data:** Berdasarkan laporan dengan agregasi data dari semua unit kerja
+**Kolom-kolom:**
+- ✅ Nama Laporan (primary, dengan search)
+- ✅ Periode Pengisian (dari assessment_period_start - assessment_period_end)
+- ✅ Status Laporan (badge dengan warna)
+- ✅ Total N (agregasi numerator dari semua unit kerja)
+- ✅ Total D (agregasi denominator dari semua unit kerja)
+- ✅ Persentase (%) dengan color coding berdasarkan standar IMUT
+- ✅ Standard IMUT (S)
+- ✅ Jumlah Unit Kerja (toggleable, hidden by default)
 
 ### 🗑️ **Old Files Removed:**
 - All old Livewire component files from `app/Livewire/`

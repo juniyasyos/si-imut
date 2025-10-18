@@ -133,7 +133,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ),
 
                 TextColumn::make('imut_standard')
-                    ->label('S (Imut Standar)')
+                    ->label('Standar Indikator')
                     ->suffix('%')
                     ->toggleable()
                     ->color('info')

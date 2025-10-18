@@ -18,39 +18,51 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
+class ImutDataSummaryTable extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
 
     public ?int $imutDataId = null;
 
-    public ?int $unitKerjaId = null;
-
     protected $listeners = [
-        'report-changed' => 'updateReport',
+        'summary-changed' => 'updateSummary',
     ];
 
-    public function updateReport(int $imutDataId, int $unitKerjaId): void
+    public function updateSummary(int $imutDataId): void
     {
-
         $this->imutDataId = $imutDataId;
-        $this->unitKerjaId = $unitKerjaId;
         $this->dispatch('$refresh');
     }
 
+    public function getTableRecordKey($record): string
+    {
+        if (! $record) {
+            return (string) uniqid('record_', true);
+        }
+
+        // Since we're grouping by laporan_imut_id, use that as the key
+        return (string) ($record->laporan_imut_id ?? uniqid('record_', true));
+    }
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn() => LaporanUnitKerja::getLaporanByUnitKerjaDetails($this->imutDataId, $this->unitKerjaId))
+            ->query(fn() => LaporanUnitKerja::getSummaryByImutDataGrouped($this->imutDataId))
             ->columns([
                 TextColumn::make('laporan_name')
                     ->label('Nama Laporan')
+                    ->grow()
+                    ->sortable()
                     ->searchable(query: fn(EloquentBuilder $query, string $search) => $query->where('laporan_imuts.name', 'like', "%{$search}%")),
 
+                TextColumn::make('periode_pengisian')
+                    ->label('Periode Pengisian')
+                    ->sortable()
+                    ->toggleable(),
+
                 TextColumn::make('laporan_status')
-                    ->label('Laporan Status')
+                    ->label('Status Laporan')
                     ->badge()
                     ->alignCenter()
                     ->color(fn(string $state): string => match ($state) {
@@ -58,36 +70,32 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                         'process' => 'primary',
                         'complete' => 'success',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
-                $this->makeSearchableColumn('imut_profil', 'Profile', 'imut_profil.version'),
-
-                TextColumn::make('numerator_value')
-                    ->label('N')
+                TextColumn::make('total_numerator')
+                    ->label('Total N')
                     ->alignCenter()
-                    ->toggleable()
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
                     ->summarize(
                         Summarizer::make()
-                            ->label('Total N')
-                            ->using(fn(Builder $query) => number_format($query->sum('numerator_value'), 2))
+                            ->label('Grand Total N')
+                            ->using(fn(Builder $query) => number_format($query->sum('total_numerator'), 2))
                     ),
 
-                TextColumn::make('denominator_value')
-                    ->label('D')
+                TextColumn::make('total_denominator')
+                    ->label('Total D')
                     ->alignCenter()
-                    ->toggleable()
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
                     ->summarize(
                         Summarizer::make()
-                            ->label('Total D')
-                            ->using(fn(Builder $query) => number_format($query->sum('denominator_value'), 2))
+                            ->label('Grand Total D')
+                            ->using(fn(Builder $query) => number_format($query->sum('total_denominator'), 2))
                     ),
 
                 TextColumn::make('percentage')
                     ->label('Persentase (%)')
                     ->alignCenter()
-                    ->toggleable()
                     ->suffix('%')
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
                     ->color(fn($record) => match (true) {
@@ -117,8 +125,8 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                         Summarizer::make()
                             ->label('Total Persentase')
                             ->using(function (Builder $query) {
-                                $n = $query->sum('numerator_value');
-                                $d = $query->sum('denominator_value');
+                                $n = $query->sum('total_numerator');
+                                $d = $query->sum('total_denominator');
 
                                 return $d > 0 ? round(($n / $d) * 100, 2) : 0;
                             })
@@ -132,16 +140,28 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                     ->color('info')
                     ->badge()
                     ->alignCenter(),
-                // ->summarize(Summarizer::make()
-                //     ->label('Standar Min')
-                //     ->suffix('%')
-                //     ->using(fn(Builder $query) => $query->min('standard'))),
 
-                $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
-                // $this->makeSearchableColumn('document_upload', 'Dokumen Upload', 'imut_penilaians.document_upload'),
-                $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
+                TextColumn::make('unit_count')
+                    ->label('Jumlah Unit Kerja')
+                    ->alignCenter()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->summarize(
+                        Summarizer::make()
+                            ->label('Total Unit')
+                            ->using(fn(Builder $query) => $query->sum('unit_count'))
+                    ),
             ])
             ->filters([
+                SelectFilter::make('laporan_status')
+                    ->label('Status Laporan')
+                    ->options([
+                        'coming_soon' => 'Akan Datang',
+                        'process' => 'Proses',
+                        'complete' => 'Selesai',
+                    ])
+                    ->multiple()
+                    ->placeholder('Semua Status'),
+
                 SelectFilter::make('imut_kategori')
                     ->label('Imut Kategori')
                     ->options(
@@ -154,26 +174,19 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                     ->placeholder('Semua Kategori'),
             ])
             ->actions([
-                Action::make('edit_penilaian')
-                    ->label('Edit Penilaian')
-                    ->icon('heroicon-o-pencil-square')
+                Action::make('view_details')
+                    ->label('Lihat Detail')
+                    ->icon('heroicon-o-eye')
                     ->color('info')
-
                     ->url(function ($record) {
-                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-
-                        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                            'laporanSlug' => $laporanSlug,
-                            'record' => $record->id,
+                        return \App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport::getUrl([
+                            'laporan_id' => $record->laporan_imut_id,
                         ]);
                     }),
             ])
             ->recordUrl(function ($record) {
-                $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-
-                return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                    'laporanSlug' => $laporanSlug,
-                    'record' => $record->id,
+                return \App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport::getUrl([
+                    'laporan_id' => $record->laporan_imut_id,
                 ]);
             })
             ->bulkActions([]);
@@ -184,6 +197,7 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
         return TextColumn::make($name)
             ->label($label)
             ->toggleable()
+            ->limit(80)
             ->searchable(
                 query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
             );
@@ -191,6 +205,6 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
 
     public function render()
     {
-        return view('livewire.overview.imut-data-unit-kerja-table');
+        return view('livewire.overview.imut-data-summary-table');
     }
 }
