@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Overview;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Models\ImutData;
@@ -80,6 +80,6 @@ class ImutDataOverview extends Component implements HasForms, HasTable
 
     public function render()
     {
-        return view('livewire.imut-data-overview');
+        return view('livewire.overview.imut-data-overview');
     }
 }

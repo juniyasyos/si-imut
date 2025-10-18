@@ -29,6 +29,6 @@
     </div>
 
     @if ($laporan)
-        <livewire:unit-kerja-report :laporan-id="$laporan->id" />
+        <livewire:reports.unit-kerja-summary-report :laporan-id="$laporan->id" />
     @endif
 </x-filament-panels::page>

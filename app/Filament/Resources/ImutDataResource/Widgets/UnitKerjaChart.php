@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ImutDataResource\Widgets;
 
 use App\Models\ImutBenchmarking;
+use App\Models\ImutData;
 use App\Models\LaporanImut;
 use App\Models\RegionType;
 use App\Models\UnitKerja;
@@ -20,9 +21,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
-class ImutDataUnitKerjaGrafikOverview extends ApexChartWidget
+class UnitKerjaChart extends ApexChartWidget
 {
-    protected static ?string $chartId = 'imutDataUnitKerjaGrafikOverview';
+    protected static ?string $chartId = 'unitKerjaChart';
 
     protected int|string|array $columnSpan = 'full';
 
@@ -30,9 +31,9 @@ class ImutDataUnitKerjaGrafikOverview extends ApexChartWidget
 
     protected static bool $isLazy = false;
 
-    public \App\Models\ImutData $imutData;
+    public ImutData $imutData;
 
-    public \App\Models\UnitKerja $unitKerja;
+    public UnitKerja $unitKerja;
 
     protected function getHeading(): ?string
     {
@@ -40,7 +41,7 @@ class ImutDataUnitKerjaGrafikOverview extends ApexChartWidget
 
         $unitName = UnitKerja::find($unitKerjaId)?->unit_name;
 
-        return 'Grafik Penilaian IMUT Data' . ($unitName ? ': ' . $unitName : '');
+        return 'Grafik Penilaian IMUT Data ini ada dimana ya' . ($unitName ? ': ' . $unitName : '');
     }
 
     protected function getFormSchema(): array

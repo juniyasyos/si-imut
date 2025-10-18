@@ -3,11 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ImutDataResource\Pages;
-use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
-use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
+use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
+use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Filament\Resources\ImutDataResource\Schema\ImutDataSchema;
-use App\Filament\Resources\ImutDataResource\Table\ImutDataTable;
+use App\Filament\Resources\ImutDataResource\Table\TableSchema;
 use App\Models\ImutData;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
@@ -91,12 +91,12 @@ class ImutDataResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-            ->query(fn() => ImutDataTable::query())
-            ->columns(ImutDataTable::columns())
-            ->headerActions(ImutDataTable::headerActions())
-            ->filters(ImutDataTable::filters())
-            ->actions(ImutDataTable::actions())
-            ->bulkActions(ImutDataTable::bulkActions());
+            ->query(fn() => TableSchema::query())
+            ->columns(TableSchema::columns())
+            ->headerActions(TableSchema::headerActions())
+            ->filters(TableSchema::filters())
+            ->actions(TableSchema::actions())
+            ->bulkActions(TableSchema::bulkActions());
     }
 
     public static function getTableQuery(): \Illuminate\Database\Eloquent\Builder
@@ -133,8 +133,8 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             'create-profile' => \App\Filament\Resources\ImutProfileResource\Pages\CreateImutProfile::route('/{imutDataSlug}/profile/create'),
             'edit-profile' => \App\Filament\Resources\ImutProfileResource\Pages\EditImutProfile::route('/{imutDataSlug}/profile/edit={record}'),
             'bencmarking-region-type' => \App\Filament\Resources\RegionTypeBencmarkingResource\Pages\ListRegionTypeBencmarkings::route('/bencmarkings/region-type'),
-            'overview-unit-kerja' => ImutDataUnitKerjaOverview::route('/overview/unit-kerja'),
-            'overview-imut-data' => SummaryImutDataDiagram::route('overview/summary-imut-data'),
+            'overview-unit-kerja' => UnitKerjaOverview::route('/overview/unit-kerja'),
+            'overview-imut-data' => SummaryDiagram::route('overview/summary-imut-data'),
         ];
     }
 }

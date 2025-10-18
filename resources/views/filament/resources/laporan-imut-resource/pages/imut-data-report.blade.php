@@ -25,5 +25,5 @@
     <x-laporan-status-periode :periode="$periode" :current="$current" />
     {{ $this->form }}
 
-    <livewire:imut-data-report :laporan-id="$data['laporanId']" />
+    <livewire:reports.imut-data-summary-report :laporan-id="$data['laporanId']" />
 </x-filament-panels::page>

@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Filament\Resources\ImutDataResource\Widgets\ImutDataLineChart;
+use App\Filament\Resources\ImutDataResource\Widgets\LineChart;
 use App\Models\ImutData;
 use Filament\Resources\Pages\Page;
 
-class ImutDataOverview extends Page
+class Overview extends Page
 {
     protected static string $resource = ImutDataResource::class;
 

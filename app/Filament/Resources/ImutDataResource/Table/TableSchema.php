@@ -4,8 +4,8 @@ namespace App\Filament\Resources\ImutDataResource\Table;
 
 use App\Filament\Exports\ImutDataExporter;
 use App\Filament\Resources\ImutDataResource;
-use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
-use App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram;
+use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
+use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Models\ImutData;
 use App\Models\User;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class ImutDataTable extends ImutDataResource
+class TableSchema extends ImutDataResource
 {
     public static function query(): Builder
     {
@@ -120,7 +120,7 @@ class ImutDataTable extends ImutDataResource
                         return '#';
                     }
 
-                    return ImutDataUnitKerjaOverview::getUrl([
+                    return UnitKerjaOverview::getUrl([
                         'record_imut_data' => $record->id,
                         'record_unit_kerja' => $unitKerja->id,
                     ]);
@@ -140,7 +140,7 @@ class ImutDataTable extends ImutDataResource
                     ->label('📊 IMUT DATA')
                     ->color('primary')
                     ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
-                    ->url(fn($record) => SummaryImutDataDiagram::getUrl(['record' => $record->slug])),
+                    ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja-relation')
                     ->slideOver()

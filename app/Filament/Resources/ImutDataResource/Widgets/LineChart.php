@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
-class ImutDataLineChart extends ApexChartWidget
+class LineChart extends ApexChartWidget
 {
-    protected static ?string $chartId = 'imutDataLineChart';
+    protected static ?string $chartId = 'lineChart';
 
     protected static ?string $heading = 'Grafik Penilaian IMUT Data';
 

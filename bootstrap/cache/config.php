@@ -1,9 +1,118 @@
 <?php return array (
-  4 => 'concurrency',
-  5 => 'view',
-  7 => 'hashing',
-  12 => 'broadcasting',
-  14 => 'cors',
+  'concurrency' => 
+  array (
+    'default' => 'process',
+  ),
+  'view' => 
+  array (
+    'paths' => 
+    array (
+      0 => '/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/resources/views',
+    ),
+    'compiled' => '/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/storage/framework/views',
+  ),
+  'hashing' => 
+  array (
+    'driver' => 'bcrypt',
+    'bcrypt' => 
+    array (
+      'rounds' => '12',
+      'verify' => true,
+      'limit' => NULL,
+    ),
+    'argon' => 
+    array (
+      'memory' => 65536,
+      'threads' => 1,
+      'time' => 4,
+      'verify' => true,
+    ),
+    'rehash_on_login' => true,
+  ),
+  'broadcasting' => 
+  array (
+    'default' => 'log',
+    'connections' => 
+    array (
+      'reverb' => 
+      array (
+        'driver' => 'reverb',
+        'key' => NULL,
+        'secret' => NULL,
+        'app_id' => NULL,
+        'options' => 
+        array (
+          'host' => NULL,
+          'port' => 443,
+          'scheme' => 'https',
+          'useTLS' => true,
+        ),
+        'client_options' => 
+        array (
+        ),
+      ),
+      'pusher' => 
+      array (
+        'driver' => 'pusher',
+        'key' => NULL,
+        'secret' => NULL,
+        'app_id' => NULL,
+        'options' => 
+        array (
+          'cluster' => NULL,
+          'host' => 'api-mt1.pusher.com',
+          'port' => 443,
+          'scheme' => 'https',
+          'encrypted' => true,
+          'useTLS' => true,
+        ),
+        'client_options' => 
+        array (
+        ),
+      ),
+      'ably' => 
+      array (
+        'driver' => 'ably',
+        'key' => NULL,
+      ),
+      'log' => 
+      array (
+        'driver' => 'log',
+      ),
+      'null' => 
+      array (
+        'driver' => 'null',
+      ),
+    ),
+  ),
+  'cors' => 
+  array (
+    'paths' => 
+    array (
+      0 => 'api/*',
+      1 => 'sanctum/csrf-cookie',
+    ),
+    'allowed_methods' => 
+    array (
+      0 => '*',
+    ),
+    'allowed_origins' => 
+    array (
+      0 => '*',
+    ),
+    'allowed_origins_patterns' => 
+    array (
+    ),
+    'allowed_headers' => 
+    array (
+      0 => '*',
+    ),
+    'exposed_headers' => 
+    array (
+    ),
+    'max_age' => 0,
+    'supports_credentials' => false,
+  ),
   'activitylog' => 
   array (
     'enabled' => true,
@@ -50,7 +159,7 @@
     'name' => 'SI-IMUT',
     'env' => 'local',
     'debug' => true,
-    'url' => 'https://localhost:8000',
+    'url' => 'http://172.0.0.1:8000',
     'frontend_url' => 'http://localhost:3000',
     'asset_url' => NULL,
     'timezone' => 'Asia/jakarta',
@@ -105,6 +214,7 @@
       'Arr' => 'Illuminate\\Support\\Arr',
       'Artisan' => 'Illuminate\\Support\\Facades\\Artisan',
       'Auth' => 'Illuminate\\Support\\Facades\\Auth',
+      'Benchmark' => 'Illuminate\\Support\\Benchmark',
       'Blade' => 'Illuminate\\Support\\Facades\\Blade',
       'Broadcast' => 'Illuminate\\Support\\Facades\\Broadcast',
       'Bus' => 'Illuminate\\Support\\Facades\\Bus',
@@ -141,8 +251,8 @@
       'Session' => 'Illuminate\\Support\\Facades\\Session',
       'Storage' => 'Illuminate\\Support\\Facades\\Storage',
       'Str' => 'Illuminate\\Support\\Str',
-      'URL' => 'Illuminate\\Support\\Facades\\URL',
       'Uri' => 'Illuminate\\Support\\Uri',
+      'URL' => 'Illuminate\\Support\\Facades\\URL',
       'Validator' => 'Illuminate\\Support\\Facades\\Validator',
       'View' => 'Illuminate\\Support\\Facades\\View',
       'Vite' => 'Illuminate\\Support\\Facades\\Vite',
@@ -336,6 +446,11 @@
       array (
         'driver' => 'array',
         'serialize' => false,
+      ),
+      'session' => 
+      array (
+        'driver' => 'session',
+        'key' => '_cache',
       ),
       'database' => 
       array (
@@ -743,7 +858,7 @@
       array (
         'driver' => 'local',
         'root' => '/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/storage/app/public',
-        'url' => 'https://localhost:8000/storage',
+        'url' => 'http://172.0.0.1:8000/storage',
         'visibility' => 'public',
         'throw' => false,
       ),
@@ -763,7 +878,7 @@
       array (
         'driver' => 'local',
         'root' => '/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/storage/app/filament-excel',
-        'url' => 'https://localhost:8000/filament-excel',
+        'url' => 'http://172.0.0.1:8000/filament-excel',
       ),
     ),
     'links' => 
@@ -884,7 +999,7 @@
         'username' => NULL,
         'password' => NULL,
         'timeout' => NULL,
-        'local_domain' => 'localhost',
+        'local_domain' => '172.0.0.1',
       ),
       'ses' => 
       array (
@@ -1056,7 +1171,7 @@
       2 => '127.0.0.1',
       3 => '127.0.0.1:8000',
       4 => '::1',
-      5 => 'localhost:8000',
+      5 => '172.0.0.1:8000',
     ),
     'guard' => 
     array (
@@ -1694,120 +1809,6 @@
       'theme_color' => 'blue',
     ),
   ),
-  'concurrency' => 
-  array (
-    'default' => 'process',
-  ),
-  'view' => 
-  array (
-    'paths' => 
-    array (
-      0 => '/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/resources/views',
-    ),
-    'compiled' => '/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/storage/framework/views',
-  ),
-  'hashing' => 
-  array (
-    'driver' => 'bcrypt',
-    'bcrypt' => 
-    array (
-      'rounds' => '12',
-      'verify' => true,
-      'limit' => NULL,
-    ),
-    'argon' => 
-    array (
-      'memory' => 65536,
-      'threads' => 1,
-      'time' => 4,
-      'verify' => true,
-    ),
-    'rehash_on_login' => true,
-  ),
-  'broadcasting' => 
-  array (
-    'default' => 'log',
-    'connections' => 
-    array (
-      'reverb' => 
-      array (
-        'driver' => 'reverb',
-        'key' => NULL,
-        'secret' => NULL,
-        'app_id' => NULL,
-        'options' => 
-        array (
-          'host' => NULL,
-          'port' => 443,
-          'scheme' => 'https',
-          'useTLS' => true,
-        ),
-        'client_options' => 
-        array (
-        ),
-      ),
-      'pusher' => 
-      array (
-        'driver' => 'pusher',
-        'key' => NULL,
-        'secret' => NULL,
-        'app_id' => NULL,
-        'options' => 
-        array (
-          'cluster' => NULL,
-          'host' => 'api-mt1.pusher.com',
-          'port' => 443,
-          'scheme' => 'https',
-          'encrypted' => true,
-          'useTLS' => true,
-        ),
-        'client_options' => 
-        array (
-        ),
-      ),
-      'ably' => 
-      array (
-        'driver' => 'ably',
-        'key' => NULL,
-      ),
-      'log' => 
-      array (
-        'driver' => 'log',
-      ),
-      'null' => 
-      array (
-        'driver' => 'null',
-      ),
-    ),
-  ),
-  'cors' => 
-  array (
-    'paths' => 
-    array (
-      0 => 'api/*',
-      1 => 'sanctum/csrf-cookie',
-    ),
-    'allowed_methods' => 
-    array (
-      0 => '*',
-    ),
-    'allowed_origins' => 
-    array (
-      0 => '*',
-    ),
-    'allowed_origins_patterns' => 
-    array (
-    ),
-    'allowed_headers' => 
-    array (
-      0 => '*',
-    ),
-    'exposed_headers' => 
-    array (
-    ),
-    'max_age' => 0,
-    'supports_credentials' => false,
-  ),
   'debugbar' => 
   array (
     'enabled' => true,
@@ -1889,6 +1890,10 @@
         'show_name' => true,
         'show_guards' => true,
       ),
+      'gate' => 
+      array (
+        'trace' => false,
+      ),
       'db' => 
       array (
         'with_params' => true,
@@ -1922,6 +1927,7 @@
         'timeline' => true,
         'data' => false,
         'group' => 50,
+        'inertia_pages' => 'js/Pages',
         'exclude_paths' => 
         array (
           0 => 'vendor/filament',
@@ -1947,6 +1953,9 @@
       'events' => 
       array (
         'data' => false,
+        'excluded' => 
+        array (
+        ),
       ),
       'logs' => 
       array (
@@ -2813,6 +2822,7 @@
     ),
     'media_downloader' => 'Spatie\\MediaLibrary\\Downloaders\\DefaultDownloader',
     'media_downloader_ssl' => true,
+    'temporary_url_default_lifetime' => 5,
     'remote' => 
     array (
       'extra_headers' => 
@@ -2890,6 +2900,7 @@
     'write_model_magic_where' => true,
     'write_model_external_builder_methods' => true,
     'write_model_relation_count_properties' => true,
+    'write_model_relation_exists_properties' => false,
     'write_eloquent_model_mixins' => false,
     'include_helpers' => false,
     'helper_files' => 
@@ -2934,6 +2945,10 @@
     'include_class_docblocks' => false,
     'force_fqn' => false,
     'use_generics_annotations' => true,
+    'macro_default_return_types' => 
+    array (
+      'Illuminate\\Http\\Client\\Factory' => 'Illuminate\\Http\\Client\\PendingRequest',
+    ),
     'additional_relation_types' => 
     array (
     ),
@@ -2943,11 +2958,6 @@
     'enforce_nullable_relationships' => true,
     'post_migrate' => 
     array (
-    ),
-    'macroable_traits' => 
-    array (
-      0 => 'Filament\\Support\\Concerns\\Macroable',
-      1 => 'Spatie\\Macroable\\Macroable',
     ),
   ),
   'blueprint' => 

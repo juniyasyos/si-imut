@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Filament\Resources\ImutDataResource\Widgets\ImutDataLineChart;
+use App\Filament\Resources\ImutDataResource\Widgets\LineChart;
 use App\Models\ImutData;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class SummaryImutDataDiagram extends Page
+class SummaryDiagram extends Page
 {
     protected static string $resource = ImutDataResource::class;
 
@@ -78,7 +78,7 @@ class SummaryImutDataDiagram extends Page
     public function getHeaderWidgets(): array
     {
         return [
-            ImutDataLineChart::make(['imutData' => $this->imutData]),
+            LineChart::make(['imutData' => $this->imutData]),
         ];
     }
 }

@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Filament\Resources\ImutDataResource\Widgets\ImutDataUnitKerjaGrafikOverview;
+use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
 use App\Models\ImutData;
 use App\Models\UnitKerja;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
-class ImutDataUnitKerjaOverview extends Page
+class UnitKerjaOverview extends Page
 {
     protected static string $resource = ImutDataResource::class;
 
@@ -86,7 +86,7 @@ class ImutDataUnitKerjaOverview extends Page
     public function getHeaderWidgets(): array
     {
         return [
-            ImutDataUnitKerjaGrafikOverview::make([
+            UnitKerjaChart::make([
                 'imutData' => $this->imutData,
                 'unitKerja' => $this->unitKerja,
             ]),

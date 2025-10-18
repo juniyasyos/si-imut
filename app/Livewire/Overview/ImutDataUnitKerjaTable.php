@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
@@ -18,7 +18,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataUnitKerjaOverviewTable extends Component implements HasForms, HasTable
+class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
@@ -191,6 +191,6 @@ class ImutDataUnitKerjaOverviewTable extends Component implements HasForms, HasT
 
     public function render()
     {
-        return view('livewire.imut-data-unit-kerja-overview-table');
+        return view('livewire.overview.imut-data-unit-kerja-table');
     }
 }

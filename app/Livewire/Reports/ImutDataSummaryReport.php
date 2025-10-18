@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Reports;
 
 use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
@@ -20,7 +20,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataReport extends Component implements HasForms, HasTable
+class ImutDataSummaryReport extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
@@ -148,6 +148,6 @@ class ImutDataReport extends Component implements HasForms, HasTable
 
     public function render()
     {
-        return view('livewire.imut-data-report');
+        return view('livewire.reports.imut-data-summary-report');
     }
 }

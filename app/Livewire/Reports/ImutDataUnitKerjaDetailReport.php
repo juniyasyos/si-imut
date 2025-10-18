@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Reports;
 
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
-use App\Models\UnitKerja;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -21,24 +20,23 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
+class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
 
     public ?int $laporanId = null;
 
-    public ?int $unitKerjaId = null;
+    public ?int $imutDataId = null;
 
     protected $listeners = [
         'report-changed' => 'updateReport',
     ];
 
-    public function updateReport(int $laporanId, int $unitKerjaId): void
+    public function updateReport(int $laporanId, int $imutDataId): void
     {
-
         $this->laporanId = $laporanId;
-        $this->unitKerjaId = $unitKerjaId;
+        $this->imutDataId = $imutDataId;
         $this->dispatch('$refresh');
     }
 
@@ -46,26 +44,23 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn() => LaporanUnitKerja::getReportByUnitKerjaDetails($this->laporanId, $this->unitKerjaId))
+            ->query(fn() => LaporanUnitKerja::getReportByImutDataDetails($this->laporanId, $this->imutDataId))
             ->columns([
-                TextColumn::make('imut_data')
-                    ->label('Imut Data')
-                    ->searchable(query: fn(EloquentBuilder $query, string $search) => $query->where('imut_data.title', 'like', "%{$search}%")),
-
-                TextColumn::make('imut_kategori')
-                    ->label('Imut Kategori')
-                    ->toggleable()
+                TextColumn::make('unit_kerja')
+                    ->label('Unit Kerja')
+                    ->grow()
                     ->sortable()
-                    ->color(function ($record) {
-                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-                        $id = $record->imut_kategori_id;
-                        return $colors[$id % count($colors)];
+                    ->searchable(query: function (EloquentBuilder $query, string $search) {
+                        $query->where('unit_kerja.unit_name', 'like', "%{$search}%");
+                        return $query;
                     })
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->badge(),
+                    ->extraAttributes([
+                        'style' => 'padding-right: 9rem;',
+                    ]),
 
                 TextColumn::make('imut_profil')
                     ->label('Imut Profil')
+                    ->width('20%')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
@@ -139,14 +134,13 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
                     ->color('info')
                     ->badge()
                     ->alignCenter(),
-                // ->summarize(Summarizer::make()
-                //     ->label('Standar Min')
-                //     ->suffix('%')
-                //     ->using(fn(Builder $query) => $query->min('standard'))),
 
                 $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
                 // $this->makeSearchableColumn('document_upload', 'Dokumen Upload', 'imut_penilaians.document_upload'),
                 $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
+            ])
+            ->headerActions([
+                ExportAction::make()->exporter(SummaryUnitKerjaReportDetailExport::class)->label('Ekspor laporan IMUT Unit Kerja')
             ])
             ->filters([
                 SelectFilter::make('imut_kategori')
@@ -159,12 +153,6 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
                     ->attribute('imut_kategori_id')
                     ->multiple()
                     ->placeholder('Semua Kategori'),
-            ])
-            ->headerActions([
-                ExportAction::make()
-                    ->exporter(SummaryUnitKerjaReportDetailExport::class)
-                    ->label(fn() => 'Export Laporan ' . UnitKerja::where('id', $this->unitKerjaId)->value('unit_name'))
-                    ->color('gray')
             ])
             ->actions([
                 Action::make('edit_penilaian')
@@ -188,7 +176,9 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
                     'record' => $record->id,
                 ]);
             })
-            ->bulkActions([]);
+            ->bulkActions([
+                // Define bulk actions here
+            ]);
     }
 
     protected function makeSearchableColumn(string $name, string $label, string $dbColumn): TextColumn
@@ -196,6 +186,7 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
         return TextColumn::make($name)
             ->label($label)
             ->toggleable()
+            ->limit(80)
             ->searchable(
                 query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
             );
@@ -203,6 +194,6 @@ class UnitKerjaImutDataReport extends Component implements HasForms, HasTable
 
     public function render()
     {
-        return view('livewire.unit-kerja-imut-data-report');
+        return view('livewire.reports.imut-data-unit-kerja-detail-report');
     }
 }

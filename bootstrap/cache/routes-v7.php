@@ -205,106 +205,6 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/site-settings' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.pages.site-settings',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/social-menu-settings' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.pages.social-menu-settings',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/location-settings' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.pages.location-settings',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/authentication-settings' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.pages.authentication-settings',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/settings' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.pages.settings',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
       '/backups' => 
       array (
         0 => 
@@ -1130,7 +1030,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::JWq3ClSMmryxfyT9',
+            '_route' => 'generated::0ThBsyJH9twi91dw',
           ),
           1 => NULL,
           2 => 
@@ -1150,7 +1050,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::WmJy0BFqLKU33Uuj',
+            '_route' => 'generated::rMvvfnMgwUKRhrFk',
           ),
           1 => NULL,
           2 => 
@@ -1228,7 +1128,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::5SHVjU4sIdIADWLK',
+            '_route' => 'generated::P4O8nDEceK93e2zD',
           ),
           1 => NULL,
           2 => 
@@ -1248,7 +1148,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::aH5pxtIHYyANDQeW',
+            '_route' => 'generated::t7ocH9XQ6RpZaMD0',
           ),
           1 => NULL,
           2 => 
@@ -2566,276 +2466,6 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.site-settings' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'site-settings',
-      'action' => 
-      array (
-        'domain' => NULL,
-        'middleware' => 
-        array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
-          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
-          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
-          4 => 'Illuminate\\Session\\Middleware\\StartSession',
-          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
-          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
-          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
-          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
-          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
-          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
-          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
-          12 => 'Filament\\Http\\Middleware\\Authenticate',
-          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
-        ),
-        'uses' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\SiteSettings@__invoke',
-        'controller' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\SiteSettings',
-        'as' => 'filament.admin.pages.site-settings',
-        'namespace' => NULL,
-        'prefix' => '/',
-        'where' => 
-        array (
-        ),
-        'excluded_middleware' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'filament.admin.pages.social-menu-settings' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'social-menu-settings',
-      'action' => 
-      array (
-        'domain' => NULL,
-        'middleware' => 
-        array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
-          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
-          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
-          4 => 'Illuminate\\Session\\Middleware\\StartSession',
-          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
-          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
-          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
-          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
-          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
-          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
-          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
-          12 => 'Filament\\Http\\Middleware\\Authenticate',
-          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
-        ),
-        'uses' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\SocialMenuSettings@__invoke',
-        'controller' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\SocialMenuSettings',
-        'as' => 'filament.admin.pages.social-menu-settings',
-        'namespace' => NULL,
-        'prefix' => '/',
-        'where' => 
-        array (
-        ),
-        'excluded_middleware' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'filament.admin.pages.location-settings' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'location-settings',
-      'action' => 
-      array (
-        'domain' => NULL,
-        'middleware' => 
-        array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
-          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
-          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
-          4 => 'Illuminate\\Session\\Middleware\\StartSession',
-          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
-          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
-          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
-          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
-          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
-          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
-          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
-          12 => 'Filament\\Http\\Middleware\\Authenticate',
-          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
-        ),
-        'uses' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\LocationSettings@__invoke',
-        'controller' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\LocationSettings',
-        'as' => 'filament.admin.pages.location-settings',
-        'namespace' => NULL,
-        'prefix' => '/',
-        'where' => 
-        array (
-        ),
-        'excluded_middleware' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'filament.admin.pages.authentication-settings' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'authentication-settings',
-      'action' => 
-      array (
-        'domain' => NULL,
-        'middleware' => 
-        array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
-          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
-          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
-          4 => 'Illuminate\\Session\\Middleware\\StartSession',
-          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
-          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
-          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
-          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
-          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
-          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
-          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
-          12 => 'Filament\\Http\\Middleware\\Authenticate',
-          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
-        ),
-        'uses' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\AuthenticationSettings@__invoke',
-        'controller' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\AuthenticationSettings',
-        'as' => 'filament.admin.pages.authentication-settings',
-        'namespace' => NULL,
-        'prefix' => '/',
-        'where' => 
-        array (
-        ),
-        'excluded_middleware' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'filament.admin.pages.settings' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'settings',
-      'action' => 
-      array (
-        'domain' => NULL,
-        'middleware' => 
-        array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
-          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
-          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
-          4 => 'Illuminate\\Session\\Middleware\\StartSession',
-          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
-          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
-          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
-          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
-          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
-          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
-          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
-          12 => 'Filament\\Http\\Middleware\\Authenticate',
-          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
-        ),
-        'uses' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\SettingsHub@__invoke',
-        'controller' => 'Juniyasyos\\FilamentSettingsHub\\Pages\\SettingsHub',
-        'as' => 'filament.admin.pages.settings',
-        'namespace' => NULL,
-        'prefix' => '/',
-        'where' => 
-        array (
-        ),
-        'excluded_middleware' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
     'filament.admin.pages.backups' => 
     array (
       'methods' => 
@@ -4002,8 +3632,8 @@ app('router')->setCompiledRoutes(
         'excluded_middleware' => 
         array (
         ),
-        'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\ImutDataUnitKerjaOverview@__invoke',
-        'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\ImutDataUnitKerjaOverview',
+        'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\UnitKerjaOverview@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\UnitKerjaOverview',
         'as' => 'filament.admin.resources.imut-datas.overview-unit-kerja',
         'namespace' => NULL,
         'prefix' => '/imut-datas',
@@ -4056,8 +3686,8 @@ app('router')->setCompiledRoutes(
         'excluded_middleware' => 
         array (
         ),
-        'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\SummaryImutDataDiagram@__invoke',
-        'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\SummaryImutDataDiagram',
+        'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\SummaryDiagram@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\SummaryDiagram',
         'as' => 'filament.admin.resources.imut-datas.overview-imut-data',
         'namespace' => NULL,
         'prefix' => '/imut-datas',
@@ -6034,7 +5664,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::JWq3ClSMmryxfyT9' => 
+    'generated::0ThBsyJH9twi91dw' => 
     array (
       'methods' => 
       array (
@@ -6046,7 +5676,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
-        'as' => 'generated::JWq3ClSMmryxfyT9',
+        'as' => 'generated::0ThBsyJH9twi91dw',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6062,7 +5692,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::WmJy0BFqLKU33Uuj' => 
+    'generated::rMvvfnMgwUKRhrFk' => 
     array (
       'methods' => 
       array (
@@ -6074,7 +5704,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
-        'as' => 'generated::WmJy0BFqLKU33Uuj',
+        'as' => 'generated::rMvvfnMgwUKRhrFk',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6163,7 +5793,7 @@ app('router')->setCompiledRoutes(
         \\response()
             ->download($path, $filename)
             ->deleteFileAfterSend();
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015460000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000014470000000000000000";}}',
         'middleware' => 
         array (
           0 => 'web',
@@ -6239,7 +5869,7 @@ app('router')->setCompiledRoutes(
     return \\redirect(
         \\session()->pull(\'impersonate.back_to\')
     );
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015800000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016350000000000000000";}}',
         'as' => 'filament-impersonate.leave',
         'middleware' => 
         array (
@@ -6260,7 +5890,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::5SHVjU4sIdIADWLK' => 
+    'generated::P4O8nDEceK93e2zD' => 
     array (
       'methods' => 
       array (
@@ -6277,13 +5907,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:77:"function (\\Illuminate\\Http\\Request $request) {
     return $request->user();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000159b0000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016170000000000000000";}}',
         'namespace' => NULL,
         'prefix' => 'api',
         'where' => 
         array (
         ),
-        'as' => 'generated::5SHVjU4sIdIADWLK',
+        'as' => 'generated::P4O8nDEceK93e2zD',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6299,7 +5929,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::aH5pxtIHYyANDQeW' => 
+    'generated::t7ocH9XQ6RpZaMD0' => 
     array (
       'methods' => 
       array (
@@ -6327,8 +5957,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/juni/skripsi-ahmad-ilyas/application/SI-IMUT/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000015c80000000000000000";}}',
-        'as' => 'generated::aH5pxtIHYyANDQeW',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"000000000000161e0000000000000000";}}',
+        'as' => 'generated::t7ocH9XQ6RpZaMD0',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6360,7 +5990,7 @@ app('router')->setCompiledRoutes(
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015960000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016790000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,
@@ -6395,7 +6025,7 @@ app('router')->setCompiledRoutes(
                         \'spec\' => $generator($config),
                         \'config\' => $config,
                     ]);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015ce0000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000167b0000000000000000";}}',
         'as' => 'scramble.docs.ui',
         'middleware' => 
         array (
@@ -6430,7 +6060,7 @@ app('router')->setCompiledRoutes(
                     $config = \\Dedoc\\Scramble\\Scramble::getGeneratorConfig($api);
 
                     return response()->json($generator($config), options: JSON_PRETTY_PRINT);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000158b0000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016780000000000000000";}}',
         'as' => 'scramble.docs.document',
         'middleware' => 
         array (
