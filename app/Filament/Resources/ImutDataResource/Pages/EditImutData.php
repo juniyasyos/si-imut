@@ -27,7 +27,7 @@ class EditImutData extends EditRecord
                 Action::make('lihat_grafik')
                     ->label('📊 IMUT DATA')
                     ->color('primary')
-                    ->url(fn($record) => \App\Filament\Resources\ImutDataResource\Pages\SummaryImutDataDiagram::getUrl(['record' => $record->slug])),
+                    ->url(fn($record) => \App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram::getUrl(['record' => $record->slug])),
 
                 RelationManagerAction::make('unit-kerja-relation')
                     ->slideOver()
