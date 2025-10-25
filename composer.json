@@ -15,7 +15,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "archilex/filament-toggle-icon-column": "^3.2",
         "asmit/resized-column": "^1.0",
         "awcodes/filament-table-repeater": "^3.1",
         "bepsvpt/secure-headers": "^9.0",
@@ -24,7 +23,7 @@
         "dedoc/scramble": "^0.12.10",
         "diogogpinto/filament-auth-ui-enhancer": "^1.0",
         "dutchcodingcompany/filament-socialite": "^2.3",
-        "filament/filament": "^3.2",
+        "filament/filament": "^4.0",
         "filament/spatie-laravel-media-library-plugin": "^3.2",
         "filament/spatie-laravel-settings-plugin": "^3.2",
         "guava/filament-modal-relation-managers": "^1.4",

@@ -7,7 +7,6 @@ use App\Models\LaporanImut;
 use App\Services\Chart\UnitKerjaChartDataService;
 use App\Services\Data\DateFormattingService;
 use App\Services\ImutChartSeriesService;
-use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\ColorPicker;

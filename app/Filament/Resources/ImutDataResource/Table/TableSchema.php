@@ -20,6 +20,7 @@ use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -71,15 +72,11 @@ class TableSchema extends ImutDataResource
                 })
                 ->toggleable(isToggledHiddenByDefault: false),
 
-            \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('status')
+            IconColumn::make('status')
                 ->label(__('filament-forms::imut-data.fields.status'))
-                ->translateLabel()
+                ->boolean()
                 ->alignCenter()
-                ->size('xl')
-                ->disabled(fn() => \Illuminate\Support\Facades\Gate::any([
-                    'update_imut::data',
-                ]))
-                ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
+                ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Inactive')
                 ->sortable(),
 
             TextColumn::make('created_at')

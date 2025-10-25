@@ -11,6 +11,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -58,15 +59,11 @@ class ImutDataRelationManager extends RelationManager
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('status')
+                IconColumn::make('status')
                     ->label(__('filament-forms::imut-data.fields.status'))
-                    ->translateLabel()
+                    ->boolean()
                     ->alignCenter()
-                    ->size('xl')
-                    ->disabled(fn() => \Illuminate\Support\Facades\Gate::any([
-                        'update_imut::data',
-                    ]))
-                    ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
+                    ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Inactive')
                     ->sortable(),
 
             ])
