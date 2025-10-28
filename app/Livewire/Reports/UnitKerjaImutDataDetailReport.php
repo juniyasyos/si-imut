@@ -3,9 +3,13 @@
 namespace App\Livewire\Reports;
 
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
+use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSchema;
 use App\Models\ImutCategory;
+use App\Models\ImutPenilaian;
 use App\Models\LaporanUnitKerja;
+use Filament\Forms;
 use App\Models\UnitKerja;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -30,8 +34,11 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     public ?int $unitKerjaId = null;
 
+    public ?int $currentPenilaianId = null;
+
     protected $listeners = [
         'report-changed' => 'updateReport',
+        'refreshTable' => '$refresh',
     ];
 
     public function updateReport(int $laporanId, int $unitKerjaId): void
@@ -39,6 +46,11 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
         $this->laporanId = $laporanId;
         $this->unitKerjaId = $unitKerjaId;
+        $this->dispatch('$refresh');
+    }
+
+    public function refreshTable(): void
+    {
         $this->dispatch('$refresh');
     }
 
@@ -144,9 +156,9 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 //     ->suffix('%')
                 //     ->using(fn(Builder $query) => $query->min('standard'))),
 
-                $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
-                // $this->makeSearchableColumn('document_upload', 'Dokumen Upload', 'imut_penilaians.document_upload'),
-                $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
+                // $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
+                // // $this->makeSearchableColumn('document_upload', 'Dokumen Upload', 'imut_penilaians.document_upload'),
+                // $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
             ])
             ->filters([
                 SelectFilter::make('imut_kategori')
@@ -167,27 +179,62 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->color('gray')
             ])
             ->actions([
-                Action::make('edit_penilaian')
-                    ->label('Edit Penilaian')
-                    ->icon('heroicon-o-pencil-square')
+                Action::make('lihat')
+                    ->label('Lihat Detail')
+                    ->icon('heroicon-o-eye')
                     ->color('info')
                     ->url(function ($record) {
                         $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-
                         return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
                             'laporanSlug' => $laporanSlug,
                             'record' => $record->id,
                         ]);
                     }),
-            ])
-            ->recordUrl(function ($record) {
-                $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+                Action::make('isi_penilaian')
+                    ->label('Isi Penilaian')
+                    ->hiddenLabel()
+                    ->color('primary')
+                    ->slideOver()
+                    ->modalHeading(fn($record) => 'Penilaian: ' . ($record->imut_data ?? ''))
+                    ->modalSubmitActionLabel('Simpan')
+                    ->closeModalByClickingAway(false)
+                    ->closeModalByEscaping(false)
+                    ->modalCloseButton(true)
+                    ->modalCancelAction(false)
+                    ->fillForm(fn($record): array => [
+                        'numerator_value'   => $record->numerator_value ?? 0,
+                        'denominator_value' => $record->denominator_value ?? 0,
+                        'analysis'          => $record->analysis ?? '',
+                        'recommendations'   => $record->recommendations ?? '',
+                    ])
+                    ->form([
+                        Section::make('Perhitungan')
+                            ->schema(ImutPenilaianResourceSchema::penilaianCalculationSchema())
+                            ->columns(3),
 
-                return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                    'laporanSlug' => $laporanSlug,
-                    'record' => $record->id,
-                ]);
-            })
+                        Section::make('Analisis dan Rekomendasi')
+                            ->schema(ImutPenilaianResourceSchema::penilaianAnalysisSchema()),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $penilaian = ImutPenilaian::find($record->id);
+
+                        if (!$penilaian) {
+                            return;
+                        }
+
+                        $penilaian->update([
+                            'numerator_value'   => $data['numerator_value'] ?? 0,
+                            'denominator_value' => $data['denominator_value'] ?? 0,
+                            'analysis'          => $data['analysis'] ?? null,
+                            'recommendations'   => $data['recommendations'] ?? null,
+                        ]);
+                    })
+                    ->successNotificationTitle('Penilaian berhasil disimpan')
+                    ->after(function () {
+                        $this->dispatch('$refresh');
+                    })
+            ])
+            ->recordAction('isi_penilaian')
             ->bulkActions([]);
     }
 
