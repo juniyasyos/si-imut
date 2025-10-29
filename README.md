@@ -17,13 +17,35 @@ Dengan meningkatnya tuntutan transparansi, akuntabilitas, dan efisiensi dalam pe
 
 SIIMUT dirancang untuk membantu rumah sakit dalam:  
 
-## 📚 Analisis Proyek (auto-generated)
+## 📚 Dokumentasi
+
+### Analisis Proyek (auto-generated)
 
 Ringkasan analisis struktural dan alur kerja aplikasi disimpan di folder `docs/`:
 
 - `docs/ANALYSIS.md` — ringkasan analisis (gambaran umum, komponen, mapping ke LARS, aspek teknis).
 - `docs/flow.mmd` — diagram alur (Mermaid) yang menggambarkan lifecycle data indikator → laporan → eviden.
 - `docs/module-map.json` — peta modul aplikasi dan kaitannya ke elemen LARS (format JSON).
+
+### Benchmarking System (v1.2.0)
+
+Dokumentasi lengkap sistem benchmarking dengan period validity, cache management, dan schema optimization:
+
+- **[📖 Implementation Guide](docs/benchmarking-system-implementation.md)** — Dokumentasi lengkap implementasi sistem benchmarking
+- **[🚀 Quick Start Guide](docs/benchmarking-quick-start.md)** — Panduan cepat penggunaan sistem benchmarking
+- **[📚 API Reference](docs/benchmarking-api-reference.md)** — Referensi lengkap API dan method yang tersedia
+- **[🎨 UI Improvements](docs/benchmarking-ui-improvements.md)** — Dokumentasi peningkatan antarmuka pengguna (v1.1.0)
+- **[⚡ Schema Optimization](docs/benchmarking-schema-optimization.md)** — Optimasi schema menghilangkan kontradiksi year/month (v1.2.0)
+
+**Key Features:**
+- ✅ Period validity tracking with flexible date ranges
+- ✅ Automatic cache invalidation
+- ✅ Comprehensive validation service
+- ✅ Audit trail (created_by, updated_by)
+- ✅ Factory states for testing
+- ✅ 59 tests with 153 assertions (100% pass)
+- ✅ Inline table editing for quick data entry
+- ✅ **NEW:** Optimized schema - removed year/month redundancy, clearer UX
 
 Silakan lihat file-file tersebut untuk dokumentasi teknis dan peta modul.
 ✅ **Efisiensi & Akurasi** – Digitalisasi pencatatan dan analisis untuk mengurangi kesalahan manual.  

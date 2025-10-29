@@ -243,16 +243,18 @@ class LineChart extends ApexChartWidget
         ];
 
         if ($showBenchmarking) {
-            $benchmarkKey = CacheKey::imutBenchmarking($year, $regionTypeId, null, $endMonth);
+            $benchmarkKey = CacheKey::imutBenchmarking($year, $regionTypeId, $imutDataId, $endMonth);
             $benchmarking = Cache::remember(
                 $benchmarkKey,
                 now()->addMinutes(30),
                 fn() => ImutBenchmarking::query()
                     ->with('regionType:id,type')
-                    ->select('year', 'month', 'benchmark_value', 'region_type_id')
-                    ->where('year', $year)
-                    ->where('month', '<=', $endMonth)
-                    ->when($regionTypeId, fn($q) => $q->whereIn('region_type_id', (array) $regionTypeId))
+                    ->forIndicator($imutDataId)
+                    ->forYearMonth($year, $endMonth)
+                    ->when($regionTypeId, fn($q) => $q->forRegion($regionTypeId))
+                    ->where('is_active', true)
+                    ->orderBy('region_type_id')
+                    ->orderBy('period_start')
                     ->get()
             );
 
@@ -264,6 +266,12 @@ class LineChart extends ApexChartWidget
                 $label = $monthNames[$date->month] . ' ' . $date->year;
 
                 foreach ($items as $item) {
+                    // Validate if benchmark is valid for this period
+                    $periodDate = $date->endOfMonth();
+                    if (!$item->isValidForPeriod($periodDate)) {
+                        continue;
+                    }
+
                     $typeName = $item->regionType->type ?? 'Unknown';
                     $regionSeries[$item->region_type_id][$typeName][$label] = round($item->benchmark_value, 2);
                 }

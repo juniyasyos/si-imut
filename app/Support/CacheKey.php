@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
-use App\Facades\LaporanImut;
+use Illuminate\Support\Facades\Cache;
 
-class CacheKey
+final class CacheKey
 {
     public static function laporanImutDetail(int $laporanId, int $imutDataId): string
     {
@@ -36,13 +38,26 @@ class CacheKey
         return 'dashboard:siimut:chart_data_dashboard';
     }
 
-    public static function imutPenilaian(int $imutDataId, int $year): string
+    public static function imutPenilaian(int $imutDataId, int $year, ?int $endMonth = null): string
     {
-        return "imut:penilaian:{$imutDataId}:{$year}";
+        $monthPart = $endMonth ? ":{$endMonth}" : '';
+        return "imut:penilaian:{$imutDataId}:{$year}{$monthPart}";
     }
 
-    public static function imutBenchmarking(int $year, array|int|null $regionTypeId = null, array|int|null $imutDataId = null): string
-    {
+    /**
+     * Cache key untuk benchmarking IMUT.
+     *
+     * @param int               $year
+     * @param array<int>|int|null $regionTypeId  null = semua region
+     * @param array<int>|int|null $imutDataId    null = semua indikator
+     * @param int|null          $endMonth        null = semua bulan
+     */
+    public static function imutBenchmarking(
+        int $year,
+        array|int|null $regionTypeId = null,
+        array|int|null $imutDataId = null,
+        ?int $endMonth = null
+    ): string {
         $regionPart = is_array($regionTypeId)
             ? implode(',', $regionTypeId)
             : ($regionTypeId ?? 'all');
@@ -51,12 +66,47 @@ class CacheKey
             ? implode(',', $imutDataId)
             : ($imutDataId ?? 'all');
 
-        return "imut:benchmarking:{$year}:region:{$regionPart}:imut:{$imutPart}";
+        $monthPart = $endMonth ?? 'all';
+
+        return "imut:benchmarking:{$year}:month:{$monthPart}:region:{$regionPart}:imut:{$imutPart}";
     }
 
-    public static function imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId = null, $endMonth = 12): string
-    {
-        return 'imut_penilaian_' . $imutDataId . '_' . $year . ($unitKerjaId ? '_uk_' . $unitKerjaId : '') . '_end_month_' . $endMonth;
+    /**
+     * Invalidate semua kombinasi cache benchmarking untuk indikator & tahun tertentu.
+     * Menyasar kombinasi month [1..12, all] dan region [spesifik/null].
+     */
+    public static function invalidateBenchmarkingCache(
+        int $imutDataId,
+        int $year,
+        ?int $regionTypeId = null
+    ): void {
+        // Kumpulan bulan: 1..12 + null (artinya 'all')
+        $months = array_merge(range(1, 12), [null]);
+
+        // Kumpulan region: pakai yang spesifik (jika ada) dan null (semua)
+        $regions = array_unique([$regionTypeId, null], SORT_REGULAR);
+
+        foreach ($months as $month) {
+            foreach ($regions as $region) {
+                Cache::forget(
+                    static::imutBenchmarking($year, $region, $imutDataId, is_int($month) ? $month : null)
+                );
+            }
+        }
+    }
+
+    /**
+     * NOTE: dipertahankan sesuai format lama (underscore) agar tidak mematahkan cache yang ada.
+     */
+    public static function imutPenilaianImutDataUnitKerja(
+        int $imutDataId,
+        int $year,
+        ?int $unitKerjaId = null,
+        int $endMonth = 12
+    ): string {
+        return 'imut_penilaian_' . $imutDataId . '_' . $year
+            . ($unitKerjaId ? '_uk_' . $unitKerjaId : '')
+            . '_end_month_' . $endMonth;
     }
 
     public static function recentLaporanList(int $limit = 6): string
@@ -64,19 +114,22 @@ class CacheKey
         return "laporan.recent_list.limit_{$limit}";
     }
 
-    public static function penilaianGroupedByProfile(int $laporanId)
+    public static function penilaianGroupedByProfile(int $laporanId): string
     {
         return 'penilaian_grouped_profile_' . $laporanId;
     }
 
     public static function laporanList(array $filters = [], ?int $limit = null): string
     {
+        // Distabilkan urutan agar hash konsisten
+        $normalizedFilters = static::stableArray($filters);
+
         $keyData = [
-            'filters' => $filters,
-            'limit' => $limit,
+            'filters' => $normalizedFilters,
+            'limit'   => $limit,
         ];
 
-        return 'laporan_list_' . md5(json_encode($keyData));
+        return 'laporan_list_' . md5(json_encode($keyData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     public static function getPenilaianStats(int $laporanId, bool $filterByUserUnit): string
@@ -93,6 +146,20 @@ class CacheKey
 
     public static function imutChartSeriesData(int $laporanId): string
     {
-        return "imut:chart-series-data:laporan:$laporanId";
+        return "imut:chart-series-data:laporan:{$laporanId}";
+    }
+
+    /**
+     * Utility: menormalkan array (sort rekursif) supaya JSON/hash stabil.
+     */
+    private static function stableArray(array $array): array
+    {
+        ksort($array);
+        foreach ($array as $k => $v) {
+            if (is_array($v)) {
+                $array[$k] = static::stableArray($v);
+            }
+        }
+        return $array;
     }
 }

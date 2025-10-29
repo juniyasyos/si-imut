@@ -258,11 +258,12 @@ class UnitKerjaChart extends ApexChartWidget
                 function () use ($year, $endMonth, $regionTypeId, $imutDataId) {
                     return ImutBenchmarking::query()
                         ->with('regionType:id,type')
-                        ->select('year', 'month', 'benchmark_value', 'region_type_id', 'imut_data_id')
-                        ->where('year', $year)
-                        ->where('month', '<=', $endMonth)
-                        ->where('imut_data_id', $imutDataId)
-                        ->when($regionTypeId, fn($q) => $q->whereIn('region_type_id', $regionTypeId))
+                        ->forIndicator($imutDataId)
+                        ->forYearMonth($year, $endMonth)
+                        ->when($regionTypeId, fn($q) => $q->forRegion($regionTypeId))
+                        ->where('is_active', true)
+                        ->orderBy('region_type_id')
+                        ->orderBy('period_start')
                         ->get();
                 }
             );
@@ -278,6 +279,12 @@ class UnitKerjaChart extends ApexChartWidget
                 $labelMap[$labelKey] = $labelDisplay;
 
                 foreach ($items as $item) {
+                    // Validate if benchmark is valid for this period
+                    $periodDate = $date->endOfMonth();
+                    if (!$item->isValidForPeriod($periodDate)) {
+                        continue;
+                    }
+
                     $type = $item->regionType->type ?? 'Unknown';
                     $regionSeries[$type][$labelKey] = round($item->benchmark_value, 2);
                 }
