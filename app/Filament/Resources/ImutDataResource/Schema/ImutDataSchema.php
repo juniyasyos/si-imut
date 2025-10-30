@@ -186,7 +186,12 @@ class ImutDataSchema extends ImutDataResource
                                                     ->schema([
                                                         TextInput::make('region_name')
                                                             ->label(false)
-                                                            ->placeholder($regionType->type === 'provinsi' ? 'Jawa Barat' : 'RS Harapan')
+                                                            ->placeholder($regionType->hasDefaultRegionName()
+                                                                ? $regionType->getDefaultRegionName()
+                                                                : ($regionType->type === 'provinsi' ? 'Jawa Barat' : 'RS Harapan'))
+                                                            ->default($regionType->getDefaultRegionName())
+                                                            ->disabled($regionType->hasDefaultRegionName())
+                                                            ->dehydrated()
                                                             ->required(),
 
                                                         TextInput::make('benchmark_value')

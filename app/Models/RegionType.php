@@ -42,4 +42,35 @@ class RegionType extends Model
     {
         return $this->hasMany(ImutBenchmarking::class);
     }
+
+    /**
+     * Get default region name for this region type.
+     * Returns null if no default (user must input manually).
+     *
+     * @return string|null
+     */
+    public function getDefaultRegionName(): ?string
+    {
+        $type = strtolower(trim($this->type));
+
+        // Remove emoji and extra spaces
+        $type = preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $type);
+        $type = trim($type);
+
+        return match (true) {
+            str_contains($type, 'nasional') || str_contains($type, 'national') => 'Indonesia',
+            str_contains($type, 'provinsi') || str_contains($type, 'province') => 'Jawa Timur',
+            default => null,
+        };
+    }
+
+    /**
+     * Check if this region type has a default region name.
+     *
+     * @return bool
+     */
+    public function hasDefaultRegionName(): bool
+    {
+        return $this->getDefaultRegionName() !== null;
+    }
 }

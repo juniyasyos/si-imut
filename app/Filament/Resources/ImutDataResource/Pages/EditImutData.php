@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
+use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\CanNotify;
@@ -12,7 +13,7 @@ use Filament\Resources\Pages\EditRecord;
 use Guava\FilamentModalRelationManagers\Actions\Action\RelationManagerAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use App\Filament\Resources\ImutDataResource\Pages\ImutDataUnitKerjaOverview;
+use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
 
 class EditImutData extends EditRecord
 {
@@ -27,15 +28,14 @@ class EditImutData extends EditRecord
                 Action::make('lihat_grafik')
                     ->label('📊 IMUT DATA')
                     ->color('primary')
-                    ->url(fn($record) => \App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram::getUrl(['record' => $record->slug])),
+                    ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
                 RelationManagerAction::make('unit-kerja-relation')
                     ->slideOver()
                     ->label('🏢 Unit Kerja')
                     ->record($this->getRecord())
                     ->color('primary')
-                    ->relationManager(\App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager::make()),
-
+                    ->relationManager(UnitKerjaRelationManager::make()),
             ])
                 ->button()
                 ->label('Lihat Grafik')
@@ -60,7 +60,7 @@ class EditImutData extends EditRecord
                         return '#';
                     }
 
-                    return ImutDataUnitKerjaOverview::getUrl([
+                    return UnitKerjaChart::getUrl([
                         'record_imut_data' => $record->id,
                         'record_unit_kerja' => $unitKerja->id,
                     ]);
@@ -104,7 +104,7 @@ class EditImutData extends EditRecord
 
     public function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        return $this->getResource()::getUrl('edit', ['record' => $this->getRecord()]);
     }
 
     // 🔔 Fungsi notifikasi fleksibel menggunakan Filament Notification

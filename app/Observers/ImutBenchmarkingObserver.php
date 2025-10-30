@@ -25,6 +25,15 @@ class ImutBenchmarkingObserver
             $benchmarking->is_active = true;
         }
 
+        // Auto-fill region_name if empty and region type has default
+        if (empty($benchmarking->region_name) && $benchmarking->regionType) {
+            $defaultName = $benchmarking->regionType->getDefaultRegionName();
+            if ($defaultName) {
+                $benchmarking->region_name = $defaultName;
+                Log::info("Auto-filled region_name: {$defaultName} for region_type: {$benchmarking->regionType->type}");
+            }
+        }
+
         Log::info("Creating benchmarking: {$benchmarking->imut_data_id} - {$benchmarking->year}/{$benchmarking->month}");
     }
 

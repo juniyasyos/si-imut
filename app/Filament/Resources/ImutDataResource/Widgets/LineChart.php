@@ -9,11 +9,6 @@ use App\Models\RegionType;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Cache;
@@ -28,7 +23,7 @@ class LineChart extends ApexChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
+    protected static MaxWidth|string $filterFormWidth = MaxWidth::Large;
 
     protected static bool $isLazy = false;
 
@@ -58,85 +53,55 @@ class LineChart extends ApexChartWidget
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
 
         return [
-            Section::make('Filter Data')
-                ->schema([
-                    Select::make('year')->label('Tahun')->options($years)->default(now()->year)->reactive(),
-                    Select::make('end_month')->label('Sampai Bulan')->options($months)->default(now()->month)->reactive()
-                        ->helperText('Tampilkan data dari Januari sampai bulan yang dipilih'),
-                    Select::make('region_type_id')->label('Benchmarking Region')->options($regionTypes)->multiple()->searchable()->reactive(),
-                    Checkbox::make('show_benchmarking')->label('Tampilkan Benchmarking')->default(false)->reactive()->visible($is_benchmarking),
-                    Checkbox::make('show_dataLabels')->label('Tampilkan Nilai')->default(true)->reactive(),
-                    ColorPicker::make('chart_background')
-                        ->label('Warna Latar Chart')
-                        ->default('transparent')
-                        ->reactive(),
-                ])
-                ->columns(3),
+            Select::make('year')
+                ->label('Tahun')
+                ->options($years)
+                ->default(now()->year)
+                ->reactive()
+                ->required()
+                ->columnSpan(1),
 
-            Section::make('Konfigurasi Chart Utama')
-                ->schema([
-                    Group::make([
-                        Select::make('nilai_type')
-                            ->label('Tipe Nilai IMUT')
-                            ->options(['line' => 'Line', 'column' => 'Column'])
-                            ->default('line')
-                            ->reactive(),
+            Select::make('end_month')
+                ->label('Sampai Bulan')
+                ->options($months)
+                ->default(now()->month)
+                ->reactive()
+                ->helperText('Tampilkan data dari Januari sampai bulan yang dipilih')
+                ->required()
+                ->columnSpan(1),
 
-                        ColorPicker::make('color_nilai')
-                            ->label('Warna Nilai IMUT')
-                            ->default('#3b82f6')
-                            ->reactive(),
-                    ])->columns(2),
+            Select::make('region_type_id')
+                ->label('Benchmarking Region')
+                ->options($regionTypes)
+                ->multiple()
+                ->searchable()
+                ->reactive()
+                ->visible($is_benchmarking)
+                ->placeholder('Pilih region untuk ditampilkan')
+                ->columnSpan(1),
 
-                    Group::make([
-                        Select::make('target_type')
-                            ->label('Tipe Target')
-                            ->options(['line' => 'Line', 'column' => 'Column'])
-                            ->default('line')
-                            ->reactive(),
+            Checkbox::make('show_benchmarking')
+                ->label('Tampilkan Benchmarking')
+                ->default(true)
+                ->reactive()
+                ->visible($is_benchmarking)
+                ->inline(false)
+                ->columnSpan(1),
 
-                        ColorPicker::make('color_target')
-                            ->label('Warna Target')
-                            ->default('#f59e0b')
-                            ->reactive(),
-                    ])->columns(2),
-                ])
-                ->columns(1),
-
-            Section::make('Benchmarking Series')
-                ->schema(
-                    collect($regionTypes)->map(function ($name, $id) {
-                        return Fieldset::make($name)
-                            ->schema([
-                                Grid::make()
-                                    ->schema([
-                                        Select::make("benchmark_types.$id")
-                                            ->label('Tipe')
-                                            ->options(['line' => 'Line', 'column' => 'Column'])
-                                            ->default('column')
-                                            ->reactive(),
-
-                                        ColorPicker::make("benchmark_colors.$id")
-                                            ->label('Warna')
-                                            ->default('#' . substr(md5($name), 0, 6))
-                                            ->reactive(),
-                                    ])
-                                    ->columns(2),
-                            ]);
-                    })->values()->toArray()
-                )
-                ->columns(2)
-                ->collapsed(),
+            Checkbox::make('show_dataLabels')
+                ->label('Tampilkan Nilai pada Chart')
+                ->default(true)
+                ->reactive()
+                ->inline(false)
+                ->columnSpan(1),
         ];
     }
 
     protected function getOptions(): array
     {
-        $chartType = $this->filterFormData['chart_type'] ?? 'mixed';
         $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
-        $backgroundChart = $this->filterFormData['chart_background'];
 
-        $seriesData = $this->getChartSeries($chartType);
+        $seriesData = $this->getChartSeries();
         $xLabels = $this->getMonthLabels();
 
         if (empty($seriesData)) {
@@ -146,7 +111,7 @@ class LineChart extends ApexChartWidget
         return ApexChartConfig::defaultOptions(
             series: $seriesData,
             xLabels: $xLabels,
-            backgroundchart: $backgroundChart,
+            backgroundchart: 'transparent',
             xLabelTitle: 'Periode',
             yLabelTitle: 'Nilai (%)',
             yAxisMin: 0,
@@ -171,7 +136,7 @@ class LineChart extends ApexChartWidget
             ->toArray();
     }
 
-    protected function getChartSeries(string $chartType = 'mixed'): array
+    protected function getChartSeries(): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
         $endMonth = $this->filterFormData['end_month'] ?? now()->month;
@@ -224,21 +189,19 @@ class LineChart extends ApexChartWidget
 
         $labels = array_keys($dataNilai);
 
-        $tipeNilai = $this->filterFormData['nilai_type'] ?? ($chartType === 'bar' || $chartType === 'mixed' ? 'column' : 'line');
-        $tipeTarget = $this->filterFormData['target_type'] ?? 'line';
-
+        // Default colors yang konsisten
         $series = [
             [
                 'name' => 'Nilai IMUT',
-                'type' => $tipeNilai,
+                'type' => 'line',
                 'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labels),
-                'color' => $this->filterFormData['color_nilai'] ?? '#3b82f6',
+                'color' => '#3b82f6', // Blue
             ],
             [
                 'name' => 'Target Standar',
-                'type' => $tipeTarget,
+                'type' => 'line',
                 'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labels),
-                'color' => $this->filterFormData['color_target'] ?? '#f59e0b',
+                'color' => '#f59e0b', // Amber
             ],
         ];
 
@@ -261,6 +224,13 @@ class LineChart extends ApexChartWidget
             $benchmarkGrouped = $benchmarking->groupBy(fn($item) => sprintf('%04d-%02d', $item->year, $item->month));
             $regionSeries = [];
 
+            // Default colors untuk benchmarking
+            $benchmarkColors = [
+                'Nasional' => '#10b981', // Green
+                'Provinsi' => '#8b5cf6', // Purple
+                'Rumah Sakit' => '#ef4444', // Red
+            ];
+
             foreach ($benchmarkGrouped as $periodeKey => $items) {
                 $date = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey);
                 $label = $monthNames[$date->month] . ' ' . $date->year;
@@ -273,19 +243,31 @@ class LineChart extends ApexChartWidget
                     }
 
                     $typeName = $item->regionType->type ?? 'Unknown';
+                    // Remove emoji from type name for comparison
+                    $cleanTypeName = trim(preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $typeName));
+
                     $regionSeries[$item->region_type_id][$typeName][$label] = round($item->benchmark_value, 2);
                 }
             }
 
+            $colorIndex = 0;
+            $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
+
             foreach ($regionSeries as $regionId => $seriesGroup) {
                 foreach ($seriesGroup as $name => $data) {
                     if (collect($labels)->contains(fn($l) => isset($data[$l]))) {
+                        // Get color from predefined or generate
+                        $cleanName = trim(preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $name));
+                        $color = $benchmarkColors[$cleanName] ?? $fallbackColors[$colorIndex % count($fallbackColors)];
+
                         $series[] = [
                             'name' => $name,
-                            'type' => $this->filterFormData['benchmark_types'][$regionId] ?? 'column',
+                            'type' => 'column',
                             'data' => array_map(fn($l) => $data[$l] ?? null, $labels),
-                            'color' => $this->filterFormData['benchmark_colors'][$regionId] ?? '#' . substr(md5($name), 0, 6),
+                            'color' => $color,
                         ];
+
+                        $colorIndex++;
                     }
                 }
             }
