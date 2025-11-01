@@ -133,6 +133,18 @@ class LineChart extends ApexChartWidget
             ->toArray();
     }
 
+    /**
+     * Generate chart series data untuk grafik
+     *
+     * Konfigurasi benchmarking (warna & tipe chart) diambil dari database:
+     * - Warna (color): dari field region_types.display_color
+     * - Tipe chart: dari field region_types.chart_type
+     * - Fallback otomatis jika data belum diset di database
+     *
+     * Admin dapat mengatur melalui menu: Region Type Benchmarking
+     *
+     * @return array Series data untuk ApexCharts
+     */
     protected function getChartSeries(): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
@@ -205,20 +217,17 @@ class LineChart extends ApexChartWidget
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
 
         if ($is_benchmarking) {
-            $benchmarkKey = CacheKey::imutBenchmarking($year, $regionTypeId, $imutDataId, $endMonth);
-            $benchmarking = Cache::remember(
-                $benchmarkKey,
-                now()->addMinutes(30),
-                fn() => ImutBenchmarking::query()
-                    ->with('regionType:id,type')
-                    ->forIndicator($imutDataId)
-                    ->forYearMonth($year, $endMonth)
-                    ->when($regionTypeId, fn($q) => $q->forRegion($regionTypeId))
-                    ->where('is_active', true)
-                    ->orderBy('region_type_id')
-                    ->orderBy('period_start')
-                    ->get()
-            );
+            // TIDAK menggunakan cache untuk benchmarking agar perubahan konfigurasi
+            // (display_color, chart_type) langsung terlihat tanpa perlu clear cache
+            $benchmarking = ImutBenchmarking::query()
+                ->with('regionType:id,type,display_color,chart_type')
+                ->forIndicator($imutDataId)
+                ->forYearMonth($year, $endMonth)
+                ->when($regionTypeId, fn($q) => $q->forRegion($regionTypeId))
+                ->where('is_active', true)
+                ->orderBy('region_type_id')
+                ->orderBy('period_start')
+                ->get();
 
             $regionSeries = [];
 
@@ -254,20 +263,22 @@ class LineChart extends ApexChartWidget
             foreach ($regionSeries as $regionId => $seriesGroup) {
                 foreach ($seriesGroup as $name => $data) {
                     if (collect($labels)->contains(fn($l) => isset($data[$l]))) {
-                        // Ambil region type untuk mendapatkan color dan chart type
+                        // Ambil region type dari database untuk mendapatkan konfigurasi tampilan
                         $regionType = $benchmarking->firstWhere('region_type_id', $regionId)?->regionType;
 
-                        // Get color dari database atau fallback
+                        // Ambil color dari database (field: display_color)
+                        // Fallback otomatis ke warna default berdasarkan nama type jika belum diset
                         $color = $regionType?->getDisplayColorWithFallback() ?? $this->getFallbackColor($colorIndex);
 
-                        // Get chart type dari database atau fallback ke column
+                        // Ambil chart type dari database (field: chart_type)
+                        // Default: 'column' jika belum diset di database
                         $chartType = $regionType?->getChartTypeWithFallback() ?? 'column';
 
                         $series[] = [
                             'name' => $name,
-                            'type' => $chartType,
+                            'type' => $chartType,  // Tipe chart dari database
                             'data' => array_map(fn($l) => $data[$l] ?? null, $labels),
-                            'color' => $color,
+                            'color' => $color,     // Warna dari database
                         ];
 
                         $colorIndex++;
