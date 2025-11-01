@@ -331,6 +331,45 @@ class LaporanUnitKerja extends Model
 
     public static function getSummaryByImutDataGrouped(int $imutDataId)
     {
+        $regionTypes = \App\Models\RegionType::all();
+
+        $selectFields = [
+            'laporan_imuts.id as laporan_imut_id',
+            'laporan_imuts.name as laporan_name',
+            'laporan_imuts.status as laporan_status',
+            'imut_kategori.id as imut_kategori_id',
+            DB::raw('MAX(imut_profil.target_value) as imut_standard'),
+            DB::raw('MAX(imut_profil.target_operator) as imut_standard_type_operator'),
+            DB::raw('CONCAT(
+                DATE_FORMAT(laporan_imuts.assessment_period_start, "%d %M %Y"),
+                " - ",
+                DATE_FORMAT(laporan_imuts.assessment_period_end, "%d %M %Y")
+            ) as periode_pengisian'),
+            DB::raw('SUM(imut_penilaians.numerator_value) as total_numerator'),
+            DB::raw('SUM(imut_penilaians.denominator_value) as total_denominator'),
+            DB::raw('COUNT(DISTINCT laporan_unit_kerjas.unit_kerja_id) as unit_count'),
+            DB::raw('
+                ROUND(
+                    CASE
+                        WHEN SUM(imut_penilaians.denominator_value) > 0 THEN
+                            SUM(imut_penilaians.numerator_value) * 100.0 / NULLIF(SUM(imut_penilaians.denominator_value), 0)
+                        ELSE 0
+                    END, 2
+                ) as percentage
+            '),
+        ];
+
+        // Add dynamic benchmarking columns for each region type
+        foreach ($regionTypes as $regionType) {
+            $selectFields[] = DB::raw("
+                MAX(CASE
+                    WHEN region_types.id = {$regionType->id}
+                    THEN imut_benchmarkings.benchmark_value
+                    ELSE NULL
+                END) as benchmark_{$regionType->id}
+            ");
+        }
+
         return self::query()
             ->join('laporan_imuts', 'laporan_imuts.id', '=', 'laporan_unit_kerjas.laporan_imut_id')
             ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
@@ -338,6 +377,16 @@ class LaporanUnitKerja extends Model
             ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
             ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
             ->join('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
+            ->leftJoin('imut_benchmarkings', function ($join) {
+                $join->on('imut_data.id', '=', 'imut_benchmarkings.imut_data_id')
+                    ->where('imut_benchmarkings.is_active', '=', 1)
+                    ->whereRaw('laporan_imuts.assessment_period_start >= imut_benchmarkings.period_start')
+                    ->where(function ($query) {
+                        $query->whereNull('imut_benchmarkings.period_end')
+                            ->orWhereRaw('laporan_imuts.assessment_period_end <= imut_benchmarkings.period_end');
+                    });
+            })
+            ->leftJoin('region_types', 'imut_benchmarkings.region_type_id', '=', 'region_types.id')
             ->where('imut_data.id', $imutDataId)
             ->groupBy([
                 'laporan_imuts.id',
@@ -347,31 +396,7 @@ class LaporanUnitKerja extends Model
                 'laporan_imuts.assessment_period_end',
                 'imut_kategori.id'
             ])
-            ->select(
-                'laporan_imuts.id as laporan_imut_id',
-                'laporan_imuts.name as laporan_name',
-                'laporan_imuts.status as laporan_status',
-                'imut_kategori.id as imut_kategori_id',
-                DB::raw('MAX(imut_profil.target_value) as imut_standard'),
-                DB::raw('MAX(imut_profil.target_operator) as imut_standard_type_operator'),
-                DB::raw('CONCAT(
-                    DATE_FORMAT(laporan_imuts.assessment_period_start, "%d %M %Y"),
-                    " - ",
-                    DATE_FORMAT(laporan_imuts.assessment_period_end, "%d %M %Y")
-                ) as periode_pengisian'),
-                DB::raw('SUM(imut_penilaians.numerator_value) as total_numerator'),
-                DB::raw('SUM(imut_penilaians.denominator_value) as total_denominator'),
-                DB::raw('COUNT(DISTINCT laporan_unit_kerjas.unit_kerja_id) as unit_count'),
-                DB::raw('
-                ROUND(
-                    CASE
-                        WHEN SUM(imut_penilaians.denominator_value) > 0 THEN
-                            SUM(imut_penilaians.numerator_value) * 100.0 / NULLIF(SUM(imut_penilaians.denominator_value), 0)
-                        ELSE 0
-                    END, 2
-                ) as percentage
-            ')
-            )
+            ->select($selectFields)
             ->orderBy('laporan_imuts.assessment_period_start', 'desc');
     }
 }
