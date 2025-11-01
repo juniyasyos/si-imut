@@ -139,6 +139,18 @@ class UnitKerjaChart extends ApexChartWidget
             ->toArray();
     }
 
+    /**
+     * Generate chart series data untuk grafik per unit kerja
+     *
+     * Konfigurasi benchmarking (warna & tipe chart) diambil dari database:
+     * - Warna (color): dari field region_types.display_color
+     * - Tipe chart: dari field region_types.chart_type
+     * - Fallback otomatis jika data belum diset di database
+     *
+     * Admin dapat mengatur melalui menu: Region Type Benchmarking
+     *
+     * @return array Series data untuk ApexCharts
+     */
     protected function getChartSeries(): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
@@ -218,21 +230,16 @@ class UnitKerjaChart extends ApexChartWidget
         ];
 
         if ($showBenchmarking) {
-            $benchmarkKey = SupportCacheKey::imutBenchmarking($year, null, $imutDataId, $endMonth);
-            $benchmarking = Cache::remember(
-                $benchmarkKey,
-                now()->addMinutes(30),
-                function () use ($year, $endMonth, $imutDataId) {
-                    return ImutBenchmarking::query()
-                        ->with('regionType:id,type,display_color,chart_type')
-                        ->forIndicator($imutDataId)
-                        ->forYearMonth($year, $endMonth)
-                        ->where('is_active', true)
-                        ->orderBy('region_type_id')
-                        ->orderBy('period_start')
-                        ->get();
-                }
-            );
+            // TIDAK menggunakan cache untuk benchmarking agar perubahan konfigurasi
+            // (display_color, chart_type) langsung terlihat tanpa perlu clear cache
+            $benchmarking = ImutBenchmarking::query()
+                ->with('regionType:id,type,display_color,chart_type')
+                ->forIndicator($imutDataId)
+                ->forYearMonth($year, $endMonth)
+                ->where('is_active', true)
+                ->orderBy('region_type_id')
+                ->orderBy('period_start')
+                ->get();
 
             $benchmarkGrouped = $benchmarking->groupBy(fn($item) => sprintf('%04d-%02d', $item->year, $item->month));
             $regionSeries = [];
@@ -266,20 +273,22 @@ class UnitKerjaChart extends ApexChartWidget
 
             foreach ($regionSeries as $regionName => $seriesGroup) {
                 if (collect($labels)->contains(fn($l) => isset($seriesGroup[$l]))) {
-                    // Get region type object
+                    // Ambil region type dari database untuk mendapatkan konfigurasi tampilan
                     $regionType = $regionTypeMap[$regionName] ?? null;
 
-                    // Get color dari database atau fallback
+                    // Ambil color dari database (field: display_color)
+                    // Fallback otomatis ke warna default berdasarkan nama type jika belum diset
                     $color = $regionType?->getDisplayColorWithFallback() ?? $this->getFallbackColor($colorIndex);
 
-                    // Get chart type dari database atau fallback ke column
+                    // Ambil chart type dari database (field: chart_type)
+                    // Default: 'column' jika belum diset di database
                     $chartType = $regionType?->getChartTypeWithFallback() ?? 'column';
 
                     $series[] = [
                         'name' => $regionName,
-                        'type' => $chartType,
+                        'type' => $chartType,  // Tipe chart dari database
                         'data' => array_map(fn($l) => $seriesGroup[$l] ?? null, $labels),
-                        'color' => $color,
+                        'color' => $color,     // Warna dari database
                     ];
 
                     $colorIndex++;
