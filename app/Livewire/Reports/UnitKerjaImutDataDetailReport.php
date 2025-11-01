@@ -63,6 +63,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             ->columns([
                 TextColumn::make('imut_data')
                     ->label('Imut Data')
+                    ->wrap()
+                    ->lineClamp(2)
                     ->searchable(query: fn(EloquentBuilder $query, string $search) => $query->where('imut_data.title', 'like', "%{$search}%")),
 
                 TextColumn::make('imut_kategori')
@@ -180,55 +182,35 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->color('gray')
             ])
             ->actions([
-                Action::make('lihat')
-                    ->label('Lihat Detail')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(function ($record) {
-                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-                        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                            'laporanSlug' => $laporanSlug,
-                            'record' => $record->id,
-                        ]);
-                    }),
                 Action::make('isi_penilaian')
                     ->label('Isi Penilaian')
-                    ->hiddenLabel()
+                    ->icon('heroicon-o-pencil-square')
                     ->color('primary')
+                    ->hiddenLabel()
+                    ->button()
                     ->slideOver()
                     ->modalHeading(fn($record) => 'Penilaian: ' . ($record->imut_data ?? ''))
                     ->modalSubmitActionLabel('Simpan')
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
-                    ->modalCloseButton(true)
+                    ->modalCloseButton(false)
                     ->modalCancelAction(false)
-                    ->visible(function ($record) {
-                        /** @var \App\Models\User $user */
-                        $user = Auth::user();
-
-                        // Check if user has the permission
-                        if (!$user->can('update_numerator_denominator_imut::penilaian')) {
-                            return false;
-                        }
-
-                        // Check if user belongs to the unit kerja
-                        $penilaian = ImutPenilaian::find($record->id);
-                        if (!$penilaian) {
-                            return false;
-                        }
-
-                        $unitKerjaId = $penilaian->laporanUnitKerja?->unitKerja?->id;
-                        if (!$unitKerjaId) {
-                            return false;
-                        }
-
-                        return $user->unitKerjas()->where('unit_kerja.id', $unitKerjaId)->exists();
+                    ->extraModalFooterActions([
+                        Action::make('cancel_custom')
+                            ->label('Tutup')
+                            ->color('gray')
+                            ->extraAttributes(['x-on:click' => 'window.location.reload()']),
+                    ])
+                    ->mountUsing(function (Forms\Form $form, $record) {
+                        $form->fill([
+                            'numerator_value'   => $record->numerator_value ?? 0,
+                            'denominator_value' => $record->denominator_value ?? 0,
+                            'analysis'          => $record->analysis ?? '',
+                            'recommendations'   => $record->recommendations ?? '',
+                        ]);
                     })
-                    ->fillForm(fn($record): array => [
-                        'numerator_value'   => $record->numerator_value ?? 0,
-                        'denominator_value' => $record->denominator_value ?? 0,
-                        'analysis'          => $record->analysis ?? '',
-                        'recommendations'   => $record->recommendations ?? '',
+                    ->extraAttributes(fn($record) => [
+                        'wire:key' => 'isi-penilaian-' . $record->getKey(),
                     ])
                     ->form([
                         Section::make('Perhitungan')
@@ -255,6 +237,17 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->successNotificationTitle('Penilaian berhasil disimpan')
                     ->after(function () {
                         $this->dispatch('$refresh');
+                    }),
+                Action::make('lihat')
+                    ->label('Lihat Detail')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(function ($record) {
+                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+                        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
+                            'laporanSlug' => $laporanSlug,
+                            'record' => $record->id,
+                        ]);
                     })
             ])
             ->recordAction('isi_penilaian')
