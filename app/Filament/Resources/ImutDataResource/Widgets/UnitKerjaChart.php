@@ -224,7 +224,7 @@ class UnitKerjaChart extends ApexChartWidget
                 now()->addMinutes(30),
                 function () use ($year, $endMonth, $imutDataId) {
                     return ImutBenchmarking::query()
-                        ->with('regionType:id,type')
+                        ->with('regionType:id,type,display_color,chart_type')
                         ->forIndicator($imutDataId)
                         ->forYearMonth($year, $endMonth)
                         ->where('is_active', true)
@@ -236,14 +236,8 @@ class UnitKerjaChart extends ApexChartWidget
 
             $benchmarkGrouped = $benchmarking->groupBy(fn($item) => sprintf('%04d-%02d', $item->year, $item->month));
             $regionSeries = [];
+            $regionTypeMap = []; // Map untuk menyimpan region type object
             $labelMap = [];
-
-            // Default colors untuk benchmarking
-            $benchmarkColors = [
-                'Nasional' => '#10b981', // Green
-                'Provinsi' => '#8b5cf6', // Purple
-                'Rumah Sakit' => '#ef4444', // Red
-            ];
 
             foreach ($benchmarkGrouped as $periodeKey => $items) {
                 $date = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey);
@@ -260,21 +254,30 @@ class UnitKerjaChart extends ApexChartWidget
 
                     $type = $item->regionType->type ?? 'Unknown';
                     $regionSeries[$type][$labelKey] = round($item->benchmark_value, 2);
+
+                    // Simpan region type untuk akses color dan chart type nanti
+                    if (!isset($regionTypeMap[$type])) {
+                        $regionTypeMap[$type] = $item->regionType;
+                    }
                 }
             }
 
             $colorIndex = 0;
-            $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
 
-            foreach ($regionSeries as $regionId => $seriesGroup) {
+            foreach ($regionSeries as $regionName => $seriesGroup) {
                 if (collect($labels)->contains(fn($l) => isset($seriesGroup[$l]))) {
-                    // Get color from predefined or generate
-                    $cleanName = trim(preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $regionId));
-                    $color = $benchmarkColors[$cleanName] ?? $fallbackColors[$colorIndex % count($fallbackColors)];
+                    // Get region type object
+                    $regionType = $regionTypeMap[$regionName] ?? null;
+
+                    // Get color dari database atau fallback
+                    $color = $regionType?->getDisplayColorWithFallback() ?? $this->getFallbackColor($colorIndex);
+
+                    // Get chart type dari database atau fallback ke column
+                    $chartType = $regionType?->getChartTypeWithFallback() ?? 'column';
 
                     $series[] = [
-                        'name' => $regionId,
-                        'type' => 'column',
+                        'name' => $regionName,
+                        'type' => $chartType,
                         'data' => array_map(fn($l) => $seriesGroup[$l] ?? null, $labels),
                         'color' => $color,
                     ];
@@ -285,5 +288,17 @@ class UnitKerjaChart extends ApexChartWidget
         }
 
         return $series;
+    }
+
+    /**
+     * Get fallback color untuk backward compatibility
+     *
+     * @param int $index
+     * @return string
+     */
+    protected function getFallbackColor(int $index): string
+    {
+        $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
+        return $fallbackColors[$index % count($fallbackColors)];
     }
 }

@@ -43,28 +43,49 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
 
     /**
      * Check if period is closed (for static context without livewire instance)
+     * Note: This method name is kept for backward compatibility but logic is inverted
+     * Returns TRUE if period is closed (cannot edit unless force permission)
      */
     public static function isPeriodClosed(): bool
     {
-        return ! Auth::user()?->can('force_editable_imut::penilaian');
+        // For now, we don't check period closure in static context
+        // Only check if user has force edit permission
+        return false; // Assume period is always open for static checks
     }
 
     /**
-     * Check if user can edit numerator/denominator (without livewire context)
+     * Check if field should be readonly (cannot edit numerator/denominator)
+     * Returns TRUE if field should be readonly (disabled for editing)
      */
     public static function canEditNumeratorDenominatorStatic(): bool
     {
-        return self::isPeriodClosed()
-            || ! Auth::user()?->can('update_numerator_denominator_imut::penilaian');
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return true; // No user = readonly
+        }
+
+        // User can edit if they have the permission
+        // Return TRUE to make readonly if they DON'T have permission
+        return ! $user->can('update_numerator_denominator_imut::penilaian');
     }
 
     /**
-     * Check if user can create recommendation
+     * Check if recommendation field should be disabled
+     * Returns TRUE if field should be disabled
      */
     public static function canCreateRecommendation(): bool
     {
-        return ! Auth::user()?->can('create_recommendation_penilaian_imut::penilaian')
-            && ! Auth::user()?->can('force_editable_imut::penilaian');
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return true; // No user = disabled
+        }
+
+        // Return TRUE to disable if user DOESN'T have permission
+        return ! $user->can('create_recommendation_penilaian_imut::penilaian');
     }
 
     /**

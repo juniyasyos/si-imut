@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property int $id
  * @property string $type
+ * @property string|null $display_color
+ * @property string $chart_type
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  *
@@ -23,7 +25,7 @@ class RegionType extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['type'];
+    protected $fillable = ['type', 'display_color', 'chart_type'];
 
     /**
      * The attributes that are hidden for serialization.
@@ -72,5 +74,53 @@ class RegionType extends Model
     public function hasDefaultRegionName(): bool
     {
         return $this->getDefaultRegionName() !== null;
+    }
+
+    /**
+     * Get display color with fallback to default based on type name.
+     *
+     * @return string
+     */
+    public function getDisplayColorWithFallback(): string
+    {
+        // Jika ada display_color, gunakan itu
+        if ($this->display_color) {
+            return $this->display_color;
+        }
+
+        // Fallback ke default color berdasarkan nama type
+        $type = strtolower(trim($this->type));
+        $type = preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $type);
+        $type = trim($type);
+
+        return match (true) {
+            str_contains($type, 'nasional') || str_contains($type, 'national') => '#10b981', // Green
+            str_contains($type, 'provinsi') || str_contains($type, 'province') => '#8b5cf6', // Purple
+            str_contains($type, 'rumah sakit') || str_contains($type, 'hospital') => '#ef4444', // Red
+            default => '#3b82f6', // Default Blue
+        };
+    }
+
+    /**
+     * Get chart type with fallback to column.
+     *
+     * @return string
+     */
+    public function getChartTypeWithFallback(): string
+    {
+        return $this->chart_type ?? 'column';
+    }
+
+    /**
+     * Get available chart types for dropdown.
+     *
+     * @return array
+     */
+    public static function getChartTypes(): array
+    {
+        return [
+            'line' => 'Line (Garis)',
+            'column' => 'Column (Batang)',
+        ];
     }
 }

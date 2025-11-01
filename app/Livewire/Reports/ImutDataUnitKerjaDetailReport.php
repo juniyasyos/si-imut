@@ -17,6 +17,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
@@ -159,6 +160,28 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                     ->label('Edit Penilaian')
                     ->icon('heroicon-o-pencil-square')
                     ->color('info')
+                    ->visible(function ($record) {
+                        /** @var \App\Models\User $user */
+                        $user = Auth::user();
+
+                        // Check if user has the permission
+                        if (!$user->can('update_numerator_denominator_imut::penilaian')) {
+                            return false;
+                        }
+
+                        // Check if user belongs to the unit kerja
+                        $penilaian = \App\Models\ImutPenilaian::find($record->id);
+                        if (!$penilaian) {
+                            return false;
+                        }
+
+                        $unitKerjaId = $penilaian->laporanUnitKerja?->unitKerja?->id;
+                        if (!$unitKerjaId) {
+                            return false;
+                        }
+
+                        return $user->unitKerjas()->where('unit_kerja.id', $unitKerjaId)->exists();
+                    })
                     ->url(function ($record) {
                         $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
 

@@ -8,7 +8,7 @@ use App\Models\LaporanImut;
 use App\Models\RegionType;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
-use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Cache;
@@ -71,28 +71,25 @@ class LineChart extends ApexChartWidget
                 ->columnSpan(1),
 
             Select::make('region_type_id')
-                ->label('Benchmarking Region')
+                ->label('Filter Region Benchmarking')
                 ->options($regionTypes)
                 ->multiple()
                 ->searchable()
                 ->reactive()
                 ->visible($is_benchmarking)
-                ->placeholder('Pilih region untuk ditampilkan')
+                ->placeholder('Semua Region')
+                ->helperText('Filter region benchmarking yang ingin ditampilkan')
                 ->columnSpan(1),
 
-            Checkbox::make('show_benchmarking')
-                ->label('Tampilkan Benchmarking')
+            Radio::make('show_dataLabels')
+                ->label('Tampilan Nilai pada Chart')
+                ->options([
+                    true => 'Tampilkan Nilai',
+                    false => 'Sembunyikan Nilai',
+                ])
                 ->default(true)
                 ->reactive()
-                ->visible($is_benchmarking)
-                ->inline(false)
-                ->columnSpan(1),
-
-            Checkbox::make('show_dataLabels')
-                ->label('Tampilkan Nilai pada Chart')
-                ->default(true)
-                ->reactive()
-                ->inline(false)
+                ->inline()
                 ->columnSpan(1),
         ];
     }
@@ -142,7 +139,6 @@ class LineChart extends ApexChartWidget
         $endMonth = $this->filterFormData['end_month'] ?? now()->month;
         $regionTypeId = $this->filterFormData['region_type_id'] ?? null;
         $imutDataId = $this->imutData->id;
-        $showBenchmarking = $this->filterFormData['show_benchmarking'] ?? true;
 
         $penilaianData = Cache::remember(
             CacheKey::imutPenilaian($imutDataId, $year, $endMonth),
@@ -205,7 +201,10 @@ class LineChart extends ApexChartWidget
             ],
         ];
 
-        if ($showBenchmarking) {
+        // Tampilkan benchmarking otomatis jika kategori adalah benchmarking
+        $is_benchmarking = $this->imutData->categories->is_benchmark_category;
+
+        if ($is_benchmarking) {
             $benchmarkKey = CacheKey::imutBenchmarking($year, $regionTypeId, $imutDataId, $endMonth);
             $benchmarking = Cache::remember(
                 $benchmarkKey,
@@ -221,48 +220,52 @@ class LineChart extends ApexChartWidget
                     ->get()
             );
 
-            $benchmarkGrouped = $benchmarking->groupBy(fn($item) => sprintf('%04d-%02d', $item->year, $item->month));
             $regionSeries = [];
 
-            // Default colors untuk benchmarking
-            $benchmarkColors = [
-                'Nasional' => '#10b981', // Green
-                'Provinsi' => '#8b5cf6', // Purple
-                'Rumah Sakit' => '#ef4444', // Red
-            ];
+            // Proses setiap benchmark untuk mengisi semua bulan dalam rentang validitasnya
+            foreach ($benchmarking as $item) {
+                $typeName = $item->regionType->type ?? 'Unknown';
+                $benchmarkValue = round($item->benchmark_value, 2);
 
-            foreach ($benchmarkGrouped as $periodeKey => $items) {
-                $date = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey);
-                $label = $monthNames[$date->month] . ' ' . $date->year;
+                // Loop through semua label (bulan) yang ada di chart
+                foreach ($labels as $label) {
+                    // Parse label untuk mendapatkan bulan dan tahun
+                    // Format label: "Januari 2024", "Februari 2024", etc.
+                    foreach ($monthNames as $monthNum => $monthName) {
+                        if (str_starts_with($label, $monthName)) {
+                            $labelYear = (int) substr($label, strlen($monthName) + 1);
+                            $labelMonth = $monthNum;
 
-                foreach ($items as $item) {
-                    // Validate if benchmark is valid for this period
-                    $periodDate = $date->endOfMonth();
-                    if (!$item->isValidForPeriod($periodDate)) {
-                        continue;
+                            // Buat tanggal untuk label ini (akhir bulan)
+                            $periodDate = \Carbon\Carbon::create($labelYear, $labelMonth, 1)->endOfMonth();
+
+                            // Cek apakah benchmark valid untuk periode ini
+                            if ($item->isValidForPeriod($periodDate)) {
+                                $regionSeries[$item->region_type_id][$typeName][$label] = $benchmarkValue;
+                            }
+                            break;
+                        }
                     }
-
-                    $typeName = $item->regionType->type ?? 'Unknown';
-                    // Remove emoji from type name for comparison
-                    $cleanTypeName = trim(preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $typeName));
-
-                    $regionSeries[$item->region_type_id][$typeName][$label] = round($item->benchmark_value, 2);
                 }
             }
 
             $colorIndex = 0;
-            $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
 
             foreach ($regionSeries as $regionId => $seriesGroup) {
                 foreach ($seriesGroup as $name => $data) {
                     if (collect($labels)->contains(fn($l) => isset($data[$l]))) {
-                        // Get color from predefined or generate
-                        $cleanName = trim(preg_replace('/[\x{1F300}-\x{1F9FF}]/u', '', $name));
-                        $color = $benchmarkColors[$cleanName] ?? $fallbackColors[$colorIndex % count($fallbackColors)];
+                        // Ambil region type untuk mendapatkan color dan chart type
+                        $regionType = $benchmarking->firstWhere('region_type_id', $regionId)?->regionType;
+
+                        // Get color dari database atau fallback
+                        $color = $regionType?->getDisplayColorWithFallback() ?? $this->getFallbackColor($colorIndex);
+
+                        // Get chart type dari database atau fallback ke column
+                        $chartType = $regionType?->getChartTypeWithFallback() ?? 'column';
 
                         $series[] = [
                             'name' => $name,
-                            'type' => 'column',
+                            'type' => $chartType,
                             'data' => array_map(fn($l) => $data[$l] ?? null, $labels),
                             'color' => $color,
                         ];
@@ -274,5 +277,17 @@ class LineChart extends ApexChartWidget
         }
 
         return $series;
+    }
+
+    /**
+     * Get fallback color untuk backward compatibility
+     *
+     * @param int $index
+     * @return string
+     */
+    protected function getFallbackColor(int $index): string
+    {
+        $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
+        return $fallbackColors[$index % count($fallbackColors)];
     }
 }

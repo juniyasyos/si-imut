@@ -22,6 +22,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
@@ -201,6 +202,28 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->closeModalByEscaping(false)
                     ->modalCloseButton(true)
                     ->modalCancelAction(false)
+                    ->visible(function ($record) {
+                        /** @var \App\Models\User $user */
+                        $user = Auth::user();
+
+                        // Check if user has the permission
+                        if (!$user->can('update_numerator_denominator_imut::penilaian')) {
+                            return false;
+                        }
+
+                        // Check if user belongs to the unit kerja
+                        $penilaian = ImutPenilaian::find($record->id);
+                        if (!$penilaian) {
+                            return false;
+                        }
+
+                        $unitKerjaId = $penilaian->laporanUnitKerja?->unitKerja?->id;
+                        if (!$unitKerjaId) {
+                            return false;
+                        }
+
+                        return $user->unitKerjas()->where('unit_kerja.id', $unitKerjaId)->exists();
+                    })
                     ->fillForm(fn($record): array => [
                         'numerator_value'   => $record->numerator_value ?? 0,
                         'denominator_value' => $record->denominator_value ?? 0,

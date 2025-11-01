@@ -85,9 +85,23 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
     {
         return $form->schema([
             Forms\Components\TextInput::make('type')
+                ->label('Nama Region Type')
                 ->required()
-                ->maxLength(255),
-        ]);
+                ->maxLength(255)
+                ->placeholder('contoh: 🌍 Nasional'),
+
+            Forms\Components\ColorPicker::make('display_color')
+                ->label('Warna Chart')
+                ->placeholder('#3b82f6')
+                ->nullable(),
+
+            Forms\Components\Select::make('chart_type')
+                ->label('Tipe Chart')
+                ->options(RegionType::getChartTypes())
+                ->default('column')
+                ->required()
+                ->native(false),
+        ])->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -95,20 +109,53 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('type')
+                    ->label('Region Type')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
                     ->sortable()
-                    ->label('Created At'),
+                    ->weight('bold'),
+
+                Tables\Columns\ColorColumn::make('display_color')
+                    ->label('Warna')
+                    ->sortable()
+                    ->default('#3b82f6')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('display_color')
+                    ->label('Kode Warna')
+                    ->badge()
+                    ->color('gray')
+                    ->formatStateUsing(fn($state) => $state ?? '#3b82f6 (default)')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('chart_type')
+                    ->label('Tipe Chart')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => match($state) {
+                        'line' => '📈 Line',
+                        'column' => '📊 Column',
+                        default => '📊 Column',
+                    })
+                    ->color(fn($state) => match($state) {
+                        'line' => 'success',
+                        'column' => 'primary',
+                        default => 'primary',
+                    })
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime('d M Y H:i')
+                    ->sortable()
+                    ->label('Dibuat')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 // Removed TrashedFilter since we no longer use SoftDeletes
             ])
             ->actions([
                 EditAction::make()
-                    ->modalHeading('Edit Data')
-                    ->modalWidth('xl')
+                    ->modalHeading('Edit Region Type')
+                    ->modalWidth('2xl')
                     ->modal(),
 
                 DeleteAction::make()
