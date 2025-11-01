@@ -51,6 +51,8 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
             ->columns([
                 TextColumn::make('unit_name')
                     ->label('Unit Kerja')
+                    ->wrap()
+                    ->lineClamp(2)
                     ->width('30%')
                     ->searchable(),
 

@@ -20,6 +20,42 @@ use Illuminate\Support\Facades\Auth;
 
 class ImutPenilaianResourceSchema extends ImutPenilaianResource
 {
+    /**
+     * Field names yang akan di-populate dari ImutProfile
+     */
+    protected const PROFILE_FIELDS = [
+        'imut_data_id',
+        'responsible_person',
+        'indicator_type',
+        'rationale',
+        'objective',
+        'operational_definition',
+        'quality_dimension',
+        'numerator_formula',
+        'denominator_formula',
+        'inclusion_criteria',
+        'exclusion_criteria',
+        'data_source',
+        'data_collection_frequency',
+        'data_collection_method',
+        'sampling_method',
+        'analysis_period_type',
+        'analysis_period_value',
+        'target_operator',
+        'target_value',
+        'start_periode',
+        'end_periode',
+        'data_collection_tool',
+        'analysis_plan',
+    ];
+
+    // ============================================================================
+    // MAIN SCHEMA BUILDERS
+    // ============================================================================
+
+    /**
+     * Schema utama untuk form penilaian IMUT
+     */
     public static function make(): array
     {
         return [
@@ -41,9 +77,12 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
         ];
     }
 
+    // ============================================================================
+    // PUBLIC API METHODS
+    // ============================================================================
+
     /**
      * Check if period is closed (for static context without livewire instance)
-     * Note: This method name is kept for backward compatibility but logic is inverted
      * Returns TRUE if period is closed (cannot edit unless force permission)
      */
     public static function isPeriodClosed(): bool
@@ -59,16 +98,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
      */
     public static function canEditNumeratorDenominatorStatic(): bool
     {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return true; // No user = readonly
-        }
-
-        // User can edit if they have the permission
-        // Return TRUE to make readonly if they DON'T have permission
-        return ! $user->can('update_numerator_denominator_imut::penilaian');
+        return self::shouldLockPenilaian();
     }
 
     /**
@@ -77,15 +107,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
      */
     public static function canCreateRecommendation(): bool
     {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return true; // No user = disabled
-        }
-
-        // Return TRUE to disable if user DOESN'T have permission
-        return ! $user->can('create_recommendation_penilaian_imut::penilaian');
+        return self::userCannot('create_recommendation_penilaian_imut::penilaian');
     }
 
     /**
@@ -94,60 +116,10 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
     public static function penilaianCalculationSchema(): array
     {
         return [
-            TextInput::make('numerator_value')
-                ->label('Numerator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->default(0)
-                ->debounce(1000)
-                ->readOnly(fn() => self::canEditNumeratorDenominatorStatic())
-                ->afterStateUpdated(function (callable $set, callable $get) {
-                    static::updateResult($set, $get);
-                }),
-
-            TextInput::make('denominator_value')
-                ->label('Denominator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->debounce(1000)
-                ->default(0)
-                ->nullable()
-                ->readOnly(fn() => self::canEditNumeratorDenominatorStatic())
-                ->afterStateUpdated(function (callable $set, callable $get) {
-                    static::updateResult($set, $get);
-                }),
-
-            TextInput::make('result_operation')
-                ->label('Result (%)')
-                ->numeric()
-                ->placeholder('0.00')
-                ->readOnly()
-                ->debounce(1000)
-                ->dehydrated(false)
-                ->afterStateHydrated(function (callable $set, callable $get) {
-                    static::updateResult($set, $get);
-                }),
-
-            SpatieMediaLibraryFileUpload::make('document_upload')
-                ->label('Unggah Dokumen Pendukung')
-                ->collection(fn(callable $get) => $get('selected_collection') ?? 'default')
-                ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection') ?? 'default'))
-                ->openable()
-                ->downloadable()
-                ->maxSize(20480)
-                ->preserveFilenames()
-                ->previewable(true)
-                ->columnSpanFull()
-                ->disabled(fn() => self::canEditNumeratorDenominatorStatic())
-                ->acceptedFileTypes([
-                    'application/pdf',
-                    'image/*',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/vnd.ms-excel',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                ])
-                ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB'),
+            self::buildNumericInputField('numerator_value', 'Numerator'),
+            self::buildNumericInputField('denominator_value', 'Denominator'),
+            self::buildResultField(),
+            self::buildDocumentUploadField(),
         ];
     }
 
@@ -157,24 +129,18 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
     public static function penilaianAnalysisSchema(): array
     {
         return [
-            Textarea::make('analysis')
-                ->label('Analisis')
-                ->rows(4)
-                ->required()
-                ->readOnly(fn() => self::canEditNumeratorDenominatorStatic())
-                ->placeholder('Tuliskan hasil analisis...')
-                ->columnSpanFull(),
-
-            Textarea::make('recommendations')
-                ->label('Rekomendasi')
-                ->required()
-                ->disabled(fn() => self::canCreateRecommendation())
-                ->rows(4)
-                ->placeholder('Berikan saran atau rekomendasi...')
-                ->columnSpanFull(),
+            self::buildAnalysisField(),
+            self::buildRecommendationField(),
         ];
     }
 
+    // ============================================================================
+    // PROFILE SCHEMA SECTIONS
+    // ============================================================================
+
+    /**
+     * Schema untuk informasi profil IMUT
+     */
     protected static function ImutPenilaianProfileSchema(): array
     {
         return [
@@ -184,28 +150,8 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
                     Hidden::make('imut_data_id'),
                     Select::make('imut_profil_id')
                         ->label('Versi Profil IMUT')
-                        ->options(function ($get) {
-                            $imutDataId = $get('imut_data_id');
-
-                            if ($imutDataId) {
-                                return ImutProfile::where('imut_data_id', $imutDataId)
-                                    ->get()
-                                    ->mapWithKeys(fn($profile) => [
-                                        $profile->id => "{$profile->version}",
-                                    ])
-                                    ->toArray();
-                            }
-
-                            return [];
-                        })
-                        ->disabled(
-                            fn($livewire) =>
-                            ! $livewire->isLaporanPeriodClosed() ||
-                                (
-                                    ! Auth::user()?->can('update_profile_penilaian_imut::penilaian')
-                                    && ! Auth::user()?->can('force_editable_imut::penilaian')
-                                )
-                        )
+                        ->options(fn($get) => self::profileOptions($get('imut_data_id')))
+                        ->disabled(fn($livewire) => self::shouldDisableProfileSelection($livewire))
                         ->searchable()
                         ->preload()
                         ->reactive()
@@ -214,73 +160,12 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
                         ->afterStateUpdated(function ($state, callable $set) {
                             $profile = ImutProfile::find($state);
 
-                            if ($profile) {
-                                $set('imut_data_id', $profile->imut_data_id);
-                                $set('responsible_person', $profile->responsible_person);
-                                $set('indicator_type', $profile->indicator_type);
-                                $set('rationale', $profile->rationale);
-                                $set('objective', $profile->objective);
-                                $set('operational_definition', $profile->operational_definition);
-                                $set('quality_dimension', $profile->quality_dimension);
-                                $set('numerator_formula', $profile->numerator_formula);
-                                $set('denominator_formula', $profile->denominator_formula);
-                                $set('inclusion_criteria', $profile->inclusion_criteria);
-                                $set('exclusion_criteria', $profile->exclusion_criteria);
-                                $set('data_source', $profile->data_source);
-                                $set('data_collection_frequency', $profile->data_collection_frequency);
-                                $set('data_collection_method', $profile->data_collection_method);
-                                $set('sampling_method', $profile->sampling_method);
-                                $set('analysis_period_type', $profile->analysis_period_type);
-                                $set('analysis_period_value', $profile->analysis_period_value);
-                                $set('target_operator', $profile->target_operator);
-                                $set('target_value', $profile->target_value);
-                                $set('start_periode', $profile->start_periode);
-                                $set('end_periode', $profile->end_periode);
-                                $set('data_collection_tool', $profile->data_collection_tool);
-                                $set('analysis_plan', $profile->analysis_plan);
-                            } else {
-                                foreach (
-                                    [
-                                        'imut_data_id',
-                                        'responsible_person',
-                                        'indicator_type',
-                                        'rationale',
-                                        'objective',
-                                        'operational_definition',
-                                        'quality_dimension',
-                                        'numerator_formula',
-                                        'denominator_formula',
-                                        'inclusion_criteria',
-                                        'exclusion_criteria',
-                                        'data_source',
-                                        'data_collection_frequency',
-                                        'data_collection_method',
-                                        'sampling_method',
-                                        'analysis_period_type',
-                                        'analysis_period_value',
-                                        'target_value',
-                                        'data_collection_tool',
-                                        'analysis_plan'
-                                    ] as $field
-                                ) {
-                                    $set($field, null);
-                                }
-                            }
+                            self::populateProfileFields($set, $profile);
                         }),
 
                     Select::make('target_operator')
                         ->label('🎯 Target Nilai')
-                        ->options(function ($get) {
-                            $value = $get('target_value') ?? '-';
-
-                            return [
-                                '>=' => "≥ $value",
-                                '<=' => "≤ $value",
-                                '>' => "> $value",
-                                '<' => "< $value",
-                                '=' => "= $value",
-                            ];
-                        })
+                        ->options(fn($get) => self::targetOperatorOptions($get('target_value')))
                         ->disabled()
                         ->dehydrated(false),
                 ])
@@ -288,6 +173,9 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
         ];
     }
 
+    /**
+     * Schema untuk informasi dasar profil
+     */
     protected static function basicInformationSchemaProfile(): array
     {
         return [
@@ -307,6 +195,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
                         ToggleButtons::make('indicator_type')
                             ->label('Tipe Indikator')
                             ->disabled()
+                            ->inline()
                             ->options([
                                 'process' => 'Proses',
                                 'output' => 'Output',
@@ -346,6 +235,9 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
         ];
     }
 
+    /**
+     * Schema untuk definisi operasional profil
+     */
     protected static function operationalDefinitionSchemaProfile(): array
     {
         return [
@@ -394,6 +286,9 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
         ];
     }
 
+    /**
+     * Schema untuk data dan analisis profil
+     */
     protected static function dataAndAnalysisSchemaProfile(): array
     {
         return [
@@ -481,113 +376,232 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
         ];
     }
 
+    /**
+     * Schema lengkap untuk form penilaian
+     */
     public static function penilaianFormSchema(): array
     {
         return [
             Hidden::make('penilaian_id'),
-            Section::make('Perhitungan')
-                ->schema([
-                    TextInput::make('numerator_value')
-                        ->label('Numerator')
-                        ->numeric()
-                        ->placeholder('0.00')
-                        ->nullable()
-                        ->default(0)
-                        ->debounce(1000)
-                        ->readOnly(
-                            fn($livewire) =>
-                            $livewire->isLaporanPeriodClosed()
-                                && ! Auth::user()?->can('force_editable_imut::penilaian')
-                                || ! Auth::user()?->can('update_numerator_denominator_imut::penilaian')
-                        )
-                        ->afterStateUpdated(function (callable $set, callable $get) {
-                            static::updateResult($set, $get);
-                        }),
-
-                    TextInput::make('denominator_value')
-                        ->label('Denominator')
-                        ->numeric()
-                        ->placeholder('0.00')
-                        ->debounce(1000)
-                        ->default(0)
-                        ->nullable()
-                        ->readOnly(
-                            fn($livewire) =>
-                            $livewire->isLaporanPeriodClosed()
-                                && ! Auth::user()?->can('force_editable_imut::penilaian')
-                                || ! Auth::user()?->can('update_numerator_denominator_imut::penilaian')
-                        )
-                        ->afterStateUpdated(function (callable $set, callable $get) {
-                            static::updateResult($set, $get);
-                        }),
-
-                    TextInput::make('result_operation')
-                        ->label('Result (%)')
-                        ->numeric()
-                        ->placeholder('0.00')
-                        ->readOnly()
-                        ->debounce(1000)
-                        ->dehydrated(false)
-                        ->afterStateHydrated(function (callable $set, callable $get) {
-                            static::updateResult($set, $get);
-                        }),
-
-                    SpatieMediaLibraryFileUpload::make('document_upload')
-                        ->label('Unggah Dokumen Pendukung')
-                        ->collection(fn(callable $get) => $get('selected_collection') ?? 'default')
-                        ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection') ?? 'default'))
-                        ->openable()
-                        ->downloadable()
-                        ->maxSize(20480)
-                        ->preserveFilenames()
-                        ->previewable(true)
-                        ->columnSpanFull()
-                        ->disabled(fn($livewire) => $livewire->isLaporanPeriodClosed()
-                            && ! Auth::user()?->can('force_editable_imut::penilaian')
-                            || ! Auth::user()?->can('update_numerator_denominator_imut::penilaian'))
-                        ->acceptedFileTypes([
-                            'application/pdf',
-                            'image/*',
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                            'application/vnd.ms-excel',
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                        ])
-                        ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB'),
-                ])
-                ->columns(3),
-
-            Section::make('Analisis dan Rekomendasi')
-                ->schema([
-                    Textarea::make('analysis')
-                        ->label('Analisis')
-                        ->rows(4)
-                        ->required()
-                        ->readOnly(
-                            fn($livewire) => $livewire->isLaporanPeriodClosed()
-                                && ! Auth::user()?->can('force_editable_imut::penilaian')
-                                || ! Auth::user()?->can('update_numerator_denominator_imut::penilaian')
-                        )
-                        ->placeholder('Tuliskan hasil analisis...')
-                        ->columnSpanFull(),
-
-                    Textarea::make('recommendations')
-                        ->label('Rekomendasi')
-                        ->required()
-                        ->disabled(
-                            fn() =>
-                            ! Auth::user()?->can('create_recommendation_penilaian_imut::penilaian')
-                                && ! Auth::user()?->can('force_editable_imut::penilaian')
-                        )
-                        ->rows(4)
-                        ->placeholder('Berikan saran atau rekomendasi...')
-                        ->columnSpanFull(),
-                ]),
+            self::buildPerhitunganSection(),
+            self::buildAnalysisSection(),
         ];
     }
 
+    /**
+     * Update result calculation
+     */
     public static function updateResult(callable $set, callable $get): void
     {
         $formCalculationService = app(FormCalculationService::class);
         $formCalculationService->updatePenilaianResult($set, $get);
+    }
+
+    // ============================================================================
+    // PERMISSION HELPERS
+    // ============================================================================
+
+    protected static function userCan(string $permission): bool
+    {
+        return Auth::user()?->can($permission) ?? false;
+    }
+
+    protected static function userCannot(string $permission): bool
+    {
+        return ! self::userCan($permission);
+    }
+
+    protected static function hasForceEdit(): bool
+    {
+        return self::userCan('force_editable_imut::penilaian');
+    }
+
+    /**
+     * Determine if numerator/denominator edits should be locked.
+     */
+    protected static function shouldLockPenilaian(?object $livewire = null): bool
+    {
+        $isPeriodClosed = $livewire && method_exists($livewire, 'isLaporanPeriodClosed')
+            ? $livewire->isLaporanPeriodClosed()
+            : self::isPeriodClosed();
+
+        $isForceEditable = self::hasForceEdit();
+
+        return ($isPeriodClosed && ! $isForceEditable)
+            || self::userCannot('update_numerator_denominator_imut::penilaian');
+    }
+
+    protected static function shouldDisableRecommendationField(): bool
+    {
+        return self::userCannot('create_recommendation_penilaian_imut::penilaian') && ! self::hasForceEdit();
+    }
+
+    // ============================================================================
+    // FIELD BUILDERS
+    // ============================================================================
+
+    protected static function buildNumericInputField(string $name, string $label): TextInput
+    {
+        return TextInput::make($name)
+            ->label($label)
+            ->numeric()
+            ->placeholder('0.00')
+            ->nullable()
+            ->debounce(1000)
+            ->readOnly(fn() => self::shouldLockPenilaian())
+            ->afterStateUpdated(fn(callable $set, callable $get) => self::updateResult($set, $get));
+    }
+
+    protected static function buildResultField(): TextInput
+    {
+        return TextInput::make('result_operation')
+            ->label('Result (%)')
+            ->numeric()
+            ->placeholder('0.00')
+            ->readOnly()
+            ->debounce(1000)
+            ->dehydrated(false)
+            ->afterStateHydrated(fn(callable $set, callable $get) => self::updateResult($set, $get));
+    }
+
+    protected static function buildDocumentUploadField(): SpatieMediaLibraryFileUpload
+    {
+        return SpatieMediaLibraryFileUpload::make('document_upload')
+            ->label('Unggah Dokumen Pendukung')
+            ->collection(fn(callable $get) => $get('selected_collection') ?? 'default')
+            ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection') ?? 'default'))
+            ->openable()
+            ->downloadable()
+            ->maxSize(20480)
+            ->preserveFilenames()
+            ->previewable(true)
+            ->columnSpanFull()
+            ->disabled(fn() => self::shouldLockPenilaian())
+            ->acceptedFileTypes([
+                'application/pdf',
+                'image/*',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])
+            ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB');
+    }
+
+    protected static function buildAnalysisField(): Textarea
+    {
+        return Textarea::make('analysis')
+            ->label('Analisis')
+            ->rows(4)
+            ->nullable()
+            ->readOnly(fn() => self::shouldLockPenilaian())
+            ->placeholder('Tuliskan hasil analisis (opsional)...')
+            ->columnSpanFull();
+    }
+
+    protected static function buildRecommendationField(): Textarea
+    {
+        return Textarea::make('recommendations')
+            ->label('Rekomendasi')
+            ->nullable()
+            ->disabled(fn() => self::shouldDisableRecommendationField())
+            ->rows(4)
+            ->placeholder('Berikan saran atau rekomendasi (opsional)...')
+            ->columnSpanFull();
+    }
+
+    protected static function buildPerhitunganSection(): Section
+    {
+        return Section::make('Perhitungan')
+            ->schema([
+                self::buildNumericInputField('numerator_value', 'Numerator')
+                    ->readOnly(fn($livewire) => self::shouldLockPenilaian($livewire)),
+
+                self::buildNumericInputField('denominator_value', 'Denominator')
+                    ->readOnly(fn($livewire) => self::shouldLockPenilaian($livewire)),
+
+                self::buildResultField(),
+
+                self::buildDocumentUploadField()
+                    ->disabled(fn($livewire) => self::shouldLockPenilaian($livewire)),
+            ])
+            ->columns(3);
+    }
+
+    protected static function buildAnalysisSection(): Section
+    {
+        return Section::make('Analisis dan Rekomendasi')
+            ->schema([
+                self::buildAnalysisField()
+                    ->readOnly(fn($livewire) => self::shouldLockPenilaian($livewire)),
+
+                self::buildRecommendationField(),
+            ]);
+    }
+
+    // ============================================================================
+    // OPTION BUILDERS
+    // ============================================================================
+
+    /**
+     * Build Versi Profil options for the select field.
+     */
+    protected static function profileOptions($imutDataId): array
+    {
+        if (! $imutDataId) {
+            return [];
+        }
+
+        return ImutProfile::where('imut_data_id', $imutDataId)
+            ->get()
+            ->mapWithKeys(fn($profile) => [$profile->id => (string) $profile->version])
+            ->toArray();
+    }
+
+    protected static function shouldDisableProfileSelection(?object $livewire): bool
+    {
+        $periodNotClosed = $livewire && method_exists($livewire, 'isLaporanPeriodClosed')
+            ? ! $livewire->isLaporanPeriodClosed()
+            : ! self::isPeriodClosed();
+
+        return $periodNotClosed
+            || (self::userCannot('update_profile_penilaian_imut::penilaian')
+                && self::userCannot('force_editable_imut::penilaian'));
+    }
+
+    // ============================================================================
+    // DATA POPULATION HELPERS
+    // ============================================================================
+
+    protected static function populateProfileFields(callable $set, ?ImutProfile $profile): void
+    {
+        if (! $profile) {
+            self::resetProfileFields($set);
+
+            return;
+        }
+
+        foreach (self::PROFILE_FIELDS as $field) {
+            $set($field, $profile->{$field} ?? null);
+        }
+    }
+
+    protected static function resetProfileFields(callable $set): void
+    {
+        foreach (self::PROFILE_FIELDS as $field) {
+            $set($field, null);
+        }
+    }
+
+    protected static function targetOperatorOptions($targetValue): array
+    {
+        $value = $targetValue ?? '-';
+
+        return [
+            '>=' => "≥ $value",
+            '<=' => "≤ $value",
+            '>' => "> $value",
+            '<' => "< $value",
+            '=' => "= $value",
+        ];
     }
 }

@@ -6,12 +6,13 @@ use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSchema;
 use App\Models\ImutCategory;
 use App\Models\ImutPenilaian;
+use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
-use Filament\Forms;
 use App\Models\UnitKerja;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\Summarizers\Summarizer;
@@ -22,7 +23,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
@@ -35,8 +35,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     public ?int $unitKerjaId = null;
 
-    public ?int $currentPenilaianId = null;
-
     protected $listeners = [
         'report-changed' => 'updateReport',
         'refreshTable' => '$refresh',
@@ -44,7 +42,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     public function updateReport(int $laporanId, int $unitKerjaId): void
     {
-
         $this->laporanId = $laporanId;
         $this->unitKerjaId = $unitKerjaId;
         $this->dispatch('$refresh');
@@ -54,7 +51,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
     {
         $this->dispatch('$refresh');
     }
-
 
     public function table(Table $table): Table
     {
@@ -71,11 +67,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->label('Imut Kategori')
                     ->toggleable()
                     ->sortable()
-                    ->color(function ($record) {
-                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-                        $id = $record->imut_kategori_id;
-                        return $colors[$id % count($colors)];
-                    })
+                    ->color(fn($record) => $this->getCategoryColor($record->imut_kategori_id))
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->badge(),
 
@@ -112,29 +104,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->toggleable()
                     ->suffix('%')
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
-                    ->color(fn($record) => match (true) {
-                        ! is_numeric($record->percentage) || ! is_numeric($record->imut_standard) => null,
-
-                        match ($record->imut_standard_type_operator) {
-                            '=' => $record->percentage == $record->imut_standard,
-                            '>=' => $record->percentage >= $record->imut_standard,
-                            '<=' => $record->percentage <= $record->imut_standard,
-                            '<' => $record->percentage < $record->imut_standard,
-                            '>' => $record->percentage > $record->imut_standard,
-                            default => false,
-                        } => 'success',
-
-                        match ($record->imut_standard_type_operator) {
-                            '=' => $record->percentage == ($record->imut_standard * 0.8),
-                            '>=' => $record->percentage >= ($record->imut_standard * 0.8),
-                            '<=' => $record->percentage <= ($record->imut_standard * 1.2),
-                            '<' => $record->percentage < ($record->imut_standard * 1.2),
-                            '>' => $record->percentage > ($record->imut_standard * 0.8),
-                            default => false,
-                        } => 'warning',
-
-                        default => 'danger',
-                    })
+                    ->color(fn($record) => $this->getPercentageColor($record))
                     ->summarize(
                         Summarizer::make()
                             ->label('Total Persentase')
@@ -154,23 +124,11 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->color('info')
                     ->badge()
                     ->alignCenter(),
-                // ->summarize(Summarizer::make()
-                //     ->label('Standar Min')
-                //     ->suffix('%')
-                //     ->using(fn(Builder $query) => $query->min('standard'))),
-
-                // $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
-                // // $this->makeSearchableColumn('document_upload', 'Dokumen Upload', 'imut_penilaians.document_upload'),
-                // $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
             ])
             ->filters([
                 SelectFilter::make('imut_kategori')
                     ->label('Imut Kategori')
-                    ->options(
-                        fn() => ImutCategory::query()
-                            ->pluck('short_name', 'id')
-                            ->toArray()
-                    )
+                    ->options(fn() => ImutCategory::pluck('short_name', 'id')->toArray())
                     ->attribute('imut_kategori_id')
                     ->multiple()
                     ->placeholder('Semua Kategori'),
@@ -179,79 +137,119 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ExportAction::make()
                     ->exporter(SummaryUnitKerjaReportDetailExport::class)
                     ->label(fn() => 'Export Laporan ' . UnitKerja::where('id', $this->unitKerjaId)->value('unit_name'))
-                    ->color('gray')
+                    ->color('gray'),
             ])
             ->actions([
-                Action::make('isi_penilaian')
-                    ->label('Isi Penilaian')
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('primary')
-                    ->hiddenLabel()
-                    ->button()
-                    ->slideOver()
-                    ->modalHeading(fn($record) => 'Penilaian: ' . ($record->imut_data ?? ''))
-                    ->modalSubmitActionLabel('Simpan')
-                    ->closeModalByClickingAway(false)
-                    ->closeModalByEscaping(false)
-                    ->modalCloseButton(false)
-                    ->modalCancelAction(false)
-                    ->extraModalFooterActions([
-                        Action::make('cancel_custom')
-                            ->label('Tutup')
-                            ->color('gray')
-                            ->extraAttributes(['x-on:click' => 'window.location.reload()']),
-                    ])
-                    ->mountUsing(function (Forms\Form $form, $record) {
-                        $form->fill([
-                            'numerator_value'   => $record->numerator_value ?? 0,
-                            'denominator_value' => $record->denominator_value ?? 0,
-                            'analysis'          => $record->analysis ?? '',
-                            'recommendations'   => $record->recommendations ?? '',
-                        ]);
-                    })
-                    ->extraAttributes(fn($record) => [
-                        'wire:key' => 'isi-penilaian-' . $record->getKey(),
-                    ])
-                    ->form([
-                        Section::make('Perhitungan')
-                            ->schema(ImutPenilaianResourceSchema::penilaianCalculationSchema())
-                            ->columns(3),
-
-                        Section::make('Analisis dan Rekomendasi')
-                            ->schema(ImutPenilaianResourceSchema::penilaianAnalysisSchema()),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $penilaian = ImutPenilaian::find($record->id);
-
-                        if (!$penilaian) {
-                            return;
-                        }
-
-                        $penilaian->update([
-                            'numerator_value'   => $data['numerator_value'] ?? 0,
-                            'denominator_value' => $data['denominator_value'] ?? 0,
-                            'analysis'          => $data['analysis'] ?? null,
-                            'recommendations'   => $data['recommendations'] ?? null,
-                        ]);
-                    })
-                    ->successNotificationTitle('Penilaian berhasil disimpan')
-                    ->after(function () {
-                        $this->dispatch('$refresh');
-                    }),
-                Action::make('lihat')
-                    ->label('Lihat Detail')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(function ($record) {
-                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-                        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                            'laporanSlug' => $laporanSlug,
-                            'record' => $record->id,
-                        ]);
-                    })
+                $this->buildIsiPenilaianAction(),
+                $this->buildLihatDetailAction(),
             ])
             ->recordAction('isi_penilaian')
             ->bulkActions([]);
+    }
+
+    protected function buildIsiPenilaianAction(): Action
+    {
+        return Action::make('isi_penilaian')
+            ->label('Isi Penilaian')
+            ->icon('heroicon-o-pencil-square')
+            ->color('primary')
+            ->hiddenLabel()
+            ->button()
+            ->slideOver()
+            ->modalHeading(fn($record) => 'Penilaian: ' . ($record->imut_data ?? ''))
+            ->modalSubmitActionLabel('Simpan')
+            ->closeModalByClickingAway(false)
+            ->closeModalByEscaping(false)
+            ->mountUsing(function (Form $form, $record) {
+                $form->fill([
+                    'numerator_value'   => $record->numerator_value ?? null,
+                    'denominator_value' => $record->denominator_value ?? null,
+                    'analysis'          => $record->analysis ?? '',
+                    'recommendations'   => $record->recommendations ?? '',
+                ]);
+            })
+            ->form([
+                Section::make('Perhitungan')
+                    ->schema(ImutPenilaianResourceSchema::penilaianCalculationSchema())
+                    ->columns(3),
+
+                Section::make('Analisis dan Rekomendasi')
+                    ->schema(ImutPenilaianResourceSchema::penilaianAnalysisSchema()),
+            ])
+            ->action(function ($record, array $data) {
+                $penilaian = ImutPenilaian::find($record->id);
+
+                if (!$penilaian) {
+                    return;
+                }
+
+                $penilaian->update([
+                    'numerator_value'   => $data['numerator_value'] ?? null,
+                    'denominator_value' => $data['denominator_value'] ?? null,
+                    'analysis'          => $data['analysis'] ?? null,
+                    'recommendations'   => $data['recommendations'] ?? null,
+                ]);
+            })
+            ->successNotificationTitle('Penilaian berhasil disimpan')
+            ->after(fn() => $this->dispatch('$refresh'));
+    }
+
+    protected function buildLihatDetailAction(): Action
+    {
+        return Action::make('lihat')
+            ->label('Lihat Detail')
+            ->icon('heroicon-o-eye')
+            ->color('info')
+            ->url(fn($record) => $this->getPenilaianUrl($record));
+    }
+
+    protected function getPenilaianUrl($record): string
+    {
+        $laporanSlug = LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+
+        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
+            'laporanSlug' => $laporanSlug,
+            'record' => $record->id,
+        ]);
+    }
+
+    protected function getCategoryColor(int $categoryId): string
+    {
+        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
+        return $colors[$categoryId % count($colors)];
+    }
+
+    protected function getPercentageColor($record): ?string
+    {
+        if (!is_numeric($record->percentage) || !is_numeric($record->imut_standard)) {
+            return null;
+        }
+
+        // Check if meets standard (green)
+        $meetsStandard = match ($record->imut_standard_type_operator) {
+            '=' => $record->percentage == $record->imut_standard,
+            '>=' => $record->percentage >= $record->imut_standard,
+            '<=' => $record->percentage <= $record->imut_standard,
+            '<' => $record->percentage < $record->imut_standard,
+            '>' => $record->percentage > $record->imut_standard,
+            default => false,
+        };
+
+        if ($meetsStandard) {
+            return 'success';
+        }
+
+        // Check if within 80% threshold (yellow)
+        $meetsThreshold = match ($record->imut_standard_type_operator) {
+            '=' => $record->percentage == ($record->imut_standard * 0.8),
+            '>=' => $record->percentage >= ($record->imut_standard * 0.8),
+            '<=' => $record->percentage <= ($record->imut_standard * 1.2),
+            '<' => $record->percentage < ($record->imut_standard * 1.2),
+            '>' => $record->percentage > ($record->imut_standard * 0.8),
+            default => false,
+        };
+
+        return $meetsThreshold ? 'warning' : 'danger';
     }
 
     protected function makeSearchableColumn(string $name, string $label, string $dbColumn): TextColumn
@@ -259,6 +257,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         return TextColumn::make($name)
             ->label($label)
             ->toggleable()
+            ->limit(80)
             ->searchable(
                 query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
             );

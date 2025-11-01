@@ -53,6 +53,8 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
             ->columns([
                 TextColumn::make('imut_data_title')
                     ->label('IMUT Data')
+                    ->wrap()
+                    ->lineClamp(2)
                     ->width('30%')
                     ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search) {
                         return $query->where('imut_data.title', 'like', "%{$search}%");
