@@ -144,7 +144,7 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
         $regionTypes = \App\Models\RegionType::all();
         foreach ($regionTypes as $regionType) {
             $columns[] = TextColumn::make("benchmark_{$regionType->id}")
-                ->label("Benc-{$regionType->type}")
+                ->label("{$regionType->type}")
                 ->suffix('%')
                 ->toggleable()
                 ->alignCenter()

@@ -66,6 +66,11 @@
 
 .fi-main {
     @apply bg-[#F5F6FA] dark:bg-[var(--ds-dark-bg-primary-color)];
+    @apply max-w-full;
+
+    .fi-main-content {
+        @apply max-w-full;
+    }
 }
 
 .fi-wi-widget {
@@ -174,6 +179,9 @@
     .fi-sidebar-header {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
         @apply justify-center;
+        @apply border-r-[1px] border-r-gray-200 dark:border-r-white/10;
+        @apply border-b-[1px] border-b-gray-200 dark:border-b-white/10;
+        @apply py-4;
 
         >.fi-icon-btn {
             >.fi-icon-btn-icon {
@@ -184,7 +192,7 @@
 
     .fi-sidebar-nav {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
-        @apply border-r-[0.9px] border-r-[#E0E0E0] dark:border-none;
+        @apply border-r-[1px] border-r-gray-200 dark:border-r-white/10;
         @apply py-4 px-0;
 
         >.fi-sidebar-nav-groups {
@@ -253,7 +261,7 @@
             }
 
             >.fi-sidebar-group:not(:first-child) {
-                @apply border-t-[0.6px] border-t-[#E0E0E0] dark:border-white/10;
+                @apply border-t-[1px] border-t-gray-200 dark:border-t-white/10;
             }
         }
     }
@@ -264,6 +272,9 @@
     .fi-sidebar-header {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
         @apply justify-center;
+        @apply border-r-[1px] border-r-gray-200 dark:border-r-white/10;
+        @apply border-b-[1px] border-b-gray-200 dark:border-b-white/10;
+        @apply py-4;
 
         >.fi-icon-btn {
             >.fi-icon-btn-icon {
@@ -274,7 +285,7 @@
 
     .fi-sidebar-nav {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
-        @apply border-r-[0.9px] border-r-[#E0E0E0] dark:border-none;
+        @apply border-r-[1px] border-r-gray-200 dark:border-r-white/10;
         @apply py-4 px-0;
 
         >.fi-sidebar-nav-groups {
@@ -326,7 +337,7 @@
                 }
 
                 &:not(:first-child) {
-                    @apply border-t-[0.6px] border-t-[#E0E0E0] dark:border-none;
+                    @apply border-t-[1px] border-t-gray-200 dark:border-t-white/10;
                 }
             }
         }
@@ -355,6 +366,8 @@
 
 /** Page Component Start */
 .fi-page {
+    @apply max-w-full;
+
     &:not(.fi-dashboard-page) {
         .fi-header {
             @apply border-b-[1px] border-b-[#E0E0E0] dark:border-white/10;
@@ -362,7 +375,7 @@
     }
 
     >section {
-        @apply gap-y-6;
+        @apply gap-y-6 max-w-full;
     }
 
     .fi-header {
@@ -599,6 +612,14 @@
 }
 
 /* Checkbox Component End */
+
+/* Logo Component Start */
+.fi-sidebar-header {
+    svg {
+        @apply transition-all duration-200;
+    }
+}
+/* Logo Component End */
 
 .fi-logo {
     @apply text-3xl;
