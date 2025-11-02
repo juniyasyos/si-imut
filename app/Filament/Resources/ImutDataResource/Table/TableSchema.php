@@ -54,57 +54,41 @@ class TableSchema extends ImutDataResource
         return [
             TextColumn::make('title')
                 ->label(__('filament-forms::imut-data.fields.title'))
-                ->tooltip(fn(ImutData $record): string => $record->description ?? '-')
                 ->searchable()
                 ->sortable()
-                ->limit(60),
+                ->wrap()
+                ->weight('medium'),
 
             TextColumn::make('categories.short_name')
                 ->label(__('filament-forms::imut-data.fields.imut_kategori_id'))
                 ->badge()
                 ->sortable()
+                ->toggleable(isToggledHiddenByDefault: false)
                 ->color(function ($record) {
                     $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
                     $id = $record->categories->id ?? 0;
 
                     return $colors[$id % count($colors)];
-                })
-                ->toggleable(isToggledHiddenByDefault: false),
+                }),
 
-            \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('status')
+            TextColumn::make('status')
                 ->label(__('filament-forms::imut-data.fields.status'))
-                ->translateLabel()
+                ->badge()
                 ->alignCenter()
-                ->size('xl')
-                ->disabled(fn() => \Illuminate\Support\Facades\Gate::any([
-                    'update_imut::data',
-                ]))
-                ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
+                ->color(fn(Model $record) => $record->status ? 'success' : 'gray')
+                ->formatStateUsing(fn(Model $record) => $record->status ? 'Aktif' : 'Nonaktif')
+                ->toggleable(isToggledHiddenByDefault: false)
                 ->sortable(),
-
-            TextColumn::make('created_at')
-                ->label(__('filament-forms::imut-data.fields.created_at'))
-                ->dateTime('d M Y H:i')
-                ->sortable()
-                ->icon('heroicon-o-calendar')
-                ->toggleable(isToggledHiddenByDefault: true),
         ];
     }
 
     public static function actions(): array
     {
         return [
-            // \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('user-relation-manager')
-            //     // ->slideOver()
-            //     ->label('Imut Profile')
-            //     ->color('success')
-            //     ->icon('heroicon-c-document-plus')
-            //     ->relationManager(ProfilesRelationManager::make())
-            //     ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_any_imut::profile', User::class)),
-
-            ActionTable::make('lihat_berdasarkan_unit_kerja')
-                ->label('🏢 Lihat Grafik')
-                ->color('success')
+            ActionTable::make('chart')
+                ->label('Grafik')
+                ->icon('heroicon-o-chart-bar')
+                ->color('primary')
                 ->visible(function () {
                     $user = Auth::user();
 
@@ -126,33 +110,26 @@ class TableSchema extends ImutDataResource
                     ]);
                 }),
 
-            EditAction::make()
-                ->label(fn($record) => (
-                    $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
-                ) ? 'Lihat' : 'Ubah')
-                ->icon(fn($record) => (
-                    $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
-                ) ? 'heroicon-o-eye' : 'heroicon-o-pencil-square')
-                ->visible(fn($record) => !is_null($record)),
-
-            ActionGroup::make([
-                ActionTable::make('lihat_berdasarkan_imut_data')
-                    ->label('📊 IMUT DATA')
-                    ->color('primary')
-                    ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
-                    ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
-
-                \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja-relation')
-                    ->slideOver()
-                    ->label('🏢 Unit Kerja')
-                    ->color('primary')
-                    ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
-                    ->relationManager(\App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager::make()),
-            ])
+            ActionTable::make('summary')
+                ->label('Summary')
+                ->icon('heroicon-o-presentation-chart-line')
+                ->color('success')
                 ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
-                ->icon('heroicon-s-chart-bar')
-                ->label('Lihat Grafik')
-                ->button(),
+                ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
+
+            \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja')
+                ->slideOver()
+                ->label('Unit Kerja')
+                ->icon('heroicon-o-building-office-2')
+                ->color('info')
+                ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
+                ->relationManager(\App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager::make()),
+
+            EditAction::make()
+                ->label('')
+                ->tooltip('Edit')
+                ->icon('heroicon-o-pencil-square')
+                ->visible(fn($record) => !is_null($record)),
 
             ActionGroup::make([
                 RestoreAction::make()
@@ -168,7 +145,9 @@ class TableSchema extends ImutDataResource
                             method_exists($record, 'trashed') &&
                             $record->trashed()
                     ),
-            ]),
+            ])
+                ->icon('heroicon-o-ellipsis-vertical')
+                ->tooltip('Lainnya'),
         ];
     }
 
@@ -198,11 +177,16 @@ class TableSchema extends ImutDataResource
     {
         return [
             BulkActionGroup::make([
-                DeleteBulkAction::make(),
-                RestoreBulkAction::make()
-                    ->visible(fn() => method_exists(static::class, 'bootSoftDeletes')),
+                DeleteBulkAction::make()
+                    ->label('Hapus (Soft Delete)'),
                 ForceDeleteBulkAction::make()
-                    ->visible(fn() => method_exists(static::class, 'bootSoftDeletes')),
+                    ->label('Hapus Permanen')
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Permanen Data Terpilih')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data ini secara permanen? Tindakan ini tidak dapat dibatalkan.')
+                    ->modalSubmitActionLabel('Ya, Hapus Permanen'),
+                RestoreBulkAction::make()
+                    ->label('Pulihkan'),
             ]),
         ];
     }

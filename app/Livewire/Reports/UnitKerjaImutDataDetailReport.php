@@ -156,7 +156,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             ->hiddenLabel()
             ->button()
             ->slideOver()
-            ->modalHeading(fn($record) => 'Penilaian: ' . ($record->imut_data ?? ''))
+            ->modalHeading(fn($record) => ($record->imut_data ?? ''))
             ->modalSubmitActionLabel('Simpan')
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)

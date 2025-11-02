@@ -107,13 +107,17 @@ class ImutCategoryResourceTable extends ImutCategoryResource
     {
         return [
             BulkActionGroup::make([
-                RestoreBulkAction::make()
-                    ->visible(fn(ImutCategory $record) => method_exists($record, 'trashed') && $record->trashed()),
+                DeleteBulkAction::make()
+                    ->label('Hapus (Soft Delete)'),
                 ForceDeleteBulkAction::make()
-                    ->visible(fn(ImutCategory $record) => method_exists($record, 'trashed') && $record->trashed()),
+                    ->label('Hapus Permanen')
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Permanen Data Terpilih')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data ini secara permanen? Tindakan ini tidak dapat dibatalkan.')
+                    ->modalSubmitActionLabel('Ya, Hapus Permanen'),
+                RestoreBulkAction::make()
+                    ->label('Pulihkan'),
             ]),
-            DeleteBulkAction::make(),
         ];
     }
 }
-
