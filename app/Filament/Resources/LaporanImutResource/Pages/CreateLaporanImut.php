@@ -135,7 +135,7 @@ class CreateLaporanImut extends CreateRecord
     {
         return [
             route('filament.admin.resources.laporan-imuts.index') => 'Laporan IMUT',
-            null => 'Buat Laporan Baru',
+            null => 'Tambah Data Baru',
         ];
     }
 }

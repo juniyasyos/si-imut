@@ -2,9 +2,9 @@
 
 return [
 
-    'title' => 'Buat :label',
+    'title' => 'Tambahkan :label',
 
-    'breadcrumb' => 'Buat',
+    'breadcrumb' => 'Tambah Data',
 
     'form' => [
 
@@ -15,11 +15,11 @@ return [
             ],
 
             'create' => [
-                'label' => 'Buat',
+                'label' => 'Tambah Data',
             ],
 
             'create_another' => [
-                'label' => 'Buat & buat lainnya',
+                'label' => 'Tambahkan & tambahkan lainnya',
             ],
 
         ],
@@ -29,7 +29,7 @@ return [
     'notifications' => [
 
         'created' => [
-            'title' => 'Data berhasil dibuat',
+            'title' => 'Data berhasil ditambahkan',
         ],
 
     ],

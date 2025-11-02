@@ -18,9 +18,9 @@ class ListUsers extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label(__('filament-forms::users.buttons.add_user'))
+                ->label('Tambah Data')
                 ->visible(fn() => Gate::allows('create', User::class))
-                ->icon('heroicon-m-user-plus'),
+                ->icon('heroicon-m-plus'),
             ExportAction::make()
                 ->exports([
                     ExcelExport::make()

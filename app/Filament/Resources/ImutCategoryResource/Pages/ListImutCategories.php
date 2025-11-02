@@ -16,7 +16,7 @@ class ListImutCategories extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label(__('filament-forms::imut-category.buttons.add_data'))
+                ->label('Tambah Data')
                 ->visible(fn() => Gate::allows('create_imut::category', ImutCategory::class))
                 ->icon('heroicon-m-plus'),
         ];

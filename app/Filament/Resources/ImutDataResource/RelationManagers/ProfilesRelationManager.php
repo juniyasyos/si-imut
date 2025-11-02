@@ -51,6 +51,8 @@ class ProfilesRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('Tambah Data')
+                    ->icon('heroicon-m-plus')
                     ->visible(function ($livewire) {
                         $owner = $livewire->ownerRecord;
                         return Auth::user()?->can('create_imut::profile') && $owner->created_by === Auth::id();

@@ -27,7 +27,8 @@ class ListUnitKerja extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label(__('filament-forms::unit-kerja.actions.add')),
+                ->label('Tambah Data')
+                ->icon('heroicon-m-plus'),
         ];
     }
 }

@@ -111,7 +111,7 @@ class CreateImutProfile extends CreateRecord
         return [
             route('filament.admin.resources.imut-datas.index') => 'IMUT Data',
             $imutData ? route('filament.admin.resources.imut-datas.edit', ['record' => $imutData->slug]) : '#' => $imutData->title ?? 'Data Tidak Ditemukan',
-            null => 'Create Profile',
+            null => 'Tambah Data Profile',
         ];
     }
 

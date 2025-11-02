@@ -22,6 +22,8 @@ class ListFoldersCustom extends ListFolders
     {
         return [
             Actions\CreateAction::make()
+                ->label('Tambah Data')
+                ->icon('heroicon-m-plus')
                 ->visible(fn () => Gate::any(['create_folder::custom'])),
         ];
     }

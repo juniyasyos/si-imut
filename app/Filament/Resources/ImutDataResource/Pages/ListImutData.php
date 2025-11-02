@@ -21,6 +21,8 @@ class ListImutData extends ListRecords
                 ->tooltip('Lihat daftar semua Region Type')
                 ->url(fn() => ImutDataResource::getUrl('bencmarking-region-type')),
             Actions\CreateAction::make()
+                ->label('Tambah Data')
+                ->icon('heroicon-m-plus')
         ];
     }
 }
