@@ -74,12 +74,14 @@ class EditImutProfile extends EditRecord
         return [
             Action::make('save')
                 ->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))
+                ->icon('heroicon-m-check')
                 ->submit('save')
                 ->visible(fn() => static::canEditProfilIndikator($this->record))
                 ->keyBindings(['mod+s']),
 
             Action::make('cancel')
                 ->label(__('filament-panels::resources/pages/edit-record.form.actions.cancel.label'))
+                ->icon('heroicon-m-x-mark')
                 ->alpineClickHandler('document.referrer ? window.history.back() : (window.location.href = ' . Js::from($this->previousUrl ?? static::getResource()::getUrl()) . ')')
                 ->visible(fn() => static::canEditProfilIndikator($this->record))
                 ->color('gray'),
