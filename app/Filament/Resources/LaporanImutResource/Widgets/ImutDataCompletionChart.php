@@ -13,6 +13,7 @@ class ImutDataCompletionChart extends ApexChartWidget
 {
     protected static ?string $chartId = 'imutDataCompletionChart';
     protected static ?string $heading = 'Kelengkapan Pelaporan Per Indikator Mutu';
+        protected static ?int $sort = 2;
 
     public int|string|array|null $columnSpanCustom = null;
     public ?int $laporanId = null;
@@ -124,11 +125,11 @@ class ImutDataCompletionChart extends ApexChartWidget
                 // Total unit yang seharusnya mengisi indikator ini
                 DB::raw('COUNT(DISTINCT laporan_unit_kerjas.unit_kerja_id) as expected_units'),
                 // Unit yang sudah mengisi dengan nilai valid
-                DB::raw('COUNT(DISTINCT CASE 
-                    WHEN imut_penilaians.numerator_value IS NOT NULL 
-                    AND imut_penilaians.denominator_value IS NOT NULL 
-                    AND imut_penilaians.denominator_value != 0 
-                    THEN laporan_unit_kerjas.unit_kerja_id 
+                DB::raw('COUNT(DISTINCT CASE
+                    WHEN imut_penilaians.numerator_value IS NOT NULL
+                    AND imut_penilaians.denominator_value IS NOT NULL
+                    AND imut_penilaians.denominator_value != 0
+                    THEN laporan_unit_kerjas.unit_kerja_id
                 END) as filled_units')
             ])
             ->groupBy('imut_data.id', 'imut_data.title')

@@ -4,9 +4,13 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Login;
+use App\Filament\Resources\LaporanImutResource\Widgets\ImutDataCompletionChart;
+use App\Filament\Resources\LaporanImutResource\Widgets\UnitKerjaCompletionChart;
 use App\Filament\Widgets\AccountWidget;
 use App\Filament\Widgets\FilamentInfoWidget;
 use App\Filament\Widgets\ImutCapaianUnitKerjaWidget;
+use App\Filament\Widgets\LaporanLatestWidget;
+use App\Models\UnitKerja;
 use App\Models\User;
 use App\Settings\KaidoSetting;
 use Asmit\ResizedColumn\ResizedColumnPlugin;
@@ -75,7 +79,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-        ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(Login::class))
+            ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(Login::class))
             ->when($this->getSettingValue('registration_enabled', false), fn($panel) => $panel->registration())
             ->when($this->getSettingValue('password_reset_enabled', true), fn($panel) => $panel->passwordReset())
             // ->emailVerification()
@@ -87,7 +91,15 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 AccountWidget::class,
-                ImutCapaianUnitKerjaWidget::class
+                ImutCapaianUnitKerjaWidget::class,
+                ImutDataCompletionChart::make([
+                    'laporanId' => LaporanLatestWidget::getLatestLaporan()?->id,
+                    'columnSpanCustom' => 1
+                ]),
+                UnitKerjaCompletionChart::make([
+                    'laporanId' => LaporanLatestWidget::getLatestLaporan()?->id,
+                    'columnSpanCustom' => 1
+                ]),
             ])
             ->middleware([
                 EncryptCookies::class,

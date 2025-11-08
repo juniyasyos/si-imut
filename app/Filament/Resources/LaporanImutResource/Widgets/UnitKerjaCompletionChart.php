@@ -13,7 +13,8 @@ class UnitKerjaCompletionChart extends ApexChartWidget
 {
     protected static ?string $chartId = 'unitKerjaCompletionChart';
     protected static ?string $heading = 'Kelengkapan Pelaporan Per Unit Kerja';
-    
+    protected static ?int $sort = 2;
+
     public int|string|array|null $columnSpanCustom = null;
     public ?int $laporanId = null;
 

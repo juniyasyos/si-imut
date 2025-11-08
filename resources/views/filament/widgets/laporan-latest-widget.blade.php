@@ -13,7 +13,7 @@
             'text' => 'text-blue-700 dark:text-blue-400',
             'ring' => 'ring-blue-200 dark:ring-blue-800',
             'badge' =>
-                'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 ring-blue-200 dark:ring-blue-800',
+                'bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 ring-blue-200/70 dark:ring-blue-800/70',
         ],
         'complete' => [
             'label' => 'Selesai',
@@ -23,7 +23,7 @@
             'text' => 'text-green-700 dark:text-green-400',
             'ring' => 'ring-green-200 dark:ring-green-800',
             'badge' =>
-                'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 ring-green-200 dark:ring-green-800',
+                'bg-green-100/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 ring-green-200/70 dark:ring-green-800/70',
         ],
         'coming_soon' => [
             'label' => 'Akan Datang',
@@ -33,18 +33,18 @@
             'text' => 'text-gray-700 dark:text-gray-400',
             'ring' => 'ring-gray-200 dark:ring-gray-800',
             'badge' =>
-                'bg-gray-100 dark:bg-gray-900/50 text-gray-700 dark:text-gray-400 ring-gray-200 dark:ring-gray-800',
+                'bg-gray-100/80 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 ring-gray-200/70 dark:ring-gray-800/70',
         ],
     ];
 
     $currentStatus = $statusConfig[$laporan?->status ?? 'coming_soon'] ?? $statusConfig['coming_soon'];
 
-    // Check permissions for actions
+    // Permissions
     $canViewLaporan = $user?->can('view', $laporan ?? \App\Models\LaporanImut::class);
     $canManageBenchmarking = $user?->can('view_any', \App\Models\Benchmarking::class);
     $canViewAnalytics = $user?->can('view_any', \App\Models\LaporanImut::class);
 
-    // Check permission untuk isi penilaian
+    // Isi penilaian
     $canIsiPenilaian = false;
     $isiPenilaianUrl = null;
 
@@ -53,12 +53,8 @@
         $laporanUnitKerjaIds = $laporan->unitKerjas->pluck('id')->toArray();
         $canIsiPenilaian = !empty(array_intersect($userUnitKerjaIds, $laporanUnitKerjaIds));
 
-        // Get URL untuk isi penilaian (jika user punya unit kerja yang match)
         if ($canIsiPenilaian) {
-            $matchingUnitKerja = $user
-                ->unitKerjas()
-                ->whereIn('unit_kerja.id', $laporanUnitKerjaIds)
-                ->first();
+            $matchingUnitKerja = $user->unitKerjas()->whereIn('unit_kerja.id', $laporanUnitKerjaIds)->first();
 
             if ($matchingUnitKerja) {
                 $isiPenilaianUrl = \App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport::getUrl([
@@ -69,64 +65,69 @@
         }
     }
 
-    // Calculate progress if process
+    // Progress
     $progressPercentage = 0;
     $daysRemaining = 0;
+
     if ($laporan && $laporan->status === 'process') {
         $start = $laporan->assessment_period_start;
         $end = $laporan->assessment_period_end;
         $today = now();
-        $totalDays = $start->diffInDays($end);
-        $passedDays = $start->diffInDays($today);
-        $progressPercentage = $totalDays > 0 ? min(100, round(($passedDays / $totalDays) * 100)) : 0;
+
+        $totalDays = max(1, $start->diffInDays($end));
+        $passedDays = min($totalDays, $start->diffInDays($today));
+        $progressPercentage = min(100, round(($passedDays / $totalDays) * 100));
         $daysRemaining = max(0, $today->diffInDays($end, false));
     }
 @endphp
-<x-filament-widgets::widget>
 
-    <x-filament::section>
+<x-filament-widgets::widget>
+    <x-filament::section class="pt-8 pb-4">
         @if (!$laporan)
             {{-- Empty State --}}
-            <div class="flex flex-col items-center justify-center py-12">
-                <div class="rounded-full bg-gray-100 dark:bg-gray-800 p-4 mb-4">
-                    <x-heroicon-o-document-text class="w-12 h-12 text-gray-400 dark:text-gray-600" />
+            <div class="flex flex-col items-center justify-center py-10 text-center">
+                <div class="mb-4 rounded-2xl bg-gray-100 p-4 dark:bg-gray-800">
+                    <x-heroicon-o-document-text class="h-10 w-10 text-gray-400 dark:text-gray-600" />
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Belum Ada Laporan Tersedia
+
+                <h3 class="mb-1 text-base font-semibold text-gray-900 dark:text-gray-50">
+                    Belum Ada Laporan
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md">
-                    Belum ada laporan yang tersedia saat ini. Silakan hubungi administrator untuk membuat laporan
-                    periode baru.
+                <p class="max-w-md text-sm text-gray-500 dark:text-gray-400">
+                    Saat ini belum terdapat laporan indikator mutu yang aktif. Hubungi administrator untuk membuat
+                    periode laporan baru.
                 </p>
             </div>
         @else
-            {{-- Main Content --}}
-            <div class="space-y-4">
-                {{-- Header Section with Status Badge --}}
+            <div class="space-y-5">
+                {{-- Header: Judul + Status + Periode + Aksi --}}
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    {{-- Title & Period Info --}}
+                    {{-- Judul & Periode --}}
                     <div class="flex-1">
                         <div class="flex items-start gap-3">
                             <div
-                                class="flex-shrink-0 rounded-xl {{ $currentStatus['bg'] }} p-3 ring-1 {{ $currentStatus['ring'] }}">
-                                <x-dynamic-component :component="$currentStatus['icon']" class="w-6 h-6 {{ $currentStatus['text'] }}" />
+                                class="flex h-11 w-11 items-center justify-center rounded-xl {{ $currentStatus['bg'] }} {{ $currentStatus['ring'] }} ring-1">
+                                <x-dynamic-component :component="$currentStatus['icon']" class="h-5 w-5 {{ $currentStatus['text'] }}" />
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <h2 class="truncate text-lg font-semibold text-gray-900 dark:text-gray-50">
                                     {{ $laporan->name }}
                                 </h2>
-                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                                     <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-                                        <x-heroicon-m-calendar class="w-4 h-4" />
-                                        <span class="font-medium">
+                                        <x-heroicon-m-calendar class="h-4 w-4" />
+                                        <span>
                                             {{ $laporan->assessment_period_start->translatedFormat('d M Y') }}
                                             <span class="text-gray-400 dark:text-gray-600">—</span>
                                             {{ $laporan->assessment_period_end->translatedFormat('d M Y') }}
                                         </span>
                                     </span>
+
                                     <span
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ring-1 {{ $currentStatus['badge'] }}">
-                                        <x-dynamic-component :component="$currentStatus['icon']" class="w-3.5 h-3.5" />
+                                        class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 {{ $currentStatus['badge'] }}">
+                                        <x-dynamic-component :component="$currentStatus['icon']" class="h-3.5 w-3.5" />
                                         {{ $currentStatus['label'] }}
                                     </span>
                                 </div>
@@ -134,7 +135,7 @@
                         </div>
                     </div>
 
-                    {{-- Quick Actions --}}
+                    {{-- Aksi Cepat --}}
                     <div class="flex flex-wrap gap-2 lg:flex-shrink-0">
                         {{-- Tombol Isi Penilaian (prioritas tertinggi untuk user penilai) --}}
                         @if ($isiPenilaianUrl)
@@ -172,120 +173,119 @@
                     </div>
                 </div>
 
-                {{-- Progress Bar (only for process status) --}}
+                {{-- Progress waktu (hanya status process) --}}
                 @if ($laporan->status === 'process')
                     <div
-                        class="rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20
-                                p-4 ring-1 ring-blue-200 dark:ring-blue-800">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Progress Periode
+                        class="rounded-xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/40">
+                        <div class="mb-2 flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                Progress Periode Waktu
                             </span>
-                            <span class="text-sm font-bold text-blue-700 dark:text-blue-400">
+                            <span class="text-sm font-semibold text-blue-700 dark:text-blue-400">
                                 {{ $progressPercentage }}%
                             </span>
                         </div>
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full transition-all duration-500 ease-out"
+
+                        <div class="h-2.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div class="h-full rounded-full bg-blue-600 transition-all duration-500 ease-out"
                                 style="width: {{ $progressPercentage }}%">
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                            <x-heroicon-m-clock class="w-3.5 h-3.5" />
-                            <span>
-                                @if ($daysRemaining > 0)
-                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $daysRemaining }}
-                                        hari</span> tersisa
-                                @else
-                                    Periode berakhir hari ini
-                                @endif
-                            </span>
+
+                        <div class="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                            <x-heroicon-m-clock class="h-3.5 w-3.5" />
+                            @if ($daysRemaining > 0)
+                                <span>
+                                    <span class="font-semibold text-gray-900 dark:text-gray-100">
+                                        {{ $daysRemaining }} hari
+                                    </span>
+                                    tersisa hingga akhir periode.
+                                </span>
+                            @else
+                                <span>Periode penilaian berakhir hari ini.</span>
+                            @endif
                         </div>
                     </div>
                 @endif
 
-                {{-- Info Cards Grid --}}
+                {{-- Info ringkas (grid) --}}
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    {{-- Report Year/Month --}}
+                    {{-- Periode laporan --}}
                     <div
-                        class="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20
-                              p-4 ring-1 ring-purple-200 dark:ring-purple-800">
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-lg bg-purple-100 dark:bg-purple-900/50 p-2">
-                                <x-heroicon-m-calendar-days class="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-purple-600 dark:text-purple-400">Periode Laporan
-                                </p>
-                                <p class="text-lg font-bold text-purple-900 dark:text-purple-100">
-                                    {{ $laporan->report_month }}/{{ $laporan->report_year }}
-                                </p>
-                            </div>
+                        class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
+                        <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                            <x-heroicon-m-calendar-days class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                Periode Laporan
+                            </p>
+                            <p class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                {{ $laporan->report_month }}/{{ $laporan->report_year }}
+                            </p>
                         </div>
                     </div>
 
-                    {{-- Duration --}}
+                    {{-- Durasi hari --}}
                     <div
-                        class="rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20
-                              p-4 ring-1 ring-orange-200 dark:ring-orange-800">
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-lg bg-orange-100 dark:bg-orange-900/50 p-2">
-                                <x-heroicon-m-clock class="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-orange-600 dark:text-orange-400">Durasi</p>
-                                <p class="text-lg font-bold text-orange-900 dark:text-orange-100">
-                                    {{ $laporan->assessment_period_start->diffInDays($laporan->assessment_period_end) + 1 }}
-                                    Hari
-                                </p>
-                            </div>
+                        class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
+                        <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                            <x-heroicon-m-clock class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                Durasi Periode
+                            </p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                {{ $laporan->assessment_period_start->diffInDays($laporan->assessment_period_end) + 1 }}
+                                hari
+                            </p>
                         </div>
                     </div>
 
-                    {{-- Created Date --}}
+                    {{-- Tanggal dibuat --}}
                     <div
-                        class="rounded-lg bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/20 dark:to-emerald-950/20
-                              p-4 ring-1 ring-teal-200 dark:ring-teal-800">
-                        <div class="flex items-center gap-3">
-                            <div class="rounded-lg bg-teal-100 dark:bg-teal-900/50 p-2">
-                                <x-heroicon-m-document-plus class="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-teal-600 dark:text-teal-400">Dibuat</p>
-                                <p class="text-lg font-bold text-teal-900 dark:text-teal-100">
-                                    {{ $laporan->created_at->translatedFormat('d M Y') }}
-                                </p>
-                            </div>
+                        class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
+                        <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                            <x-heroicon-m-document-plus class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                Dibuat
+                            </p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                {{ $laporan->created_at->translatedFormat('d M Y') }}
+                            </p>
                         </div>
                     </div>
 
-                    {{-- Quick Stats --}}
+                    {{-- Status data / analytics --}}
                     @if ($canViewAnalytics)
                         <div
-                            class="rounded-lg bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20
-                                  p-4 ring-1 ring-indigo-200 dark:ring-indigo-800">
-                            <div class="flex items-center gap-3">
-                                <div class="rounded-lg bg-indigo-100 dark:bg-indigo-900/50 p-2">
-                                    <x-heroicon-m-chart-bar-square
-                                        class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                </div>
-                                <div>
-                                    <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400">Status Data
-                                    </p>
-                                    <p class="text-lg font-bold text-indigo-900 dark:text-indigo-100">
-                                        {{ ucfirst($laporan->status) }}
-                                    </p>
-                                </div>
+                            class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
+                            <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
+                                <x-heroicon-m-chart-bar-square class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Status Data
+                                </p>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ ucfirst($laporan->status) }}
+                                </p>
                             </div>
                         </div>
                     @endif
                 </div>
 
-                {{-- Additional Info Footer --}}
+                {{-- Catatan laporan --}}
                 @if ($laporan->description)
-                    <div class="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-4 ring-1 ring-gray-200 dark:ring-gray-700">
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Catatan:</p>
-                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                    <div
+                        class="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
+                        <p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                            Catatan laporan
+                        </p>
+                        <p class="text-sm text-gray-700 dark:text-gray-200">
                             {{ $laporan->description }}
                         </p>
                     </div>

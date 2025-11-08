@@ -22,6 +22,11 @@ class LaporanLatestWidget extends Widget
 
     public function getLaporan(): ?LaporanImut
     {
+        return self::getLatestLaporan();
+    }
+
+    public static function getLatestLaporan(): ?LaporanImut
+    {
         $today = Carbon::today();
 
         return LaporanImut::where('status', LaporanImut::STATUS_PROCESS)

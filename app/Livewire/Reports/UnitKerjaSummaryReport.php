@@ -47,8 +47,21 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $completionStatus = request()->input('tableFilters.completion_status.value', 'all');
+
         return $table
-            ->query(fn() => LaporanUnitKerja::getReportByUnitKerja($this->laporanId))
+            ->query(function () use ($completionStatus) {
+                $query = LaporanUnitKerja::getReportByUnitKerja($this->laporanId);
+
+                // Apply completion status filter
+                if ($completionStatus === 'complete') {
+                    $query->havingRaw('filled_count = total_count AND total_count > 0');
+                } elseif ($completionStatus === 'incomplete') {
+                    $query->havingRaw('filled_count < total_count OR total_count = 0');
+                }
+
+                return $query;
+            })
             ->columns([
                 TextColumn::make('unit_name')
                     ->label('Unit Kerja')
@@ -103,21 +116,7 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                         'complete' => 'Lengkap',
                         'incomplete' => 'Tidak Lengkap',
                     ])
-                    ->default('all')
-                    ->query(function ($query, array $data) {
-                        $value = $data['value'] ?? 'all';
-
-                        if ($value === 'complete') {
-                            // Filter unit yang sudah lengkap (filled_count = total_count)
-                            return $query->havingRaw('filled_count = total_count AND total_count > 0');
-                        } elseif ($value === 'incomplete') {
-                            // Filter unit yang belum lengkap (filled_count < total_count)
-                                return $query->havingRaw('filled_count < total_count OR total_count = 0');
-                        }
-
-                        // Default: tampilkan semua
-                        return $query;
-                    }),
+                    ->default('all'),
             ])
             ->actions([
                 Action::make('details')
