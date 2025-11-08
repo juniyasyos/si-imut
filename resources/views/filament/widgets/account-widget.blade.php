@@ -1,141 +1,98 @@
 @php
-    use Carbon\Carbon;
     use Illuminate\Support\Str;
+    use App\Services\GreetingService;
 
     $user = filament()->auth()->user();
-    $displayName = Str::limit(filament()->getUserName($user), 20);
-    $hour = now()->format('H');
+    $displayName = Str::limit(filament()->getUserName($user), 24);
 
-    $greeting = match (true) {
-        $hour < 11 => 'Selamat pagi',
-        $hour < 15 => 'Selamat siang',
-        $hour < 18 => 'Selamat sore',
-        default => 'Selamat malam',
-    };
+    $greetingData = app(GreetingService::class)->getGreetingData();
+    $greeting = $greetingData['greeting'];
+    $quote = $greetingData['quote'];
 
-    $quotesByTime = [
-        'dini' => [
-            'Malam masih panjang. Tidur sebentar bukan lemah, itu bijak.',
-            'Kalau kamu masih kerja jam segini, semoga karena passion — bukan tekanan.',
-            'Tubuh juga butuh istirahat. Jangan paksakan kalau mata sudah berat.',
-            'Kejar mimpi itu bagus. Tapi jangan lupakan tidur — itu bagian dari mimpi juga.',
-            'Jam segini bukan tentang siapa paling kuat, tapi siapa paling sadar diri.',
-            'Ketenangan malam seharusnya jadi pelukan, bukan tekanan.',
-            'Semua yang kamu kejar masih akan ada besok. Tapi kesehatanmu tidak menunggu.',
-            'Diamnya malam bukan alasan untuk terus menyiksa diri.',
-            'Subuh masih lama — gunakan sisa waktu ini untuk pulih, bukan menambah beban.',
-            'Jika dunia sedang tidur, mungkin kamu juga perlu mengikutinya.',
-        ],
-
-        'malam' => [
-            'Selamat malam! Evaluasi hari ini, rancang esok hari.',
-            'Waktunya tenang sejenak, recharge sebelum perang esok.',
-            'Hari ini mungkin melelahkan, tapi kamu luar biasa.',
-            'Senyum sebelum tidur, besok mulai lagi dengan lebih kuat.',
-            'Tidur itu juga bagian dari produktivitas.',
-            'Istirahat yang baik = esok yang hebat.',
-            'Kalahkan penyesalan hari ini dengan perencanaan malam ini.',
-            'Lupakan stres, ingat progres.',
-            'Hargai dirimu — kamu sudah berjuang hari ini.',
-        ],
-        'pagi' => [
-            'Selamat pagi! Saatnya buka semangat dengan secangkir produktivitas.',
-            'Hari baru, peluang baru. Ayo mulai dengan senyum!',
-            'Pagi yang baik dimulai dari niat yang baik.',
-            'Bangkit! Dunia tidak menunggu yang terlambat bangun.',
-            'Kopi pertama hari ini bukan untuk dinikmati, tapi untuk bertahan.',
-            'Mulai harimu dengan tekad, bukan keluhan.',
-            'Jangan biarkan bantal jadi alasan tertinggal.',
-            'Pagi adalah kesempatan kedua — gunakan sebaik mungkin.',
-            'Semangatmu pagi ini menentukan ritme seharian.',
-        ],
-        'siang' => [
-            'Selamat siang! Jangan lupa makan, tapi jangan makan waktu kerja juga.',
-            'Siang-siang ngantuk itu biasa, semangat terus yang luar biasa.',
-            'Waktu terbaik untuk menyelesaikan tugas adalah… sekarang.',
-            'Jangan biarkan semangat pagi padam di siang hari.',
-            'Segelas air putih dan tekad bisa menyelamatkan siangmu.',
-            'Kalau mulai lelah, ingat: gajian makin dekat.',
-            'Tetap fokus, setengah hari sudah terlewati!',
-            'Tantangan siang hari? Hadapi, bukan hindari.',
-            'Kerja bagus siang ini bikin malam tenang.',
-        ],
-        'sore' => [
-            'Sore bukan alasan untuk menyerah, tapi jeda untuk melesat lagi.',
-            'Sudah sejauh ini, tinggal sedikit lagi — ayo tuntaskan!',
-            'Tenang, pulang sebentar lagi… tapi kerjaan jangan ditinggal dulu.',
-            'Sore adalah saat yang tepat untuk refleksi dan resolusi.',
-            'Jangan biarkan deadline mengalahkan niat baikmu.',
-            'Lelah itu wajar, menyerah bukan pilihan.',
-            'Bekerja dengan hati — hasilnya lebih nikmat dari kopi.',
-            'Sore yang produktif = malam yang damai.',
-            'Fokus terakhir sebelum layar dimatikan!',
-        ],
-        'larut' => [
-            'Sudah lebih dari jam 10 malam, istirahatlah sejenak. Besok masih ada hari.',
-            'Tidur sekarang lebih baik daripada menyesal besok pagi.',
-            'Produktif itu baik, tapi istirahat itu penting.',
-            'Jangan korbankan kesehatan demi menyelesaikan sesuatu yang bisa ditunda.',
-            'Tubuhmu butuh istirahat, bukan ambisi tanpa henti.',
-            'Kalau kamu masih kerja, pastikan alasannya bukan karena pelarian.',
-            'Jam 10 malam ke atas itu bukan waktu kerja, tapi waktu untuk pulih.',
-            'Besok akan lebih ringan jika malam ini kamu tidur cukup.',
-            'Kelelahan bukan lambang perjuangan, tapi tanda tubuh minta perhatian.',
-            'Batas waktu itu penting — bukan hanya untuk tugas, tapi juga untuk dirimu sendiri.',
-            'Pekerjaan tidak akan selesai lebih cepat dengan badan yang makin lemah.',
-            'Hasil terbaik datang dari pikiran yang cukup tidur.',
-            'Kalau semua orang sudah tidur, mungkin kamu juga perlu.',
-            'Kerja lembur terus-menerus bukan pencapaian, itu kebiasaan yang harus dikaji ulang.',
-            'Istirahat bukan buang waktu. Itu investasi untuk hari esok.',
-            'Kadang produktif itu berarti tahu kapan harus berhenti.',
-            'Jangan menukar tidurmu malam ini dengan penyesalan esok hari.',
-            'Kalau sudah lebih dari jam 11 malam dan kamu masih bekerja, tanyakan: “Perlu atau hanya terbiasa?”',
-            'Tidur itu bagian dari kerja — kerja merawat dirimu sendiri.',
-            'Kamu bisa menyelesaikannya besok dengan kepala yang lebih segar.',
-            'Jika kamu ingin konsisten, jangan abaikan istirahatmu.',
-            'Malam itu untuk merenung, bukan untuk membakar diri sendiri.',
-            'Waktu larut bukan bonus waktu kerja, tapi sinyal alami untuk berhenti.',
-            'Badan lelah itu panggilan alam — dengarkan sebelum terlambat.',
-            'Jangan biasakan menunda tidur untuk sesuatu yang tak mendesak.',
-        ],
-    ];
-
-    $timeKey = match (true) {
-        $hour >= 0 && $hour < 4 => 'dini',
-        $hour < 11 => 'pagi',
-        $hour < 15 => 'siang',
-        $hour < 18 => 'sore',
-        $hour < 22 => 'malam',
-        default => 'larut',
-    };
-
-    $quotes = $quotesByTime[$timeKey];
-    $quote = $quotes[array_rand($quotes)];
+    $heroImage = asset('images/assets/doctor-hero.png');
 @endphp
 
-<x-filament-widgets::widget class="fi-account-widget">
-    <x-filament::section>
-        <div class="flex items-center gap-x-3">
-            <x-filament-panels::avatar.user size="lg" :user="$user" />
+<x-filament-widgets::widget style="margin-top: -14vh">
+    {{-- wrapper transparan --}}
+    <div class="relative overflow-hidden rounded-3xl">
 
-            <div class="flex-1">
-                <h2 class="text-base font-semibold leading-6 text-gray-950 dark:text-white">
-                    {{ $greeting }}, {{ $displayName }} 👋
-                </h2>
+        {{-- background biru absolute (full width, 3/4 tinggi) --}}
+        <div aria-hidden="true"
+            class="absolute inset-x-0 bottom-0
+                   rounded-2xl bg-[#DDE6FB] dark:bg-slate-700/80
+                   ring-1 ring-black/5 dark:ring-white/10" style="height: 60%">
 
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ $quote }}
-                </p>
+            {{-- background pattern halus --}}
+            <div
+                class="pointer-events-none absolute inset-0 rounded-2xl
+                        bg-[radial-gradient(900px_400px_at_20%_-10%,rgba(255,255,255,.6),transparent),
+                            radial-gradient(900px_300px_at_80%_120%,rgba(255,255,255,.45),transparent)]
+                        dark:bg-[radial-gradient(900px_360px_at_25%_-10%,rgba(148,163,184,.12),transparent),
+                            radial-gradient(800px_320px_at_80%_120%,rgba(148,163,184,.1),transparent)]
+                        bg-fixed">
             </div>
-
-            <form action="{{ filament()->getLogoutUrl() }}" method="post" class="my-auto">
-                @csrf
-
-                <x-filament::button color="gray" icon="heroicon-m-arrow-left-on-rectangle"
-                    icon-alias="panels::widgets.account.logout-button" labeled-from="sm" tag="button" type="submit">
-                    {{ __('Keluar') }}
-                </x-filament::button>
-            </form>
         </div>
-    </x-filament::section>
+
+        {{-- konten utama (relative agar di atas background) --}}
+        <div class="relative px-6 py-10">
+            <div class="relative grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
+                {{-- teks kiri --}}
+                <div class="col-span-1 md:col-span-3 z-10">
+                    <h2
+                        class="font-extrabold tracking-tight
+                               text-[#0b4b4b] dark:text-white
+                               leading-tight
+                               text-[clamp(14px,2.5vw,28px)]">
+                        {{ $greeting }}, {{ $displayName }} <span>👋</span>
+                    </h2>
+
+                    <p
+                        class="mt-2 text-slate-700/90 dark:text-slate-300
+                               leading-snug
+                               text-[clamp(11px,2vw,16px)]">
+                        {{ $quote }}
+                    </p>
+
+                    {{-- badge tanggal/jam --}}
+                    <div class="mt-4 inline-grid grid-flow-col auto-cols-max gap-2">
+                        <span
+                            class="inline-grid grid-flow-col auto-cols-max items-center gap-1
+                                     rounded-full bg-white/60 dark:bg-white/10
+                                     px-3 py-1 ring-1 ring-black/5 dark:ring-white/10
+                                     text-slate-700 dark:text-slate-300
+                                     text-[clamp(9px,1.8vw,12px)]">
+                            <x-heroicon-m-calendar class="w-[1em] h-[1em]" />
+                            {{ now()->translatedFormat('l, d F Y') }}
+                        </span>
+                        <span
+                            class="inline-grid grid-flow-col auto-cols-max items-center gap-1
+                                     rounded-full bg-white/60 dark:bg-white/10
+                                     px-3 py-1 ring-1 ring-black/5 dark:ring-white/10
+                                     text-slate-700 dark:text-slate-300
+                                     text-[clamp(9px,1.8vw,12px)]">
+                            <x-heroicon-m-clock class="w-[1em] h-[1em]" />
+                            {{ now()->format('H:i') }} WIB
+                        </span>
+                    </div>
+                </div>
+
+                {{-- gambar kanan (relative flow) --}}
+                <div class="col-span-1 md:col-span-2 flex justify-end items-end -mb-10 mr-3"
+                    style="
+                        --size: 16vw;     /* ukuran dasar yang mengikuti viewport */
+                        --k: 1.1;         /* pengali tambahan biar gampang diatur */
+                        --min: 180px;     /* batas minimal biar nggak terlalu kecil */
+                        --max: 360px;     /* batas maksimal biar nggak kebesaran */
+                    ">
+                    <img src="{{ $heroImage }}" alt="Ilustrasi tenaga medis"
+                        class="w-[calc(var(--size)*var(--k))]
+                                max-w-[var(--max)]
+                                min-w-[var(--min)]
+                                h-auto object-contain select-none pointer-events-none
+                                drop-shadow-sm"
+                        loading="lazy" />
+                </div>
+            </div>
+        </div>
+    </div>
 </x-filament-widgets::widget>

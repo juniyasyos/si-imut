@@ -75,7 +75,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(Login::class))
+        ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(Login::class))
             ->when($this->getSettingValue('registration_enabled', false), fn($panel) => $panel->registration())
             ->when($this->getSettingValue('password_reset_enabled', true), fn($panel) => $panel->passwordReset())
             // ->emailVerification()
@@ -87,7 +87,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
                 ImutCapaianUnitKerjaWidget::class
             ])
             ->middleware([

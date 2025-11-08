@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets\UnitKerja;
 
 use Filament\Widgets\Widget;
+use Illuminate\Support\Facades\DB;
 
 class UnitKerjaInfo extends Widget
 {
@@ -24,6 +25,26 @@ class UnitKerjaInfo extends Widget
         $user = auth()->user();
         $unitKerja = $user->unitKerjas()->first();
 
-        return compact('unitKerja');
+        if (!$unitKerja) {
+            return [
+                'unitKerja' => null,
+                'stats' => null,
+            ];
+        }
+
+        // Get additional statistics
+        $stats = [
+            'total_imut_data' => $unitKerja->imutData()->count(),
+            'total_users' => $unitKerja->users()->count(),
+            'total_reports' => $unitKerja->laporanUnitKerjas()->count(),
+            'completed_assessments' => $unitKerja->laporanUnitKerjas()
+                ->whereHas('imutPenilaians', function($query) {
+                    $query->whereNotNull('numerator_value')
+                          ->whereNotNull('denominator_value');
+                })
+                ->count(),
+        ];
+
+        return compact('unitKerja', 'stats');
     }
 }

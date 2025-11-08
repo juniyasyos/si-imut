@@ -11,7 +11,7 @@ class StatsForUnitKerja extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
 
-    protected static ?int $sort = 10;
+    protected static ?int $sort = 1;
 
     public static function canView(): bool
     {
@@ -48,7 +48,7 @@ class StatsForUnitKerja extends BaseWidget
                 ->color('primary')
                 ->chart([45, 55, 60, 65, 68, 70, $data['averagePercentage']]),
 
-            Stat::make('Progress Penilaian', "{$sudahDinilai} / {$totalIndikator}")
+            Stat::make('Progress Pelaporan', "{$sudahDinilai} / {$totalIndikator}")
                 ->description("{$tidakDinilai} belum dinilai")
                 ->descriptionIcon('heroicon-m-pencil-square')
                 ->color('info')
