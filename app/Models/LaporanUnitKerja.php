@@ -69,6 +69,10 @@ class LaporanUnitKerja extends Model
 
         Cache::forget(CacheKey::laporanUnitDetail($laporanId, $unitKerjaId));
         Cache::forget(CacheKey::dashboardSiimutAllData($laporanId));
+
+        // Clear completion chart cache
+        Cache::forget(CacheKey::unitKerjaCompletionStats($laporanId));
+        Cache::forget(CacheKey::imutDataCompletionStats($laporanId));
     }
 
     /**
@@ -89,11 +93,13 @@ class LaporanUnitKerja extends Model
                 'laporan_unit_kerjas.unit_kerja_id',
                 'unit_kerja.unit_name',
                 'laporan_unit_kerjas.laporan_imut_id',
-
-                // Jumlah isian valid (N dan D tidak null)
+                'imut_profil.target_value as imut_standard',
+                'imut_profil.target_operator as imut_standard_type_operator',
                 DB::raw("SUM(
                 CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL
+                    WHEN imut_penilaians.numerator_value IS NOT NULL
+                    AND imut_penilaians.denominator_value IS NOT NULL
+                    AND imut_penilaians.denominator_value != 0
                     THEN 1 ELSE 0
                 END
             ) as filled_count"),
@@ -106,7 +112,9 @@ class LaporanUnitKerja extends Model
                 CASE
                     WHEN COUNT(imut_penilaians.id) > 0 THEN
                         SUM(CASE
-                            WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL
+                            WHEN imut_penilaians.numerator_value IS NOT NULL
+                            AND imut_penilaians.denominator_value IS NOT NULL
+                            AND imut_penilaians.denominator_value != 0
                             THEN 1 ELSE 0 END) * 100.0 / COUNT(imut_penilaians.id)
                     ELSE 0
                 END, 2
@@ -139,6 +147,9 @@ class LaporanUnitKerja extends Model
                 'imut_data.title as imut_data_title',
                 'laporan_unit_kerjas.laporan_imut_id',
                 'imut_kategori.short_name as imut_kategori',
+                'imut_kategori.id as imut_kategori_id',
+                'imut_profil.target_value as imut_standard',
+                'imut_profil.target_operator as imut_standard_type_operator',
                 DB::raw('COALESCE(SUM(imut_penilaians.numerator_value), 0) as total_numerator'),
                 DB::raw('COALESCE(SUM(imut_penilaians.denominator_value), 0) as total_denominator'),
                 DB::raw('
@@ -149,12 +160,32 @@ class LaporanUnitKerja extends Model
                             ELSE 0
                         END, 2
                     ) as percentage
-                ')
+                '),
+                DB::raw("SUM(
+                CASE
+                    WHEN imut_penilaians.numerator_value IS NOT NULL
+                    AND imut_penilaians.denominator_value IS NOT NULL
+                    AND imut_penilaians.denominator_value != 0
+                    THEN 1 ELSE 0
+                END
+            ) as filled_count"),
+                DB::raw("ROUND(
+                CASE
+                    WHEN COUNT(imut_penilaians.id) > 0 THEN
+                        SUM(CASE
+                            WHEN imut_penilaians.numerator_value IS NOT NULL
+                            AND imut_penilaians.denominator_value IS NOT NULL
+                            AND imut_penilaians.denominator_value != 0
+                            THEN 1 ELSE 0 END) * 100.0 / COUNT(imut_penilaians.id)
+                    ELSE 0
+                END, 2
+            ) as percentage_units"),
+                DB::raw("COUNT(imut_penilaians.id) as total_count"),
             )
             ->groupBy(
                 'imut_data.id',
                 'imut_data.title',
-                'laporan_unit_kerjas.laporan_imut_id'
+                'laporan_unit_kerjas.laporan_imut_id',
             )
             ->orderBy('imut_data.title');
     }

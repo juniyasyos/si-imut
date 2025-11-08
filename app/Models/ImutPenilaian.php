@@ -75,6 +75,10 @@ class ImutPenilaian extends Model implements HasMedia
             Cache::forget(CacheKey::dashboardSiimutAllData($laporanId));
             Cache::forget(CacheKey::dashboardSiimutChartData());
 
+            // Clear completion chart cache
+            Cache::forget(CacheKey::unitKerjaCompletionStats($laporanId));
+            Cache::forget(CacheKey::imutDataCompletionStats($laporanId));
+
             $laporanImut = $laporanUnitKerja->laporanImut;
 
             if ($laporanImut && $this->profile) {

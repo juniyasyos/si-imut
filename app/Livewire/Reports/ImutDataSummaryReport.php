@@ -60,21 +60,53 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                         return $query->where('imut_data.title', 'like', "%{$search}%");
                     }),
 
+                TextColumn::make('completion_summary')
+                    ->label('Capaian Pelaporan')
+                    ->alignCenter()
+                    ->toggleable()
+                    ->state(
+                        fn($record) =>
+                        number_format($record->filled_count ?? 0) . ' dari ' . number_format($record->total_count ?? 0) . ' unit mengisi'
+                    )
+                    ->tooltip(
+                        fn($record) =>
+                        'Persentase: ' . Number::format($record->percentage_units ?? 0, 2, locale: app()->getLocale()) . '%'
+                    )
+                    ->color(fn($record) => match (true) {
+                        !is_numeric($record->percentage_units) => null,
+                        $record->percentage_units >= ($record->avg_standard ?? 100) => 'success',
+                        $record->percentage_units >= (($record->avg_standard ?? 100) * 0.8) => 'warning',
+                        default => 'danger',
+                    })
+                    ->sortable(
+                        query: fn($query, $direction) =>
+                        $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
+                    )
+                    ->summarize(
+                        Summarizer::make()
+                            ->label('Total Capaian')
+                            ->using(function (Builder $query) {
+                                $n = $query->sum('filled_count');
+                                $d = $query->sum('total_count');
+                                return $d > 0
+                                    ? Number::format(($n / $d) * 100, 2, locale: app()->getLocale()) . '%'
+                                    : '0%';
+                            })
+                    ),
+
                 TextColumn::make('imut_kategori')
                     ->label('Imut Kategori')
                     ->toggleable()
-                    ->color(function ($record) {
-                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-                        $id = $record->imut_kategori_id ?? 0;
-                        return $colors[$id % count($colors)];
-                    })
+                    ->sortable()
+                    ->color(fn($record) => $this->getCategoryColor($record->imut_kategori_id))
                     ->toggleable(isToggledHiddenByDefault: false)
                     ->badge(),
 
                 TextColumn::make('total_numerator')
-                    ->label('N')
+                    ->label('Numerator (N)')
                     ->alignCenter()
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->summarize(
                         Summarizer::make()
                             ->label('Total N')
@@ -82,9 +114,10 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                     ),
 
                 TextColumn::make('total_denominator')
-                    ->label('D')
+                    ->label('Denumerator (D)')
                     ->alignCenter()
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->summarize(
                         Summarizer::make()
                             ->label('Total D')
@@ -95,12 +128,9 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                     ->label('Persentase (%)')
                     ->alignCenter()
                     ->suffix('%')
-                    ->color(fn($record) => match (true) {
-                        ! is_numeric($record->percentage) || ! is_numeric($record->avg_standard) => null,
-                        $record->percentage >= $record->avg_standard => 'success',
-                        $record->percentage >= $record->avg_standard * 0.8 => 'warning',
-                        default => 'danger',
-                    })
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                    ->color(fn($record) => $this->getPercentageColor($record))
                     ->summarize(
                         Summarizer::make()
                             ->label('Total Persentase')
@@ -112,6 +142,13 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                             })
                             ->suffix('%')
                     ),
+                TextColumn::make('imut_standard')
+                    ->label('Standar Indikator')
+                    ->suffix('%')
+                    ->toggleable()
+                    ->color('info')
+                    ->badge()
+                    ->alignCenter(),
             ])
             ->headerActions([
                 ExportAction::make()->exporter(SummaryImutDataReportExport::class)->label('Ekspor laporan IMUT')
@@ -146,6 +183,60 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
             ->bulkActions([
                 // ...
             ]);
+    }
+
+    protected function getCategoryColor(int $categoryId): string
+    {
+        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
+        return $colors[$categoryId % count($colors)];
+    }
+
+    protected function getPercentageColor($record): ?string
+    {
+        // Debug untuk melihat nilai sebenarnya
+        static $debugged = true;
+        if (!$debugged) {
+            $debugged = true;
+            dd([
+                'percentage' => $record->percentage,
+                'standard' => $record->imut_standard,
+                'operator' => $record->imut_standard_type_operator,
+                'imut_data_title' => $record->imut_data_title ?? 'N/A',
+                'is_numeric_percentage' => is_numeric($record->percentage),
+                'is_numeric_standard' => is_numeric($record->imut_standard),
+                'all_record_data' => (array) $record,
+            ]);
+        }
+
+        if (!is_numeric($record->percentage) || !is_numeric($record->imut_standard)) {
+            return null;
+        }
+
+        // Check if meets standard (green)
+        $meetsStandard = match ($record->imut_standard_type_operator) {
+            '=' => $record->percentage == $record->imut_standard,
+            '>=' => $record->percentage >= $record->imut_standard,
+            '<=' => $record->percentage <= $record->imut_standard,
+            '<' => $record->percentage < $record->imut_standard,
+            '>' => $record->percentage > $record->imut_standard,
+            default => false,
+        };
+
+        if ($meetsStandard) {
+            return 'success';
+        }
+
+        // Check if within 80% threshold (yellow)
+        $meetsThreshold = match ($record->imut_standard_type_operator) {
+            '=' => $record->percentage == ($record->imut_standard * 0.8),
+            '>=' => $record->percentage >= ($record->imut_standard * 0.8),
+            '<=' => $record->percentage <= ($record->imut_standard * 1.2),
+            '<' => $record->percentage < ($record->imut_standard * 1.2),
+            '>' => $record->percentage > ($record->imut_standard * 0.8),
+            default => false,
+        };
+
+        return $meetsThreshold ? 'warning' : 'danger';
     }
 
     public function render()

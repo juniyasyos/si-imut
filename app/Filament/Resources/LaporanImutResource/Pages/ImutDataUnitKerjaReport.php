@@ -71,7 +71,7 @@ class ImutDataUnitKerjaReport extends Page
 
     public function getTitle(): string
     {
-        return 'Summary Laporan IMUT Data : ' . $this->imutData->title;
+        return 'Summary Laporan IMUT Data';
     }
 
     protected function getFormStatePath(): string

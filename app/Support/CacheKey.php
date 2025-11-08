@@ -150,6 +150,22 @@ final class CacheKey
     }
 
     /**
+     * Cache key untuk statistik kelengkapan unit kerja
+     */
+    public static function unitKerjaCompletionStats(int $laporanId): string
+    {
+        return "laporan:unit_kerja_completion:laporan:{$laporanId}";
+    }
+
+    /**
+     * Cache key untuk statistik kelengkapan indikator mutu
+     */
+    public static function imutDataCompletionStats(int $laporanId): string
+    {
+        return "laporan:imut_data_completion:laporan:{$laporanId}";
+    }
+
+    /**
      * Utility: menormalkan array (sort rekursif) supaya JSON/hash stabil.
      */
     private static function stableArray(array $array): array

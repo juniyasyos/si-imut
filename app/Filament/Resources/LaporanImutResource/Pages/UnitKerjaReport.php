@@ -7,6 +7,8 @@ use App\Models\LaporanImut;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\LaporanImutResource;
+use App\Filament\Resources\LaporanImutResource\Widgets\UnitKerjaCompletionChart;
+use App\Filament\Resources\LaporanImutResource\Widgets\ImutDataCompletionChart;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class UnitKerjaReport extends Page
@@ -27,6 +29,16 @@ class UnitKerjaReport extends Page
         /** @var User $user */
         $user = Auth::user();
         return $user->can('view_unit_kerja_report_laporan::imut');
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            UnitKerjaCompletionChart::make([
+                'laporanId' => $this->laporan?->id,
+                'columnSpanCustom' => 'full'
+            ]),
+        ];
     }
 
     public function mount()

@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Container\Attributes\DB;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -95,7 +96,28 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                 ExportAction::make()->exporter(SummaryUnitKerjaReportExport::class)->color('gray')
             ])
             ->filters([
-                //
+                SelectFilter::make('completion_status')
+                    ->label('Status Kelengkapan')
+                    ->options([
+                        'all' => 'Semua',
+                        'complete' => 'Lengkap',
+                        'incomplete' => 'Tidak Lengkap',
+                    ])
+                    ->default('all')
+                    ->query(function ($query, array $data) {
+                        $value = $data['value'] ?? 'all';
+
+                        if ($value === 'complete') {
+                            // Filter unit yang sudah lengkap (filled_count = total_count)
+                            return $query->havingRaw('filled_count = total_count AND total_count > 0');
+                        } elseif ($value === 'incomplete') {
+                            // Filter unit yang belum lengkap (filled_count < total_count)
+                                return $query->havingRaw('filled_count < total_count OR total_count = 0');
+                        }
+
+                        // Default: tampilkan semua
+                        return $query;
+                    }),
             ])
             ->actions([
                 Action::make('details')
