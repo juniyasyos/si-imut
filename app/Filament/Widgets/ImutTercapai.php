@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Models\ImutData;
+use App\Services\ImutCalculationService;
 use Filament\Tables;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
@@ -168,15 +169,15 @@ class ImutTercapai extends BaseWidget
             return false;
         }
 
-        $hasil = round(($penilaian->numerator_value / $penilaian->denominator_value) * 100, 2);
+        $hasil = ImutCalculationService::calculatePercentage(
+            $penilaian->numerator_value,
+            $penilaian->denominator_value
+        );
 
-        return match ($profile->target_operator) {
-            '=' => $hasil == $profile->target_value,
-            '>=' => $hasil >= $profile->target_value,
-            '<=' => $hasil <= $profile->target_value,
-            '>' => $hasil > $profile->target_value,
-            '<' => $hasil < $profile->target_value,
-            default => false,
-        };
+        return ImutCalculationService::meetsStandard(
+            $hasil,
+            $profile->target_value,
+            $profile->target_operator
+        );
     }
 }

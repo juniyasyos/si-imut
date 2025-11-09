@@ -4,8 +4,9 @@ namespace App\Filament\Widgets;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
-use App\Services\ImutChartSeriesService;
 use App\Services\Chart\ChartDataProcessorService;
+use App\Services\ImutCalculationService;
+use App\Services\ImutChartSeriesService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Carbon\Carbon;
@@ -289,14 +290,7 @@ class ImutCapaianWidget extends ApexChartWidget
 
     protected function checkIfMeetsStandard(float $achievement, float $standard, string $operator): bool
     {
-        return match ($operator) {
-            '=' => abs($achievement - $standard) < 0.01,
-            '>=' => $achievement >= $standard,
-            '<=' => $achievement <= $standard,
-            '>' => $achievement > $standard,
-            '<' => $achievement < $standard,
-            default => false,
-        };
+        return ImutCalculationService::meetsStandard($achievement, $standard, $operator);
     }
 
     public function getFooter(): ?string

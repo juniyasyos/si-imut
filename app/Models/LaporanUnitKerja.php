@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\QueryBuilders\ImutDataDetailReportQueryBuilder;
+use App\QueryBuilders\ImutDataGroupedSummaryQueryBuilder;
+use App\QueryBuilders\ImutDataReportQueryBuilder;
+use App\QueryBuilders\LaporanByUnitQueryBuilder;
+use App\QueryBuilders\UnitKerjaDetailReportQueryBuilder;
+use App\QueryBuilders\UnitKerjaReportQueryBuilder;
 use App\Support\CacheKey;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Model untuk mengelola laporan unit kerja.
@@ -76,359 +81,87 @@ class LaporanUnitKerja extends Model
     }
 
     /**
+     * Query scope untuk filter berdasarkan laporan
+     */
+    public function scopeForLaporan(Builder $query, int $laporanId): Builder
+    {
+        return $query->where('laporan_unit_kerjas.laporan_imut_id', $laporanId);
+    }
+
+    /**
+     * Query scope untuk filter berdasarkan unit kerja
+     */
+    public function scopeForUnitKerja(Builder $query, int $unitKerjaId): Builder
+    {
+        return $query->where('laporan_unit_kerjas.unit_kerja_id', $unitKerjaId);
+    }
+
+    /**
      * Mengambil laporan berdasarkan unit kerja dengan jumlah penilaian dan persentase pengisian.
      *
      * @param  int  $laporanId
      * @return Builder
      */
-
     public static function getReportByUnitKerja(int $laporanId): Builder
     {
-        return self::query()
-            ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
-            ->leftJoin('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->leftJoin('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->leftJoin('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->select([
-                'laporan_unit_kerjas.id',
-                'laporan_unit_kerjas.unit_kerja_id',
-                'unit_kerja.unit_name',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'imut_profil.target_value as imut_standard',
-                'imut_profil.target_operator as imut_standard_type_operator',
-                DB::raw("SUM(
-                CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value != 0
-                    THEN 1 ELSE 0
-                END
-            ) as filled_count"),
-
-                // Total seluruh penilaian
-                DB::raw("COUNT(imut_penilaians.id) as total_count"),
-
-                // Persentase pengisian
-                DB::raw("ROUND(
-                CASE
-                    WHEN COUNT(imut_penilaians.id) > 0 THEN
-                        SUM(CASE
-                            WHEN imut_penilaians.numerator_value IS NOT NULL
-                            AND imut_penilaians.denominator_value IS NOT NULL
-                            AND imut_penilaians.denominator_value != 0
-                            THEN 1 ELSE 0 END) * 100.0 / COUNT(imut_penilaians.id)
-                    ELSE 0
-                END, 2
-            ) as percentage"),
-            ])
-            ->groupBy(
-                'laporan_unit_kerjas.id',
-                'laporan_unit_kerjas.unit_kerja_id',
-                'unit_kerja.unit_name',
-                'laporan_unit_kerjas.laporan_imut_id'
-            );
+        return (new UnitKerjaReportQueryBuilder())->build($laporanId);
     }
-
 
     /**
      * Mengambil laporan berdasarkan data IMUT dengan total nilai dan persentase.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param int $laporanId
+     * @return Builder
      */
-    public static function getReportByImutData(int $laporanId)
+    public static function getReportByImutData(int $laporanId): Builder
     {
-        return self::query()
-            ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
-            ->leftJoin('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->leftJoin('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->leftJoin('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->select(
-                'imut_data.id as id',
-                'imut_data.title as imut_data_title',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'imut_kategori.short_name as imut_kategori',
-                'imut_kategori.id as imut_kategori_id',
-                'imut_profil.target_value as imut_standard',
-                'imut_profil.target_operator as imut_standard_type_operator',
-                DB::raw('COALESCE(SUM(imut_penilaians.numerator_value), 0) as total_numerator'),
-                DB::raw('COALESCE(SUM(imut_penilaians.denominator_value), 0) as total_denominator'),
-                DB::raw('
-                    ROUND(
-                        CASE
-                            WHEN SUM(imut_penilaians.denominator_value) > 0
-                            THEN SUM(imut_penilaians.numerator_value) * 100.0 / NULLIF(SUM(imut_penilaians.denominator_value), 0)
-                            ELSE 0
-                        END, 2
-                    ) as percentage
-                '),
-                DB::raw("SUM(
-                CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value != 0
-                    THEN 1 ELSE 0
-                END
-            ) as filled_count"),
-                DB::raw("ROUND(
-                CASE
-                    WHEN COUNT(imut_penilaians.id) > 0 THEN
-                        SUM(CASE
-                            WHEN imut_penilaians.numerator_value IS NOT NULL
-                            AND imut_penilaians.denominator_value IS NOT NULL
-                            AND imut_penilaians.denominator_value != 0
-                            THEN 1 ELSE 0 END) * 100.0 / COUNT(imut_penilaians.id)
-                    ELSE 0
-                END, 2
-            ) as percentage_units"),
-                DB::raw("COUNT(imut_penilaians.id) as total_count"),
-            )
-            ->groupBy(
-                'imut_data.id',
-                'imut_data.title',
-                'laporan_unit_kerjas.laporan_imut_id',
-            )
-            ->orderBy('imut_data.title');
+        return (new ImutDataReportQueryBuilder())->build($laporanId);
     }
 
     /**
      * Mengambil detail laporan berdasarkan unit kerja tertentu.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param int $laporanId
+     * @param int $unitKerjaId
+     * @return Builder
      */
-    public static function getReportByUnitKerjaDetails(int $laporanId, int $unitKerjaId)
+    public static function getReportByUnitKerjaDetails(int $laporanId, int $unitKerjaId): Builder
     {
-        return ImutPenilaian::query()
-            ->select([
-                'imut_penilaians.*',                 // <- penting: hydrate model ImutPenilaian dg PK-nya
-                'laporan_unit_kerjas.unit_kerja_id',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'unit_kerja.unit_name',
-                'imut_data.title as imut_data',
-                'imut_kategori.short_name as imut_kategori',
-                'imut_kategori.id as imut_kategori_id',
-                'imut_profil.version as imut_profil',
-                'imut_profil.target_value as imut_standard',
-                'imut_profil.target_operator as imut_standard_type_operator',
-                'imut_profil.start_period',
-                'imut_profil.end_period',
-                DB::raw('
-                ROUND(
-                    CASE
-                        WHEN imut_penilaians.denominator_value > 0 THEN
-                            imut_penilaians.numerator_value * 100.0 / NULLIF(imut_penilaians.denominator_value, 0)
-                        ELSE 0
-                    END, 2
-                ) as percentage
-            '),
-            ])
-            ->join('laporan_unit_kerjas', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
-            ->where('laporan_unit_kerjas.unit_kerja_id', $unitKerjaId);
+        return (new UnitKerjaDetailReportQueryBuilder())->build($laporanId, $unitKerjaId);
     }
 
     /**
      * Mengambil detail laporan berdasarkan data IMUT tertentu.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param int $laporanId
+     * @param int $imutDataId
+     * @return Builder
      */
-    public static function getReportByImutDataDetails(int $laporanId = 1, int $imutDataId = 1)
+    public static function getReportByImutDataDetails(int $laporanId, int $imutDataId): Builder
     {
-        return self::query()
-            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
-            ->where('imut_profil.imut_data_id', $imutDataId)
-            ->select(
-                'imut_penilaians.id as id',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'laporan_unit_kerjas.id as laporan_unit_kerja_id',
-                'laporan_unit_kerjas.unit_kerja_id',
-                'unit_kerja.unit_name as unit_kerja',
-                'imut_data.title as imut_data',
-                'imut_kategori.short_name as imut_kategori',
-                'imut_kategori.id as imut_kategori_id',
-                'imut_profil.version as imut_profil',
-                'imut_profil.target_value as imut_standard',
-                'imut_profil.target_operator as imut_standard_type_operator',
-                'imut_profil.start_period',
-                'imut_profil.end_period',
-                'imut_penilaians.numerator_value',
-                'imut_penilaians.denominator_value',
-                'imut_penilaians.recommendations',
-                'imut_penilaians.analysis',
-                DB::raw('
-                    ROUND(
-                        CASE
-                            WHEN imut_penilaians.denominator_value > 0 THEN
-                                imut_penilaians.numerator_value * 100.0 / NULLIF(imut_penilaians.denominator_value, 0)
-                            ELSE 0
-                        END, 2
-                    ) as percentage
-                ')
-            );
+        return (new ImutDataDetailReportQueryBuilder())->build($laporanId, $imutDataId);
     }
 
-    public static function getLaporanByUnitKerjaDetails(int $imutDataId, int $unitKerjaId)
+    /**
+     * Mengambil laporan berdasarkan IMUT data dan unit kerja (multi-period)
+     *
+     * @param int $imutDataId
+     * @param int $unitKerjaId
+     * @return Builder
+     */
+    public static function getLaporanByUnitKerjaDetails(int $imutDataId, int $unitKerjaId): Builder
     {
-        return self::query()
-            ->join('laporan_imuts', 'laporan_imuts.id', '=', 'laporan_unit_kerjas.laporan_imut_id')
-            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->where('imut_data.id', $imutDataId)
-            ->where('laporan_unit_kerjas.unit_kerja_id', $unitKerjaId)
-            ->select(
-                'imut_penilaians.id as id',
-                'laporan_unit_kerjas.id as laporan_unit_kerja_id',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'laporan_unit_kerjas.unit_kerja_id',
-                'laporan_imuts.name as laporan_name',
-                'laporan_imuts.status as laporan_status',
-                'unit_kerja.unit_name',
-                'imut_data.title as imut_data',
-                'imut_kategori.short_name as imut_kategori',
-                'imut_profil.version as imut_profil',
-                'imut_profil.target_value as imut_standard',
-                'imut_profil.target_operator as imut_standard_type_operator',
-                'imut_profil.start_period',
-                'imut_profil.end_period',
-                'imut_penilaians.numerator_value',
-                'imut_penilaians.denominator_value',
-                'imut_penilaians.recommendations',
-                'imut_penilaians.analysis',
-                'imut_kategori.id as imut_kategori_id',
-                DB::raw('
-                ROUND(
-                    CASE
-                        WHEN imut_penilaians.denominator_value > 0 THEN
-                            imut_penilaians.numerator_value * 100.0 / NULLIF(imut_penilaians.denominator_value, 0)
-                        ELSE 0
-                    END, 2
-                ) as percentage
-            ')
-            );
+        return (new LaporanByUnitQueryBuilder())->build($imutDataId, $unitKerjaId);
     }
 
-    public static function getSummaryByImutData(int $imutDataId)
+    /**
+     * Mengambil summary berdasarkan IMUT data dengan benchmarking (grouped by laporan)
+     *
+     * @param int $imutDataId
+     * @return Builder
+     */
+    public static function getSummaryByImutDataGrouped(int $imutDataId): Builder
     {
-        return self::query()
-            ->join('laporan_imuts', 'laporan_imuts.id', '=', 'laporan_unit_kerjas.laporan_imut_id')
-            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->where('imut_data.id', $imutDataId)
-            ->select(
-                'imut_penilaians.id as id',
-                'laporan_unit_kerjas.id as laporan_unit_kerja_id',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'laporan_unit_kerjas.unit_kerja_id',
-                'laporan_imuts.name as laporan_name',
-                'laporan_imuts.status as laporan_status',
-                'unit_kerja.unit_name as unit_kerja',
-                'imut_data.title as imut_data',
-                'imut_kategori.short_name as imut_kategori',
-                'imut_profil.version as imut_profil',
-                'imut_profil.target_value as imut_standard',
-                'imut_profil.target_operator as imut_standard_type_operator',
-                'imut_profil.start_period',
-                'imut_profil.end_period',
-                'imut_penilaians.numerator_value',
-                'imut_penilaians.denominator_value',
-                'imut_penilaians.recommendations',
-                'imut_penilaians.analysis',
-                'imut_kategori.id as imut_kategori_id',
-                DB::raw('
-                ROUND(
-                    CASE
-                        WHEN imut_penilaians.denominator_value > 0 THEN
-                            imut_penilaians.numerator_value * 100.0 / NULLIF(imut_penilaians.denominator_value, 0)
-                        ELSE 0
-                    END, 2
-                ) as percentage
-            ')
-            );
-    }
-
-    public static function getSummaryByImutDataGrouped(int $imutDataId)
-    {
-        $regionTypes = \App\Models\RegionType::all();
-
-        $selectFields = [
-            'laporan_imuts.id as laporan_imut_id',
-            'laporan_imuts.name as laporan_name',
-            'laporan_imuts.status as laporan_status',
-            'imut_kategori.id as imut_kategori_id',
-            DB::raw('MAX(imut_profil.target_value) as imut_standard'),
-            DB::raw('MAX(imut_profil.target_operator) as imut_standard_type_operator'),
-            DB::raw('CONCAT(
-                DATE_FORMAT(laporan_imuts.assessment_period_start, "%d %M %Y"),
-                " - ",
-                DATE_FORMAT(laporan_imuts.assessment_period_end, "%d %M %Y")
-            ) as periode_pengisian'),
-            DB::raw('SUM(imut_penilaians.numerator_value) as total_numerator'),
-            DB::raw('SUM(imut_penilaians.denominator_value) as total_denominator'),
-            DB::raw('COUNT(DISTINCT laporan_unit_kerjas.unit_kerja_id) as unit_count'),
-            DB::raw('
-                ROUND(
-                    CASE
-                        WHEN SUM(imut_penilaians.denominator_value) > 0 THEN
-                            SUM(imut_penilaians.numerator_value) * 100.0 / NULLIF(SUM(imut_penilaians.denominator_value), 0)
-                        ELSE 0
-                    END, 2
-                ) as percentage
-            '),
-        ];
-
-        // Add dynamic benchmarking columns for each region type
-        foreach ($regionTypes as $regionType) {
-            $selectFields[] = DB::raw("
-                MAX(CASE
-                    WHEN region_types.id = {$regionType->id}
-                    THEN imut_benchmarkings.benchmark_value
-                    ELSE NULL
-                END) as benchmark_{$regionType->id}
-            ");
-        }
-
-        return self::query()
-            ->join('laporan_imuts', 'laporan_imuts.id', '=', 'laporan_unit_kerjas.laporan_imut_id')
-            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->leftJoin('imut_benchmarkings', function ($join) {
-                $join->on('imut_data.id', '=', 'imut_benchmarkings.imut_data_id')
-                    ->where('imut_benchmarkings.is_active', '=', 1)
-                    ->whereRaw('laporan_imuts.assessment_period_start >= imut_benchmarkings.period_start')
-                    ->where(function ($query) {
-                        $query->whereNull('imut_benchmarkings.period_end')
-                            ->orWhereRaw('laporan_imuts.assessment_period_end <= imut_benchmarkings.period_end');
-                    });
-            })
-            ->leftJoin('region_types', 'imut_benchmarkings.region_type_id', '=', 'region_types.id')
-            ->where('imut_data.id', $imutDataId)
-            ->groupBy([
-                'laporan_imuts.id',
-                'laporan_imuts.name',
-                'laporan_imuts.status',
-                'laporan_imuts.assessment_period_start',
-                'laporan_imuts.assessment_period_end',
-                'imut_kategori.id'
-            ])
-            ->select($selectFields)
-            ->orderBy('laporan_imuts.assessment_period_start', 'desc');
+        return (new ImutDataGroupedSummaryQueryBuilder())->build($imutDataId);
     }
 }
