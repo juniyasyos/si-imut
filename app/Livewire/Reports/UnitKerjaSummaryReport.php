@@ -47,21 +47,8 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
-        $completionStatus = request()->input('tableFilters.completion_status.value', 'all');
-
         return $table
-            ->query(function () use ($completionStatus) {
-                $query = LaporanUnitKerja::getReportByUnitKerja($this->laporanId);
-
-                // Apply completion status filter
-                if ($completionStatus === 'complete') {
-                    $query->havingRaw('filled_count = total_count AND total_count > 0');
-                } elseif ($completionStatus === 'incomplete') {
-                    $query->havingRaw('filled_count < total_count OR total_count = 0');
-                }
-
-                return $query;
-            })
+            ->query(fn() => LaporanUnitKerja::getReportByUnitKerja($this->laporanId))
             ->columns([
                 TextColumn::make('unit_name')
                     ->label('Unit Kerja')
@@ -109,14 +96,40 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                 ExportAction::make()->exporter(SummaryUnitKerjaReportExport::class)->color('gray')
             ])
             ->filters([
-                SelectFilter::make('completion_status')
-                    ->label('Status Kelengkapan')
-                    ->options([
-                        'all' => 'Semua',
-                        'complete' => 'Lengkap',
-                        'incomplete' => 'Tidak Lengkap',
+                Filter::make('completion_status')
+                    ->form([
+                        \Filament\Forms\Components\Select::make('status')
+                            ->label('Status Kelengkapan')
+                            ->options([
+                                'all' => 'Semua',
+                                'complete' => 'Lengkap',
+                                'incomplete' => 'Tidak Lengkap',
+                            ])
+                            ->default('all')
+                            ->native(false),
                     ])
-                    ->default('all'),
+                    ->query(function (EloquentBuilder $query, array $data): EloquentBuilder {
+                        $status = $data['status'] ?? 'all';
+
+                        if ($status === 'complete') {
+                            return $query->havingRaw('filled_count = total_count AND total_count > 0');
+                        } elseif ($status === 'incomplete') {
+                            return $query->havingRaw('filled_count < total_count OR total_count = 0');
+                        }
+
+                        return $query;
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        $status = $data['status'] ?? 'all';
+
+                        if ($status === 'complete') {
+                            return 'Status: Lengkap';
+                        } elseif ($status === 'incomplete') {
+                            return 'Status: Tidak Lengkap';
+                        }
+
+                        return null;
+                    }),
             ])
             ->actions([
                 Action::make('details')

@@ -88,6 +88,7 @@ class LaporanUnitKerja extends Model
             ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
             ->leftJoin('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
             ->leftJoin('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
+            ->leftJoin('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
             ->select([
                 'laporan_unit_kerjas.id',
                 'laporan_unit_kerjas.unit_kerja_id',
