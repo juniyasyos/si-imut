@@ -127,6 +127,14 @@ class ImutData extends Model
     }
 
     /**
+     * function to get the notes of the indicator
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(ImutDataNote::class);
+    }
+
+    /**
      * function to get the benchmarking of the indicator
      */
     public function unitKerja(): BelongsToMany
