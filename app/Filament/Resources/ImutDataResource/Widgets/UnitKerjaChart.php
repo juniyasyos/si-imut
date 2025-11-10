@@ -36,7 +36,7 @@ class UnitKerjaChart extends ApexChartWidget
 
         $unitName = UnitKerja::find($unitKerjaId)?->unit_name;
 
-        return 'Grafik Penilaian IMUT Data ini ada dimana ya' . ($unitName ? ': ' . $unitName : '');
+        return 'Grafik Penilaian IMUT Data' . ($unitName ? ': ' . $unitName : '');
     }
 
     protected function getFormSchema(): array
