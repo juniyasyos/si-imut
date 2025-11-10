@@ -76,8 +76,10 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                         default => 'danger',
                     })
                     ->sortable(
-                        query: fn($query, $direction) =>
-                        $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
+                        query: function($query, $direction) {
+                            $filledCountExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 THEN 1 ELSE 0 END)";
+                            return $query->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) " . $direction);
+                        }
                     )
                     ->summarize(
                         Summarizer::make()
@@ -110,11 +112,12 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                     ])
                     ->query(function (EloquentBuilder $query, array $data): EloquentBuilder {
                         $status = $data['status'] ?? 'all';
+                        $filledCountExpr = \App\QueryBuilders\UnitKerjaReportQueryBuilder::getFilledCountExpression();
 
                         if ($status === 'complete') {
-                            return $query->havingRaw('filled_count = total_count AND total_count > 0');
+                            return $query->havingRaw("{$filledCountExpr} = COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0");
                         } elseif ($status === 'incomplete') {
-                            return $query->havingRaw('filled_count < total_count OR total_count = 0');
+                            return $query->havingRaw("{$filledCountExpr} < COUNT(imut_penilaians.id) OR COUNT(imut_penilaians.id) = 0");
                         }
 
                         return $query;

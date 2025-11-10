@@ -74,9 +74,10 @@ class ImutTercapai extends BaseWidget
                         $record->percentage >= 50 => 'warning',
                         default => 'danger',
                     })
-                    ->sortable(query: fn($query, $direction) =>
-                        $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
-                    ),
+                    ->sortable(query: function($query, $direction) {
+                        $filledCountExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 THEN 1 ELSE 0 END)";
+                        return $query->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) " . $direction);
+                    }),
 
                 Tables\Columns\TextColumn::make('below_standard_count')
                     ->label('Di Bawah Standar')
@@ -113,9 +114,11 @@ class ImutTercapai extends BaseWidget
 
     protected function getIncompleteUnitsQuery(int $laporanId): Builder
     {
+        $filledCountExpr = \App\QueryBuilders\UnitKerjaReportQueryBuilder::getFilledCountExpression();
+
         return LaporanUnitKerja::getReportByUnitKerja($laporanId)
-            ->havingRaw('filled_count < total_count AND total_count > 0')
-            ->orderByRaw('(filled_count / NULLIF(total_count, 0)) ASC');
+            ->havingRaw("{$filledCountExpr} < COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0")
+            ->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) ASC");
     }
 
     protected function getPriorityLevel($record): string

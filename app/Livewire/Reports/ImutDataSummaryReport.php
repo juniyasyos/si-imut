@@ -79,8 +79,10 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                         default => 'danger',
                     })
                     ->sortable(
-                        query: fn($query, $direction) =>
-                        $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
+                        query: function($query, $direction) {
+                            $filledCountExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 THEN 1 ELSE 0 END)";
+                            return $query->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) " . $direction);
+                        }
                     )
                     ->summarize(
                         Summarizer::make()

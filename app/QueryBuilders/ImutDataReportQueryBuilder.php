@@ -59,6 +59,10 @@ class ImutDataReportQueryBuilder
                 'imut_data.id',
                 'imut_data.title',
                 'laporan_unit_kerjas.laporan_imut_id',
+                'imut_kategori.short_name',
+                'imut_kategori.id',
+                'imut_profil.target_value',
+                'imut_profil.target_operator'
             )
             ->orderBy('imut_data.title');
     }

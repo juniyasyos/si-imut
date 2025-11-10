@@ -27,6 +27,13 @@ class UnitKerjaReportQueryBuilder
      */
     public function build(int $laporanId): Builder
     {
+        // Expression untuk menghitung filled_count - akan digunakan di SELECT dan HAVING
+        $filledCountExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NOT NULL
+            AND imut_penilaians.denominator_value IS NOT NULL
+            AND imut_penilaians.denominator_value != 0
+            THEN 1 ELSE 0 END)";
+
         return $this->query
             ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
             ->leftJoin('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
@@ -39,12 +46,13 @@ class UnitKerjaReportQueryBuilder
                 'laporan_unit_kerjas.laporan_imut_id',
                 'imut_profil.target_value as imut_standard',
                 'imut_profil.target_operator as imut_standard_type_operator',
-                DB::raw(ImutCalculationService::filledCountExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value')),
+                DB::raw("{$filledCountExpr} as filled_count"),
                 DB::raw('COUNT(imut_penilaians.id) as total_count'),
-                DB::raw(ImutCalculationService::completionPercentageExpression(
-                    "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 THEN 1 ELSE 0 END)",
-                    'COUNT(imut_penilaians.id)'
-                )),
+                DB::raw("ROUND(
+                    CASE WHEN COUNT(imut_penilaians.id) > 0
+                    THEN {$filledCountExpr} * 100.0 / COUNT(imut_penilaians.id)
+                    ELSE 0 END, 2
+                ) as percentage"),
                 // Hitung jumlah IMUT yang terisi tapi tidak memenuhi standar
                 DB::raw("SUM(CASE
                     WHEN imut_penilaians.numerator_value IS NOT NULL
@@ -63,5 +71,19 @@ class UnitKerjaReportQueryBuilder
                 'unit_kerja.unit_name',
                 'laporan_unit_kerjas.laporan_imut_id'
             );
+    }
+
+    /**
+     * Get filled count expression untuk digunakan di HAVING clause
+     *
+     * @return string
+     */
+    public static function getFilledCountExpression(): string
+    {
+        return "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NOT NULL
+            AND imut_penilaians.denominator_value IS NOT NULL
+            AND imut_penilaians.denominator_value != 0
+            THEN 1 ELSE 0 END)";
     }
 }
