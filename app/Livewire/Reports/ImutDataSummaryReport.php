@@ -6,6 +6,7 @@ use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
 use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
+use App\Traits\HasPercentageColor;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -24,6 +25,7 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
+    use HasPercentageColor;
 
     public ?int $laporanId = null;
 
@@ -185,60 +187,6 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
             ->bulkActions([
                 // ...
             ]);
-    }
-
-    protected function getCategoryColor(int $categoryId): string
-    {
-        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-        return $colors[$categoryId % count($colors)];
-    }
-
-    protected function getPercentageColor($record): ?string
-    {
-        // Debug untuk melihat nilai sebenarnya
-        static $debugged = true;
-        if (!$debugged) {
-            $debugged = true;
-            dd([
-                'percentage' => $record->percentage,
-                'standard' => $record->imut_standard,
-                'operator' => $record->imut_standard_type_operator,
-                'imut_data_title' => $record->imut_data_title ?? 'N/A',
-                'is_numeric_percentage' => is_numeric($record->percentage),
-                'is_numeric_standard' => is_numeric($record->imut_standard),
-                'all_record_data' => (array) $record,
-            ]);
-        }
-
-        if (!is_numeric($record->percentage) || !is_numeric($record->imut_standard)) {
-            return null;
-        }
-
-        // Check if meets standard (green)
-        $meetsStandard = match ($record->imut_standard_type_operator) {
-            '=' => $record->percentage == $record->imut_standard,
-            '>=' => $record->percentage >= $record->imut_standard,
-            '<=' => $record->percentage <= $record->imut_standard,
-            '<' => $record->percentage < $record->imut_standard,
-            '>' => $record->percentage > $record->imut_standard,
-            default => false,
-        };
-
-        if ($meetsStandard) {
-            return 'success';
-        }
-
-        // Check if within 80% threshold (yellow)
-        $meetsThreshold = match ($record->imut_standard_type_operator) {
-            '=' => $record->percentage == ($record->imut_standard * 0.8),
-            '>=' => $record->percentage >= ($record->imut_standard * 0.8),
-            '<=' => $record->percentage <= ($record->imut_standard * 1.2),
-            '<' => $record->percentage < ($record->imut_standard * 1.2),
-            '>' => $record->percentage > ($record->imut_standard * 0.8),
-            default => false,
-        };
-
-        return $meetsThreshold ? 'warning' : 'danger';
     }
 
     public function render()

@@ -10,6 +10,8 @@ use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\UnitKerja;
 use App\Services\Form\FormCalculationService;
+use App\Traits\HasPercentageColor;
+use App\Traits\HasTableHelpers;
 use Carbon\Carbon;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -37,6 +39,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 {
     use InteractsWithForms;
     use InteractsWithTable;
+    use HasPercentageColor;
+    use HasTableHelpers;
 
     public ?int $laporanId = null;
 
@@ -233,56 +237,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             'laporanSlug' => $laporanSlug,
             'record' => $record->id,
         ]);
-    }
-
-    protected function getCategoryColor(int $categoryId): string
-    {
-        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-        return $colors[$categoryId % count($colors)];
-    }
-
-    protected function getPercentageColor($record): ?string
-    {
-        if (!is_numeric($record->percentage) || !is_numeric($record->imut_standard)) {
-            return null;
-        }
-
-        // Check if meets standard (green)
-        $meetsStandard = match ($record->imut_standard_type_operator) {
-            '=' => $record->percentage == $record->imut_standard,
-            '>=' => $record->percentage >= $record->imut_standard,
-            '<=' => $record->percentage <= $record->imut_standard,
-            '<' => $record->percentage < $record->imut_standard,
-            '>' => $record->percentage > $record->imut_standard,
-            default => false,
-        };
-
-        if ($meetsStandard) {
-            return 'success';
-        }
-
-        // Check if within 80% threshold (yellow)
-        $meetsThreshold = match ($record->imut_standard_type_operator) {
-            '=' => $record->percentage == ($record->imut_standard * 0.8),
-            '>=' => $record->percentage >= ($record->imut_standard * 0.8),
-            '<=' => $record->percentage <= ($record->imut_standard * 1.2),
-            '<' => $record->percentage < ($record->imut_standard * 1.2),
-            '>' => $record->percentage > ($record->imut_standard * 0.8),
-            default => false,
-        };
-
-        return $meetsThreshold ? 'warning' : 'danger';
-    }
-
-    protected function makeSearchableColumn(string $name, string $label, string $dbColumn): TextColumn
-    {
-        return TextColumn::make($name)
-            ->label($label)
-            ->toggleable()
-            ->limit(80)
-            ->searchable(
-                query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
-            );
     }
 
     protected function buildPerhitunganSchemaForAction($livewireComponent): array

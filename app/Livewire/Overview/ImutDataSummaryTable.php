@@ -4,6 +4,8 @@ namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
+use App\Traits\HasPercentageColor;
+use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -22,6 +24,8 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
+    use HasPercentageColor;
+    use HasTableHelpers;
 
     public ?int $imutDataId = null;
 
@@ -96,29 +100,7 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
                 ->alignCenter()
                 ->suffix('%')
                 ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
-                ->color(fn($record) => match (true) {
-                    ! is_numeric($record->percentage) || ! is_numeric($record->imut_standard) => null,
-
-                    match ($record->imut_standard_type_operator) {
-                        '=' => $record->percentage == $record->imut_standard,
-                        '>=' => $record->percentage >= $record->imut_standard,
-                        '<=' => $record->percentage <= $record->imut_standard,
-                        '<' => $record->percentage < $record->imut_standard,
-                        '>' => $record->percentage > $record->imut_standard,
-                        default => false,
-                    } => 'success',
-
-                    match ($record->imut_standard_type_operator) {
-                        '=' => $record->percentage == ($record->imut_standard * 0.8),
-                        '>=' => $record->percentage >= ($record->imut_standard * 0.8),
-                        '<=' => $record->percentage <= ($record->imut_standard * 1.2),
-                        '<' => $record->percentage < ($record->imut_standard * 1.2),
-                        '>' => $record->percentage > ($record->imut_standard * 0.8),
-                        default => false,
-                    } => 'warning',
-
-                    default => 'danger',
-                })
+                ->color(fn($record) => $this->getPercentageColor($record))
                 ->summarize(
                     Summarizer::make()
                         ->label('Total Persentase')
@@ -210,17 +192,6 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
                 ]);
             })
             ->bulkActions([]);
-    }
-
-    protected function makeSearchableColumn(string $name, string $label, string $dbColumn): TextColumn
-    {
-        return TextColumn::make($name)
-            ->label($label)
-            ->toggleable()
-            ->limit(80)
-            ->searchable(
-                query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
-            );
     }
 
     public function render()

@@ -4,6 +4,7 @@ namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
+use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -22,6 +23,7 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
+    use HasTableHelpers;
 
     public ?int $imutDataId = null;
 
@@ -177,16 +179,6 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                 ]);
             })
             ->bulkActions([]);
-    }
-
-    protected function makeSearchableColumn(string $name, string $label, string $dbColumn): TextColumn
-    {
-        return TextColumn::make($name)
-            ->label($label)
-            ->toggleable()
-            ->searchable(
-                query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
-            );
     }
 
     public function render()
