@@ -9,7 +9,12 @@ use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\UnitKerja;
+use App\Services\Form\FormCalculationService;
+use Carbon\Carbon;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -23,6 +28,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
@@ -35,6 +42,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     public ?int $unitKerjaId = null;
 
+    protected ?LaporanImut $laporan = null;
+
     protected $listeners = [
         'report-changed' => 'updateReport',
         'refreshTable' => '$refresh',
@@ -44,7 +53,15 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
     {
         $this->laporanId = $laporanId;
         $this->unitKerjaId = $unitKerjaId;
+        $this->loadLaporan();
         $this->dispatch('$refresh');
+    }
+
+    protected function loadLaporan(): void
+    {
+        if ($this->laporanId) {
+            $this->laporan = LaporanImut::find($this->laporanId);
+        }
     }
 
     public function refreshTable(): void
@@ -149,6 +166,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     protected function buildIsiPenilaianAction(): Action
     {
+        $livewireComponent = $this;
+
         return Action::make('isi_penilaian')
             ->label('Isi Penilaian')
             ->icon('heroicon-o-pencil-square')
@@ -160,6 +179,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             ->modalSubmitActionLabel('Simpan')
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)
+            // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
             ->mountUsing(function (Form $form, $record) {
                 $form->fill([
                     'numerator_value'   => $record->numerator_value ?? null,
@@ -168,14 +188,16 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     'recommendations'   => $record->recommendations ?? '',
                 ]);
             })
-            ->form([
-                Section::make('Perhitungan')
-                    ->schema(ImutPenilaianResourceSchema::penilaianCalculationSchema())
-                    ->columns(3),
+            ->form(function () use ($livewireComponent) {
+                return [
+                    Section::make('Perhitungan')
+                        ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
+                        ->columns(3),
 
-                Section::make('Analisis dan Rekomendasi')
-                    ->schema(ImutPenilaianResourceSchema::penilaianAnalysisSchema()),
-            ])
+                    Section::make('Analisis dan Rekomendasi')
+                        ->schema($this->buildAnalysisSchemaForAction($livewireComponent)),
+                ];
+            })
             ->action(function ($record, array $data) {
                 $penilaian = ImutPenilaian::find($record->id);
 
@@ -261,6 +283,92 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             ->searchable(
                 query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
             );
+    }
+
+    protected function buildPerhitunganSchemaForAction($livewireComponent): array
+    {
+        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+
+        return [
+            TextInput::make('numerator_value')
+                ->label('Numerator')
+                ->numeric()
+                ->placeholder('0.00')
+                ->nullable()
+                ->debounce(1000)
+                ->readOnly($shouldLock)
+                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+            TextInput::make('denominator_value')
+                ->label('Denominator')
+                ->numeric()
+                ->placeholder('0.00')
+                ->nullable()
+                ->debounce(1000)
+                ->readOnly($shouldLock)
+                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+            TextInput::make('result_operation')
+                ->label('Result (%)')
+                ->numeric()
+                ->placeholder('0.00')
+                ->readOnly()
+                ->debounce(1000)
+                ->dehydrated(false)
+                ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+        ];
+    }
+
+    protected function buildAnalysisSchemaForAction($livewireComponent): array
+    {
+        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+        $canRecommend = Gate::allows('create_recommendation_penilaian_imut::penilaian') || Gate::allows('force_editable_imut::penilaian');
+
+        return [
+            Textarea::make('analysis')
+                ->label('Analisis')
+                ->rows(4)
+                ->nullable()
+                ->readOnly($shouldLock)
+                ->placeholder('Tuliskan hasil analisis (opsional)...')
+                ->columnSpanFull(),
+
+            Textarea::make('recommendations')
+                ->label('Rekomendasi')
+                ->nullable()
+                ->disabled(!$canRecommend)
+                ->rows(4)
+                ->placeholder('Berikan saran atau rekomendasi (opsional)...')
+                ->columnSpanFull(),
+        ];
+    }
+
+    protected function updateResultForAction(callable $set, callable $get): void
+    {
+        $formCalculationService = app(FormCalculationService::class);
+        $formCalculationService->updatePenilaianResult($set, $get);
+    }
+
+    public function isLaporanPeriodClosed(): bool
+    {
+        return ! $this->isLaporanEditable();
+    }
+
+    public function isLaporanEditable(): bool
+    {
+        if (! $this->laporan) {
+            $this->loadLaporan();
+        }
+
+        if (! $this->laporan) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        $start = Carbon::parse($this->laporan->assessment_period_start);
+        $end = Carbon::parse($this->laporan->assessment_period_end);
+
+        return $today->betweenIncluded($start, $end);
     }
 
     public function render()

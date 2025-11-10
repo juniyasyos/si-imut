@@ -17,6 +17,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ImutPenilaianResourceSchema extends ImutPenilaianResource
 {
@@ -403,7 +404,8 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
 
     protected static function userCan(string $permission): bool
     {
-        return Auth::user()?->can($permission) ?? false;
+        $user = Auth::user();
+        return $user && Gate::forUser($user)->allows($permission);
     }
 
     protected static function userCannot(string $permission): bool
@@ -448,7 +450,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
             ->placeholder('0.00')
             ->nullable()
             ->debounce(1000)
-            ->readOnly(fn() => self::shouldLockPenilaian())
+            ->readOnly(fn($livewire) => self::shouldLockPenilaian($livewire))
             ->afterStateUpdated(fn(callable $set, callable $get) => self::updateResult($set, $get));
     }
 
@@ -476,7 +478,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
             ->preserveFilenames()
             ->previewable(true)
             ->columnSpanFull()
-            ->disabled(fn() => self::shouldLockPenilaian())
+            ->disabled(fn($livewire) => self::shouldLockPenilaian($livewire))
             ->acceptedFileTypes([
                 'application/pdf',
                 'image/*',
@@ -493,7 +495,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
             ->label('Analisis')
             ->rows(4)
             ->nullable()
-            ->readOnly(fn() => self::shouldLockPenilaian())
+            ->readOnly(fn($livewire) => self::shouldLockPenilaian($livewire))
             ->placeholder('Tuliskan hasil analisis (opsional)...')
             ->columnSpanFull();
     }
@@ -521,8 +523,7 @@ class ImutPenilaianResourceSchema extends ImutPenilaianResource
 
                 self::buildResultField(),
 
-                self::buildDocumentUploadField()
-                    ->disabled(fn($livewire) => self::shouldLockPenilaian($livewire)),
+                self::buildDocumentUploadField(),
             ])
             ->columns(3);
     }
