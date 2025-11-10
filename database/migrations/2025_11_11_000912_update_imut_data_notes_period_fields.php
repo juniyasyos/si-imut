@@ -34,10 +34,6 @@ return new class extends Migration
             // Drop new columns
             $table->dropIndex(['period_year', 'period_quarter']);
             $table->dropColumn(['period_year', 'period_quarter', 'period_type']);
-
-            // Restore old columns
-            $table->date('period_start')->nullable()->after('note_name');
-            $table->date('period_end')->nullable()->after('period_start');
         });
     }
 };
