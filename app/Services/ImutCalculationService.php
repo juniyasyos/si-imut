@@ -120,6 +120,34 @@ class ImutCalculationService
     }
 
     /**
+     * Generate SQL expression untuk mengecek apakah nilai memenuhi standar
+     *
+     * @param string $valueExpression Expression untuk nilai yang dicek (tanpa 'as alias')
+     * @param string $standardColumn Kolom yang berisi nilai standar
+     * @param string $operatorColumn Kolom yang berisi operator
+     * @return string SQL expression (boolean)
+     */
+    public static function meetsStandardExpression(
+        string $valueExpression,
+        string $standardColumn,
+        string $operatorColumn
+    ): string {
+        // Hilangkan 'as alias' dari value expression jika ada
+        $valueExpression = preg_replace('/\s+as\s+\w+$/i', '', trim($valueExpression));
+
+        return "(
+            CASE {$operatorColumn}
+                WHEN '=' THEN ABS(({$valueExpression}) - {$standardColumn}) < 0.01
+                WHEN '>=' THEN ({$valueExpression}) >= {$standardColumn}
+                WHEN '<=' THEN ({$valueExpression}) <= {$standardColumn}
+                WHEN '>' THEN ({$valueExpression}) > {$standardColumn}
+                WHEN '<' THEN ({$valueExpression}) < {$standardColumn}
+                ELSE 0
+            END
+        )";
+    }
+
+    /**
      * Generate SQL expression untuk sum dengan default 0
      *
      * @param string $column

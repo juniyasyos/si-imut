@@ -30,6 +30,16 @@ class ImutCapaianWidget extends ApexChartWidget
     protected int|string|array $columnSpan = 'full';
 
     public ?array $statistikData = null;
+    public ?int $selectedLaporanId = null;
+
+    /**
+     * Handler untuk perubahan laporan yang dipilih
+     */
+    public function updatedSelectedLaporanId(): void
+    {
+        // Force widget untuk reload dengan data baru
+        $this->dispatch('$refresh');
+    }
 
     public function getChartProcessor(): ChartDataProcessorService
     {
@@ -167,6 +177,46 @@ class ImutCapaianWidget extends ApexChartWidget
 
     protected function calculateDetailedStatistics($laporans, $categories): array
     {
+        // Default: ambil laporan terbaru jika tidak ada yang dipilih
+        if (!$this->selectedLaporanId) {
+            $latestLaporan = $laporans->sortByDesc('assessment_period_start')->first();
+            $this->selectedLaporanId = $latestLaporan?->id;
+        }
+
+        // Ambil laporan yang dipilih
+        $selectedLaporan = $laporans->firstWhere('id', $this->selectedLaporanId);
+
+        if (!$selectedLaporan) {
+            // Fallback ke terbaru jika tidak ketemu
+            $selectedLaporan = $laporans->sortByDesc('assessment_period_start')->first();
+            $this->selectedLaporanId = $selectedLaporan?->id;
+        }
+
+        if (!$selectedLaporan) {
+            return [
+                'total_categories' => count($categories),
+                'categories_detail' => [],
+                'total_imut_indicators' => 0,
+                'imut_meeting_standard' => 0,
+                'imut_below_standard' => 0,
+                'overall_achievement' => 0,
+                'available_laporans' => [],
+                'selected_laporan_id' => null,
+            ];
+        }
+
+        // Gunakan HANYA laporan yang dipilih
+        $selectedLaporanCollection = collect([$selectedLaporan]);
+
+        // Simpan daftar laporan yang tersedia untuk dropdown
+        $availableLaporans = $laporans->sortByDesc('assessment_period_start')->map(function($laporan) {
+            return [
+                'id' => $laporan->id,
+                'name' => $laporan->name,
+                'period' => $laporan->assessment_period_start->format('F Y'),
+            ];
+        })->values()->toArray();
+
         $stats = [
             'total_categories' => count($categories),
             'categories_detail' => [],
@@ -174,30 +224,26 @@ class ImutCapaianWidget extends ApexChartWidget
             'imut_meeting_standard' => 0,
             'imut_below_standard' => 0,
             'overall_achievement' => 0,
+            'laporan_used' => $selectedLaporan->name,
+            'laporan_period' => $selectedLaporan->assessment_period_start->format('F Y'),
+            'available_laporans' => $availableLaporans,
+            'selected_laporan_id' => $this->selectedLaporanId,
         ];
 
-        foreach ($categories as $categoryId => $categoryName) {
+        foreach ($categories as $categoryShortName) {
             $categoryStats = [
-                'category_id' => $categoryId,
-                'category_name' => $categoryName,
+                'category_id' => $categoryShortName,
+                'category_name' => $categoryShortName,
                 'total_imut' => 0,
                 'imut_meeting_standard' => 0,
                 'imut_below_standard' => 0,
                 'achievement_percentage' => 0,
             ];
 
-            // Ambil SEMUA IMUT yang ada di kategori ini dari database
-            $allImutInCategory = DB::table('imut_data')
-                ->where('imut_kategori_id', $categoryId)
-                ->where('status', true)
-                ->select('id', 'title')
-                ->get()
-                ->keyBy('id');
-
-            // Kumpulkan data dari laporan untuk IMUT yang ada
+            // Kumpulkan data dari laporan yang dipilih
             $imutDataMap = [];
 
-            foreach ($laporans as $laporan) {
+            foreach ($selectedLaporanCollection as $laporan) {
                 foreach ($laporan->laporanUnitKerjas as $laporanUnitKerja) {
                     foreach ($laporanUnitKerja->imutPenilaians as $penilaian) {
                         $imutData = $penilaian->profile->imutData ?? null;
@@ -206,7 +252,7 @@ class ImutCapaianWidget extends ApexChartWidget
 
                         // Cek apakah imut ini termasuk kategori yang sedang diproses
                         $imutCategory = $imutData->categories;
-                        if (!$imutCategory || $imutCategory->id != $categoryId) {
+                        if (!$imutCategory || $imutCategory->short_name != $categoryShortName) {
                             continue;
                         }
 
@@ -236,18 +282,20 @@ class ImutCapaianWidget extends ApexChartWidget
                 }
             }
 
-            // Hitung achievement untuk SEMUA IMUT di kategori ini
-            foreach ($allImutInCategory as $imutId => $imutInfo) {
+            // Hitung achievement untuk IMUT yang ADA di laporan (bukan semua dari database)
+            foreach ($imutDataMap as $imutId => $data) {
                 $categoryStats['total_imut']++;
 
-                // Jika IMUT ini tidak ada di data map atau denominator 0, anggap tidak memenuhi standar
-                if (!isset($imutDataMap[$imutId]) || $imutDataMap[$imutId]['total_denominator'] == 0) {
+                // Jika denominator 0, anggap tidak memenuhi standar
+                if ($data['total_denominator'] == 0) {
                     $categoryStats['imut_below_standard']++;
                     continue;
                 }
 
-                $data = $imutDataMap[$imutId];
-                $achievement = ($data['total_numerator'] / $data['total_denominator']) * 100;
+                $achievement = ImutCalculationService::calculatePercentage(
+                    $data['total_numerator'],
+                    $data['total_denominator']
+                );
 
                 // Cek apakah memenuhi standard
                 $meetsStandard = $this->checkIfMeetsStandard(
@@ -298,7 +346,6 @@ class ImutCapaianWidget extends ApexChartWidget
         if (!$this->statistikData) {
             return null;
         }
-
         return view('filament.widgets.imut-capaian-footer', [
             'stats' => $this->statistikData,
         ])->render();

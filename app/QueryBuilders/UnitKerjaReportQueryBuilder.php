@@ -45,6 +45,17 @@ class UnitKerjaReportQueryBuilder
                     "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 THEN 1 ELSE 0 END)",
                     'COUNT(imut_penilaians.id)'
                 )),
+                // Hitung jumlah IMUT yang terisi tapi tidak memenuhi standar
+                DB::raw("SUM(CASE
+                    WHEN imut_penilaians.numerator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value != 0
+                        AND NOT " . ImutCalculationService::meetsStandardExpression(
+                            ImutCalculationService::percentageExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value'),
+                            'imut_profil.target_value',
+                            'imut_profil.target_operator'
+                        ) . "
+                    THEN 1 ELSE 0 END) as below_standard_count"),
             ])
             ->groupBy(
                 'laporan_unit_kerjas.id',

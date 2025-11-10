@@ -3,53 +3,25 @@
 namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
-use App\Models\ImutData;
-use App\Services\ImutCalculationService;
+use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
+use App\Models\LaporanUnitKerja;
 use Filament\Tables;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Number;
+use Filament\Tables\Filters\SelectFilter;
 
-/**
- * Widget untuk menampilkan indikator mutu yang telah tercapai pada dashboard.
- */
 class ImutTercapai extends BaseWidget
 {
     protected static ?int $sort = 6;
-
     protected int|string|array $columnSpan = 'full';
+    protected static ?string $heading = '⚠️ Unit Kerja Perlu Perhatian';
+    protected static ?string $pollingInterval = '30s';
 
     public static function canView(): bool
     {
         return Auth::user()?->can('widget_ImutTercapai') ?? false;
-    }
-
-    protected function query(): Builder
-    {
-        $laporan = LaporanImutFacade::getLatestLaporan();
-
-        if (! $laporan) {
-            return ImutData::query()->whereRaw('1 = 0');
-        }
-
-        $laporanId = $laporan->id;
-
-        return ImutData::query()
-            ->where('status', true)
-            ->whereHas(
-                'latestProfile.penilaian',
-                fn($q) => $q->whereHas('laporanUnitKerja', fn($q) => $q->where('laporan_imut_id', $laporanId))
-                    ->whereNotNull('numerator_value')
-                    ->whereNotNull('denominator_value')
-            )
-            ->with([
-                'latestProfile' => fn($q) => $q->with([
-                    'penilaian' => fn($q) => $q->whereHas('laporanUnitKerja', fn($q) => $q->where('laporan_imut_id', $laporanId))
-                        ->whereNotNull('numerator_value')
-                        ->whereNotNull('denominator_value'),
-                ]),
-            ]);
     }
 
     public function table(Tables\Table $table): Tables\Table
@@ -58,126 +30,132 @@ class ImutTercapai extends BaseWidget
 
         if (! $laporan) {
             return $table
-                ->query(ImutData::query()->whereRaw('1 = 0'))
+                ->query(LaporanUnitKerja::query()->whereRaw('1 = 0'))
                 ->columns([
                     Tables\Columns\TextColumn::make('message')
                         ->label('Informasi')
-                        ->getStateUsing(fn() => 'Tidak ada laporan terbaru')
-                        ->extraAttributes(['class' => 'text-center text-gray-500']),
+                        ->getStateUsing(fn() => 'Tidak ada laporan IMUT terbaru.')
                 ]);
         }
 
-        $totalUnit = $laporan->unitKerjas->count();
-
         return $table
-            ->query($this->query())
-            ->paginated([5, 10, 25])
-            ->defaultPaginationPageOption(5)
+            ->query(fn() => $this->getIncompleteUnitsQuery($laporan->id))
+            ->paginated([5, 10, 25, 50])
+            ->defaultPaginationPageOption(10)
+            ->defaultSort('percentage', 'asc')
+            ->striped()
+            ->recordClasses(fn($record) => match ($this->getPriorityLevel($record)) {
+                'KRITIS' => 'bg-red-50/70 dark:bg-red-900/20',
+                'TINGGI' => 'bg-orange-50/60 dark:bg-orange-900/20',
+                'SEDANG' => 'bg-amber-50/60 dark:bg-amber-900/10',
+                default  => 'bg-white dark:bg-gray-900/40',
+            })
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Indikator')
-                    ->wrap(),
+                Tables\Columns\TextColumn::make('unit_name')
+                    ->label('Unit Kerja')
+                    ->wrap()
+                    ->weight('medium')
+                    ->searchable()
+                    ->sortable(),
 
-                Tables\Columns\TextColumn::make('categories.short_name')
-                    ->label(__('filament-forms::imut-data.fields.imut_kategori_id'))
+                Tables\Columns\TextColumn::make('completion_status')
+                    ->label('Kelengkapan')
+                    ->alignCenter()
+                    ->state(fn($record) =>
+                        number_format($record->filled_count ?? 0) . ' / ' . number_format($record->total_count ?? 0)
+                    )
+                    ->description(fn($record) =>
+                        Number::format($record->percentage ?? 0, 1, locale: app()->getLocale()) . '%'
+                    )
                     ->badge()
-                    ->sortable()
-                    ->color(function ($record) {
-                        $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
-                        $id = $record->categories->id ?? 0;
-
-                        return $colors[$id % count($colors)];
+                    ->color(fn($record) => match (true) {
+                        ! is_numeric($record->percentage) => 'gray',
+                        $record->percentage >= 80 => 'success',
+                        $record->percentage >= 50 => 'warning',
+                        default => 'danger',
                     })
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->sortable(query: fn($query, $direction) =>
+                        $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
+                    ),
 
-                Tables\Columns\TextColumn::make('unit_melapor')
-                    ->label('Unit Melapor')
-                    ->getStateUsing(fn($record) => $this->formatUnitMelapor($record->latestProfile, $totalUnit)),
-
-                Tables\Columns\TextColumn::make('tercapai')
-                    ->label('Unit Tercapai')
-                    ->tooltip('Jumlah unit kerja yang mencapai target dari yang sudah menilai')
+                Tables\Columns\TextColumn::make('incomplete_count')
+                    ->label('Belum Terisi')
+                    ->alignCenter()
+                    ->state(fn($record) =>
+                        max(0, ($record->total_count ?? 0) - ($record->filled_count ?? 0))
+                    )
                     ->badge()
-                    ->getStateUsing(fn($record) => $this->formatTercapai($record->latestProfile))
-                    ->color(fn($record) => $this->getBadgeColor($record->latestProfile)),
-            ]);
+                    ->color('gray')
+                    ->tooltip('Jumlah IMUT yang belum diisi'),
+
+                Tables\Columns\TextColumn::make('below_standard_count')
+                    ->label('Di Bawah Standar')
+                    ->alignCenter()
+                    ->badge()
+                    ->color(fn($record) => ($record->below_standard_count ?? 0) > 0 ? 'danger' : 'success')
+                    ->tooltip('IMUT yang sudah terisi tapi tidak memenuhi standar mutu')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('priority_level')
+                    ->label('Prioritas')
+                    ->alignCenter()
+                    ->state(fn($record) => $this->getPriorityLevel($record))
+                    ->badge()
+                    ->color(fn($record) => $this->getPriorityColor($record))
+                    ->icon(fn($record) => $this->getPriorityIcon($record)),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('view_details')
+                    ->label('Lihat Detail')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(fn($record) => UnitKerjaImutDataReport::getUrl([
+                        'laporan_id'    => $record->laporan_imut_id,
+                        'unit_kerja_id' => $record->unit_kerja_id,
+                    ])),
+            ])
+            ->emptyStateHeading('Semua Unit Sudah Lengkap! 🎉')
+            ->emptyStateDescription('Tidak ada unit kerja yang memerlukan perhatian.')
+            ->emptyStateIcon('heroicon-o-check-circle');
     }
 
-    protected function formatUnitMelapor($profile, int $totalUnit): string
+    protected function getIncompleteUnitsQuery(int $laporanId): Builder
     {
-        if (! $profile || $totalUnit === 0) {
-            return '0/0';
-        }
-
-        $filled = $profile->penilaian
-            ->pluck('laporan_unit_kerja_id')
-            ->unique()
-            ->count();
-
-        return "$filled/$totalUnit";
+        return LaporanUnitKerja::getReportByUnitKerja($laporanId)
+            ->havingRaw('filled_count < total_count AND total_count > 0')
+            ->orderByRaw('(filled_count / NULLIF(total_count, 0)) ASC');
     }
 
-    protected function formatTercapai($profile): string
+    protected function getPriorityLevel($record): string
     {
-        $grouped = $this->getGroupedPenilaian($profile);
-
-        if ($grouped->isEmpty()) {
-            return 'Belum ada data';
-        }
-
-        $tercapai = $this->countTercapai($grouped, $profile);
-
-        return "$tercapai dari {$grouped->count()} Unit";
-    }
-
-    protected function getBadgeColor($profile): string
-    {
-        $grouped = $this->getGroupedPenilaian($profile);
-
-        if ($grouped->isEmpty()) {
-            return 'gray';
-        }
-
-        $tercapai = $this->countTercapai($grouped, $profile);
-        $percentage = $tercapai / $grouped->count();
-
+        $percentage = $record->percentage ?? 0;
         return match (true) {
-            $percentage >= 1 => 'success',
-            $percentage >= 0.6 => 'warning',
-            default => 'danger',
+            $percentage >= 80 => 'RENDAH',
+            $percentage >= 50 => 'SEDANG',
+            $percentage >= 25 => 'TINGGI',
+            default => 'KRITIS',
         };
     }
 
-    protected function getGroupedPenilaian($profile): Collection
+    protected function getPriorityColor($record): string
     {
-        return ! $profile
-            ? collect()
-            : $profile->penilaian
-            ->whereNotNull('numerator_value')
-            ->whereNotNull('denominator_value')
-            ->groupBy('laporan_unit_kerja_id');
+        return match ($this->getPriorityLevel($record)) {
+            'RENDAH' => 'success',
+            'SEDANG' => 'warning',
+            'TINGGI' => 'danger',
+            'KRITIS' => 'danger',
+            default => 'gray',
+        };
     }
 
-    protected function countTercapai(Collection $grouped, $profile): int
+    protected function getPriorityIcon($record): string
     {
-        return $grouped->filter(fn(Collection $penilaians) => $penilaians->contains(fn($p) => $p->denominator_value != 0 && $this->isTercapai($p, $profile)))->count();
-    }
-
-    protected function isTercapai($penilaian, $profile): bool
-    {
-        if ($penilaian->denominator_value == 0) {
-            return false;
-        }
-
-        $hasil = ImutCalculationService::calculatePercentage(
-            $penilaian->numerator_value,
-            $penilaian->denominator_value
-        );
-
-        return ImutCalculationService::meetsStandard(
-            $hasil,
-            $profile->target_value,
-            $profile->target_operator
-        );
+        return match ($this->getPriorityLevel($record)) {
+            'RENDAH' => 'heroicon-o-check-badge',
+            'SEDANG' => 'heroicon-o-exclamation-triangle',
+            'TINGGI' => 'heroicon-o-fire',
+            'KRITIS' => 'heroicon-o-shield-exclamation',
+            default => 'heroicon-o-question-mark-circle',
+        };
     }
 }
