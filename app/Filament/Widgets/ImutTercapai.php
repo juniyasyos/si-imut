@@ -41,7 +41,7 @@ class ImutTercapai extends BaseWidget
         return $table
             ->query(fn() => $this->getIncompleteUnitsQuery($laporan->id))
             ->paginated([5, 10, 25, 50])
-            ->defaultPaginationPageOption(10)
+            ->defaultPaginationPageOption(5)
             ->defaultSort('percentage', 'asc')
             ->striped()
             ->recordClasses(fn($record) => match ($this->getPriorityLevel($record)) {
@@ -78,21 +78,13 @@ class ImutTercapai extends BaseWidget
                         $query->orderByRaw('(filled_count / NULLIF(total_count, 0)) ' . $direction)
                     ),
 
-                Tables\Columns\TextColumn::make('incomplete_count')
-                    ->label('Belum Terisi')
-                    ->alignCenter()
-                    ->state(fn($record) =>
-                        max(0, ($record->total_count ?? 0) - ($record->filled_count ?? 0))
-                    )
-                    ->badge()
-                    ->color('gray')
-                    ->tooltip('Jumlah IMUT yang belum diisi'),
-
                 Tables\Columns\TextColumn::make('below_standard_count')
                     ->label('Di Bawah Standar')
                     ->alignCenter()
+                    ->state(fn($record) => number_format($record->below_standard_count ?? 0))
                     ->badge()
-                    ->color(fn($record) => ($record->below_standard_count ?? 0) > 0 ? 'danger' : 'success')
+                    ->color(fn($record) => ($record->below_standard_count ?? 0) > 0 ? 'success' : 'danger')
+                    ->icon(fn($record) => ($record->below_standard_count ?? 0) > 0 ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->tooltip('IMUT yang sudah terisi tapi tidak memenuhi standar mutu')
                     ->sortable(),
 
