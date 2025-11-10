@@ -12,9 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('imut_data_notes', function (Blueprint $table) {
-            // Drop old period columns
-            $table->dropColumn(['period_start', 'period_end']);
-
             // Add new period columns
             $table->year('period_year')->nullable()->after('note_name');
             $table->enum('period_quarter', ['Q1', 'Q2', 'Q3', 'Q4'])->nullable()->after('period_year')->comment('Q1: Jan-Mar, Q2: Apr-Jun, Q3: Jul-Sep, Q4: Oct-Dec');
