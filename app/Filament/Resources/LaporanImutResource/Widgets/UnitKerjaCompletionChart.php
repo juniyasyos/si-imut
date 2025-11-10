@@ -5,6 +5,7 @@ namespace App\Filament\Resources\LaporanImutResource\Widgets;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Support\CacheKey;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -14,6 +15,11 @@ class UnitKerjaCompletionChart extends ApexChartWidget
     protected static ?string $chartId = 'unitKerjaCompletionChart';
     protected static ?string $heading = 'Kelengkapan Pelaporan Per Unit Kerja';
     protected static ?int $sort = 2;
+
+    public static function canView(): bool
+    {
+        return Auth::user()?->can('widget_ImutTercapai');
+    }
 
     public int|string|array|null $columnSpanCustom = null;
     public ?int $laporanId = null;

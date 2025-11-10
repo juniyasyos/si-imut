@@ -5,6 +5,7 @@ namespace App\Filament\Resources\LaporanImutResource\Widgets;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Support\CacheKey;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -13,7 +14,12 @@ class ImutDataCompletionChart extends ApexChartWidget
 {
     protected static ?string $chartId = 'imutDataCompletionChart';
     protected static ?string $heading = 'Kelengkapan Pelaporan Per Indikator Mutu';
-        protected static ?int $sort = 2;
+    protected static ?int $sort = 2;
+
+    public static function canView(): bool
+    {
+        return Auth::user()?->can('widget_ImutTercapai');
+    }
 
     public int|string|array|null $columnSpanCustom = null;
     public ?int $laporanId = null;

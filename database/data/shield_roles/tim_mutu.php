@@ -13,6 +13,8 @@ return [
         'widget_DashboardSiimutOverview',
         'widget_ImutCapaianWidget',
         'widget_ImutTercapai',
+        'widget_imutDataCompletionChart',
+        'widget_UnitKerjaCompletionChart',
 
         // User Management
         'view_user',
