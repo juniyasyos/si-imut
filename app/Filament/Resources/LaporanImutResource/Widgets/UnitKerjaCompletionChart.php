@@ -95,79 +95,83 @@ class UnitKerjaCompletionChart extends ApexChartWidget
 
     protected function getUnitKerjaCompletionStats(int $laporanId): array
     {
-        // Ambil semua unit kerja yang terlibat dalam laporan ini
-        $unitKerjaStats = LaporanUnitKerja::query()
-            ->where('laporan_imut_id', $laporanId)
-            ->select([
-                'laporan_unit_kerjas.unit_kerja_id',
-                'unit_kerja.unit_name',
-                'laporan_unit_kerjas.id as laporan_unit_kerja_id',
-                DB::raw('COUNT(imut_penilaians.id) as total_indicators'),
-                DB::raw('SUM(
-                CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value != 0
-                    THEN 1
-                    ELSE 0
-                END
-            ) as filled_indicators'),
-                DB::raw('SUM(
-                CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value IS NOT NULL
-                    THEN 1
-                    ELSE 0
-                END
-            ) as filled_indicators_including_zero'),
-            ])
-            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
-            ->groupBy('laporan_unit_kerjas.unit_kerja_id', 'unit_kerja.unit_name', 'laporan_unit_kerjas.id')
-            ->get();
+        $cacheKey = CacheKey::unitKerjaCompletionStats($laporanId);
 
-        // Group by unit_kerja_id untuk handle kasus multiple laporan_unit_kerja per unit
-        $groupedStats = $unitKerjaStats->groupBy('unit_kerja_id');
+        return Cache::remember($cacheKey, now()->addHours(24), function () use ($laporanId) {
+            // Ambil semua unit kerja yang terlibat dalam laporan ini
+            $unitKerjaStats = LaporanUnitKerja::query()
+                ->where('laporan_imut_id', $laporanId)
+                ->select([
+                    'laporan_unit_kerjas.unit_kerja_id',
+                    'unit_kerja.unit_name',
+                    'laporan_unit_kerjas.id as laporan_unit_kerja_id',
+                    DB::raw('COUNT(imut_penilaians.id) as total_indicators'),
+                    DB::raw('SUM(
+                    CASE
+                        WHEN imut_penilaians.numerator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value != 0
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as filled_indicators'),
+                    DB::raw('SUM(
+                    CASE
+                        WHEN imut_penilaians.numerator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value IS NOT NULL
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as filled_indicators_including_zero'),
+                ])
+                ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
+                ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
+                ->groupBy('laporan_unit_kerjas.unit_kerja_id', 'unit_kerja.unit_name', 'laporan_unit_kerjas.id')
+                ->get();
 
-        $detailData = [];
-        $complete = 0;
-        $incomplete = 0;
+            // Group by unit_kerja_id untuk handle kasus multiple laporan_unit_kerja per unit
+            $groupedStats = $unitKerjaStats->groupBy('unit_kerja_id');
 
-        foreach ($groupedStats as $unitKerjaId => $stats) {
-            $totalIndicators = $stats->sum('total_indicators');
-            $totalFilled     = $stats->sum('filled_indicators');
-            $unitName        = $stats->first()->unit_name;
+            $detailData = [];
+            $complete = 0;
+            $incomplete = 0;
 
-            $isComplete = $totalIndicators > 0 && $totalFilled == $totalIndicators;
+            foreach ($groupedStats as $unitKerjaId => $stats) {
+                $totalIndicators = $stats->sum('total_indicators');
+                $totalFilled     = $stats->sum('filled_indicators');
+                $unitName        = $stats->first()->unit_name;
 
-            $detailData[] = [
-                'unit_kerja_id'          => $unitKerjaId,
-                'nama_unit'              => $unitName,
-                'jumlah_imut_total'      => $totalIndicators,
-                'jumlah_laporan_terisi'  => $totalFilled,
-                'jumlah_belum_terisi'    => $totalIndicators - $totalFilled,
-                'persentase_kelengkapan' => $totalIndicators > 0
-                    ? round(($totalFilled / $totalIndicators) * 100, 2) . '%'
-                    : '0%',
-                'status'                 => $isComplete ? 'LENGKAP' : 'TIDAK LENGKAP',
-            ];
+                $isComplete = $totalIndicators > 0 && $totalFilled == $totalIndicators;
 
-            if ($isComplete) {
-                $complete++;
-            } else {
-                $incomplete++;
+                $detailData[] = [
+                    'unit_kerja_id'          => $unitKerjaId,
+                    'nama_unit'              => $unitName,
+                    'jumlah_imut_total'      => $totalIndicators,
+                    'jumlah_laporan_terisi'  => $totalFilled,
+                    'jumlah_belum_terisi'    => $totalIndicators - $totalFilled,
+                    'persentase_kelengkapan' => $totalIndicators > 0
+                        ? round(($totalFilled / $totalIndicators) * 100, 2) . '%'
+                        : '0%',
+                    'status'                 => $isComplete ? 'LENGKAP' : 'TIDAK LENGKAP',
+                ];
+
+                if ($isComplete) {
+                    $complete++;
+                } else {
+                    $incomplete++;
+                }
             }
-        }
 
-        return [
-            'complete'          => $complete,
-            'incomplete'        => $incomplete,
-            'laporan_id'        => $laporanId,
-            'total_unit_kerja'  => count($detailData),
-            'unit_lengkap'      => $complete,
-            'unit_tidak_lengkap' => $incomplete,
-            'detail_per_unit'   => $detailData,
-        ];
+            return [
+                'complete'          => $complete,
+                'incomplete'        => $incomplete,
+                'laporan_id'        => $laporanId,
+                'total_unit_kerja'  => count($detailData),
+                'unit_lengkap'      => $complete,
+                'unit_tidak_lengkap' => $incomplete,
+                'detail_per_unit'   => $detailData,
+            ];
+        });
     }
 
     protected function getNoDataOptions(): array

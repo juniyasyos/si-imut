@@ -3,8 +3,12 @@
 namespace App\Providers;
 
 use App\Models\ImutBenchmarking;
+use App\Models\ImutPenilaian;
+use App\Models\LaporanImut;
 use App\Models\UnitKerja;
 use App\Observers\ImutBenchmarkingObserver;
+use App\Observers\ImutPenilaianObserver;
+use App\Observers\LaporanImutObserver;
 use App\Observers\MediaObserver;
 use App\Observers\UnitKerjaObserver;
 use BezhanSalleh\FilamentLanguageSwitch\Enums\Placement;
@@ -119,6 +123,8 @@ class AppServiceProvider extends ServiceProvider
         UnitKerja::observe(UnitKerjaObserver::class);
         Media::observe(MediaObserver::class);
         ImutBenchmarking::observe(ImutBenchmarkingObserver::class);
+        LaporanImut::observe(LaporanImutObserver::class);
+        ImutPenilaian::observe(ImutPenilaianObserver::class);
     }
 
     /**

@@ -99,86 +99,78 @@ class ImutDataCompletionChart extends ApexChartWidget
      */
     protected function getImutDataCompletionStats(int $laporanId): array
     {
-        // Hitung total unit kerja yang terlibat dalam laporan
-        $totalUnits = LaporanUnitKerja::where('laporan_imut_id', $laporanId)
-            ->distinct('unit_kerja_id')
-            ->count('unit_kerja_id');
+        $cacheKey = CacheKey::imutDataCompletionStats($laporanId);
 
-        if ($totalUnits === 0) {
-            return [
-                'complete' => 0,
-                'incomplete' => 0,
-            ];
-        }
+        return Cache::remember($cacheKey, now()->addHours(24), function () use ($laporanId) {
+            // Hitung total unit kerja yang terlibat dalam laporan
+            $totalUnits = LaporanUnitKerja::where('laporan_imut_id', $laporanId)
+                ->distinct('unit_kerja_id')
+                ->count('unit_kerja_id');
 
-        // Untuk setiap imut_data, hitung:
-        // 1. Berapa unit yang seharusnya mengisi (expected_units) - dari imut_penilaians
-        // 2. Berapa unit yang sudah mengisi dengan valid (filled_units)
-        $imutDataStats = DB::table('imut_penilaians')
-            ->join('laporan_unit_kerjas', 'imut_penilaians.laporan_unit_kerja_id', '=', 'laporan_unit_kerjas.id')
-            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
-            ->select([
-                'imut_data.id as imut_data_id',
-                'imut_data.title',
-                // Total unit yang seharusnya mengisi indikator ini
-                DB::raw('COUNT(DISTINCT laporan_unit_kerjas.unit_kerja_id) as expected_units'),
-                // Unit yang sudah mengisi dengan nilai valid
-                DB::raw('COUNT(DISTINCT CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value IS NOT NULL
-                    AND imut_penilaians.denominator_value != 0
-                    THEN laporan_unit_kerjas.unit_kerja_id
-                END) as filled_units')
-            ])
-            ->groupBy('imut_data.id', 'imut_data.title')
-            ->get();
-
-        $detailData = [];
-        $complete = 0;
-        $incomplete = 0;
-
-        // Hitung indikator yang sudah dilaporkan oleh semua unit yang seharusnya mengisi
-        foreach ($imutDataStats as $stat) {
-            // Lengkap jika filled_units = expected_units dan expected_units > 0
-            $isComplete = $stat->expected_units > 0 && $stat->filled_units == $stat->expected_units;
-
-            $detailData[] = [
-                'imut_data_id' => $stat->imut_data_id,
-                'title' => $stat->title,
-                'expected_units' => $stat->expected_units,
-                'filled_units' => $stat->filled_units,
-                'unfilled_units' => $stat->expected_units - $stat->filled_units,
-                'percentage' => $stat->expected_units > 0
-                    ? round(($stat->filled_units / $stat->expected_units) * 100, 2)
-                    : 0,
-                'status' => $isComplete ? 'LENGKAP' : 'TIDAK LENGKAP',
-            ];
-
-            if ($isComplete) {
-                $complete++;
-            } else {
-                $incomplete++;
+            if ($totalUnits === 0) {
+                return [
+                    'complete' => 0,
+                    'incomplete' => 0,
+                ];
             }
-        }
 
-        $totalImutData = count($imutDataStats);
+            // Untuk setiap imut_data, hitung:
+            // 1. Berapa unit yang seharusnya mengisi (expected_units) - dari imut_penilaians
+            // 2. Berapa unit yang sudah mengisi dengan valid (filled_units)
+            $imutDataStats = DB::table('imut_penilaians')
+                ->join('laporan_unit_kerjas', 'imut_penilaians.laporan_unit_kerja_id', '=', 'laporan_unit_kerjas.id')
+                ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
+                ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
+                ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
+                ->select([
+                    'imut_data.id as imut_data_id',
+                    'imut_data.title',
+                    // Total unit yang seharusnya mengisi indikator ini
+                    DB::raw('COUNT(DISTINCT laporan_unit_kerjas.unit_kerja_id) as expected_units'),
+                    // Unit yang sudah mengisi dengan nilai valid
+                    DB::raw('COUNT(DISTINCT CASE
+                        WHEN imut_penilaians.numerator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value != 0
+                        THEN laporan_unit_kerjas.unit_kerja_id
+                    END) as filled_units')
+                ])
+                ->groupBy('imut_data.id', 'imut_data.title')
+                ->get();
 
-        // Debug: Show comprehensive data
-        // dd([
-        //     'laporan_id' => $laporanId,
-        //     'total_units_in_laporan' => $totalUnits,
-        //     'total_imut_indicators' => $totalImutData,
-        //     'complete_indicators' => $complete,
-        //     'incomplete_indicators' => $incomplete,
-        //     'detail_per_indicator' => $detailData,
-        // ]);
+            $detailData = [];
+            $complete = 0;
+            $incomplete = 0;
 
-        return [
-            'complete' => $complete,
-            'incomplete' => $incomplete,
-        ];
+            // Hitung indikator yang sudah dilaporkan oleh semua unit yang seharusnya mengisi
+            foreach ($imutDataStats as $stat) {
+                // Lengkap jika filled_units = expected_units dan expected_units > 0
+                $isComplete = $stat->expected_units > 0 && $stat->filled_units == $stat->expected_units;
+
+                $detailData[] = [
+                    'imut_data_id' => $stat->imut_data_id,
+                    'title' => $stat->title,
+                    'expected_units' => $stat->expected_units,
+                    'filled_units' => $stat->filled_units,
+                    'unfilled_units' => $stat->expected_units - $stat->filled_units,
+                    'percentage' => $stat->expected_units > 0
+                        ? round(($stat->filled_units / $stat->expected_units) * 100, 2)
+                        : 0,
+                    'status' => $isComplete ? 'LENGKAP' : 'TIDAK LENGKAP',
+                ];
+
+                if ($isComplete) {
+                    $complete++;
+                } else {
+                    $incomplete++;
+                }
+            }
+
+            return [
+                'complete' => $complete,
+                'incomplete' => $incomplete,
+            ];
+        });
     }
 
     protected function getNoDataOptions(): array
