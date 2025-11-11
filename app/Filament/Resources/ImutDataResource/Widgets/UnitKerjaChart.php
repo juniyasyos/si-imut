@@ -105,8 +105,10 @@ class UnitKerjaChart extends ApexChartWidget
     {
         $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
 
-        $seriesData = $this->getChartSeries();
-        $xLabels = $this->getMonthLabels();
+        // Get both series data and labels from the same source
+        $chartData = $this->getChartSeriesAndLabels();
+        $seriesData = $chartData['series'];
+        $xLabels = $chartData['labels'];
 
         if (empty($seriesData)) {
             return ApexChartConfig::noDataOptions();
@@ -124,23 +126,14 @@ class UnitKerjaChart extends ApexChartWidget
         );
     }
 
-    protected function getMonthLabels(): array
-    {
-        $year = $this->filterFormData['year'] ?? now()->year;
-        $endMonth = $this->filterFormData['end_month'] ?? now()->month;
-
-        return LaporanImut::where('report_year', $year)
-            ->where('report_month', '<=', $endMonth)
-            ->orderBy('report_month')
-            ->get()
-            ->map(fn($laporan) => $laporan->period_name)
-            ->unique()
-            ->values()
-            ->toArray();
-    }
-
     /**
-     * Generate chart series data untuk grafik per unit kerja
+     * Generate chart series data dan labels untuk grafik per unit kerja
+     *
+     * Return format:
+     * [
+     *   'series' => [...],  // Data series untuk chart
+     *   'labels' => [...]   // Label bulan untuk X-axis
+     * ]
      *
      * Konfigurasi benchmarking (warna & tipe chart) diambil dari database:
      * - Warna (color): dari field region_types.display_color
@@ -149,9 +142,9 @@ class UnitKerjaChart extends ApexChartWidget
      *
      * Admin dapat mengatur melalui menu: Region Type Benchmarking
      *
-     * @return array Series data untuk ApexCharts
+     * @return array Series data dan labels untuk ApexCharts
      */
-    protected function getChartSeries(): array
+    protected function getChartSeriesAndLabels(): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
         $endMonth = $this->filterFormData['end_month'] ?? now()->month;
@@ -192,6 +185,7 @@ class UnitKerjaChart extends ApexChartWidget
 
         $dataNilai = [];
         $dataTarget = [];
+        $labels = [];
 
         $monthNames = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
@@ -199,32 +193,39 @@ class UnitKerjaChart extends ApexChartWidget
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
+        // Build data dan labels dari hasil query penilaian
         foreach ($penilaianData as $row) {
-            $label = $monthNames[$row->report_month] . ' ' . $row->report_year;
+            $labelKey = sprintf('%04d-%02d', $row->report_year, $row->report_month);
+            $labelDisplay = $monthNames[$row->report_month] . ' ' . $row->report_year;
+
             $nilai = ($row->total_denum > 0) ? round(($row->total_num / $row->total_denum) * 100, 2) : 0;
             $target = round($row->target, 2);
 
-            $labelKey = \Carbon\Carbon::parse($row->periode . '-01')->format('Y-m');
-            $labelDisplay = $label;
             $labels[$labelKey] = $labelDisplay;
             $dataNilai[$labelKey] = $nilai;
             $dataTarget[$labelKey] = $target;
         }
 
-        $labels = array_keys($dataNilai);
+        // Jika tidak ada data penilaian, return empty
+        if (empty($labels)) {
+            return ['series' => [], 'labels' => []];
+        }
+
+        $labelKeys = array_keys($labels);
+        $labelValues = array_values($labels);
 
         // Default colors yang konsisten
         $series = [
             [
                 'name' => 'Nilai IMUT',
                 'type' => 'line',
-                'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labels),
+                'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labelKeys),
                 'color' => '#3b82f6', // Blue
             ],
             [
                 'name' => 'Target Standar',
                 'type' => 'line',
-                'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labels),
+                'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labelKeys),
                 'color' => '#f59e0b', // Amber
             ],
         ];
@@ -244,13 +245,14 @@ class UnitKerjaChart extends ApexChartWidget
             $benchmarkGrouped = $benchmarking->groupBy(fn($item) => sprintf('%04d-%02d', $item->year, $item->month));
             $regionSeries = [];
             $regionTypeMap = []; // Map untuk menyimpan region type object
-            $labelMap = [];
 
             foreach ($benchmarkGrouped as $periodeKey => $items) {
+                // Hanya proses periode yang ada di labels (dari data penilaian)
+                if (!isset($labels[$periodeKey])) {
+                    continue;
+                }
+
                 $date = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey);
-                $labelKey = $date->format('Y-m');
-                $labelDisplay = $monthNames[$date->month] . ' ' . $date->year;
-                $labelMap[$labelKey] = $labelDisplay;
 
                 foreach ($items as $item) {
                     // Validate if benchmark is valid for this period
@@ -260,7 +262,7 @@ class UnitKerjaChart extends ApexChartWidget
                     }
 
                     $type = $item->regionType->type ?? 'Unknown';
-                    $regionSeries[$type][$labelKey] = round($item->benchmark_value, 2);
+                    $regionSeries[$type][$periodeKey] = round($item->benchmark_value, 2);
 
                     // Simpan region type untuk akses color dan chart type nanti
                     if (!isset($regionTypeMap[$type])) {
@@ -272,7 +274,7 @@ class UnitKerjaChart extends ApexChartWidget
             $colorIndex = 0;
 
             foreach ($regionSeries as $regionName => $seriesGroup) {
-                if (collect($labels)->contains(fn($l) => isset($seriesGroup[$l]))) {
+                if (collect($labelKeys)->contains(fn($l) => isset($seriesGroup[$l]))) {
                     // Ambil region type dari database untuk mendapatkan konfigurasi tampilan
                     $regionType = $regionTypeMap[$regionName] ?? null;
 
@@ -287,7 +289,7 @@ class UnitKerjaChart extends ApexChartWidget
                     $series[] = [
                         'name' => $regionName,
                         'type' => $chartType,  // Tipe chart dari database
-                        'data' => array_map(fn($l) => $seriesGroup[$l] ?? null, $labels),
+                        'data' => array_map(fn($l) => $seriesGroup[$l] ?? null, $labelKeys),
                         'color' => $color,     // Warna dari database
                     ];
 
@@ -296,18 +298,21 @@ class UnitKerjaChart extends ApexChartWidget
             }
         }
 
-        return $series;
+        return [
+            'series' => $series,
+            'labels' => $labelValues  // Gunakan label yang konsisten dengan data
+        ];
     }
 
     /**
      * Get fallback color untuk backward compatibility
      *
-     * @param int $index
+     * @param int $colorIndex
      * @return string
      */
-    protected function getFallbackColor(int $index): string
+    protected function getFallbackColor(int $colorIndex): string
     {
         $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
-        return $fallbackColors[$index % count($fallbackColors)];
+        return $fallbackColors[$colorIndex % count($fallbackColors)];
     }
 }

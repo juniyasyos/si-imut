@@ -98,8 +98,10 @@ class LineChart extends ApexChartWidget
     {
         $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
 
-        $seriesData = $this->getChartSeries();
-        $xLabels = $this->getMonthLabels();
+        // Get both series data and labels from the same source
+        $chartData = $this->getChartSeriesAndLabels();
+        $seriesData = $chartData['series'];
+        $xLabels = $chartData['labels'];
 
         if (empty($seriesData)) {
             return ApexChartConfig::noDataOptions();
@@ -117,24 +119,14 @@ class LineChart extends ApexChartWidget
         );
     }
 
-
-    protected function getMonthLabels(): array
-    {
-        $year = $this->filterFormData['year'] ?? now()->year;
-        $endMonth = $this->filterFormData['end_month'] ?? now()->month;
-
-        return LaporanImut::where('report_year', $year)
-            ->where('report_month', '<=', $endMonth)
-            ->orderBy('report_month')
-            ->get()
-            ->map(fn($laporan) => $laporan->period_name)
-            ->unique()
-            ->values()
-            ->toArray();
-    }
-
     /**
-     * Generate chart series data untuk grafik
+     * Generate chart series data dan labels untuk grafik
+     *
+     * Return format:
+     * [
+     *   'series' => [...],  // Data series untuk chart
+     *   'labels' => [...]   // Label bulan untuk X-axis
+     * ]
      *
      * Konfigurasi benchmarking (warna & tipe chart) diambil dari database:
      * - Warna (color): dari field region_types.display_color
@@ -143,9 +135,9 @@ class LineChart extends ApexChartWidget
      *
      * Admin dapat mengatur melalui menu: Region Type Benchmarking
      *
-     * @return array Series data untuk ApexCharts
+     * @return array Series data dan labels untuk ApexCharts
      */
-    protected function getChartSeries(): array
+    protected function getChartSeriesAndLabels(): array
     {
         $year = $this->filterFormData['year'] ?? now()->year;
         $endMonth = $this->filterFormData['end_month'] ?? now()->month;
@@ -179,6 +171,7 @@ class LineChart extends ApexChartWidget
 
         $dataNilai = [];
         $dataTarget = [];
+        $labels = [];
 
         $monthNames = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
@@ -186,29 +179,39 @@ class LineChart extends ApexChartWidget
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
+        // Build data dan labels dari hasil query penilaian
         foreach ($penilaianData as $row) {
-            $label = $monthNames[$row->report_month] . ' ' . $row->report_year;
+            $labelKey = sprintf('%04d-%02d', $row->report_year, $row->report_month);
+            $labelDisplay = $monthNames[$row->report_month] . ' ' . $row->report_year;
+
             $nilai = $row->total_denum > 0 ? round(($row->total_num / $row->total_denum) * 100, 2) : 0;
             $target = round($row->target, 2);
 
-            $dataNilai[$label] = $nilai;
-            $dataTarget[$label] = $target;
+            $labels[$labelKey] = $labelDisplay;
+            $dataNilai[$labelKey] = $nilai;
+            $dataTarget[$labelKey] = $target;
         }
 
-        $labels = array_keys($dataNilai);
+        // Jika tidak ada data penilaian, return empty
+        if (empty($labels)) {
+            return ['series' => [], 'labels' => []];
+        }
+
+        $labelKeys = array_keys($labels);
+        $labelValues = array_values($labels);
 
         // Default colors yang konsisten
         $series = [
             [
                 'name' => 'Nilai IMUT',
                 'type' => 'line',
-                'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labels),
+                'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labelKeys),
                 'color' => '#3b82f6', // Blue
             ],
             [
                 'name' => 'Target Standar',
                 'type' => 'line',
-                'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labels),
+                'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labelKeys),
                 'color' => '#f59e0b', // Amber
             ],
         ];
@@ -231,29 +234,24 @@ class LineChart extends ApexChartWidget
 
             $regionSeries = [];
 
-            // Proses setiap benchmark untuk mengisi semua bulan dalam rentang validitasnya
+            // Proses setiap benchmark untuk mengisi data berdasarkan periode yang valid
             foreach ($benchmarking as $item) {
                 $typeName = $item->regionType->type ?? 'Unknown';
                 $benchmarkValue = round($item->benchmark_value, 2);
 
-                // Loop through semua label (bulan) yang ada di chart
-                foreach ($labels as $label) {
-                    // Parse label untuk mendapatkan bulan dan tahun
-                    // Format label: "Januari 2024", "Februari 2024", etc.
-                    foreach ($monthNames as $monthNum => $monthName) {
-                        if (str_starts_with($label, $monthName)) {
-                            $labelYear = (int) substr($label, strlen($monthName) + 1);
-                            $labelMonth = $monthNum;
+                // Loop through semua labelKeys (periode) yang ada di chart
+                foreach ($labelKeys as $labelKey) {
+                    // Parse labelKey format: "YYYY-MM"
+                    [$labelYear, $labelMonth] = explode('-', $labelKey);
+                    $labelYear = (int) $labelYear;
+                    $labelMonth = (int) $labelMonth;
 
-                            // Buat tanggal untuk label ini (akhir bulan)
-                            $periodDate = \Carbon\Carbon::create($labelYear, $labelMonth, 1)->endOfMonth();
+                    // Buat tanggal untuk label ini (akhir bulan)
+                    $periodDate = \Carbon\Carbon::create($labelYear, $labelMonth, 1)->endOfMonth();
 
-                            // Cek apakah benchmark valid untuk periode ini
-                            if ($item->isValidForPeriod($periodDate)) {
-                                $regionSeries[$item->region_type_id][$typeName][$label] = $benchmarkValue;
-                            }
-                            break;
-                        }
+                    // Cek apakah benchmark valid untuk periode ini
+                    if ($item->isValidForPeriod($periodDate)) {
+                        $regionSeries[$item->region_type_id][$typeName][$labelKey] = $benchmarkValue;
                     }
                 }
             }
@@ -262,7 +260,7 @@ class LineChart extends ApexChartWidget
 
             foreach ($regionSeries as $regionId => $seriesGroup) {
                 foreach ($seriesGroup as $name => $data) {
-                    if (collect($labels)->contains(fn($l) => isset($data[$l]))) {
+                    if (collect($labelKeys)->contains(fn($l) => isset($data[$l]))) {
                         // Ambil region type dari database untuk mendapatkan konfigurasi tampilan
                         $regionType = $benchmarking->firstWhere('region_type_id', $regionId)?->regionType;
 
@@ -277,7 +275,7 @@ class LineChart extends ApexChartWidget
                         $series[] = [
                             'name' => $name,
                             'type' => $chartType,  // Tipe chart dari database
-                            'data' => array_map(fn($l) => $data[$l] ?? null, $labels),
+                            'data' => array_map(fn($l) => $data[$l] ?? null, $labelKeys),
                             'color' => $color,     // Warna dari database
                         ];
 
@@ -287,18 +285,21 @@ class LineChart extends ApexChartWidget
             }
         }
 
-        return $series;
+        return [
+            'series' => $series,
+            'labels' => $labelValues  // Gunakan label yang konsisten dengan data
+        ];
     }
 
     /**
      * Get fallback color untuk backward compatibility
      *
-     * @param int $index
+     * @param int $colorIndex
      * @return string
      */
-    protected function getFallbackColor(int $index): string
+    protected function getFallbackColor(int $colorIndex): string
     {
         $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
-        return $fallbackColors[$index % count($fallbackColors)];
+        return $fallbackColors[$colorIndex % count($fallbackColors)];
     }
 }
