@@ -4,6 +4,7 @@ namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanUnitKerja;
+use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -23,6 +24,7 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
+    use HasPercentageColor;
     use HasTableHelpers;
 
     public ?int $imutDataId = null;
@@ -49,10 +51,13 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
             ->columns([
                 TextColumn::make('laporan_name')
                     ->label('Nama Laporan')
+                    ->grow()
+                    ->wrap()
+                    ->sortable()
                     ->searchable(query: fn(EloquentBuilder $query, string $search) => $query->where('laporan_imuts.name', 'like', "%{$search}%")),
 
                 TextColumn::make('laporan_status')
-                    ->label('Laporan Status')
+                    ->label('Status Laporan')
                     ->badge()
                     ->alignCenter()
                     ->color(fn(string $state): string => match ($state) {
@@ -60,7 +65,7 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                         'process' => 'primary',
                         'complete' => 'success',
                     })
-                    ->sortable(),
+                    ->sortable()->toggleable(isToggledHiddenByDefault: true),
 
                 $this->makeSearchableColumn('imut_profil', 'Profile', 'imut_profil.version'),
 
@@ -89,32 +94,9 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                 TextColumn::make('percentage')
                     ->label('Persentase (%)')
                     ->alignCenter()
-                    ->toggleable()
                     ->suffix('%')
                     ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
-                    ->color(fn($record) => match (true) {
-                        ! is_numeric($record->percentage) || ! is_numeric($record->imut_standard) => null,
-
-                        match ($record->imut_standard_type_operator) {
-                            '=' => $record->percentage == $record->imut_standard,
-                            '>=' => $record->percentage >= $record->imut_standard,
-                            '<=' => $record->percentage <= $record->imut_standard,
-                            '<' => $record->percentage < $record->imut_standard,
-                            '>' => $record->percentage > $record->imut_standard,
-                            default => false,
-                        } => 'success',
-
-                        match ($record->imut_standard_type_operator) {
-                            '=' => $record->percentage == ($record->imut_standard * 0.8),
-                            '>=' => $record->percentage >= ($record->imut_standard * 0.8),
-                            '<=' => $record->percentage <= ($record->imut_standard * 1.2),
-                            '<' => $record->percentage < ($record->imut_standard * 1.2),
-                            '>' => $record->percentage > ($record->imut_standard * 0.8),
-                            default => false,
-                        } => 'warning',
-
-                        default => 'danger',
-                    })
+                    ->color(fn($record) => $this->getPercentageColor($record))
                     ->summarize(
                         Summarizer::make()
                             ->label('Total Persentase')
@@ -139,9 +121,9 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                 //     ->suffix('%')
                 //     ->using(fn(Builder $query) => $query->min('standard'))),
 
-                $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
+                // $this->makeSearchableColumn('analysis', 'Analisis', 'imut_penilaians.analysis'),
                 // $this->makeSearchableColumn('document_upload', 'Dokumen Upload', 'imut_penilaians.document_upload'),
-                $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
+                // $this->makeSearchableColumn('recommendations', 'Rekomendasi', 'imut_penilaians.recommendations'),
             ])
             ->filters([
                 SelectFilter::make('imut_kategori')

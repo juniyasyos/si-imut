@@ -28,6 +28,7 @@ trait HasTableHelpers
             ->label($label)
             ->toggleable()
             ->limit(80)
+            ->toggleable(isToggledHiddenByDefault: true)
             ->searchable(
                 query: fn(EloquentBuilder $query, string $search) => $query->where($dbColumn, 'like', "%{$search}%")
             );
