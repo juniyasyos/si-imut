@@ -73,7 +73,7 @@ class UnitKerjaImutDataReport extends Page
 
     public function getTitle(): string
     {
-        return 'Summary Laporan Unit Kerja : ';
+        return 'Summary Laporan Unit Kerja';
     }
 
     protected function getFormStatePath(): string
