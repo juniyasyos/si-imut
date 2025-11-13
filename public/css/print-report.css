@@ -1,0 +1,836 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #333;
+    padding: 20mm;
+    background: #fff;
+}
+
+/* Header Section */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 3px solid #2563eb;
+    padding-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 20pt;
+    font-weight: bold;
+    color: #1e40af;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.header h2 {
+    font-size: 16pt;
+    color: #475569;
+    margin-bottom: 10px;
+}
+
+.header .institution {
+    font-size: 12pt;
+    color: #64748b;
+    margin-top: 10px;
+}
+
+/* Info Section */
+.info-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8fafc;
+    border-left: 4px solid #2563eb;
+    border-radius: 4px;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: bold;
+    width: 180px;
+    color: #475569;
+}
+
+.info-value {
+    flex: 1;
+    color: #1e293b;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 10pt;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-process {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-complete {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-coming_soon {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* Table Section */
+.table-section {
+    margin: 25px 0;
+}
+
+.table-title {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #1e40af;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: #fff;
+}
+
+thead {
+    background: #2563eb;
+    color: white;
+}
+
+th {
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10pt;
+    border: 1px solid #1e40af;
+}
+
+th.text-center {
+    text-align: center;
+}
+
+th.text-right {
+    text-align: right;
+}
+
+tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+tbody tr:hover {
+    background: #f1f5f9;
+}
+
+td {
+    padding: 10px 8px;
+    font-size: 10pt;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+td.text-center {
+    text-align: center;
+}
+
+td.text-right {
+    text-align: right;
+}
+
+td.font-semibold {
+    font-weight: 600;
+}
+
+/* Category Header */
+tr.category-header td {
+    background: #dbeafe;
+    font-weight: bold;
+    color: #1e40af;
+    padding: 10px 8px;
+}
+
+/* Summary Section */
+.summary-section {
+    margin: 25px 0;
+    padding: 15px;
+    background: #f0f9ff;
+    border: 2px solid #bfdbfe;
+    border-radius: 6px;
+}
+
+.summary-title {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1e40af;
+    margin-bottom: 12px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.summary-item {
+    background: white;
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 4px solid #3b82f6;
+}
+
+.summary-item-label {
+    font-size: 9pt;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-item-value {
+    font-size: 16pt;
+    font-weight: bold;
+    color: #1e40af;
+}
+
+/* Footer */
+.footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #cbd5e1;
+    font-size: 9pt;
+    color: #64748b;
+}
+
+.signature-section {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.signature-box {
+    text-align: center;
+    width: 45%;
+}
+
+.signature-label {
+    font-size: 10pt;
+    margin-bottom: 60px;
+    color: #475569;
+}
+
+.signature-name {
+    font-weight: bold;
+    color: #1e293b;
+    border-top: 1px solid #94a3b8;
+    padding-top: 5px;
+    display: inline-block;
+    min-width: 200px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Indicator Info Section */
+.indicator-info {
+    margin: 25px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.indicator-info h3 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.indicator-detail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.indicator-detail-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 12px;
+    border-radius: 6px;
+    backdrop-filter: blur(10px);
+}
+
+.indicator-detail-label {
+    font-size: 9pt;
+    opacity: 0.9;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.indicator-detail-value {
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+/* Achievement Badge */
+.achievement-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11pt;
+    font-weight: 600;
+}
+
+.achievement-met {
+    background: rgba(16, 185, 129, 0.2);
+    color: #065f46;
+    border: 2px solid rgba(16, 185, 129, 0.5);
+}
+
+.achievement-not-met {
+    background: rgba(239, 68, 68, 0.2);
+    color: #991b1b;
+    border: 2px solid rgba(239, 68, 68, 0.5);
+}
+
+/* Definition Section */
+.definition-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+}
+
+.definition-section h4 {
+    font-size: 12pt;
+    color: #92400e;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.definition-section p {
+    font-size: 10pt;
+    color: #78350f;
+    line-height: 1.6;
+}
+
+/* Chart Container */
+.chart-container {
+    margin: 25px 0;
+    padding: 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.chart-title {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1e40af;
+}
+
+.chart-subtitle {
+    font-size: 9pt;
+    color: #64748b;
+}
+
+#trendChart {
+    min-height: 350px;
+}
+
+/* Comparison Table (like in image) */
+.comparison-table-section {
+    margin: 25px 0;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.comparison-table thead {
+    background: #f8fafc;
+}
+
+.comparison-table th {
+    padding: 10px;
+    text-align: center;
+    font-size: 9pt;
+    font-weight: 600;
+    border: 1px solid #cbd5e1;
+    color: #1e293b;
+}
+
+.comparison-table td {
+    padding: 8px;
+    text-align: center;
+    font-size: 10pt;
+    border: 1px solid #e2e8f0;
+}
+
+.comparison-table .month-header {
+    background: #3b82f6;
+    color: white;
+    font-weight: bold;
+}
+
+.comparison-table .year-column {
+    background: #fef3c7;
+    font-weight: 600;
+}
+
+.comparison-table .standard-column {
+    background: #dbeafe;
+    font-weight: 600;
+}
+
+.comparison-table .trend-up {
+    color: #059669;
+}
+
+.comparison-table .trend-down {
+    color: #dc2626;
+}
+
+.comparison-table .trend-stable {
+    color: #6b7280;
+}
+
+/* Analysis Box */
+.analysis-box {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 2px solid #10b981;
+    border-radius: 8px;
+    page-break-inside: avoid;
+}
+
+.analysis-box h4 {
+    font-size: 13pt;
+    color: #065f46;
+    margin-bottom: 15px;
+    font-weight: bold;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #a7f3d0;
+}
+
+.analysis-box > div {
+    margin-bottom: 12px;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid #10b981;
+}
+
+.analysis-box > div:last-child {
+    margin-bottom: 0;
+}
+
+.analysis-box strong {
+    color: #047857;
+    font-size: 10.5pt;
+}
+
+.analysis-box p {
+    font-size: 10pt;
+    color: #064e3b;
+    line-height: 1.7;
+    margin-bottom: 8px;
+}
+
+.analysis-box ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.analysis-box li {
+    font-size: 10pt;
+    color: #064e3b;
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+
+/* Print Styles */
+@media print {
+    body {
+        padding: 10mm;
+    }
+
+    .header {
+        page-break-after: avoid;
+    }
+
+    table {
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    .signature-section {
+        page-break-before: avoid;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    /* Pastikan chart terlihat saat print */
+    .chart-container {
+        display: block !important;
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        margin: 25px 0 30px 0;
+        padding: 20px;
+        background: white !important;
+        border: 1px solid #e2e8f0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #trendChart {
+        display: block !important;
+        height: 380px !important;
+        width: 100% !important;
+        overflow: hidden;
+    }
+
+    /* Hide chart header subtitle di print untuk save space */
+    .chart-subtitle {
+        display: none !important;
+    }
+
+    /* Pastikan ApexCharts SVG ter-render dengan baik */
+    .chart-container svg {
+        max-width: 100% !important;
+        height: 380px !important;
+    }
+
+    .apexcharts-canvas {
+        width: 100% !important;
+        height: 380px !important;
+    }
+
+    /* Pastikan gradient background tercetak */
+    .indicator-info {
+        display: block !important;
+        page-break-inside: avoid;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color: white !important;
+    }
+
+    .indicator-detail {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .indicator-detail-item {
+        background: rgba(255, 255, 255, 0.15) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Pastikan warna tabel tercetak */
+    .comparison-table th {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .comparison-table td {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Pastikan analysis box tercetak dengan warna */
+    .analysis-box {
+        page-break-inside: avoid;
+        background: #f0fdf4 !important;
+        border: 2px solid #10b981 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .analysis-box > div {
+        background: white !important;
+        border-left: 4px solid #10b981 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Pastikan summary section tercetak */
+    .summary-section {
+        page-break-inside: avoid;
+        background: #f0f9ff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .summary-item {
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Pastikan info section tercetak */
+    .info-section {
+        background: #f8fafc !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Pastikan definition section tercetak */
+    .definition-section {
+        page-break-inside: avoid;
+        background: #fef3c7 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Pastikan badge tercetak dengan warna */
+    .status-badge,
+    .achievement-badge {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .status-process {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    .status-complete {
+        background: #d1fae5 !important;
+        color: #065f46 !important;
+    }
+
+    .achievement-met {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #065f46 !important;
+        border: 2px solid rgba(16, 185, 129, 0.5) !important;
+    }
+
+    .achievement-not-met {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #991b1b !important;
+        border: 2px solid rgba(239, 68, 68, 0.5) !important;
+    }
+
+    /* Hindari page break pada elemen penting */
+    .table-section,
+    .comparison-table-section {
+        page-break-inside: avoid;
+    }
+
+    /* Fix grid layouts untuk print */
+    .summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .indicator-detail {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* Pastikan semua background dan border tercetak */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Optimasi font size untuk print */
+    body {
+        font-size: 10pt !important;
+    }
+
+    h1 {
+        font-size: 18pt !important;
+    }
+
+    h2 {
+        font-size: 14pt !important;
+    }
+
+    h3 {
+        font-size: 13pt !important;
+    }
+
+    h4 {
+        font-size: 12pt !important;
+    }
+}
+
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+/* Preview Controls (tidak akan muncul saat print) */
+.preview-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+}
+
+.preview-controls button {
+    padding: 12px 24px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.preview-controls button:hover {
+    background: #1e40af;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.preview-controls button.secondary {
+    background: #64748b;
+}
+
+.preview-controls button.secondary:hover {
+    background: #475569;
+}
+
+/* Additional styles specific to indicator report */
+.indicator-info {
+    margin: 25px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+.indicator-info h3 {
+    font-size: 18pt;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.indicator-detail {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.indicator-detail-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.indicator-detail-label {
+    font-size: 9pt;
+    opacity: 0.9;
+    margin-bottom: 4px;
+}
+
+.indicator-detail-value {
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+.definition-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+}
+
+.definition-section h4 {
+    color: #92400e;
+    margin-bottom: 10px;
+    font-size: 12pt;
+}
+
+.definition-section p {
+    color: #78350f;
+    line-height: 1.6;
+}
+
+.achievement-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+.achievement-met {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.achievement-not-met {
+    background: #fee2e2;
+    color: #991b1b;
+}

@@ -533,4 +533,11 @@
       0 => 'TomatoPHP\\FilamentIcons\\FilamentIconsServiceProvider',
     ),
   ),
+  'torgodly/html2media' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Torgodly\\Html2Media\\Html2MediaServiceProvider',
+    ),
+  ),
 );

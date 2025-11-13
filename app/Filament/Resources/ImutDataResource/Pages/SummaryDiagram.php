@@ -5,6 +5,8 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\LineChart;
 use App\Models\ImutData;
+use App\Models\LaporanImut;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -81,4 +83,68 @@ class SummaryDiagram extends Page
             LineChart::make(['imutData' => $this->imutData]),
         ];
     }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('printReport')
+                ->label('Print Laporan')
+                ->icon('heroicon-o-printer')
+                ->color('primary')
+                ->url(function () {
+                    // Ambil laporan terbaru yang sudah complete
+                    $latestLaporan = LaporanImut::where('status', 'complete')
+                        ->latest('assessment_period_end')
+                        ->first();
+
+                    if (!$latestLaporan) {
+                        // Fallback ke laporan terbaru apapun statusnya
+                        $latestLaporan = LaporanImut::latest('assessment_period_end')->first();
+                    }
+
+                    if (!$latestLaporan) {
+                        return null;
+                    }
+
+                    return route('print.preview.imut-indicator-report', [
+                        'imut_data_id' => $this->imutData->id,
+                        'laporan_id' => $latestLaporan->id,
+                        'period_filter' => 'year',
+                    ]);
+                })
+                ->openUrlInNewTab()
+                ->visible(fn() => $this->imutData !== null),
+
+            Action::make('exportPDF')
+                ->label('Export PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->url(function () {
+                    // Ambil laporan terbaru yang sudah complete
+                    $latestLaporan = LaporanImut::where('status', 'complete')
+                        ->latest('assessment_period_end')
+                        ->first();
+
+                    if (!$latestLaporan) {
+                        // Fallback ke laporan terbaru apapun statusnya
+                        $latestLaporan = LaporanImut::latest('assessment_period_end')->first();
+                    }
+
+                    if (!$latestLaporan) {
+                        return null;
+                    }
+
+                    return route('print.preview.imut-indicator-report', [
+                        'imut_data_id' => $this->imutData->id,
+                        'laporan_id' => $latestLaporan->id,
+                        'period_filter' => 'year',
+                        'auto_print' => '1', // Parameter untuk auto trigger print dialog
+                    ]);
+                })
+                ->openUrlInNewTab()
+                ->visible(fn() => $this->imutData !== null),
+        ];
+    }
+
+
 }
