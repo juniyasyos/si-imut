@@ -11,7 +11,8 @@ Route::prefix('print')->name('print.')->group(function () {
         ->name('preview.imut-data-report');
 
     Route::get('/preview/imut-indicator-report', [PrintReportController::class, 'previewImutIndicatorReport'])
-        ->name('preview.imut-indicator-report');
+        ->name('preview.imut-indicator-report')
+        ->middleware(['auth', 'can:view_all_data_imut::data']);
 
     // Print real data (dengan laporan_id)
     Route::get('/imut-data-report', [PrintReportController::class, 'printImutDataReport'])

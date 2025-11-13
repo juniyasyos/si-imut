@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 
 class PrintReportController extends Controller
 {
@@ -226,6 +227,11 @@ class PrintReportController extends Controller
      */
     public function previewImutIndicatorReport(Request $request)
     {
+        // Authorization check
+        if (!Gate::allows('view_all_data_imut::data')) {
+            abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+        }
+
         // Get parameters dari request
         $imutDataId = $request->get('imut_data_id');
         $laporanId = $request->get('laporan_id');

@@ -496,7 +496,7 @@
     <!-- Summary Section -->
     @if ($summary)
         <div class="summary-section">
-            <div class="summary-title">Ringkasan Data Indikator</div>
+            <div class="summary-title">Ringkasan Data Indikator Laporan Terbaru</div>
             <div class="summary-grid">
                 <div class="summary-item">
                     <div class="summary-item-label">Total Unit Kerja</div>
@@ -654,14 +654,14 @@
     </div>
 
     <!-- Print Info Banner (hidden on print) -->
-    <div class="no-print" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 600px; text-align: center;">
+    {{-- <div class="no-print" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 600px; text-align: center;">
         <div style="font-weight: bold; font-size: 13px; margin-bottom: 5px;">📌 Penting: Pengaturan Print</div>
         <div style="font-size: 11px; line-height: 1.5;">
             Saat print, pastikan aktifkan <strong>"Background Graphics"</strong> di browser Anda agar chart dan warna tercetak dengan sempurna.
             <br>
             <span style="font-size: 10px; opacity: 0.9;">Chrome/Edge: More settings → ✓ Background graphics | Firefox: ✓ Print backgrounds</span>
         </div>
-    </div>
+    </div> --}}
 
     <script src="{{ asset('js/print-report.js') }}"></script>
     <script>

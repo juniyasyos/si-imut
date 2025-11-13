@@ -46,6 +46,7 @@
         "resend/resend-laravel": "^0.16.1",
         "rmsramos/activitylog": "^1.0",
         "socialiteproviders/google": "^4.1",
+        "spatie/browsershot": "^5.0",
         "stechstudio/filament-impersonate": "^3.15",
         "torgodly/html2media": "^1.1"
     },
