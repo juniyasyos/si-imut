@@ -266,13 +266,6 @@
       0 => 'Juniyasyos\\FilamentSettingsHub\\FilamentSettingsHubServiceProvider',
     ),
   ),
-  'juniyasyos/laravel-iam-client' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Juniyasyos\\IamClient\\IamClientServiceProvider',
-    ),
-  ),
   'kirschbaum-development/eloquent-power-joins' => 
   array (
     'providers' => 

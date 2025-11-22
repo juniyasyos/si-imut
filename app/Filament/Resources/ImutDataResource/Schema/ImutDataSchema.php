@@ -20,13 +20,9 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\ViewField;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
-use Filament\Support\Colors\Color;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -177,23 +173,12 @@ class ImutDataSchema extends ImutDataResource
                                                         ->orderByDesc('period_start')
                                                     )
                                                     ->headers([
-                                                        Header::make('region_name')->label(ucfirst($regionType->type))->width('200px'),
                                                         Header::make('benchmark_value')->label('Nilai (%)')->width('100px'),
                                                         Header::make('period_start')->label('Berlaku Dari')->width('140px'),
                                                         Header::make('period_end')->label('Sampai')->width('140px'),
                                                         Header::make('is_active')->label('Aktif')->width('80px'),
                                                     ])
                                                     ->schema([
-                                                        TextInput::make('region_name')
-                                                            ->label(false)
-                                                            ->placeholder($regionType->hasDefaultRegionName()
-                                                                ? $regionType->getDefaultRegionName()
-                                                                : ($regionType->type === 'provinsi' ? 'Jawa Barat' : 'RS Harapan'))
-                                                            ->default($regionType->getDefaultRegionName())
-                                                            ->disabled($regionType->hasDefaultRegionName())
-                                                            ->dehydrated()
-                                                            ->required(),
-
                                                         TextInput::make('benchmark_value')
                                                             ->label(false)
                                                             ->numeric()

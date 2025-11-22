@@ -47,7 +47,6 @@ class ImutBenchmarking extends Model
     protected $fillable = [
         'imut_data_id',
         'region_type_id',
-        'region_name',
         'benchmark_value',
         'period_start',
         'period_end',

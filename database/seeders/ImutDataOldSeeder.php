@@ -318,33 +318,28 @@ class ImutDataOldSeeder extends Seeder
         $regionTypes = RegionType::all();
 
         foreach ($this->laporanList as $laporan) {
-            $start = Carbon::create($laporan->assessment_period_start);
-            $month = $start->month;
-            $year = $start->year;
-            $createdAt = $start->copy()->addDays(rand(0, 10));
+            $periodStart = Carbon::parse($laporan->assessment_period_start);
+            $periodEnd   = Carbon::parse($laporan->assessment_period_end);
+
+            $createdAt = $periodEnd->copy()->addDays(rand(0, 10));
+
             $benchmarkings = [];
 
             foreach ($regionTypes as $type) {
-                $regionName = match ($type->type) {
-                    '🌐 Nasional' => 'Indonesia',
-                    '🏛️ Provinsi' => 'Jawa Timur',
-                    '🏥 Rumah Sakit' => "{$this->faker->company} Hospital",
-                    default => 'Unknown',
-                };
-
                 $benchmarkings[] = [
-                    'imut_data_id' => $imutData->id,
-                    'region_type_id' => $type->id,
-                    'region_name' => $regionName,
-                    'year' => $year,
-                    'month' => $month,
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
+                    'imut_data_id'    => $imutData->id,
+                    'region_type_id'  => $type->id,
+                    'period_start'    => $periodStart,
+                    'period_end'      => $periodEnd,
+                    'created_at'      => $createdAt,
+                    'updated_at'      => $createdAt,
                 ];
             }
+
             ImutBenchmarking::insert($benchmarkings);
         }
     }
+
 
 
     private function createPenilaian(ImutProfile $imutProfile): void
