@@ -17,7 +17,11 @@ class EnsureUserIsActive
     {
         $user = $request->user();
 
-        if ($user && in_array($user->status, ['inactive', 'suspended'])) {
+        // if ($user && in_array($user->status, ['inactive', 'suspended'])) {
+        //     abort(403, 'Akun Anda tidak aktif atau sedang ditangguhkan.');
+        // }
+        
+        if ($user && !$user->active) {
             abort(403, 'Akun Anda tidak aktif atau sedang ditangguhkan.');
         }
 

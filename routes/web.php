@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PrintReportController;
+use Illuminate\Support\Facades\Auth;
+use Juniyasyos\IamClient\Http\Controllers\LogoutController;
+use Juniyasyos\IamClient\Http\Controllers\SsoCallbackController;
+use Juniyasyos\IamClient\Http\Controllers\SsoLoginRedirectController;
 
 // Print Report Routes
 Route::prefix('print')->name('print.')->group(function () {
@@ -20,4 +24,31 @@ Route::prefix('print')->name('print.')->group(function () {
 
     Route::get('/imut-indicator-report', [PrintReportController::class, 'printImutIndicatorReport'])
         ->name('imut-indicator-report');
+});
+
+Route::middleware(['web'])->group(function () {
+    // SSO Routes - menggunakan package controller
+    Route::get('/iam/login', SsoLoginRedirectController::class)->name('iam.sso.login');
+    Route::get('/sso/callback', SsoCallbackController::class)->name('sso.callback');
+    Route::view('/status', 'auth-status')->name('status');
+
+    // Debug routes
+    Route::get('/debug-session', function () {
+        return response()->json([
+            'session_id' => session()->getId(),
+            'session_started' => session()->isStarted(),
+            'auth_check' => Auth::check(),
+            'auth_id' => Auth::id(),
+            'auth_user' => Auth::user(),
+            'session_data' => session()->all(),
+            'cookies' => request()->cookies->all(),
+            'laravel_session_cookie' => request()->cookie('laravel_session'),
+        ]);
+    })->name('debug.session');
+
+    // Authenticated routes
+    Route::middleware('sso.auth')->group(function () {
+        Route::post('/logout', LogoutController::class)->name('logout');
+        Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+    });
 });

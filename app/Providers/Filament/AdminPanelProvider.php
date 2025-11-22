@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\IAMLogin;
 use App\Filament\Pages\Login;
 use App\Filament\Resources\LaporanImutResource\Widgets\ImutDataCompletionChart;
 use App\Filament\Resources\LaporanImutResource\Widgets\UnitKerjaCompletionChart;
@@ -48,28 +49,28 @@ class AdminPanelProvider extends PanelProvider
     private ?KaidoSetting $settings = null;
 
     // constructor
-    public function __construct()
-    {
-        try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-                $this->settings = app(KaidoSetting::class);
-            }
-        } catch (\Exception $e) {
-            $this->settings = null;
-            // Log the error for debugging
-            logger()->warning('KaidoSetting could not be loaded: ' . $e->getMessage());
-        }
-    }
+    // public function __construct()
+    // {
+    //     try {
+    //         if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+    //             $this->settings = app(KaidoSetting::class);
+    //         }
+    //     } catch (\Exception $e) {
+    //         $this->settings = null;
+    //         // Log the error for debugging
+    //         logger()->warning('KaidoSetting could not be loaded: ' . $e->getMessage());
+    //     }
+    // }
 
-    private function getSettingValue(string $key, mixed $default = null): mixed
-    {
-        try {
-            return $this->settings?->{$key} ?? $default;
-        } catch (\Exception $e) {
-            logger()->warning("Setting '{$key}' could not be accessed: " . $e->getMessage());
-            return $default;
-        }
-    }
+    // private function getSettingValue(string $key, mixed $default = null): mixed
+    // {
+    //     try {
+    //         return $this->settings?->{$key} ?? $default;
+    //     } catch (\Exception $e) {
+    //         logger()->warning("Setting '{$key}' could not be accessed: " . $e->getMessage());
+    //         return $default;
+    //     }
+    // }
 
     public function panel(Panel $panel): Panel
     {
@@ -77,11 +78,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('')
-            ->login(Login::class)
+            ->login(IAMLogin::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(Login::class))
-            ->when($this->getSettingValue('registration_enabled', false), fn($panel) => $panel->registration())
-            ->when($this->getSettingValue('password_reset_enabled', true), fn($panel) => $panel->passwordReset())
+            // ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(IAMLogin::class))
+            // ->when($this->getSettingValue('registration_enabled', false), fn($panel) => $panel->registration())
+            // ->when($this->getSettingValue('password_reset_enabled', true), fn($panel) => $panel->passwordReset())
             // ->emailVerification()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
