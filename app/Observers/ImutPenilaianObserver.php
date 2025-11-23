@@ -55,7 +55,7 @@ class ImutPenilaianObserver
     protected function clearRelatedCache(ImutPenilaian $penilaian): void
     {
         // Load relasi jika belum di-load
-        $penilaian->loadMissing(['laporanUnitKerja.laporanImut', 'imutProfil']);
+        $penilaian->loadMissing(['laporanUnitKerja.laporanImut', 'profile']);
 
         if (!$penilaian->laporanUnitKerja?->laporanImut) {
             return;
