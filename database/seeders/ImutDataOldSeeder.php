@@ -318,33 +318,71 @@ class ImutDataOldSeeder extends Seeder
         $regionTypes = RegionType::all();
 
         foreach ($this->laporanList as $laporan) {
-            $start = Carbon::create($laporan->assessment_period_start);
-            $month = $start->month;
-            $year = $start->year;
-            $createdAt = $start->copy()->addDays(rand(0, 10));
+            // Periode assessment dari laporan
+            $periodStart = Carbon::parse($laporan->assessment_period_start)->startOfDay();
+            $periodEnd   = Carbon::parse($laporan->assessment_period_end)->endOfDay();
+
+            // Created_at sesudah periode selesai (lebih realistis)
+            $createdAt = $periodEnd->copy()->addDays(rand(0, 10));
+
             $benchmarkings = [];
 
             foreach ($regionTypes as $type) {
-                $regionName = match ($type->type) {
-                    '🌐 Nasional' => 'Indonesia',
-                    '🏛️ Provinsi' => 'Jawa Timur',
-                    '🏥 Rumah Sakit' => "{$this->faker->company} Hospital",
-                    default => 'Unknown',
-                };
+                // Cek kalau SUDAH ada benchmarking yang bentrok periode untuk indikator & region type ini
+                if ($this->hasBenchmarkOverlap(
+                    $imutData->id,
+                    $type->id,
+                    $periodStart,
+                    $periodEnd
+                )) {
+                    // kalau bentrok, lewati (tidak boleh buat)
+                    continue;
+                }
 
                 $benchmarkings[] = [
-                    'imut_data_id' => $imutData->id,
+                    'imut_data_id'   => $imutData->id,
                     'region_type_id' => $type->id,
-                    'region_name' => $regionName,
-                    'year' => $year,
-                    'month' => $month,
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
+                    'period_start'   => $periodStart,
+                    'period_end'     => $periodEnd,
+                    'created_at'     => $createdAt,
+                    'updated_at'     => $createdAt,
                 ];
             }
-            ImutBenchmarking::insert($benchmarkings);
+
+            if (! empty($benchmarkings)) {
+                ImutBenchmarking::insert($benchmarkings);
+            }
         }
     }
+
+    /**
+     * Cek apakah sudah ada benchmarking yang overlap dengan periode baru.
+     */
+    private function hasBenchmarkOverlap(
+        int $imutDataId,
+        int $regionTypeId,
+        Carbon $newStart,
+        Carbon $newEnd
+    ): bool {
+        return ImutBenchmarking::query()
+            ->where('imut_data_id', $imutDataId)
+            ->where('region_type_id', $regionTypeId)
+            ->where(function ($q) use ($newStart, $newEnd) {
+                $q
+                    // existing start di dalam range baru
+                    ->whereBetween('period_start', [$newStart, $newEnd])
+                    // atau existing end di dalam range baru
+                    ->orWhereBetween('period_end', [$newStart, $newEnd])
+                    // atau existing sepenuhnya meliputi range baru
+                    ->orWhere(function ($q2) use ($newStart, $newEnd) {
+                        $q2->where('period_start', '<=', $newStart)
+                            ->where('period_end', '>=', $newEnd);
+                    });
+            })
+            ->exists();
+    }
+
+
 
 
     private function createPenilaian(ImutProfile $imutProfile): void

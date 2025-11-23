@@ -52,18 +52,6 @@ class UnitKerjaObserver
         }
     }
 
-    public function restored(UnitKerja $unitKerja): void
-    {
-        try {
-            $this->repository->restoreFolderNameAndStyle($unitKerja);
-            Log::notice("🔄 UnitKerja dipulihkan: ID {$unitKerja->id}");
-        } catch (Throwable $e) {
-            Log::error("❌ Gagal memulihkan folder UnitKerja ID {$unitKerja->id}: ".$e->getMessage(), [
-                'exception' => $e,
-            ]);
-        }
-    }
-
     public function forceDeleted(UnitKerja $unitKerja): void
     {
         Log::info("🗑️ UnitKerja dihapus permanen: ID {$unitKerja->id}. Folder tetap dipertahankan.");

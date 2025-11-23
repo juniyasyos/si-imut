@@ -13,6 +13,7 @@ use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Carbon\Carbon;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -193,6 +194,9 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                         ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
                         ->columns(3),
 
+                    Section::make('Unggah Bukti Pendukung')
+                        ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
+
                     Section::make('Analisis dan Rekomendasi')
                         ->schema($this->buildAnalysisSchemaForAction($livewireComponent)),
                 ];
@@ -289,6 +293,33 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                 ->rows(4)
                 ->placeholder('Berikan saran atau rekomendasi (opsional)...')
                 ->columnSpanFull(),
+        ];
+    }
+
+    protected function getMediaUploadFieldForAction($livewireComponent): array
+    {
+        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+
+        return [
+            SpatieMediaLibraryFileUpload::make('document_upload')
+                ->label('Unggah Dokumen Pendukung')
+                ->collection(fn(callable $get) => $get('selected_collection') ?? 'default')
+                ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection') ?? 'default'))
+                ->openable()
+                ->downloadable()
+                ->maxSize(20480)
+                ->preserveFilenames()
+                ->previewable(true)
+                ->columnSpanFull()
+                ->disabled($shouldLock)
+                ->acceptedFileTypes([
+                    'application/pdf',
+                    'image/*',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ])
+                ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
         ];
     }
 

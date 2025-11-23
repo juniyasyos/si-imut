@@ -33,6 +33,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
+use Illuminate\Support\Str;
+use Juniyasyos\FilamentMediaManager\Models\Folder;
 use Livewire\Component;
 
 class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTable
@@ -185,11 +187,16 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             ->closeModalByEscaping(false)
             // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
             ->mountUsing(function (Form $form, $record) {
+                $penilaian = ImutPenilaian::find($record->id);
+                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+                $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+
                 $form->fill([
-                    'numerator_value'   => $record->numerator_value ?? null,
-                    'denominator_value' => $record->denominator_value ?? null,
-                    'analysis'          => $record->analysis ?? '',
-                    'recommendations'   => $record->recommendations ?? '',
+                    'numerator_value'       => $record->numerator_value ?? null,
+                    'denominator_value'     => $record->denominator_value ?? null,
+                    'analysis'              => $record->analysis ?? '',
+                    'recommendations'       => $record->recommendations ?? '',
+                    'selected_collection'   => $folder?->collection ?? 'default',
                 ]);
             })
             ->form(function () use ($livewireComponent) {
@@ -197,6 +204,9 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     Section::make('Perhitungan')
                         ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
                         ->columns(3),
+
+                    Section::make('Unggah Bukti Pendukung')
+                        ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
 
                     Section::make('Analisis dan Rekomendasi')
                         ->schema($this->buildAnalysisSchemaForAction($livewireComponent)),
@@ -209,11 +219,15 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     return;
                 }
 
+                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+                $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+
                 $penilaian->update([
                     'numerator_value'   => $data['numerator_value'] ?? null,
                     'denominator_value' => $data['denominator_value'] ?? null,
                     'analysis'          => $data['analysis'] ?? null,
                     'recommendations'   => $data['recommendations'] ?? null,
+                    'selected_collection' => $folder?->collection ?? 'default',
                 ]);
             })
             ->successNotificationTitle('Penilaian berhasil disimpan')
@@ -294,6 +308,33 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->rows(4)
                 ->placeholder('Berikan saran atau rekomendasi (opsional)...')
                 ->columnSpanFull(),
+        ];
+    }
+
+    protected function getMediaUploadFieldForAction($livewireComponent): array
+    {
+        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+
+        return [
+            SpatieMediaLibraryFileUpload::make('document_upload')
+                ->label('Unggah Dokumen Pendukung')
+                ->collection(fn(callable $get) => $get('selected_collection'))
+                ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection')))
+                ->openable()
+                ->downloadable()
+                ->maxSize(20480)
+                ->preserveFilenames()
+                ->previewable(true)
+                ->columnSpanFull()
+                ->disabled($shouldLock)
+                ->acceptedFileTypes([
+                    'application/pdf',
+                    'image/*',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ])
+                ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
         ];
     }
 
