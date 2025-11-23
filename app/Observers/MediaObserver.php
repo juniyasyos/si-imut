@@ -13,9 +13,10 @@ class MediaObserver
     public function created(Media $media): void
     {
         try {
-            if ($media->model_type !== ImutPenilaian::class) {
-                return;
-            }
+            // if ($media->model_type !== ImutPenilaian::class) {
+            //     dd($media->model_type);
+            //     return;
+            // }
 
             /** @var ImutPenilaian|null $penilaian */
             $penilaian = ImutPenilaian::with('laporanUnitKerja.unitKerja.folder')->find($media->model_id);
