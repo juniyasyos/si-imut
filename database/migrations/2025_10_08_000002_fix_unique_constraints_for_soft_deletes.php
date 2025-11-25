@@ -24,8 +24,8 @@ return new class extends Migration
         // 4. Fix unit_kerja table - unit_name unique constraint with soft deletes
         $this->fixUniqueConstraintForSoftDeletes('unit_kerja', 'unit_name');
 
-        // 5. Fix users table - nip and email unique constraints with soft deletes
-        $this->fixUniqueConstraintForSoftDeletes('users', 'nip');
+        // 5. Fix users table - nik and email unique constraints with soft deletes
+        $this->fixUniqueConstraintForSoftDeletes('users', 'nik');
         $this->fixUniqueConstraintForSoftDeletes('users', 'email');
     }
 
@@ -39,7 +39,7 @@ return new class extends Migration
         $this->restoreOriginalUniqueConstraint('imut_data', 'title');
         $this->restoreOriginalUniqueConstraint('imut_profil', 'slug');
         $this->restoreOriginalUniqueConstraint('unit_kerja', 'unit_name');
-        $this->restoreOriginalUniqueConstraint('users', 'nip');
+        $this->restoreOriginalUniqueConstraint('users', 'nik');
         $this->restoreOriginalUniqueConstraint('users', 'email');
     }
 
