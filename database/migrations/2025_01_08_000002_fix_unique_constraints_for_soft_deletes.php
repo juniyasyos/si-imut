@@ -83,10 +83,10 @@ return new class extends Migration
 
         // Check and fix User unique constraints - only if table exists
         if (Schema::hasTable('users')) {
-            $nipIndexes = DB::select("SHOW INDEXES FROM users WHERE Key_name LIKE '%nip%'");
-            if (count($nipIndexes) > 0) {
+            $nikIndexes = DB::select("SHOW INDEXES FROM users WHERE Key_name LIKE '%nik%'");
+            if (count($nikIndexes) > 0) {
                 Schema::table('users', function (Blueprint $table) {
-                    $table->dropUnique(['nip']);
+                    $table->dropUnique(['nik']);
                 });
             }
 
@@ -99,7 +99,7 @@ return new class extends Migration
 
             // Create composite unique indexes that include deleted_at
             Schema::table('users', function (Blueprint $table) {
-                $table->unique(['nip', 'deleted_at'], 'users_nip_deleted_unique');
+                $table->unique(['nik', 'deleted_at'], 'users_nik_deleted_unique');
                 $table->unique(['email', 'deleted_at'], 'users_email_deleted_unique');
             });
         }
@@ -166,9 +166,9 @@ return new class extends Migration
         // Users - only if table exists
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->dropUnique('users_nip_deleted_unique');
+                $table->dropUnique('users_nik_deleted_unique');
                 $table->dropUnique('users_email_deleted_unique');
-                $table->unique('nip');
+                $table->unique('nik');
                 $table->unique('email');
             });
         }
