@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->id();
 
             // Data Pribadi
-            $table->string('nip')->unique();
+            $table->string('nik')->unique();
             $table->string('name'); // Nama
             $table->string('place_of_birth')->nullable();
             $table->date('date_of_birth')->nullable();
