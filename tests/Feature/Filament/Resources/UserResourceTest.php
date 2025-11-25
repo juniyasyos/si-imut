@@ -15,7 +15,7 @@
 
 //     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
-//     $admin = User::where('nik', '0000.00000')->first();
+//     $admin = User::where('nip', '0000.00000')->first();
 
 //     actingAs($admin);
 // });

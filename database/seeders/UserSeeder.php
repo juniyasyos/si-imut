@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'nik' => '0000.00000',
+            'nip' => '0000.00000',
             'name' => 'admin',
             'email' => 'admin@admin.com',
             'password' => Hash::make('adminpassword'),
@@ -70,7 +70,7 @@ class UserSeeder extends Seeder
             }
 
             $usersToInsert[] = [
-                'nik' => $userData['id'],
+                'nip' => $userData['id'],
                 'name' => $cleanName,
                 'place_of_birth' => $userData['tempat_lahir'],
                 'date_of_birth' => $userData['tanggal_lahir'],
@@ -90,7 +90,7 @@ class UserSeeder extends Seeder
             User::insert($usersToInsert);
             Log::info('Data pengguna berhasil dimasukkan ke dalam database.');
 
-            $newUsers = User::where('nik', '!=', '0000.00000')->get();
+            $newUsers = User::where('nip', '!=', '0000.00000')->get();
 
             $unitKerjaRole = Role::where('name', 'Unit Kerja')->first();
 

@@ -59,12 +59,12 @@ class UserResourceTable extends UserResource
                         ->searchable()
                         ->icon('heroicon-o-shield-check')
                         ->grow(false),
-                    TextColumn::make('nik')
+                    TextColumn::make('nip')
                         ->label(__('filament-forms::users.fields.email'))
                         ->icon('heroicon-m-finger-print')
                         ->searchable()
                         ->copyable()
-                        ->copyMessage('NIK berhasil disalin!')
+                        ->copyMessage('NIP berhasil disalin!')
                         ->copyMessageDuration(1500)
                         ->grow(false),
                 ])->alignStart()->visibleFrom('lg')->space(1),

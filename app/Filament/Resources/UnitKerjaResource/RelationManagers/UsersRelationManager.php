@@ -50,7 +50,7 @@ class UsersRelationManager extends RelationManager
                             ->searchable()
                             ->icon('heroicon-o-shield-check')
                             ->grow(false),
-                        TextColumn::make('nik')
+                        TextColumn::make('nip')
                             ->label(__('filament-forms::users.fields.email'))
                             ->icon('heroicon-m-finger-print')
                             ->searchable()

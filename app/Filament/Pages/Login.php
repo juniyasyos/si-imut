@@ -34,12 +34,12 @@ class Login extends BaseLogin
 
         $data = $this->form->getState();
 
-        // Ganti pencarian user dari email ke nik
-        $user = User::where('nik', $data['nik'])->first();
+        // Ganti pencarian user dari email ke nip
+        $user = User::where('nip', $data['nip'])->first();
 
         // if ($user && is_null($user->password)) {
         //     throw ValidationException::withMessages([
-        //         'data.nik' => 'This account was created using social login. Please login with Google.',
+        //         'data.nip' => 'This account was created using social login. Please login with Google.',
         //     ]);
         // }
 
@@ -64,14 +64,14 @@ class Login extends BaseLogin
                 ->send();
 
             throw ValidationException::withMessages([
-                'data.nik' => $statusMessage,
+                'data.nip' => $statusMessage,
             ]);
         }
 
         if (!Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
             Notification::make()
                 ->title('Login Gagal')
-                ->body('NIK atau password salah. Silakan coba lagi.')
+                ->body('NIP atau password salah. Silakan coba lagi.')
                 ->danger()
                 ->persistent()
                 ->send();
@@ -102,7 +102,7 @@ class Login extends BaseLogin
         if (app()->isLocal()) {
             // Autofill hanya aktif di env local/dev
             $this->form->fill([
-                'nik' => '0000.00000',
+                'nip' => '0000.00000',
                 'password' => 'adminpassword',
                 'remember' => true,
             ]);
@@ -119,7 +119,7 @@ class Login extends BaseLogin
             'form' => $this->form(
                 $this->makeForm()
                     ->schema([
-                        $this->getNIKFormComponent(),
+                        $this->getNIPFormComponent(),
                         $this->getPasswordFormComponent(),
                         $this->getRememberFormComponent(),
                     ])
@@ -128,10 +128,10 @@ class Login extends BaseLogin
         ];
     }
 
-    protected function getNIKFormComponent(): Component
+    protected function getNIPFormComponent(): Component
     {
-        return TextInput::make('nik')
-            ->label(__('NIK'))
+        return TextInput::make('nip')
+            ->label(__('nip'))
             ->required()
             ->autocomplete()
             ->autofocus()
@@ -145,7 +145,7 @@ class Login extends BaseLogin
     protected function getCredentialsFromFormData(array $data): array
     {
         return [
-            'nik' => $data['nik'],
+            'nip' => $data['nip'],
             'password' => $data['password'],
         ];
     }

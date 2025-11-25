@@ -28,8 +28,8 @@ Route::prefix('print')->name('print.')->group(function () {
 
 Route::middleware(['web'])->group(function () {
     // SSO Routes - menggunakan package controller
-    Route::get('/iam/login', SsoLoginRedirectController::class)->name('iam.sso.login');
-    Route::get('/sso/callback', SsoCallbackController::class)->name('sso.callback');
+    Route::get('/login', SsoLoginRedirectController::class)->name('login');
+    Route::get('/oauth/callback', SsoCallbackController::class)->name('sso.callback');
     Route::view('/status', 'auth-status')->name('status');
 
     // Debug routes
@@ -46,9 +46,5 @@ Route::middleware(['web'])->group(function () {
         ]);
     })->name('debug.session');
 
-    // Authenticated routes
-    Route::middleware('sso.auth')->group(function () {
-        Route::post('/logout', LogoutController::class)->name('logout');
-        Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
-    });
+    Route::post('/logout', LogoutController::class)->name('logout');
 });

@@ -14,9 +14,9 @@ test('halaman login dapat diakses', function () {
 });
 
 // ✅ Login Success
-test('user dengan nik dan password valid dapat login', function () {
+test('user dengan nip dan password valid dapat login', function () {
     $user = User::factory()->create([
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => bcrypt('password123'),
     ]);
 
@@ -31,12 +31,12 @@ test('user dengan nik dan password valid dapat login', function () {
 // ❌ User salah password
 test('user dengan password salah tidak bisa login', function () {
     $user = User::factory()->create([
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => bcrypt('password123'),
     ]);
 
     $credentials = [
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => 'wrongpassword',
     ];
 
@@ -44,15 +44,15 @@ test('user dengan password salah tidak bisa login', function () {
         ->assertStatus(405);
 });
 
-// ❌ User salah nik
-test('user dengan nik salah tidak bisa login', function () {
+// ❌ User salah nip
+test('user dengan nip salah tidak bisa login', function () {
     $user = User::factory()->create([
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => bcrypt('password123'),
     ]);
 
     $credentials = [
-        'nik' => '0000000000',
+        'nip' => '0000000000',
         'password' => 'password123',
     ];
 
@@ -63,7 +63,7 @@ test('user dengan nik salah tidak bisa login', function () {
 // 🔒 User tidak aktif
 test('user tidak aktif tidak bisa login', function () {
     $user = User::factory()->create([
-        'nik' => '1234567891',
+        'nip' => '1234567891',
         'password' => bcrypt('password123'),
         'status' => 'inactive',
     ]);
@@ -78,7 +78,7 @@ test('user tidak aktif tidak bisa login', function () {
 // 🔒 User suspended
 test('user suspended tidak bisa login', function () {
     $user = User::factory()->create([
-        'nik' => '1234567892',
+        'nip' => '1234567892',
         'password' => bcrypt('password123'),
         'status' => 'suspended',
     ]);
@@ -144,7 +144,7 @@ test('halaman register tidak dapat diakses', function () {
 // ❌ Tidak bisa submit form register
 test('tidak bisa melakukan registrasi user baru', function () {
     $response = $this->post('/register', [
-        'nik' => '9876543210',
+        'nip' => '9876543210',
         'name' => 'Test User',
         'password' => 'password123',
         'password_confirmation' => 'password123',
@@ -182,14 +182,14 @@ test('user aktif bisa akses halaman dashboard', function () {
     $response->assertStatus(200);
 });
 
-test('sql injection pada nik tidak berhasil login', function () {
+test('sql injection pada nip tidak berhasil login', function () {
     User::factory()->create([
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => bcrypt('password123'),
     ]);
 
     $response = $this->post('/login', [
-        'nik' => "' OR '1'='1",
+        'nip' => "' OR '1'='1",
         'password' => 'password123',
     ]);
 
@@ -199,12 +199,12 @@ test('sql injection pada nik tidak berhasil login', function () {
 
 test('sql injection pada password tidak berhasil login', function () {
     User::factory()->create([
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => bcrypt('password123'),
     ]);
 
     $response = $this->post('/login', [
-        'nik' => '1234567890',
+        'nip' => '1234567890',
         'password' => "' OR '1'='1",
     ]);
 
@@ -218,12 +218,12 @@ test('login gagal lebih dari batas mencoba diblokir', function () {
 
 test('user dengan password null tidak bisa login', function () {
     User::factory()->create([
-        'nik' => '123123123',
+        'nip' => '123123123',
         'password' => null,
     ]);
 
     $response = $this->post('/login', [
-        'nik' => '123123123',
+        'nip' => '123123123',
         'password' => 'anything',
     ]);
 
@@ -231,9 +231,9 @@ test('user dengan password null tidak bisa login', function () {
     $this->assertGuest();
 });
 
-test('nik dengan karakter aneh tidak bisa login', function () {
+test('nip dengan karakter aneh tidak bisa login', function () {
     $response = $this->post('/login', [
-        'nik' => 'abcd@#$.%^',
+        'nip' => 'abcd@#$.%^',
         'password' => 'test',
     ]);
 
@@ -242,12 +242,12 @@ test('nik dengan karakter aneh tidak bisa login', function () {
 
 test('password case sensitive', function () {
     User::factory()->create([
-        'nik' => '123456',
+        'nip' => '123456',
         'password' => bcrypt('PasswordUPPER'),
     ]);
 
     $response = $this->post('/login', [
-        'nik' => '123456',
+        'nip' => '123456',
         'password' => 'passwordupper',
     ]);
 
@@ -257,7 +257,7 @@ test('password case sensitive', function () {
 
 test('login dengan field kosong gagal', function () {
     $response = $this->post('/login', [
-        'nik' => '',
+        'nip' => '',
         'password' => '',
     ]);
 
@@ -266,28 +266,28 @@ test('login dengan field kosong gagal', function () {
 
 test('user yang telah dihapus tidak bisa login', function () {
     $user = User::factory()->create([
-        'nik' => '999999',
+        'nip' => '999999',
         'password' => bcrypt('password'),
     ]);
 
     $user->delete();
 
     $response = $this->post('/login', [
-        'nik' => '999999',
+        'nip' => '999999',
         'password' => 'password',
     ]);
 
     $response->assertStatus(405);
 });
 
-test('nik dengan spasi tetap dianggap salah', function () {
+test('nip dengan spasi tetap dianggap salah', function () {
     User::factory()->create([
-        'nik' => '55555555',
+        'nip' => '55555555',
         'password' => bcrypt('pass123'),
     ]);
 
     $response = $this->post('/login', [
-        'nik' => ' 55555555 ',
+        'nip' => ' 55555555 ',
         'password' => 'pass123',
     ]);
 
@@ -296,7 +296,7 @@ test('nik dengan spasi tetap dianggap salah', function () {
 
 test('login dengan input sangat panjang', function () {
     $response = $this->post('/login', [
-        'nik' => str_repeat('1', 1000),
+        'nip' => str_repeat('1', 1000),
         'password' => str_repeat('a', 1000),
     ]);
 
@@ -315,7 +315,7 @@ test('user yang sudah login tidak bisa akses halaman login', function () {
 
 test('session tidak berubah saat login gagal', function () {
     $this->post('/login', [
-        'nik' => 'invalid',
+        'nip' => 'invalid',
         'password' => 'invalid',
     ]);
 
@@ -329,16 +329,16 @@ test('user diarahkan ke halaman home setelah login', function () {
 
 test('html tag dalam input login tidak menyebabkan XSS', function () {
     $response = $this->post('/login', [
-        'nik' => '<script>alert(1)</script>',
+        'nip' => '<script>alert(1)</script>',
         'password' => 'password',
     ]);
 
     $response->assertStatus(405);
 });
 
-test('nik terlalu pendek tidak valid', function () {
+test('nip terlalu pendek tidak valid', function () {
     $response = $this->post('/login', [
-        'nik' => '1',
+        'nip' => '1',
         'password' => '123456',
     ]);
 
@@ -367,7 +367,7 @@ test('input dengan script tag tidak dieksekusi (stored XSS)', function () {
 
 // test('session regeneration terjadi setelah login', function () {
 //     $user = \App\Models\User::factory()->create([
-//         'nik' => '1122334455',
+//         'nip' => '1122334455',
 //         'password' => bcrypt('mypassword'),
 //     ]);
 
@@ -376,7 +376,7 @@ test('input dengan script tag tidak dieksekusi (stored XSS)', function () {
 
 //     // Login dan simpan session ID baru
 //     $this->post('/login', [
-//         'nik' => '1122334455',
+//         'nip' => '1122334455',
 //         'password' => 'mypassword',
 //     ]);
 
@@ -396,7 +396,7 @@ test('header keamanan tersedia di response', function () {
 
 test('login dengan SQL injection pola klasik gagal', function () {
     $response = $this->post('/login', [
-        'nik' => "' OR 1=1 --",
+        'nip' => "' OR 1=1 --",
         'password' => 'anything',
     ]);
 

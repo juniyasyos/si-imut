@@ -24,8 +24,8 @@ return new class extends Migration
         // 4. Fix unit_kerja table - unit_name unique constraint with soft deletes
         $this->fixUniqueConstraintForSoftDeletes('unit_kerja', 'unit_name');
 
-        // 5. Fix users table - nik and email unique constraints with soft deletes
-        $this->fixUniqueConstraintForSoftDeletes('users', 'nik');
+        // 5. Fix users table - nip and email unique constraints with soft deletes
+        $this->fixUniqueConstraintForSoftDeletes('users', 'nip');
         $this->fixUniqueConstraintForSoftDeletes('users', 'email');
     }
 
@@ -39,7 +39,7 @@ return new class extends Migration
         $this->restoreOriginalUniqueConstraint('imut_data', 'title');
         $this->restoreOriginalUniqueConstraint('imut_profil', 'slug');
         $this->restoreOriginalUniqueConstraint('unit_kerja', 'unit_name');
-        $this->restoreOriginalUniqueConstraint('users', 'nik');
+        $this->restoreOriginalUniqueConstraint('users', 'nip');
         $this->restoreOriginalUniqueConstraint('users', 'email');
     }
 
@@ -73,7 +73,6 @@ return new class extends Migration
                     $table->unique([$column, 'deleted_at'], $indexName);
                 });
             }
-
         } catch (\Exception $e) {
             // Log error but don't fail migration for non-critical constraint fixes
             logger()->warning("Failed to fix unique constraint for {$table}.{$column}: " . $e->getMessage());
@@ -101,7 +100,6 @@ return new class extends Migration
             Schema::table($table, function (Blueprint $table) use ($column) {
                 $table->unique($column);
             });
-
         } catch (\Exception $e) {
             logger()->warning("Failed to restore unique constraint for {$table}.{$column}: " . $e->getMessage());
         }

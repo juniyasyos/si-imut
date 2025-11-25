@@ -26,13 +26,13 @@ class UserResourceInfolist
                         ->getStateUsing(fn($record) => $record->avatar_url ?: 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                         ->columnSpan(1),
 
-                    // Kolom kedua: Nama, NIK, Tempat Lahir, Tanggal Lahir
+                    // Kolom kedua: Nama, NIP, Tempat Lahir, Tanggal Lahir
                     Group::make([
                         TextEntry::make('name')
                             ->label(__('filament-forms::users.fields.name'))
                             ->weight(FontWeight::Bold),
-                        TextEntry::make('nik')
-                            ->label(__('filament-forms::users.fields.nik'))
+                        TextEntry::make('nip')
+                            ->label(__('filament-forms::users.fields.nip'))
                             ->icon('heroicon-o-finger-print')
                             ->copyable(),
                         TextEntry::make('place_of_birth')

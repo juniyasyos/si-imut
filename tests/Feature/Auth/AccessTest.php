@@ -20,7 +20,7 @@ class AccessTest extends TestCase
         parent::setUp();
 
         $this->admin = User::factory()->create([
-            'nik' => '0000.00000',
+            'nip' => '0000.00000',
             'name' => 'admin',
             'email' => 'admin@admin.com',
             'password' => Hash::make('adminpassword'),
@@ -78,7 +78,7 @@ class AccessTest extends TestCase
     //     foreach ($routes as $route) {
     //         $uri = '/' . ltrim($route->uri(), '/');
     //         $response = $this->get($uri);
-            
+
     //         $response->assertStatus(function ($status) {
     //             return $status < 500 && $status !== 405;
     //         });
@@ -91,7 +91,4 @@ class AccessTest extends TestCase
 
         $response->assertStatus(404);
     }
-
 }
-
-

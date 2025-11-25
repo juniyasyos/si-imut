@@ -88,8 +88,8 @@ All models using SoftDeletes with unique constraints were updated:
 
 5. **User** (`app/Models/User.php`)
    - Added `HasUniqueWithSoftDeletes` trait
-   - Unique fields: `nik`, `email`
-   - Database indexes: `users_nik_deleted_unique`, `users_email_deleted_unique`
+   - Unique fields: `nip`, `email`
+   - Database indexes: `users_nip_deleted_unique`, `users_email_deleted_unique`
 
 6. **LaporanImut** (`app/Models/LaporanImut.php`)
    - Added `HasUniqueWithSoftDeletes` trait
@@ -135,7 +135,7 @@ All required composite indexes were successfully created:
 - ✅ `imut_data_title_deleted_unique`
 - ✅ `imut_profil_slug_deleted_unique`
 - ✅ `unit_kerja_name_deleted_unique`
-- ✅ `users_nik_deleted_unique`
+- ✅ `users_nip_deleted_unique`
 - ✅ `users_email_deleted_unique`
 - ✅ `laporan_imuts_slug_deleted_unique`
 
@@ -150,7 +150,7 @@ The solution was validated with comprehensive tests:
 ✓ Created new category with same name: Test Category Unique 1759933668
 ✓ Created user: test.unique.1759933669@example.com
 ✓ Soft deleted user: test.unique.1759933669@example.com
-✓ Created new user with same email/nik: test.unique.1759933669@example.com
+✓ Created new user with same email/nip: test.unique.1759933669@example.com
 ```
 
 ### Production Scenario Resolved

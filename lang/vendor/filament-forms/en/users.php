@@ -14,7 +14,7 @@ return [
     'fields' => [
         'id' => 'ID',
         'name' => 'Full Name',
-        'nik' => 'Staff ID (NIK)', // NIK field
+        'nip' => 'Staff ID (NIP)', // NIP field
         'email' => 'Email Address',
         'password' => 'Password',
         'created_at' => 'Created At',
@@ -44,7 +44,7 @@ return [
             'title' => 'User Information',
             'description' => 'Fill in the user data completely. Ensure the role is correctly selected.',
             'name_placeholder' => 'Enter full name',
-            'nik_placeholder' => 'Enter NIK', // NIK Placeholder
+            'nip_placeholder' => 'Enter NIP', // NIP Placeholder
             'email_placeholder' => 'example@email.com',
             'password_placeholder' => 'Enter password',
             'helper_text' => 'Make sure the email is unique and the password is secure.',

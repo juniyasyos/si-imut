@@ -19,7 +19,13 @@ class RoleResourceSchema extends RoleResource
                 ->schema([
                     Forms\Components\Section::make()
                         ->schema([
-                            Forms\Components\TextInput::make('name')
+                            Forms\Components\TextInput::make('label')
+                                ->label(__('filament-shield::filament-shield.field.label'))
+                                ->unique(ignoreRecord: true)
+                                ->required()
+                                ->maxLength(255),
+
+                                Forms\Components\TextInput::make('name')
                                 ->label(__('filament-shield::filament-shield.field.name'))
                                 ->unique(ignoreRecord: true)
                                 ->required()

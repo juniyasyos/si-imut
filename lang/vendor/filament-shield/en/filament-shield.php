@@ -19,6 +19,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    'field.label' => 'Label',
     'field.name' => 'Name',
     'field.guard_name' => 'Guard Name',
     'field.permissions' => 'Permissions',

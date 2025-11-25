@@ -29,7 +29,7 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * model ini.
  *
  * @property int $id
- * @property string $nik
+ * @property string $nip
  * @property string $name
  * @property string $place_of_birth
  * @property \Carbon\Carbon $date_of_birth
@@ -49,7 +49,7 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
  * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereNik($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereNip($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePlaceOfBirth($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereDateOfBirth($value)
@@ -77,7 +77,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     protected $fillable = [
         'iam_id',
-        'nik',
+        'nip',
         'active',
         'name',
         'place_of_birth',
@@ -187,7 +187,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getUniqueValidationRules(?int $ignoreId = null): array
     {
         return [
-            'nik' => ['required', 'string', $this->uniqueRule('nik', $ignoreId)],
+            'nip' => ['required', 'string', $this->uniqueRule('nip', $ignoreId)],
             'email' => ['nullable', 'email', $this->uniqueRule('email', $ignoreId)],
         ];
     }

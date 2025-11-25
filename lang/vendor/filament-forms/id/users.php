@@ -14,7 +14,7 @@ return [
     'fields' => [
         'id' => 'ID',
         'name' => 'Nama Lengkap',
-        'nik' => 'Nomor Induk Kepegawaian (NIK)', // Field NIK
+        'nip' => 'Nomor Induk Kepegawaian (NIP)', // Field NIP
         'email' => 'Alamat Email',
         'password' => 'Kata Sandi',
         'created_at' => 'Tanggal Dibuat',
@@ -44,7 +44,7 @@ return [
             'title' => 'Informasi Pengguna',
             'description' => 'Isi data pengguna dengan lengkap. Pastikan peran dipilih dengan benar.',
             'name_placeholder' => 'Masukkan nama lengkap',
-            'nik_placeholder' => 'Masukkan NIK',
+            'nip_placeholder' => 'Masukkan NIP',
             'email_placeholder' => 'contoh@email.com',
             'password_placeholder' => 'Masukkan kata sandi',
             'helper_text' => 'Pastikan email unik dan kata sandi aman.',

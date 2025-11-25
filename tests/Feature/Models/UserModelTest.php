@@ -14,7 +14,7 @@ describe('User Model', function () {
         $user = new User;
 
         expect($user->getFillable())->toMatchArray([
-            'nik',
+            'nip',
             'name',
             'place_of_birth',
             'date_of_birth',
@@ -113,7 +113,7 @@ describe('User Model', function () {
 
     it('can assign and check roles and permissions', function () {
         $this->seed(\Database\Seeders\ShieldSeeder::class);
-        
+
         $user = User::factory()->create();
 
         $user->assignRole('Tim Mutu');

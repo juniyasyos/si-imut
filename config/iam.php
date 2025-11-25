@@ -11,7 +11,7 @@ return [
     | must contain this app_key in the payload for validation.
     |
     */
-    'app_key' => env('IAM_APP_KEY', 'siimut'),
+    'app_key' => env('IAM_APP_KEY', 'client-app'),
 
     /*
     |--------------------------------------------------------------------------
@@ -22,7 +22,7 @@ return [
     | This must match the secret configured in IAM server.
     |
     */
-    'jwt_secret' => env('IAM_JWT_SECRET', 'SIIMUT_ZK8FnRKJo5GlfBoN0izTVg0fR63r9UsgY86IaHeN'),
+    'jwt_secret' => env('IAM_JWT_SECRET', 'change-me'),
 
     /*
     |--------------------------------------------------------------------------
@@ -128,7 +128,7 @@ return [
     | Usually 'iam_id' or 'email'
     |
     */
-    'identifier_field' => env('IAM_IDENTIFIER_FIELD', 'email'),
+    'identifier_field' => env('IAM_IDENTIFIER_FIELD', 'nip'),
 
     /*
     |--------------------------------------------------------------------------
@@ -160,7 +160,7 @@ return [
     | The route name to redirect after logout.
     |
     */
-    'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', 'home'),
+    'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', '/'),
 
     /*
     |--------------------------------------------------------------------------
@@ -189,31 +189,5 @@ return [
             'login_route_name' => env('IAM_LOGIN_ROUTE_NAME', 'login'),
             'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', 'home'),
         ],
-        'filament' => [
-            'guard' => env('IAM_FILAMENT_GUARD', 'filament'),
-            'redirect_route' => env('IAM_FILAMENT_REDIRECT_ROUTE', null),
-            'login_route_name' => env('IAM_FILAMENT_LOGIN_ROUTE_NAME', 'filament.auth.login'),
-            'logout_redirect_route' => env('IAM_FILAMENT_LOGOUT_REDIRECT', null),
-        ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Filament Integration
-    |--------------------------------------------------------------------------
-    |
-    | When enabled, additional routes, hooks, and UI helpers for Filament will
-    | be registered. Disable to keep the package framework agnostic.
-    |
-    */
-    'filament' => [
-        'enabled' => env('IAM_FILAMENT_ENABLED', false),
-        'panel' => env('IAM_FILAMENT_PANEL', 'admin'),
-        'login_route' => env('IAM_FILAMENT_LOGIN_ROUTE', '/filament/sso/login'),
-        'callback_route' => env('IAM_FILAMENT_CALLBACK_ROUTE', '/filament/sso/callback'),
-        'login_button_text' => env('IAM_FILAMENT_LOGIN_BUTTON', 'Login via IAM'),
-        'logout_route' => env('IAM_FILAMENT_LOGOUT_ROUTE'),
-        'middleware' => ['web'],
-    ],
-
 ];

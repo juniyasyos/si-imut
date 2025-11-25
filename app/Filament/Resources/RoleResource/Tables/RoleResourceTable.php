@@ -14,9 +14,9 @@ class RoleResourceTable extends RoleResource
     public static function columns(): array
     {
         return [
-            Tables\Columns\TextColumn::make('name')
+            Tables\Columns\TextColumn::make('label')
                 ->weight('font-medium')
-                ->label(__('filament-shield::filament-shield.column.name'))
+                ->label(__('filament-shield::filament-shield.column.label'))
                 ->formatStateUsing(fn($state): string => Str::headline($state))
                 ->searchable(),
             Tables\Columns\TextColumn::make('guard_name')
@@ -64,4 +64,3 @@ class RoleResourceTable extends RoleResource
         ];
     }
 }
-

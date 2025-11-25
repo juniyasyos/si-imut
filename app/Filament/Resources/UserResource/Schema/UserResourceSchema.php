@@ -26,11 +26,11 @@ class UserResourceSchema extends UserResource
                 ->description(__('filament-forms::users.form.user.description'))
                 ->schema([
                     Grid::make(2)->schema([
-                        TextInput::make('nik')
-                            ->label(__('filament-forms::users.fields.nik'))
-                            ->placeholder(__('filament-forms::users.form.user.nik_placeholder'))
+                        TextInput::make('nip')
+                            ->label(__('filament-forms::users.fields.nip'))
+                            ->placeholder(__('filament-forms::users.form.user.nip_placeholder'))
                             ->required()
-                            ->unique('users', 'nik', ignoreRecord: true)
+                            ->unique('users', 'nip', ignoreRecord: true)
                             ->maxLength(20),
 
                         TextInput::make('name')

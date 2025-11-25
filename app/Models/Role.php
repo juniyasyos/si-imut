@@ -10,7 +10,7 @@ class Role extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'guard_name'];
+    protected $fillable = ['name', 'label', 'guard_name'];
     protected $guarded = ['id'];
     protected $hidden = ['created_at', 'updated_at'];
 

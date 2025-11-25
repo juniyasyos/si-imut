@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\IAMLogin;
 use App\Filament\Pages\Login;
+use App\Filament\Plugins\PanelTheme;
 use App\Filament\Resources\LaporanImutResource\Widgets\ImutDataCompletionChart;
 use App\Filament\Resources\LaporanImutResource\Widgets\UnitKerjaCompletionChart;
 use App\Filament\Widgets\AccountWidget;
@@ -78,12 +79,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('')
-            ->login(IAMLogin::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            // ->when($this->getSettingValue('login_enabled', true), fn($panel) => $panel->login(IAMLogin::class))
-            // ->when($this->getSettingValue('registration_enabled', false), fn($panel) => $panel->registration())
-            // ->when($this->getSettingValue('password_reset_enabled', true), fn($panel) => $panel->passwordReset())
-            // ->emailVerification()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -91,16 +87,16 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                AccountWidget::class,
-                ImutCapaianUnitKerjaWidget::class,
-                ImutDataCompletionChart::make([
-                    'laporanId' => LaporanLatestWidget::getLatestLaporan()?->id,
-                    'columnSpanCustom' => 1
-                ]),
-                UnitKerjaCompletionChart::make([
-                    'laporanId' => LaporanLatestWidget::getLatestLaporan()?->id,
-                    'columnSpanCustom' => 1
-                ]),
+                // AccountWidget::class,
+                // ImutCapaianUnitKerjaWidget::class,
+                // ImutDataCompletionChart::make([
+                //     'laporanId' => LaporanLatestWidget::getLatestLaporan()?->id,
+                //     'columnSpanCustom' => 1
+                // ]),
+                // UnitKerjaCompletionChart::make([
+                //     'laporanId' => LaporanLatestWidget::getLatestLaporan()?->id,
+                //     'columnSpanCustom' => 1
+                // ]),
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -159,39 +155,8 @@ class AdminPanelProvider extends PanelProvider
                     hasAvatars: false,
                     slug: 'my-profile'
                 )
-                // ->avatarUploadComponent(fn ($fileUpload) => $fileUpload->disableLabel())
-                // ->enableBrowserSessions(condition: true)
-                // ->avatarUploadComponent(
-                //     fn () => FileUpload::make('avatar_url')
-                //         ->image()
-                //         ->disk('public')
-                // )
                 ->enableTwoFactorAuthentication(),
         ];
-
-        // if ($this->settings->sso_enabled ?? true) {
-        //     $plugins[] =
-        //         FilamentSocialitePlugin::make()
-        //             ->providers([
-        //                 Provider::make('google')
-        //                     ->label('Google')
-        //                     ->icon('fab-google')
-        //                     ->color(Color::hex('#2f2a6b'))
-        //                     ->outlined(true)
-        //                     ->stateless(false),
-        //             ])->registration(true)
-        //             ->createUserUsing(function (string $provider, SocialiteUserContract $oauthUser, FilamentSocialitePlugin $plugin) {
-        //                 $user = User::firstOrNew([
-        //                     'email' => $oauthUser->getEmail(),
-        //                 ]);
-        //                 $user->name = $oauthUser->getName();
-        //                 $user->email = $oauthUser->getEmail();
-        //                 $user->email_verified_at = now();
-        //                 $user->save();
-
-        //                 return $user;
-        //             });
-        // }
 
         return $plugins;
     }

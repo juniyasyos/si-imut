@@ -26,7 +26,7 @@ class UserFactory extends Factory
     {
         return [
             // Data Pribadi
-            'nik' => fake()->unique()->numerify('###########'),  // Generasi NIK
+            'nip' => fake()->unique()->numerify('###########'),  // Generasi NIP
             'name' => fake()->name(),
             'place_of_birth' => fake()->city(),
             'date_of_birth' => fake()->date(),

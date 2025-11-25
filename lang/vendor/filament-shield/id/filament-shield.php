@@ -19,6 +19,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    'field.label' => 'Label',
     'field.name' => 'Nama',
     'field.guard_name' => 'Nama Penjaga',
     'field.permissions' => 'Izin',
