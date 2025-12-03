@@ -57,7 +57,7 @@ class FormHeaderSeeder extends Seeder
         }
 
         foreach ($formConfigurations as $config) {
-            $imutData = ImutData::findBy('slug', $config['slug']);
+            $imutData = ImutData::where('slug', $config['slug'])->first();
 
             if (!$imutData) {
                 $this->command->warn("ImutData dengan slug '{$config['slug']}' tidak ditemukan. Skip.");
