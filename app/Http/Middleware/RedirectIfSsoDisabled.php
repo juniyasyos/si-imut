@@ -20,13 +20,13 @@ class RedirectIfSsoDisabled
     {
         // Check if SSO is enabled
         $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
-        
+
         // If SSO is disabled (development mode) and user is trying to access SSO routes
         if (!$ssoEnabled) {
             // Redirect to Filament custom login page
             return redirect('/admin/login');
         }
-        
+
         // SSO enabled, continue with normal flow
         return $next($request);
     }
