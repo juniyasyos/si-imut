@@ -88,6 +88,6 @@ class FormHeaderSeeder extends Seeder
             $this->command->info("✓ Form untuk '{$imutData->title}' berhasil dibuat dengan " . count($config['fields']) . " fields.");
         }
 
-        $this->command->info("\nTotal {count($formConfigurations)} form configuration berhasil diproses.");
+        $this->command->info("\nTotal " . count($formConfigurations) . " form configuration berhasil diproses.");
     }
 }
