@@ -1,5 +1,5 @@
-<x-filament-panels::page>
-    <div class="max-w-4xl">
+<x-filament-panels::page class="fi-dashboard-page">
+    <div class="w-full max-w-7xl">
         <div class="mb-6">
             <h2 class="text-xl font-semibold">{{ $formHeader->title }}</h2>
             @if($formHeader->description)

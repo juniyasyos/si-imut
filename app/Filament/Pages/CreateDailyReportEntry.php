@@ -99,7 +99,7 @@ class CreateDailyReportEntry extends Page implements HasForms
 
                 'select' => Select::make("responses.{$field->key}")
                     ->label($field->label)
-                    ->options(collect($field->options ?? [])->pluck('label', 'value')->toArray())
+                    ->options(is_array($field->options) ? array_combine($field->options, $field->options) : [])
                     ->required($field->is_required)
                     ->helperText($field->description)
                     ->searchable()
@@ -107,7 +107,7 @@ class CreateDailyReportEntry extends Page implements HasForms
 
                 'radio' => Radio::make("responses.{$field->key}")
                     ->label($field->label)
-                    ->options(collect($field->options ?? [])->pluck('label', 'value')->toArray())
+                    ->options(is_array($field->options) ? array_combine($field->options, $field->options) : [])
                     ->required($field->is_required)
                     ->helperText($field->description)
                     ->inline()
@@ -115,7 +115,7 @@ class CreateDailyReportEntry extends Page implements HasForms
 
                 'checkbox' => CheckboxList::make("responses.{$field->key}")
                     ->label($field->label)
-                    ->options(collect($field->options ?? [])->pluck('label', 'value')->toArray())
+                    ->options(is_array($field->options) ? array_combine($field->options, $field->options) : [])
                     ->required($field->is_required)
                     ->helperText($field->description)
                     ->columns(2)
@@ -146,7 +146,7 @@ class CreateDailyReportEntry extends Page implements HasForms
                         ->default(now()->format('Y-m-d'))
                         ->columnSpanFull(),
                 ])
-                ->columnSpan('full')
+                ->columnSpan('full') 
                 ->collapsible(),
 
             Section::make('📝 Data Laporan')
