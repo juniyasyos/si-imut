@@ -98,11 +98,31 @@ class LaporanImut extends Model
     {
         static::creating(function (self $laporan): void {
             if (empty($laporan->slug)) {
-                // Buat slug dengan periode untuk memastikan unik berdasarkan bulan-tahun
-                $baseSlug = Str::slug($laporan->name ?? 'laporan-imut');
-                $periodSlug = ($laporan->report_year ?? now()->year) . '-' .
-                             str_pad($laporan->report_month ?? now()->month, 2, '0', STR_PAD_LEFT);
-                $laporan->slug = $baseSlug . '-' . $periodSlug;
+                // Buat slug yang unik dengan format: periode-YYYYMM-uniqueID
+                // Contoh: laporan-imut-202501-a1b2c3d4
+                $periodSlug = ($laporan->report_year ?? now()->year) .
+                    str_pad($laporan->report_month ?? now()->month, 2, '0', STR_PAD_LEFT);
+
+                // Generate unique identifier (8 karakter pertama dari UUID)
+                $uniqueId = substr(Str::uuid()->toString(), 0, 8);
+
+                // Format: laporan-imut-YYYYMM-uniqueID
+                $laporan->slug = 'laporan-imut-' . $periodSlug . '-' . $uniqueId;
+
+                // Ensure uniqueness in rare collision cases
+                $counter = 1;
+                while (static::where('slug', $laporan->slug)->exists()) {
+                    $uniqueId = substr(Str::uuid()->toString(), 0, 8);
+                    $laporan->slug = 'laporan-imut-' . $periodSlug . '-' . $uniqueId;
+                    $counter++;
+
+                    // Safety break after 10 attempts (extremely unlikely)
+                    if ($counter > 10) {
+                        // Fallback to timestamp-based slug
+                        $laporan->slug = 'laporan-imut-' . $periodSlug . '-' . time();
+                        break;
+                    }
+                }
             }
 
             // Auto-fill report_month dan report_year dari assessment_period_start
@@ -126,6 +146,41 @@ class LaporanImut extends Model
                 $date = Carbon::parse($laporan->assessment_period_start);
                 $laporan->report_month = $date->month;
                 $laporan->report_year = $date->year;
+            }
+
+            // Regenerate slug if period changed
+            if ($laporan->isDirty(['report_month', 'report_year'])) {
+                $periodSlug = $laporan->report_year .
+                    str_pad($laporan->report_month, 2, '0', STR_PAD_LEFT);
+
+                // Keep existing unique identifier or generate new one
+                $oldSlug = $laporan->getOriginal('slug');
+                $uniqueId = null;
+
+                // Try to extract unique ID from old slug
+                if (preg_match('/laporan-imut-\d{6}-([a-f0-9]{8})/', $oldSlug, $matches)) {
+                    $uniqueId = $matches[1];
+                } else {
+                    // Generate new unique ID if pattern doesn't match
+                    $uniqueId = substr(Str::uuid()->toString(), 0, 8);
+                }
+
+                $newSlug = 'laporan-imut-' . $periodSlug . '-' . $uniqueId;
+
+                // Ensure new slug is unique
+                $counter = 1;
+                while (static::where('slug', $newSlug)->where('id', '!=', $laporan->id)->exists()) {
+                    $uniqueId = substr(Str::uuid()->toString(), 0, 8);
+                    $newSlug = 'laporan-imut-' . $periodSlug . '-' . $uniqueId;
+                    $counter++;
+
+                    if ($counter > 10) {
+                        $newSlug = 'laporan-imut-' . $periodSlug . '-' . time();
+                        break;
+                    }
+                }
+
+                $laporan->slug = $newSlug;
             }
 
             // Validate unique period before updating if period fields changed
@@ -219,9 +274,9 @@ class LaporanImut extends Model
     public function getSelectedProfileFor($imutDataId): ?ImutProfile
     {
         $selectedProfile = $this->selectedProfiles()
-                               ->where('imut_data_id', $imutDataId)
-                               ->with('imutProfile')
-                               ->first();
+            ->where('imut_data_id', $imutDataId)
+            ->with('imutProfile')
+            ->first();
 
         return $selectedProfile?->imutProfile;
     }
@@ -255,9 +310,18 @@ class LaporanImut extends Model
     {
         if ($this->report_month && $this->report_year) {
             $monthNames = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
 
             return $monthNames[$this->report_month] . ' ' . $this->report_year;
@@ -319,9 +383,18 @@ class LaporanImut extends Model
 
         if ($existingReport) {
             $monthNames = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
 
             $monthName = $monthNames[$laporan->report_month] ?? $laporan->report_month;

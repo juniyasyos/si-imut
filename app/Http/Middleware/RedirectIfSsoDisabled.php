@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,7 +25,7 @@ class RedirectIfSsoDisabled
         // If SSO is disabled (development mode) and user is trying to access SSO routes
         if (!$ssoEnabled) {
             // Redirect to Filament custom login page
-            return redirect('/admin/login');
+            return redirect(Filament::getLoginUrl());
         }
 
         // SSO enabled, continue with normal flow

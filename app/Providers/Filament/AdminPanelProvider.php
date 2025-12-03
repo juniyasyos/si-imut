@@ -75,7 +75,10 @@ class AdminPanelProvider extends PanelProvider
 
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        // Check if SSO is enabled
+        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+
+        $panel = $panel
             ->default()
             ->id('admin')
             ->path('')
@@ -123,6 +126,13 @@ class AdminPanelProvider extends PanelProvider
                 $this->getPlugins()
             )
             ->databaseNotifications();
+
+        // Only register login page if SSO is disabled
+        if (!$ssoEnabled) {
+            $panel->login(Login::class);
+        }
+
+        return $panel;
     }
 
     private function getPlugins(): array

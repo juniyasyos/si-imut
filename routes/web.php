@@ -28,11 +28,11 @@ Route::prefix('print')->name('print.')->group(function () {
 
 Route::middleware(['web'])->group(function () {
     // SSO Routes - dengan middleware redirect untuk development mode
-    // Ketika SSO disabled (USE_SSO=false), routes ini akan redirect ke /admin/login
+    // Ketika SSO disabled (USE_SSO=false), routes ini akan redirect ke /login
     Route::middleware([\App\Http\Middleware\RedirectIfSsoDisabled::class])->group(function () {
-        Route::get('/login', SsoLoginRedirectController::class)->name('login');
-        Route::get('/oauth/callback', SsoCallbackController::class)->name('sso.callback');
-        Route::view('/status', 'auth-status')->name('status');
+        Route::get('/sso/login', SsoLoginRedirectController::class)->name('sso.login');
+        Route::get('/sso/callback', SsoCallbackController::class)->name('sso.callback');
+        Route::view('/sso/status', 'auth-status')->name('sso.status');
     });
 
     Route::post('/logout', LogoutController::class)->name('logout');

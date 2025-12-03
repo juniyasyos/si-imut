@@ -95,7 +95,7 @@ switch_to_dev() {
     print_success "Successfully switched to DEVELOPMENT mode!"
     echo ""
     print_info "Authentication: Custom Login (NIP + Password)"
-    print_info "Login URL: http://localhost:8000/admin/login"
+    print_info "Login URL: http://localhost:8000/login"
     print_info "Default credentials:"
     echo "  NIP: 0000.00000"
     echo "  Password: adminpassword"
@@ -141,7 +141,7 @@ switch_to_prod() {
     print_success "Successfully switched to PRODUCTION mode!"
     echo ""
     print_info "Authentication: SSO (Single Sign-On)"
-    print_info "Login URL: http://localhost:8000/login (redirects to IAM)"
+    print_info "Login URL: http://localhost:8000/sso/login (redirects to IAM)"
     print_info "IAM Server: $iam_host"
     echo ""
     print_warning "Make sure IAM server is accessible and properly configured!"
@@ -173,12 +173,12 @@ show_status() {
     if [ "$use_sso" = "true" ] || [ "$iam_enabled" = "true" ]; then
         print_info "Current Mode: ${GREEN}PRODUCTION (SSO)${NC}"
         echo "  • Authentication: Single Sign-On"
-        echo "  • Login URL: /login (redirects to IAM)"
+        echo "  • Login URL: /sso/login (redirects to IAM)"
         echo "  • User provisioning: Automatic from IAM"
     else
         print_info "Current Mode: ${BLUE}DEVELOPMENT (Custom Login)${NC}"
         echo "  • Authentication: Custom Filament Login"
-        echo "  • Login URL: /admin/login"
+        echo "  • Login URL: /login"
         echo "  • Login with: NIP + Password"
     fi
     echo ""

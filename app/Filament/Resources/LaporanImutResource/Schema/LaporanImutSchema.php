@@ -147,18 +147,67 @@ class LaporanImutSchema extends LaporanImutResource
                         ->disabled()
                         ->columnSpanFull(),
 
-                    Section::make('Unit Kerja')
-                        ->description('Pilih unit kerja yang akan mengisi indikator mutu.')
+                    Section::make('Pemilihan Unit Kerja')
+                        ->description('Tentukan unit kerja yang berwenang melakukan penilaian indikator mutu pada periode laporan ini.')
+                        ->icon('heroicon-o-building-office-2')
                         ->columnSpanFull()
                         ->schema([
                             CheckboxList::make('unitKerjas')
                                 ->relationship('unitKerjas', 'unit_name')
-                                ->label('Unit Kerja yang Bisa Menilai')
-                                ->columns(3)
+                                ->label('Daftar Unit Kerja yang Berpartisipasi')
+                                ->columns(2)
                                 ->required()
-                                // ->disabledOn('edit')
                                 ->bulkToggleable()
-                                ->default(UnitKerja::pluck('id')->toArray()),
+                                ->default(UnitKerja::pluck('id')->toArray())
+                                ->searchable()
+                                ->descriptions(function ($state, $record) {
+                                    // Hanya tampilkan statistik pada mode edit
+                                    if (!$record?->id) {
+                                        return [];
+                                    }
+
+                                    $stats = static::getUnitKerjaPenilaianStats($record->id);
+                                    $descriptions = [];
+
+                                    foreach (UnitKerja::all() as $unitKerja) {
+                                        if (isset($stats[$unitKerja->id])) {
+                                            $stat = $stats[$unitKerja->id];
+                                            $total = $stat['total'];
+                                            $filled = $stat['filled'];
+                                            $percentage = $total > 0 ? round(($filled / $total) * 100) : 0;
+
+                                            if ($total > 0) {
+                                                // Tentukan badge warna berdasarkan progress
+                                                if ($percentage >= 80) {
+                                                    $badge = '✅'; // Hijau - Baik
+                                                } elseif ($percentage >= 50) {
+                                                    $badge = '⚠️'; // Kuning - Sedang
+                                                } elseif ($percentage > 0) {
+                                                    $badge = '🔶'; // Oranye - Mulai
+                                                } else {
+                                                    $badge = '⭕'; // Merah - Kosong
+                                                }
+
+                                                $descriptions[$unitKerja->id] = sprintf(
+                                                    '%s %d dari %d penilaian terisi • Progress: %d%%',
+                                                    $badge,
+                                                    $filled,
+                                                    $total,
+                                                    $percentage
+                                                );
+                                            } else {
+                                                $descriptions[$unitKerja->id] = '⚪ Belum ada data penilaian';
+                                            }
+                                        } else {
+                                            $descriptions[$unitKerja->id] = '⚪ Belum ada data penilaian';
+                                        }
+                                    }
+
+                                    return $descriptions;
+                                })
+                                ->helperText('⚠️ **PERINGATAN:** Menghapus centang pada unit kerja yang sudah memiliki data akan **menghapus permanen** semua penilaian yang telah diinput oleh unit tersebut.')
+                                ->hint('Pilih semua unit yang relevan')
+                                ->hintIcon('heroicon-m-information-circle'),
                         ]),
                 ])
                 ->columns(2),
@@ -194,5 +243,39 @@ class LaporanImutSchema extends LaporanImutResource
 
             $set('name', $generatedName);
         }
+    }
+
+    /**
+     * Get statistics for unit kerja penilaian counts
+     * Returns array with unit_kerja_id as key and count as value
+     */
+    public static function getUnitKerjaPenilaianStats(?int $laporanId): array
+    {
+        if (!$laporanId) {
+            return [];
+        }
+
+        $laporan = \App\Models\LaporanImut::with(['laporanUnitKerjas.imutPenilaians'])->find($laporanId);
+
+        if (!$laporan) {
+            return [];
+        }
+
+        $stats = [];
+        foreach ($laporan->laporanUnitKerjas as $laporanUnitKerja) {
+            $unitKerjaId = $laporanUnitKerja->unit_kerja_id;
+            $penilaianCount = $laporanUnitKerja->imutPenilaians()->count();
+            $penilaianFilled = $laporanUnitKerja->imutPenilaians()
+                ->whereNotNull('numerator_value')->whereNotNull('denominator_value')
+                ->count();
+
+            $stats[$unitKerjaId] = [
+                'total' => $penilaianCount,
+                'filled' => $penilaianFilled,
+                'empty' => $penilaianCount - $penilaianFilled,
+            ];
+        }
+
+        return $stats;
     }
 }

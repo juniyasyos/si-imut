@@ -28,7 +28,7 @@ class LaporanImutPolicy
     {
         return $user->can('view_any_laporan::imut');
     }
-    public function view(User $user, LaporanImut $model): bool
+    public function view(User $user): bool
     {
         return $user->can('view_laporan::imut');
     }
@@ -36,11 +36,11 @@ class LaporanImutPolicy
     {
         return $user->can('create_laporan::imut');
     }
-    public function update(User $user, LaporanImut $model): bool
+    public function update(User $user): bool
     {
         return $user->can('update_laporan::imut');
     }
-    public function delete(User $user, LaporanImut $model): bool
+    public function delete(User $user): bool
     {
         return $user->can('delete_laporan::imut');
     }
@@ -48,7 +48,7 @@ class LaporanImutPolicy
     {
         return $user->can('delete_any_laporan::imut');
     }
-    public function forceDelete(User $user, LaporanImut $model): bool
+    public function forceDelete(User $user): bool
     {
         return $user->can('force_delete_laporan::imut');
     }
@@ -56,7 +56,7 @@ class LaporanImutPolicy
     {
         return $user->can('force_delete_any_laporan::imut');
     }
-    public function restore(User $user, LaporanImut $model): bool
+    public function restore(User $user): bool
     {
         return $user->can('restore_laporan::imut');
     }
