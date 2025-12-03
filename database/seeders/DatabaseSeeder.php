@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
                 ImutDataOldSeeder::class,
-                FormHeaderSeeder::class,
+                FormHeaderSeeder::class
                 // LaporanImutSeeder::class,
                 // ImutDataSeeder::class,
                 // ImutProfileSeeder::class,
