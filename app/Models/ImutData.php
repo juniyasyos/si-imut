@@ -135,6 +135,14 @@ class ImutData extends Model
     }
 
     /**
+     * function to get the form headers of the indicator
+     */
+    public function formHeaders(): HasMany
+    {
+        return $this->hasMany(FormHeader::class, 'imutdata_id');
+    }
+
+    /**
      * function to get the benchmarking of the indicator
      */
     public function unitKerja(): BelongsToMany
@@ -165,8 +173,8 @@ class ImutData extends Model
     public function profileValidOnDate($date)
     {
         return $this->hasOne(ImutProfile::class)
-                    ->validOnDate($date)
-                    ->latestOfMany('version');
+            ->validOnDate($date)
+            ->latestOfMany('version');
     }
 
     /**
@@ -175,9 +183,9 @@ class ImutData extends Model
     public function profileValidForPeriod($startDate, $endDate)
     {
         return $this->profiles()
-                    ->validForPeriod($startDate, $endDate)
-                    ->orderBy('version', 'desc')
-                    ->first();
+            ->validForPeriod($startDate, $endDate)
+            ->orderBy('version', 'desc')
+            ->first();
     }
 
     /**
@@ -189,9 +197,9 @@ class ImutData extends Model
     {
         // Cek apakah sudah ada profil yang dipilih khusus untuk laporan ini
         $selectedProfile = LaporanImutProfile::where('laporan_imut_id', $laporanImut->id)
-                                           ->where('imut_data_id', $this->id)
-                                           ->with('imutProfile')
-                                           ->first();
+            ->where('imut_data_id', $this->id)
+            ->with('imutProfile')
+            ->first();
 
         if ($selectedProfile) {
             return $selectedProfile->imutProfile;

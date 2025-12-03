@@ -42,6 +42,13 @@ class EditImutData extends EditRecord
                 ->icon('heroicon-s-chart-bar')
                 ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
 
+            Action::make('manage_form_builder')
+                ->label('📝 Form Builder')
+                ->icon('heroicon-o-document-text')
+                ->color('info')
+                ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', ['record' => $record->slug]))
+                ->visible(fn($record) => self::canEditProfilIndikator($record)),
+
             Action::make('lihat_berdasarkan_unit_kerja')
                 ->label('🏢 Lihat Grafik')
                 ->color('success')
