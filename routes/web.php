@@ -27,14 +27,21 @@ Route::prefix('print')->name('print.')->group(function () {
 });
 
 Route::middleware(['web'])->group(function () {
-    // SSO Routes - menggunakan package controller
-    Route::get('/login', SsoLoginRedirectController::class)->name('login');
-    Route::get('/oauth/callback', SsoCallbackController::class)->name('sso.callback');
-    Route::view('/status', 'auth-status')->name('status');
+    // SSO Routes - dengan middleware redirect untuk development mode
+    // Ketika SSO disabled (USE_SSO=false), routes ini akan redirect ke /admin/login
+    Route::middleware([\App\Http\Middleware\RedirectIfSsoDisabled::class])->group(function () {
+        Route::get('/login', SsoLoginRedirectController::class)->name('login');
+        Route::get('/oauth/callback', SsoCallbackController::class)->name('sso.callback');
+        Route::view('/status', 'auth-status')->name('status');
+    });
 
-    // Debug routes
+    Route::post('/logout', LogoutController::class)->name('logout');
+
+    // Debug routes - available in all modes
     Route::get('/debug-session', function () {
         return response()->json([
+            'sso_enabled' => config('iam.enabled', false) || env('USE_SSO', false),
+            'app_env' => config('app.env'),
             'session_id' => session()->getId(),
             'session_started' => session()->isStarted(),
             'auth_check' => Auth::check(),
@@ -45,6 +52,4 @@ Route::middleware(['web'])->group(function () {
             'laravel_session_cookie' => request()->cookie('laravel_session'),
         ]);
     })->name('debug.session');
-
-    Route::post('/logout', LogoutController::class)->name('logout');
 });

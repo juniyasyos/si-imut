@@ -4,6 +4,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | IAM Enabled
+    |--------------------------------------------------------------------------
+    |
+    | Enable or disable IAM/SSO authentication globally.
+    | When false (development mode), the application will use custom Filament login.
+    | When true (production mode), the application will use SSO authentication.
+    |
+    */
+    'enabled' => env('IAM_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | IAM Application Key
     |--------------------------------------------------------------------------
     |

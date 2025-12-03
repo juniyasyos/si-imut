@@ -22,8 +22,36 @@ class Login extends BaseLogin
 
     protected static string $view = 'vendor.filament-panels.pages.auth.login';
 
+    public function mount(): void
+    {
+        parent::mount();
+
+        // If SSO is enabled, redirect to SSO login route
+        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+        if ($ssoEnabled) {
+            $this->redirect(route('login'), navigate: false);
+            return;
+        }
+
+        // Auto-fill credentials in local environment for development
+        if (app()->isLocal()) {
+            $this->form->fill([
+                'nip' => '0000.00000',
+                'password' => 'adminpassword',
+                'remember' => true,
+            ]);
+        }
+    }
+
     public function authenticate(): ?LoginResponse
     {
+        // Prevent custom login if SSO is enabled
+        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+        if ($ssoEnabled) {
+            $this->redirect(route('login'), navigate: false);
+            return null;
+        }
+
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException $exception) {
@@ -94,21 +122,6 @@ class Login extends BaseLogin
 
         return app(LoginResponse::class);
     }
-
-    public function mount(): void
-    {
-        parent::mount();
-
-        if (app()->isLocal()) {
-            // Autofill hanya aktif di env local/dev
-            $this->form->fill([
-                'nip' => '0000.00000',
-                'password' => 'adminpassword',
-                'remember' => true,
-            ]);
-        }
-    }
-
 
     /**
      * @return array<int | string, string | Form>
