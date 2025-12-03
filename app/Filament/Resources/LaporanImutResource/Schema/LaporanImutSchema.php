@@ -160,6 +160,7 @@ class LaporanImutSchema extends LaporanImutResource
                                 ->bulkToggleable()
                                 ->default(UnitKerja::pluck('id')->toArray())
                                 ->searchable()
+                                ->disabled(fn($record) => $record?->status === 'complete')
                                 ->descriptions(function ($state, $record) {
                                     // Hanya tampilkan statistik pada mode edit
                                     if (!$record?->id) {
@@ -205,7 +206,9 @@ class LaporanImutSchema extends LaporanImutResource
 
                                     return $descriptions;
                                 })
-                                ->helperText('⚠️ **PERINGATAN:** Menghapus centang pada unit kerja yang sudah memiliki data akan **menghapus permanen** semua penilaian yang telah diinput oleh unit tersebut.')
+                                ->helperText(fn($record) => $record?->status === 'complete' 
+                                    ? '🔒 Laporan sudah selesai. Pemilihan unit kerja tidak dapat diubah.'
+                                    : '⚠️ PERINGATAN: Menghapus centang pada unit kerja yang sudah memiliki data akan **menghapus permanen** semua penilaian yang telah diinput oleh unit tersebut.')
                                 ->hint('Pilih semua unit yang relevan')
                                 ->hintIcon('heroicon-m-information-circle'),
                         ]),

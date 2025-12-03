@@ -418,8 +418,13 @@ class EditLaporanImut extends EditRecord
     {
         $newUnitKerjaIds = $this->record->unitKerjas()->pluck('unit_kerja_id')->toArray();
         $removedUnitKerjaIds = array_diff($this->originalUnitKerjaIds, $newUnitKerjaIds);
+        $addedUnitKerjaIds = array_diff($newUnitKerjaIds, $this->originalUnitKerjaIds);
+
+        // Track if there are any changes that require job processing
+        $hasChanges = false;
 
         if (!empty($removedUnitKerjaIds)) {
+            $hasChanges = true;
             $deletedStats = [];
 
             DB::transaction(function () use ($removedUnitKerjaIds, &$deletedStats) {
@@ -467,6 +472,14 @@ class EditLaporanImut extends EditRecord
             }
         }
 
-        ProsesPenilaianImut::dispatch($this->record->id);
+        // Check if there are added units
+        if (!empty($addedUnitKerjaIds)) {
+            $hasChanges = true;
+        }
+
+        // Only dispatch job if there are actual changes
+        if ($hasChanges) {
+            ProsesPenilaianImut::dispatch($this->record->id);
+        }
     }
 }
