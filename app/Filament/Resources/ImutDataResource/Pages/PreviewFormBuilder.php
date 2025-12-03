@@ -17,10 +17,9 @@ class PreviewFormBuilder extends Page
 
     public ?FormHeader $formHeader = null;
 
-    public function mount(): void
+    public function mount(ImutData $record): void
     {
-        $imutDataId = request()->route('record');
-        $this->record = ImutData::query()->where('slug', $imutDataId)->firstOrFail();
+        $this->record = $record;
 
         $this->formHeader = FormHeader::where('imutdata_id', $this->record->id)
             ->with('formFields')
@@ -31,9 +30,9 @@ class PreviewFormBuilder extends Page
     {
         return [
             ImutDataResource::getUrl('index') => 'Data IMUT',
-            ImutDataResource::getUrl('edit', ['record' => $this->record->slug]) => $this->record->title,
-            ImutDataResource::getUrl('manage-form-builder', ['record' => $this->record->slug]) => 'Form Builder',
-            '#' => 'Preview',
+            ImutDataResource::getUrl('edit', ['record' => $this->record]) => $this->record->title,
+            ImutDataResource::getUrl('manage-form-builder', ['record' => $this->record]) => 'Konfigurasi Form Laporan Harian',
+            '#' => 'Preview Form',
         ];
     }
 }

@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     @if($formHeader)
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto">
         <!-- Header Form Style Google Form -->
         <div class="bg-white dark:bg-gray-800 rounded-t-lg border-t-8 border-primary-600 shadow-sm p-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">

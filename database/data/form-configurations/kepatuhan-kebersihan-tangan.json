@@ -1,0 +1,97 @@
+{
+    "slug": "kepatuhan-kebersihan-tangan",
+    "fields": [
+        {
+            "key": "observer_name",
+            "label": "Nama Observer",
+            "description": "Nama petugas yang melakukan observasi kebersihan tangan",
+            "type": "text",
+            "is_required": true,
+            "options": null,
+            "order": 1
+        },
+        {
+            "key": "healthcare_worker_profession",
+            "label": "Profesi Tenaga Kesehatan",
+            "description": "Pilih profesi tenaga kesehatan yang diobservasi",
+            "type": "select",
+            "is_required": true,
+            "options": [
+                "Dokter",
+                "Perawat",
+                "Bidan",
+                "Apoteker",
+                "Analis",
+                "Radiografer",
+                "Fisioterapis",
+                "Nutrisionis",
+                "Petugas Kebersihan",
+                "Lainnya"
+            ],
+            "order": 2
+        },
+        {
+            "key": "observation_location",
+            "label": "Lokasi Observasi",
+            "description": "Ruangan atau area tempat observasi dilakukan",
+            "type": "text",
+            "is_required": true,
+            "options": null,
+            "order": 3
+        },
+        {
+            "key": "five_moments",
+            "label": "Indikasi Five Moments",
+            "description": "Pilih momen kebersihan tangan yang diobservasi",
+            "type": "select",
+            "is_required": true,
+            "options": [
+                "Sebelum kontak dengan pasien",
+                "Sebelum tindakan aseptik",
+                "Setelah kontak dengan cairan tubuh pasien",
+                "Setelah kontak dengan pasien",
+                "Setelah kontak dengan lingkungan pasien"
+            ],
+            "order": 4
+        },
+        {
+            "key": "hand_hygiene_performed",
+            "label": "Kebersihan Tangan Dilakukan",
+            "description": "Apakah tenaga kesehatan melakukan kebersihan tangan sesuai indikasi?",
+            "type": "bool",
+            "is_required": true,
+            "options": null,
+            "order": 5
+        },
+        {
+            "key": "hand_hygiene_method",
+            "label": "Metode Kebersihan Tangan",
+            "description": "Metode yang digunakan jika kebersihan tangan dilakukan",
+            "type": "radio",
+            "is_required": false,
+            "options": [
+                "Handrub (alcohol-based)",
+                "Handwash (sabun dan air)"
+            ],
+            "order": 6
+        },
+        {
+            "key": "six_steps_correct",
+            "label": "6 Langkah Benar",
+            "description": "Apakah 6 langkah kebersihan tangan dilakukan dengan benar?",
+            "type": "bool",
+            "is_required": false,
+            "options": null,
+            "order": 7
+        },
+        {
+            "key": "notes",
+            "label": "Catatan",
+            "description": "Catatan tambahan terkait observasi (opsional)",
+            "type": "textarea",
+            "is_required": false,
+            "options": null,
+            "order": 8
+        }
+    ]
+}

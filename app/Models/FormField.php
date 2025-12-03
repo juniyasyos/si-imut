@@ -14,6 +14,7 @@ class FormField extends Model
         'form_header_id',
         'key',
         'label',
+        'description',
         'type',
         'is_required',
         'options',

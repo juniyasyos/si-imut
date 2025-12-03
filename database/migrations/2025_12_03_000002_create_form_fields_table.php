@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('form_header_id')->constrained('form_headers')->onDelete('cascade');
             $table->string('key');
             $table->string('label');
+            $table->text('description')->nullable();
             $table->enum('type', ['text', 'textarea', 'number', 'date', 'bool', 'select', 'radio', 'checkbox']);
             $table->boolean('is_required')->default(false);
             $table->json('options')->nullable();

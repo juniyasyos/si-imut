@@ -34,10 +34,9 @@ class ManageFormBuilder extends Page implements HasForms
 
     public ?ImutData $record = null;
 
-    public function mount(): void
+    public function mount(ImutData $record): void
     {
-        $imutDataId = request()->route('record');
-        $this->record = ImutData::query()->where('slug', $imutDataId)->firstOrFail();
+        $this->record = $record;
 
         $formHeader = FormHeader::where('imutdata_id', $this->record->id)->first();
 
@@ -47,6 +46,7 @@ class ManageFormBuilder extends Page implements HasForms
                     'id' => $field->id,
                     'key' => $field->key,
                     'label' => $field->label,
+                    'description' => $field->description,
                     'type' => $field->type,
                     'is_required' => $field->is_required,
                     'options' => $field->options,
@@ -72,90 +72,120 @@ class ManageFormBuilder extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make('Pengaturan Form')
-                    ->description('Atur judul dan deskripsi form seperti Google Form')
+                Section::make('Informasi Laporan Harian')
+                    ->description('Pengaturan form untuk pengisian laporan harian indikator mutu')
                     ->schema([
                         TextInput::make('title')
-                            ->label('Judul Form')
+                            ->label('Judul Laporan Harian')
                             ->required()
                             ->maxLength(255)
-                            ->placeholder('Contoh: Indikator High Alert')
+                            ->placeholder('Contoh: Laporan Harian Kepatuhan Cuci Tangan')
+                            ->helperText('Judul akan ditampilkan di halaman pengisian laporan harian')
                             ->columnSpanFull(),
 
                         Textarea::make('description')
-                            ->label('Deskripsi Form')
+                            ->label('Instruksi Pengisian')
                             ->rows(3)
-                            ->placeholder('Berikan deskripsi singkat tentang form ini...')
+                            ->placeholder('Berikan petunjuk pengisian untuk petugas yang melaporkan...')
+                            ->helperText('Deskripsi akan membantu petugas memahami cara pengisian laporan')
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Pertanyaan Form')
-                    ->description('Tambahkan pertanyaan/field untuk form Anda')
+                Section::make('Field Laporan Harian')
+                    ->description('Tentukan field yang perlu diisi dalam laporan harian (numerator, denominator, atau data pendukung lainnya)')
                     ->schema([
                         Repeater::make('fields')
-                            ->label('Daftar Pertanyaan')
+                            ->label('Daftar Field Laporan')
                             ->schema([
-                                TextInput::make('label')
-                                    ->label('Label Pertanyaan')
-                                    ->required()
-                                    ->placeholder('Contoh: Tanggal Kejadian')
-                                    ->columnSpanFull(),
-
-                                TextInput::make('key')
-                                    ->label('Key (Unique Identifier)')
-                                    ->required()
-                                    ->placeholder('Contoh: tanggal_kejadian')
-                                    ->unique(ignoreRecord: true)
-                                    ->helperText('Gunakan format snake_case, contoh: tanggal_kejadian, no_rm')
-                                    ->columnSpanFull()
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set) {
-                                        $set('key', Str::slug($state, '_'));
-                                    }),
-
-                                Select::make('type')
-                                    ->label('Tipe Input')
-                                    ->required()
-                                    ->options([
-                                        'text' => 'Text - Teks pendek',
-                                        'textarea' => 'Textarea - Teks panjang',
-                                        'number' => 'Number - Angka',
-                                        'date' => 'Date - Tanggal',
-                                        'bool' => 'Boolean - Ya/Tidak',
-                                        'select' => 'Select - Pilihan dropdown',
-                                        'radio' => 'Radio - Pilihan radio button',
-                                        'checkbox' => 'Checkbox - Pilihan multiple',
-                                    ])
-                                    ->reactive()
-                                    ->columnSpan(1),
-
-                                Checkbox::make('is_required')
-                                    ->label('Wajib Diisi?')
-                                    ->default(false)
-                                    ->columnSpan(1),
-
-                                Repeater::make('options')
-                                    ->label('Opsi Pilihan')
+                                Section::make()
                                     ->schema([
-                                        TextInput::make('value')
-                                            ->label('Value')
-                                            ->required(),
                                         TextInput::make('label')
-                                            ->label('Label')
-                                            ->required(),
+                                            ->label('📌 Nama Field / Pertanyaan')
+                                            ->required()
+                                            ->placeholder('Contoh: Jumlah Pasien yang Dilakukan Cuci Tangan')
+                                            ->reactive()
+                                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                if (empty($get('key')) || $get('key') === Str::slug($get('../../fields.' . $get('../../currentIndex') . '.label') ?? '', '_')) {
+                                                    $set('key', Str::slug($state, '_'));
+                                                }
+                                            })
+                                            ->columnSpanFull(),
+
+                                        Textarea::make('description')
+                                            ->label('📝 Deskripsi / Petunjuk Pengisian')
+                                            ->placeholder('Contoh: Hitung total pasien yang mendapat edukasi cuci tangan dari petugas kesehatan')
+                                            ->helperText('Deskripsi akan ditampilkan sebagai helper text di form laporan harian')
+                                            ->rows(2)
+                                            ->columnSpanFull(),
+
+                                        Select::make('type')
+                                            ->label('Tipe Input')
+                                            ->required()
+                                            ->options([
+                                                'text' => '📝 Text - Teks pendek',
+                                                'textarea' => '📄 Textarea - Teks panjang',
+                                                'number' => '🔢 Number - Angka',
+                                                'date' => '📅 Date - Tanggal',
+                                                'bool' => '✅ Boolean - Ya/Tidak',
+                                                'select' => '📋 Select - Pilihan dropdown',
+                                                'radio' => '🔘 Radio - Pilihan radio button',
+                                                'checkbox' => '☑️ Checkbox - Pilihan multiple',
+                                            ])
+                                            ->reactive()
+                                            ->columnSpan(1),
+
+                                        Checkbox::make('is_required')
+                                            ->label('Wajib Diisi')
+                                            ->default(false)
+                                            ->inline(false)
+                                            ->columnSpan(1),
                                     ])
                                     ->columns(2)
+                                    ->columnSpanFull(),
+
+                                Section::make('Opsi Pilihan')
+                                    ->description('Tambahkan pilihan untuk select, radio, atau checkbox')
+                                    ->schema([
+                                        Repeater::make('options')
+                                            ->label('')
+                                            ->schema([
+                                                TextInput::make('value')
+                                                    ->label('Value')
+                                                    ->required()
+                                                    ->placeholder('nilai-1'),
+                                                TextInput::make('label')
+                                                    ->label('Label Tampilan')
+                                                    ->required()
+                                                    ->placeholder('Pilihan 1'),
+                                            ])
+                                            ->columns(2)
+                                            ->defaultItems(2)
+                                            ->addActionLabel('+ Tambah Opsi')
+                                            ->reorderableWithButtons()
+                                            ->collapsible()
+                                            ->itemLabel(fn(array $state): ?string => $state['label'] ?? null)
+                                            ->columnSpanFull(),
+                                    ])
                                     ->visible(fn(callable $get) => in_array($get('type'), ['select', 'radio', 'checkbox']))
                                     ->columnSpanFull()
-                                    ->helperText('Tambahkan opsi untuk pilihan dropdown/radio/checkbox'),
+                                    ->collapsed(false),
+
+                                TextInput::make('key')
+                                    ->label('Key')
+                                    ->required()
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->hidden(),
                             ])
-                            ->columns(2)
+                            ->columns(1)
                             ->defaultItems(0)
-                            ->addActionLabel('+ Tambah Pertanyaan')
-                            ->reorderable()
+                            ->addActionLabel('+ Tambah Field Baru')
+                            ->reorderableWithButtons()
                             ->collapsible()
-                            ->itemLabel(fn(array $state): ?string => $state['label'] ?? 'Pertanyaan baru')
-                            ->columnSpanFull(),
+                            ->collapsed(false)
+                            ->itemLabel(fn(array $state): ?string => ($state['label'] ?? 'Field baru') . ($state['is_required'] ?? false ? ' *' : ''))
+                            ->columnSpanFull()
+                            ->cloneable(),
                     ]),
             ])
             ->statePath('data');
@@ -165,13 +195,13 @@ class ManageFormBuilder extends Page implements HasForms
     {
         return [
             Action::make('preview')
-                ->label('Preview Form')
+                ->label('Preview Form Laporan Harian')
                 ->icon('heroicon-o-eye')
                 ->color('gray')
-                ->url(fn() => ImutDataResource::getUrl('preview-form', ['record' => $this->record->slug])),
+                ->url(fn() => ImutDataResource::getUrl('preview-form', ['record' => $this->record])),
 
             Action::make('save')
-                ->label('Simpan Form')
+                ->label('Simpan Konfigurasi Field')
                 ->icon('heroicon-o-check')
                 ->action('save')
                 ->color('success'),
@@ -196,14 +226,17 @@ class ManageFormBuilder extends Page implements HasForms
             ->delete();
 
         foreach ($data['fields'] as $index => $fieldData) {
+            $key = $fieldData['key'] ?? Str::slug($fieldData['label'], '_');
+
             FormField::updateOrCreate(
                 [
                     'id' => $fieldData['id'] ?? null,
                     'form_header_id' => $formHeader->id,
                 ],
                 [
-                    'key' => $fieldData['key'],
+                    'key' => $key,
                     'label' => $fieldData['label'],
+                    'description' => $fieldData['description'] ?? null,
                     'type' => $fieldData['type'],
                     'is_required' => $fieldData['is_required'] ?? false,
                     'options' => $fieldData['options'] ?? null,
@@ -213,7 +246,7 @@ class ManageFormBuilder extends Page implements HasForms
         }
 
         Notification::make()
-            ->title('Form berhasil disimpan')
+            ->title('Konfigurasi laporan harian berhasil disimpan')
             ->success()
             ->send();
     }
@@ -222,8 +255,8 @@ class ManageFormBuilder extends Page implements HasForms
     {
         return [
             ImutDataResource::getUrl('index') => 'Data IMUT',
-            ImutDataResource::getUrl('edit', ['record' => $this->record->slug]) => $this->record->title,
-            '#' => 'Form Builder',
+            ImutDataResource::getUrl('edit', ['record' => $this->record]) => $this->record->title,
+            '#' => 'Konfigurasi Form Laporan Harian',
         ];
     }
 }

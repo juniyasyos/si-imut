@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
+use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\CanNotify;
@@ -13,7 +14,7 @@ use Filament\Resources\Pages\EditRecord;
 use Guava\FilamentModalRelationManagers\Actions\Action\RelationManagerAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
+
 
 class EditImutData extends EditRecord
 {
@@ -43,35 +44,36 @@ class EditImutData extends EditRecord
                 ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
 
             Action::make('manage_form_builder')
-                ->label('📝 Form Builder')
-                ->icon('heroicon-o-document-text')
+                ->label('📝 Laporan Harian')
                 ->color('info')
-                ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', ['record' => $record->slug]))
+                ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', ['record' => $record]))
                 ->visible(fn($record) => self::canEditProfilIndikator($record)),
 
-            Action::make('lihat_berdasarkan_unit_kerja')
-                ->label('🏢 Lihat Grafik')
-                ->color('success')
-                ->visible(function () {
-                    $user = Auth::user();
+            // Action::make('lihat_berdasarkan_unit_kerja')
+            //     ->label('🏢 Lihat Grafik')
+            //     ->color('success')
+            //     ->visible(function () {
+            //         $user = Auth::user();
 
-                    return $user->can('view_by_unit_kerja_imut::data') &&
-                        ! $user->can('view_all_data_imut::data') &&
-                        $user->unitKerjas->isNotEmpty();
-                })
-                ->url(function ($record) {
-                    $user = Auth::user();
-                    $unitKerja = $user->unitKerjas->first();
+            //         return $user->can('view_by_unit_kerja_imut::data') &&
+            //             ! $user->can('view_all_data_imut::data') &&
+            //             $user->unitKerjas->isNotEmpty();
+            //     })
+            //     ->url(function ($record) {
+            //         $user = Auth::user();
+            //         $unitKerja = $user->unitKerjas->first();
 
-                    if (! $unitKerja) {
-                        return '#';
-                    }
+            //         if (! $unitKerja) {
+            //             return '#';
+            //         }
 
-                    return UnitKerjaChart::getUrl([
-                        'record_imut_data' => $record->id,
-                        'record_unit_kerja' => $unitKerja->id,
-                    ]);
-                }),
+            //         return [
+            //             UnitKerjaChart::make([
+            //                 'record_imut_data' => $record->id,
+            //                 'record_unit_kerja' => $unitKerja->id,
+            //             ])
+            //         ];
+            //     }),
 
             $this->getDeleteAction(),
         ];

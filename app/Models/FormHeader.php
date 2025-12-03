@@ -26,4 +26,9 @@ class FormHeader extends Model
     {
         return $this->hasMany(FormField::class)->orderBy('order');
     }
+
+    public function dailyReportEntries(): HasMany
+    {
+        return $this->hasMany(DailyReportEntry::class);
+    }
 }
