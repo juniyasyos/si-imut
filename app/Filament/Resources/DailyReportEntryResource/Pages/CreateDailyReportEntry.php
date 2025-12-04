@@ -39,9 +39,9 @@ class CreateDailyReportEntry extends CreateRecord
         $indicatorId = request()->query('indicator');
 
         if ($indicatorId) {
-            $formHeader = FormHeader::with('imutdata.imutKategori')->find($indicatorId);
+            $formHeader = FormHeader::with('imutdata.categories')->find($indicatorId);
             if ($formHeader) {
-                $category = $formHeader->imutdata->imutKategori->title ?? null;
+                $category = $formHeader->imutdata->categories->title ?? null;
                 $desc = $formHeader->description;
 
                 $parts = [];

@@ -25,7 +25,7 @@ class DailyReportEntryTable extends DailyReportEntryResource
         return [
             TextColumn::make('formHeader.imutdata.title')
                 ->label('Indikator Mutu')
-                ->description(fn($record) => $record->formHeader->imutdata->imutKategori->title ?? null)
+                ->description(fn($record) => $record->formHeader->imutdata->categories->title ?? null)
                 ->searchable()
                 ->sortable()
                 ->wrap()
