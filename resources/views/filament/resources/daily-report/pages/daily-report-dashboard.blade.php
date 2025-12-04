@@ -61,7 +61,7 @@
                             <x-heroicon-o-eye class="w-4 h-4 mr-2" />
                             Lihat Detail
                         </a>
-                        <a href="{{ route('filament.admin.pages.create-daily-report-entry') }}?indicator={{ $indicator['id'] }}"
+                        <a href="{{ route('filament.admin.resources.daily-report-entries.create') }}?indicator={{ $indicator['id'] }}"
                             class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors">
                             <x-heroicon-o-plus class="w-4 h-4 mr-1" />
                             Input

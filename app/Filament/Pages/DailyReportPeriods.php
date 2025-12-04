@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 class DailyReportPeriods extends Page
 {
-    protected static string $view = 'filament.pages.daily-report-periods';
+    protected static string $view = 'filament.resources.daily-report.pages.daily-report-periods';
 
     protected static bool $shouldRegisterNavigation = false;
 
