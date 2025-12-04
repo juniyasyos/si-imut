@@ -20,30 +20,30 @@ class CreateDailyReportEntry extends CreateRecord
     public function getTitle(): string
     {
         $indicatorId = request()->query('indicator');
-        
+
         if ($indicatorId) {
             $formHeader = FormHeader::with('imutdata')->find($indicatorId);
             if ($formHeader && $formHeader->imutdata) {
                 return 'Input Laporan: ' . $formHeader->imutdata->title;
             }
         }
-        
+
         return 'Buat Laporan Harian';
     }
-    
+
     /**
      * Get page subheading
      */
     public function getSubheading(): ?string
     {
         $indicatorId = request()->query('indicator');
-        
+
         if ($indicatorId) {
             $formHeader = FormHeader::with('imutdata.imutKategori')->find($indicatorId);
             if ($formHeader) {
                 $category = $formHeader->imutdata->imutKategori->title ?? null;
                 $desc = $formHeader->description;
-                
+
                 $parts = [];
                 if ($category) {
                     $parts[] = "Kategori: {$category}";
@@ -51,11 +51,11 @@ class CreateDailyReportEntry extends CreateRecord
                 if ($desc) {
                     $parts[] = $desc;
                 }
-                
+
                 return implode(' — ', $parts);
             }
         }
-        
+
         return null;
     }
 

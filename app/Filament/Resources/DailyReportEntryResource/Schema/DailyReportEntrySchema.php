@@ -43,9 +43,9 @@ class DailyReportEntrySchema extends DailyReportEntryResource
     {
         // Get indicator from query parameter
         $indicatorId = request()->query('indicator');
-        
+
         $fields = [];
-        
+
         // Hidden field for form_header_id (auto-filled from query parameter)
         if ($indicatorId) {
             $fields[] = Select::make('form_header_id')
@@ -57,7 +57,7 @@ class DailyReportEntrySchema extends DailyReportEntryResource
                 ->dehydrated()
                 ->hidden();
         }
-        
+
         $fields[] = DatePicker::make('report_date')
             ->label('Tanggal Laporan')
             ->required()
