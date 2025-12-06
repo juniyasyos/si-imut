@@ -15,8 +15,6 @@ return new class extends Migration
             $table->foreignId('submitted_by')->constrained('users')->onDelete('cascade');
             $table->date('report_date');
             $table->json('responses');
-            $table->decimal('numerator_value', 10, 2)->nullable();
-            $table->decimal('denominator_value', 10, 2)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
 

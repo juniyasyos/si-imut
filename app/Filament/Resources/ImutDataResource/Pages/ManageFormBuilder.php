@@ -42,6 +42,24 @@ class ManageFormBuilder extends Page implements HasForms
 
         if ($formHeader) {
             $fields = $formHeader->formFields->map(function ($field) {
+                $options = $field->options;
+
+                // Konversi options dari array sederhana ke format repeater
+                if (is_array($options) && !empty($options)) {
+                    // Cek apakah sudah format object [{label, value}] atau masih array sederhana ["item1", "item2"]
+                    $firstItem = reset($options);
+
+                    if (!is_array($firstItem)) {
+                        // Konversi dari array sederhana ke format repeater
+                        $options = collect($options)->map(function ($item) {
+                            return [
+                                'label' => $item,
+                                'value' => Str::slug($item, '_'),
+                            ];
+                        })->toArray();
+                    }
+                }
+
                 return [
                     'id' => $field->id,
                     'key' => $field->key,
@@ -49,7 +67,7 @@ class ManageFormBuilder extends Page implements HasForms
                     'description' => $field->description,
                     'type' => $field->type,
                     'is_required' => $field->is_required,
-                    'options' => $field->options,
+                    'options' => $options,
                     'order' => $field->order,
                 ];
             })->toArray();
@@ -149,22 +167,45 @@ class ManageFormBuilder extends Page implements HasForms
                                         Repeater::make('options')
                                             ->label('')
                                             ->schema([
-                                                TextInput::make('value')
-                                                    ->label('Value')
-                                                    ->required()
-                                                    ->placeholder('nilai-1'),
                                                 TextInput::make('label')
                                                     ->label('Label Tampilan')
                                                     ->required()
-                                                    ->placeholder('Pilihan 1'),
+                                                    ->placeholder('Pilihan 1')
+                                                    ->reactive()
+                                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                        // Auto-generate value dari label jika value kosong
+                                                        if (empty($get('value'))) {
+                                                            $set('value', Str::slug($state, '_'));
+                                                        }
+                                                    })
+                                                    ->columnSpan(2),
+
+                                                TextInput::make('value')
+                                                    ->label('Key/Value (otomatis)')
+                                                    ->placeholder('Auto-generated')
+                                                    ->disabled()
+                                                    ->dehydrated()
+                                                    ->helperText('Dibuat otomatis dari label')
+                                                    ->columnSpan(1),
                                             ])
-                                            ->columns(2)
+                                            ->columns(3)
                                             ->defaultItems(2)
                                             ->addActionLabel('+ Tambah Opsi')
                                             ->reorderableWithButtons()
                                             ->collapsible()
                                             ->itemLabel(fn(array $state): ?string => $state['label'] ?? null)
-                                            ->columnSpanFull(),
+                                            ->columnSpanFull()
+                                            ->mutateDehydratedStateUsing(function (array $state): array {
+                                                // Pastikan setiap option punya value yang valid
+                                                return collect($state)->map(function ($option, $index) {
+                                                    if (empty($option['value'])) {
+                                                        $option['value'] = !empty($option['label'])
+                                                            ? Str::slug($option['label'], '_')
+                                                            : 'option_' . ($index + 1);
+                                                    }
+                                                    return $option;
+                                                })->toArray();
+                                            }),
                                     ])
                                     ->visible(fn(callable $get) => in_array($get('type'), ['select', 'radio', 'checkbox']))
                                     ->columnSpanFull()
@@ -228,6 +269,17 @@ class ManageFormBuilder extends Page implements HasForms
         foreach ($data['fields'] as $index => $fieldData) {
             $key = $fieldData['key'] ?? Str::slug($fieldData['label'], '_');
 
+            // Konversi options dari format repeater [{label, value}] ke array sederhana ["item1", "item2"]
+            $options = $fieldData['options'] ?? null;
+            if (is_array($options) && !empty($options)) {
+                // Cek apakah format repeater (array of objects)
+                $firstItem = reset($options);
+                if (is_array($firstItem) && isset($firstItem['label'])) {
+                    // Konversi ke array sederhana, ambil label saja
+                    $options = collect($options)->pluck('label')->toArray();
+                }
+            }
+
             FormField::updateOrCreate(
                 [
                     'id' => $fieldData['id'] ?? null,
@@ -239,7 +291,7 @@ class ManageFormBuilder extends Page implements HasForms
                     'description' => $fieldData['description'] ?? null,
                     'type' => $fieldData['type'],
                     'is_required' => $fieldData['is_required'] ?? false,
-                    'options' => $fieldData['options'] ?? null,
+                    'options' => $options,
                     'order' => $index + 1,
                 ]
             );
