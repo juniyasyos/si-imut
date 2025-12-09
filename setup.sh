@@ -420,11 +420,15 @@ setup_minio() {
     if ! mc ls siimut-minio/$MINIO_BUCKET &>/dev/null; then
         print_info "Creating bucket '$MINIO_BUCKET'..."
         mc mb siimut-minio/$MINIO_BUCKET
-        mc anonymous set download siimut-minio/$MINIO_BUCKET
         print_success "Bucket '$MINIO_BUCKET' created"
     else
         print_success "Bucket '$MINIO_BUCKET' already exists"
     fi
+    
+    # Set bucket policy to public download (important for media access)
+    print_info "Setting bucket policy to allow public download..."
+    mc anonymous set download siimut-minio/$MINIO_BUCKET
+    print_success "Bucket policy set to public download"
     
     # Update .env file with MinIO configuration
     if [ -f "$PROJECT_DIR/.env" ]; then
@@ -455,6 +459,12 @@ setup_minio() {
             sed -i "s|AWS_BUCKET=.*|AWS_BUCKET=$MINIO_BUCKET|" "$PROJECT_DIR/.env"
         else
             echo "AWS_BUCKET=$MINIO_BUCKET" >> "$PROJECT_DIR/.env"
+        fi
+        
+        if grep -q "^AWS_URL=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_URL=.*|AWS_URL=$MINIO_ENDPOINT/$MINIO_BUCKET|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_URL=$MINIO_ENDPOINT/$MINIO_BUCKET" >> "$PROJECT_DIR/.env"
         fi
         
         if grep -q "^AWS_ENDPOINT=" "$PROJECT_DIR/.env"; then

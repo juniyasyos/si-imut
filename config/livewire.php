@@ -64,7 +64,10 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk' => 'local',     // Use local disk for temporary uploads to avoid S3 conflicts
+        // IMPORTANT: Use 'local' disk for temporary files to avoid duplication in S3
+        // Flow: Upload → Local Temp → Process → Permanent Storage (S3)
+        // This prevents double storage costs and faster temporary operations
+        'disk' => 'local',
         'rules' => null,       // Example: ['file', 'mimes:png,jpg']  | Default: ['required', 'file', 'max:12288'] (12MB)
         'directory' => null,   // Example: 'tmp'                      | Default: 'livewire-tmp'
         'middleware' => null,  // Example: 'throttle:5,1'             | Default: 'throttle:60,1'
@@ -74,7 +77,7 @@ return [
             'jpg', 'jpeg', 'mpga', 'webp', 'wma',
         ],
         'max_upload_time' => 30, // Max duration (in minutes) before an upload is invalidated (increased to 30)
-        'cleanup' => false, // Disable automatic cleanup to prevent premature deletion
+        'cleanup' => false, // Disable automatic cleanup to prevent premature deletion during processing
     ],
 
     /*
