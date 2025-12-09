@@ -23,6 +23,13 @@ DB_PASSWORD="password"
 PHP_VERSION="8.4"
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# MinIO Configuration
+MINIO_ROOT_USER="admin"
+MINIO_ROOT_PASSWORD="password"
+MINIO_BUCKET="siimut"
+MINIO_ENDPOINT="http://127.0.0.1:9000"
+MINIO_CONSOLE_PORT="9001"
+
 #==============================================================================
 # HELPER FUNCTIONS
 #==============================================================================
@@ -338,6 +345,141 @@ setup_environment() {
     fi
 }
 
+setup_minio() {
+    print_header "MinIO S3 Storage Setup"
+    
+    # Check if Docker is installed
+    if ! command -v docker &> /dev/null; then
+        print_warning "Docker is not installed. MinIO requires Docker."
+        read -p "Install Docker? (y/N): " install_docker
+        if [[ "$install_docker" =~ ^[Yy]$ ]]; then
+            case $OS in
+                ubuntu|debian)
+                    curl -fsSL https://get.docker.com -o get-docker.sh
+                    sudo sh get-docker.sh
+                    sudo usermod -aG docker $USER
+                    rm get-docker.sh
+                    print_success "Docker installed. You may need to log out and back in."
+                    ;;
+                *)
+                    print_error "Please install Docker manually for your OS"
+                    return 1
+                    ;;
+            esac
+        else
+            print_warning "Skipping MinIO setup"
+            return 0
+        fi
+    fi
+    
+    # Check if MinIO container already exists
+    if docker ps -a --format '{{.Names}}' | grep -q '^minio$'; then
+        print_info "MinIO container already exists"
+        if ! docker ps --format '{{.Names}}' | grep -q '^minio$'; then
+            print_info "Starting existing MinIO container..."
+            docker start minio
+        fi
+        print_success "MinIO is running"
+    else
+        print_info "Creating MinIO container..."
+        
+        # Create MinIO data directory
+        mkdir -p "$PROJECT_DIR/storage/minio/data"
+        
+        # Run MinIO container
+        docker run -d \
+            --name minio \
+            -p 9000:9000 \
+            -p $MINIO_CONSOLE_PORT:9001 \
+            -e MINIO_ROOT_USER=$MINIO_ROOT_USER \
+            -e MINIO_ROOT_PASSWORD=$MINIO_ROOT_PASSWORD \
+            -v "$PROJECT_DIR/storage/minio/data:/data" \
+            --restart unless-stopped \
+            quay.io/minio/minio server /data --console-address ":9001"
+        
+        print_success "MinIO container created and started"
+        
+        # Wait for MinIO to be ready
+        print_info "Waiting for MinIO to be ready..."
+        sleep 5
+    fi
+    
+    # Install MinIO client (mc)
+    if ! command -v mc &> /dev/null; then
+        print_info "Installing MinIO client (mc)..."
+        curl -o /tmp/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+        chmod +x /tmp/mc
+        sudo mv /tmp/mc /usr/local/bin/mc
+        print_success "MinIO client installed"
+    fi
+    
+    # Configure MinIO client
+    mc alias set siimut-minio $MINIO_ENDPOINT $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD 2>/dev/null || true
+    
+    # Create bucket if not exists
+    if ! mc ls siimut-minio/$MINIO_BUCKET &>/dev/null; then
+        print_info "Creating bucket '$MINIO_BUCKET'..."
+        mc mb siimut-minio/$MINIO_BUCKET
+        mc anonymous set download siimut-minio/$MINIO_BUCKET
+        print_success "Bucket '$MINIO_BUCKET' created"
+    else
+        print_success "Bucket '$MINIO_BUCKET' already exists"
+    fi
+    
+    # Update .env file with MinIO configuration
+    if [ -f "$PROJECT_DIR/.env" ]; then
+        print_info "Updating .env with MinIO configuration..."
+        
+        # Update or add MinIO settings
+        sed -i "s|FILESYSTEM_DISK=.*|FILESYSTEM_DISK=s3|" "$PROJECT_DIR/.env"
+        
+        if grep -q "^AWS_ACCESS_KEY_ID=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_ACCESS_KEY_ID=.*|AWS_ACCESS_KEY_ID=$MINIO_ROOT_USER|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_ACCESS_KEY_ID=$MINIO_ROOT_USER" >> "$PROJECT_DIR/.env"
+        fi
+        
+        if grep -q "^AWS_SECRET_ACCESS_KEY=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_SECRET_ACCESS_KEY=.*|AWS_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD" >> "$PROJECT_DIR/.env"
+        fi
+        
+        if grep -q "^AWS_DEFAULT_REGION=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_DEFAULT_REGION=.*|AWS_DEFAULT_REGION=us-east-1|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_DEFAULT_REGION=us-east-1" >> "$PROJECT_DIR/.env"
+        fi
+        
+        if grep -q "^AWS_BUCKET=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_BUCKET=.*|AWS_BUCKET=$MINIO_BUCKET|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_BUCKET=$MINIO_BUCKET" >> "$PROJECT_DIR/.env"
+        fi
+        
+        if grep -q "^AWS_ENDPOINT=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_ENDPOINT=.*|AWS_ENDPOINT=$MINIO_ENDPOINT|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_ENDPOINT=$MINIO_ENDPOINT" >> "$PROJECT_DIR/.env"
+        fi
+        
+        if grep -q "^AWS_USE_PATH_STYLE_ENDPOINT=" "$PROJECT_DIR/.env"; then
+            sed -i "s|AWS_USE_PATH_STYLE_ENDPOINT=.*|AWS_USE_PATH_STYLE_ENDPOINT=true|" "$PROJECT_DIR/.env"
+        else
+            echo "AWS_USE_PATH_STYLE_ENDPOINT=true" >> "$PROJECT_DIR/.env"
+        fi
+        
+        print_success ".env updated with MinIO S3 configuration"
+    fi
+    
+    print_success "MinIO setup complete!"
+    print_info "MinIO Console: http://localhost:$MINIO_CONSOLE_PORT"
+    print_info "MinIO API: $MINIO_ENDPOINT"
+    print_info "Username: $MINIO_ROOT_USER"
+    print_info "Password: $MINIO_ROOT_PASSWORD"
+    print_info "Bucket: $MINIO_BUCKET"
+}
+
 install_dependencies() {
     print_header "Installing Composer Dependencies"
     
@@ -456,6 +598,12 @@ main() {
     
     # Setup database
     setup_database
+    
+    # Setup MinIO S3 storage
+    read -p "Setup MinIO S3 storage? (Y/n): " setup_s3
+    if [[ ! "$setup_s3" =~ ^[Nn]$ ]]; then
+        setup_minio
+    fi
     
     # Install dependencies
     install_dependencies
