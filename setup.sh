@@ -488,6 +488,13 @@ install_dependencies() {
     # Clear composer cache
     composer clear-cache
     
+    # Install AWS S3 Flysystem adapter if not present
+    if ! grep -q "league/flysystem-aws-s3-v3" composer.json; then
+        print_info "Installing AWS S3 Flysystem adapter..."
+        composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
+        print_success "AWS S3 adapter installed"
+    fi
+    
     # Install dependencies
     print_info "Running composer install..."
     composer install --no-interaction --prefer-dist --optimize-autoloader
