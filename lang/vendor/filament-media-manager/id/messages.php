@@ -2,7 +2,7 @@
 
 return [
     'empty' => [
-        'title' => 'Tidak ada Media atau Folder ditemukan',
+        'title' => "Tidak ada Media atau Folder ditemukan",
     ],
     'folders' => [
         'title' => 'Manajer Media',
@@ -12,13 +12,23 @@ return [
             'collection' => 'Koleksi',
             'description' => 'Deskripsi',
             'is_public' => 'Publik',
-            'has_user_access' => 'Memiliki Akses Pengguna',
+            'has_user_access' => 'Akses User',
             'users' => 'Pengguna',
             'icon' => 'Ikon',
             'color' => 'Warna',
-            'is_protected' => 'Dilindungi',
+            'is_protected' => 'Terproteksi',
             'password' => 'Kata Sandi',
             'password_confirmation' => 'Konfirmasi Kata Sandi',
+            'parent_folder' => 'Folder Induk',
+        ],
+        'actions' => [
+            'back' => 'Kembali ke Induk',
+            'create_subfolder' => 'Buat Subfolder',
+        ],
+        'notifications' => [
+            'sub-folder-created' => 'Subfolder Dibuat',
+            'sub-folder-created-body' => 'Subfolder berhasil dibuat',
+            'subfolder_created' => 'Subfolder berhasil dibuat',
         ],
         'group' => '',
     ],
@@ -39,7 +49,7 @@ return [
         ],
         'actions' => [
             'sub_folder' => [
-                'label' => 'Buat Sub Folder',
+                'label' => "Buat Sub Folder"
             ],
             'create' => [
                 'label' => 'Tambah Media',

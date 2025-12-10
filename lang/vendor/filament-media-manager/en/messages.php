@@ -19,6 +19,16 @@ return [
             'is_protected' => 'Is Protected',
             'password' => 'Password',
             'password_confirmation' => 'Password Confirmation',
+            'parent_folder' => 'Parent Folder',
+        ],
+        'actions' => [
+            'back' => 'Back to Parent',
+            'create_subfolder' => 'Create Subfolder',
+        ],
+        'notifications' => [
+            'sub-folder-created' => 'Subfolder Created',
+            'sub-folder-created-body' => 'Subfolder has been created successfully',
+            'subfolder_created' => 'Subfolder created successfully',
         ],
         'group' => '',
     ],
@@ -27,11 +37,15 @@ return [
         'single' => 'Media',
         'columns' => [
             'name' => 'Name',
-            'image' => 'Image',
-            'model' => 'Model',
+            'file_name' => 'File Name',
+            'mime_type' => 'MIME Type',
+            'disk' => 'Disk',
+            'conversions_disk' => 'Conversions Disk',
             'collection_name' => 'Collection Name',
             'size' => 'Size',
-            'order_column' => 'Order Column',
+            'order_column' => 'Order',
+            'image' => 'Image',
+            'model' => 'Model',
         ],
         'actions' => [
             'sub_folder' => [
