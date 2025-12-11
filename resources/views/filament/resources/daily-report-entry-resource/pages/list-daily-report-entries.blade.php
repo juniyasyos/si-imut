@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div class="space-y-6">
+    <div class="space-y-6 relative">
         @include('filament.resources.daily-report-entry-resource.pages.partials.month-navigation')
 
         <!-- Matrix Table -->
@@ -41,7 +41,7 @@
 
                             @include('filament.resources.daily-report-entry-resource.pages.partials.matrix-cell', [
                             'state' => $state,
-                            'summary' => $summary, 
+                            'summary' => $summary,
                             'cellData' => $cellData,
                             'dateStr' => $dateStr,
                             'isToday' => $isToday,
@@ -81,5 +81,6 @@
         @include('filament.resources.daily-report-entry-resource.pages.partials.legend')
     </div>
 
+    {{-- Slide-over rendered outside the page wrapper to prevent overflow clipping --}}
     @include('filament.resources.daily-report-entry-resource.pages.partials.slide-over')
 </x-filament-panels::page>
