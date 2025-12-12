@@ -22,7 +22,7 @@
             <div class="flex-grow text-center md:text-left">
                 <h3 class="text-xl font-bold heading">Welcome Back</h3>
                 {{-- <div class="flex space-x-2 items-center">
-                    <x-heroicon-m-calendar class="size-5" />
+                    @svg("heroicon-m-calendar", "size-5")
                     <p class="text-sm">{{ \Carbon\Carbon::now()->format('F d, Y') }}</p>
                 </div> --}}
                 <p class="text-sm">{{ $user->name }}</p>

@@ -61,7 +61,7 @@
                                      px-3 py-1 ring-1 ring-black/5 dark:ring-white/10
                                      text-slate-700 dark:text-slate-300
                                      text-[clamp(9px,1.8vw,12px)]">
-                            <x-heroicon-m-calendar class="w-[1em] h-[1em]" />
+                            @svg("heroicon-m-calendar", "w-[1em] h-[1em]")
                             {{ now()->translatedFormat('l, d F Y') }}
                         </span>
                         <span
@@ -70,7 +70,7 @@
                                      px-3 py-1 ring-1 ring-black/5 dark:ring-white/10
                                      text-slate-700 dark:text-slate-300
                                      text-[clamp(9px,1.8vw,12px)]">
-                            <x-heroicon-m-clock class="w-[1em] h-[1em]" />
+                            @svg("heroicon-m-clock", "w-[1em] h-[1em]")
                             {{ now()->format('H:i') }} WIB
                         </span>
                     </div>

@@ -21,6 +21,7 @@
         "bepsvpt/secure-headers": "^9.0",
         "bezhansalleh/filament-language-switch": "^3.1",
         "bezhansalleh/filament-shield": "^3.3",
+        "blade-ui-kit/blade-heroicons": "^2.6",
         "dedoc/scramble": "^0.12.10",
         "diogogpinto/filament-auth-ui-enhancer": "^1.0",
         "dutchcodingcompany/filament-socialite": "^2.3",

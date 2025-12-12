@@ -69,7 +69,7 @@
                                 {{ $selectedIndicatorData['title'] ?? 'Indikator' }}
                             </h2>
                             <p class="mt-2 text-sm font-medium flex items-center drop-shadow-md" style="color: #eff6ff;">
-                                <x-heroicon-m-calendar class="w-4 h-4 mr-2" />
+                                @svg("heroicon-m-calendar", "w-4 h-4 mr-2")
                                 {{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}
                             </p>
                             @if(isset($selectedIndicatorData['category']))
@@ -85,7 +85,7 @@
                             style="color: #eff6ff;"
                             onmouseover="this.style.backgroundColor='rgba(255,255,255,0.2)'; this.style.color='#ffffff';"
                             onmouseout="this.style.backgroundColor=''; this.style.color='#eff6ff';">
-                            <x-heroicon-o-x-mark class="h-6 w-6 drop-shadow-md" />
+                            @svg("heroicon-o-x-mark", "h-6 w-6 drop-shadow-md")
                         </button>
                     </div>
                 </div>
@@ -155,7 +155,7 @@
                             <div class="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"
                                 style="background: linear-gradient(to right, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));"></div>
 
-                            <x-heroicon-o-plus-circle class="relative w-6 h-6 mr-2.5 transform group-hover:rotate-180 group-hover:scale-110 transition-all duration-500 drop-shadow-lg" />
+                            @svg("heroicon-o-plus-circle", "relative w-6 h-6 mr-2.5 transform group-hover:rotate-180 group-hover:scale-110 transition-all duration-500 drop-shadow-lg")
                             <span class="relative text-base drop-shadow-md">Tambah Entry Baru</span>
                         </button>
                     </div>

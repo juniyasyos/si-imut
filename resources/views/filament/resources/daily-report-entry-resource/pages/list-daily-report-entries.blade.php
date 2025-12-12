@@ -20,7 +20,7 @@
                                         </span>
                                         @if($indicator['category'])
                                         <span class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                                            <x-heroicon-m-tag class="w-3 h-3" />
+                                            @svg("heroicon-m-tag", "w-3 h-3")
                                             {{ $indicator['category'] }}
                                         </span>
                                         @endif
@@ -57,7 +57,7 @@
                                     <div class="relative">
                                         <div class="absolute inset-0 bg-primary-100 dark:bg-primary-900/20 rounded-full blur-2xl opacity-50"></div>
                                         <div class="relative w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl flex items-center justify-center shadow-lg">
-                                            <x-heroicon-o-clipboard-document-list class="w-10 h-10 text-gray-400 dark:text-gray-500" />
+                                            @svg("heroicon-o-clipboard-document-list", "w-10 h-10 text-gray-400 dark:text-gray-500")
                                         </div>
                                     </div>
                                     <div class="space-y-2">

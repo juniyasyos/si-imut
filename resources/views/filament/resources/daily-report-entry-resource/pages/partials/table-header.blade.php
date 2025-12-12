@@ -2,7 +2,7 @@
     <tr>
         <th class="sticky left-0 z-20 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-6 py-4 text-left text-sm font-bold text-gray-800 dark:text-gray-200 border-r-2 border-b-2 border-gray-300 dark:border-gray-600 min-w-[300px] shadow-sm">
             <div class="flex items-center gap-2">
-                <x-heroicon-m-clipboard-document-list class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                @svg("heroicon-m-clipboard-document-list", "w-5 h-5 text-gray-600 dark:text-gray-400")
                 <span>Indikator Mutu</span>
             </div>
         </th>

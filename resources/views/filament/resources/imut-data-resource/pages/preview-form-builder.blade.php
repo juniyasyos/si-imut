@@ -129,7 +129,7 @@
         <!-- Info Banner -->
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div class="flex gap-3">
-                <x-heroicon-o-information-circle class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                @svg("heroicon-o-information-circle", "w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0")
                 <p class="text-sm text-blue-800 dark:text-blue-300">
                     Ini adalah preview form Anda. Form belum bisa diisi pada mode preview ini.
                 </p>
@@ -138,7 +138,7 @@
     </div>
     @else
     <div class="text-center py-12">
-        <x-heroicon-o-document-text class="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+        @svg("heroicon-o-document-text", "w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4")
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Belum Ada Form</h3>
         <p class="text-gray-600 dark:text-gray-400 mb-6">
             Anda belum membuat form untuk data IMUT ini.
@@ -146,7 +146,7 @@
         <a
             href="{{ \App\Filament\Resources\ImutDataResource::getUrl('manage-form-builder', ['record' => $record->slug]) }}"
             class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm transition-colors">
-            <x-heroicon-o-plus class="w-5 h-5" />
+            @svg("heroicon-o-plus", "w-5 h-5")
             Buat Form
         </a>
     </div>

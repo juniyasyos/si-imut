@@ -80,7 +80,7 @@
                 : 'background-color: #f97316; color: #ffffff;' }}"
             onmouseover="if(!{{ $isToday ? 'true' : 'false' }}) { this.style.backgroundColor='#ea580c'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.1)'; this.style.transform='scale(1.05)'; }"
             onmouseout="if(!{{ $isToday ? 'true' : 'false' }}) { this.style.backgroundColor='#f97316'; this.style.boxShadow=''; this.style.transform=''; }">
-            <x-heroicon-o-plus-circle class="w-7 h-7 mb-1.5" />
+            @svg("heroicon-o-plus-circle", "w-7 h-7 mb-1.5")
             <span class="text-base font-bold leading-tight">0%</span>
             <span class="text-xs mt-0.5" style="opacity: 0.9;">0/0</span>
         </div>

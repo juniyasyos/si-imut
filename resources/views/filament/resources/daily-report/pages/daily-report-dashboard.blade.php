@@ -30,13 +30,13 @@
 
                     <div class="space-y-2 text-sm">
                         <div class="flex items-center text-gray-600 dark:text-gray-400">
-                            <x-heroicon-o-calendar class="w-4 h-4 mr-2" />
+                            @svg("heroicon-o-calendar", "w-4 h-4 mr-2")
                             <span>Periode: {{ $indicator['active_periods'] }} bulan</span>
                         </div>
 
                         @if($indicator['last_entry_date'])
                         <div class="flex items-center text-gray-600 dark:text-gray-400">
-                            <x-heroicon-o-clock class="w-4 h-4 mr-2" />
+                            @svg("heroicon-o-clock", "w-4 h-4 mr-2")
                             <span>Terakhir: {{ $indicator['last_entry_date'] }}, {{ $indicator['last_entry_time'] }}</span>
                         </div>
                         @endif
@@ -58,12 +58,12 @@
                     <div class="mt-6 flex gap-2">
                         <a href="{{ route('filament.admin.pages.daily-report-periods') }}?indicator={{ $indicator['id'] }}"
                             class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                            <x-heroicon-o-eye class="w-4 h-4 mr-2" />
+                            @svg("heroicon-o-eye", "w-4 h-4 mr-2")
                             Lihat Detail
                         </a>
                         <a href="{{ route('filament.admin.resources.daily-report-entries.create') }}?indicator={{ $indicator['id'] }}"
                             class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors">
-                            <x-heroicon-o-plus class="w-4 h-4 mr-1" />
+                            @svg("heroicon-o-plus", "w-4 h-4 mr-1")
                             Input
                         </a>
                     </div>
@@ -72,7 +72,7 @@
             @empty
             <div class="col-span-full">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-                    <x-heroicon-o-clipboard-document-list class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+                    @svg("heroicon-o-clipboard-document-list", "w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4")
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                         Belum Ada Indikator
                     </h3>

@@ -11,7 +11,7 @@
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
                     >
                         <span class="flex items-center gap-2">
-                            <x-heroicon-o-chart-bar class="w-5 h-5" />
+                            @svg("heroicon-o-chart-bar", "w-5 h-5")
                             Summary Data
                         </span>
                     </button>
@@ -21,7 +21,7 @@
                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
                     >
                         <span class="flex items-center gap-2">
-                            <x-heroicon-o-document-text class="w-5 h-5" />
+                            @svg("heroicon-o-document-text", "w-5 h-5")
                             Catatan
                         </span>
                     </button>

@@ -87,7 +87,7 @@
             {{-- Empty State --}}
             <div class="flex flex-col items-center justify-center py-10 text-center">
                 <div class="mb-4 rounded-2xl bg-gray-100 p-4 dark:bg-gray-800">
-                    <x-heroicon-o-document-text class="h-10 w-10 text-gray-400 dark:text-gray-600" />
+                    @svg("heroicon-o-document-text", "h-10 w-10 text-gray-400 dark:text-gray-600")
                 </div>
 
                 <h3 class="mb-1 text-base font-semibold text-gray-900 dark:text-gray-50">
@@ -117,7 +117,7 @@
 
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                                     <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-                                        <x-heroicon-m-calendar class="h-4 w-4" />
+                                        @svg("heroicon-m-calendar", "h-4 w-4")
                                         <span>
                                             {{ $laporan->assessment_period_start->translatedFormat('d M Y') }}
                                             <span class="text-gray-400 dark:text-gray-600">—</span>
@@ -144,7 +144,7 @@
                                        bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800
                                        rounded-lg shadow-sm hover:shadow-md transition-all duration-200
                                        ring-1 ring-emerald-600 dark:ring-emerald-500">
-                                <x-heroicon-m-pencil-square class="w-4 h-4" />
+                                @svg("heroicon-m-pencil-square", "w-4 h-4")
                                 Isi Penilaian
                             </a>
                         @endif
@@ -155,7 +155,7 @@
                                        bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800
                                        rounded-lg shadow-sm hover:shadow-md transition-all duration-200
                                        ring-1 ring-blue-600 dark:ring-blue-500">
-                                <x-heroicon-m-eye class="w-4 h-4" />
+                                @svg("heroicon-m-eye", "w-4 h-4")
                                 Lihat Detail
                             </a>
                         @endif
@@ -166,7 +166,7 @@
                                        text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800
                                        hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg shadow-sm hover:shadow
                                        ring-1 ring-gray-300 dark:ring-gray-600 transition-all duration-200">
-                                <x-heroicon-m-chart-bar class="w-4 h-4" />
+                                @svg("heroicon-m-chart-bar", "w-4 h-4")
                                 Data Benchmarking
                             </a>
                         @endif
@@ -193,7 +193,7 @@
                         </div>
 
                         <div class="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                            <x-heroicon-m-clock class="h-3.5 w-3.5" />
+                            @svg("heroicon-m-clock", "h-3.5 w-3.5")
                             @if ($daysRemaining > 0)
                                 <span>
                                     <span class="font-semibold text-gray-900 dark:text-gray-100">
@@ -214,7 +214,7 @@
                     <div
                         class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
                         <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-                            <x-heroicon-m-calendar-days class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            @svg("heroicon-m-calendar-days", "h-5 w-5 text-gray-600 dark:text-gray-300")
                         </div>
                         <div class="min-w-0">
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -230,7 +230,7 @@
                     <div
                         class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
                         <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-                            <x-heroicon-m-clock class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            @svg("heroicon-m-clock", "h-5 w-5 text-gray-600 dark:text-gray-300")
                         </div>
                         <div class="min-w-0">
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -247,7 +247,7 @@
                     <div
                         class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
                         <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-                            <x-heroicon-m-document-plus class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            @svg("heroicon-m-document-plus", "h-5 w-5 text-gray-600 dark:text-gray-300")
                         </div>
                         <div class="min-w-0">
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -264,7 +264,7 @@
                         <div
                             class="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3.5 text-sm dark:border-gray-700 dark:bg-slate-700/80">
                             <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-800">
-                                <x-heroicon-m-chart-bar-square class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                                @svg("heroicon-m-chart-bar-square", "h-5 w-5 text-gray-600 dark:text-gray-300")
                             </div>
                             <div class="min-w-0">
                                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
