@@ -27,6 +27,25 @@ Route::prefix('print')->name('print.')->group(function () {
 });
 
 Route::middleware(['web'])->group(function () {
+    // Root route redirect
+    Route::get('/', function () {
+        // If authenticated, go to admin dashboard
+        if (Auth::check()) {
+            return redirect('/admin');
+        }
+
+        // If not authenticated, check SSO mode
+        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+
+        if ($ssoEnabled) {
+            // Production: Redirect to SSO login
+            return redirect('/login');
+        } else {
+            // Development: Redirect to custom login
+            return redirect('/siimut/login');
+        }
+    })->name('home');
+
     // SSO Routes - dengan middleware redirect untuk development mode
     // Ketika SSO disabled (USE_SSO=false), routes ini akan redirect ke /login
     Route::middleware([\App\Http\Middleware\RedirectIfSsoDisabled::class])->group(function () {

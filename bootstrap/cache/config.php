@@ -157,9 +157,9 @@
   'app' => 
   array (
     'name' => 'SI-IMUT',
-    'env' => 'production',
-    'debug' => false,
-    'url' => 'http://127.0.0.1:8088',
+    'env' => 'local',
+    'debug' => true,
+    'url' => 'http://127.0.0.1:8000',
     'frontend_url' => 'http://localhost:3000',
     'asset_url' => NULL,
     'timezone' => 'Asia/Jakarta',
@@ -874,7 +874,7 @@
       array (
         'driver' => 'local',
         'root' => '/home/juni/projects/SIIMUT/storage/app/public',
-        'url' => 'http://127.0.0.1:8088/storage',
+        'url' => 'http://127.0.0.1:8000/storage',
         'visibility' => 'public',
         'throw' => false,
       ),
@@ -899,7 +899,7 @@
       array (
         'driver' => 'local',
         'root' => '/home/juni/projects/SIIMUT/storage/app/filament-excel',
-        'url' => 'http://127.0.0.1:8088/filament-excel',
+        'url' => 'http://127.0.0.1:8000/filament-excel',
       ),
     ),
     'links' => 
@@ -955,7 +955,7 @@
         0 => 'web',
       ),
     ),
-    'enabled' => true,
+    'enabled' => false,
   ),
   'livewire' => 
   array (
@@ -1414,7 +1414,7 @@
       2 => '127.0.0.1',
       3 => '127.0.0.1:8000',
       4 => '::1',
-      5 => '127.0.0.1:8088',
+      5 => '127.0.0.1:8000',
     ),
     'guard' => 
     array (

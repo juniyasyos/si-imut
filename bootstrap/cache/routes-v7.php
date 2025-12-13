@@ -126,13 +126,33 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/logout' => 
+      '/siimut/login' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'logout',
+            '_route' => 'filament.siimut.auth.login',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/siimut/logout' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.auth.logout',
           ),
           1 => NULL,
           2 => 
@@ -145,13 +165,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/' => 
+      '/siimut' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.pages.dashboard',
+            '_route' => 'filament.siimut.pages.dashboard',
           ),
           1 => NULL,
           2 => 
@@ -165,13 +185,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/daily-report-dashboard' => 
+      '/siimut/daily-report-dashboard' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.pages.daily-report-dashboard',
+            '_route' => 'filament.siimut.pages.daily-report-dashboard',
           ),
           1 => NULL,
           2 => 
@@ -185,13 +205,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/daily-report-periods' => 
+      '/siimut/daily-report-periods' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.pages.daily-report-periods',
+            '_route' => 'filament.siimut.pages.daily-report-periods',
           ),
           1 => NULL,
           2 => 
@@ -205,13 +225,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/pwa-settings-page' => 
+      '/siimut/pwa-settings-page' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.pages.pwa-settings-page',
+            '_route' => 'filament.siimut.pages.pwa-settings-page',
           ),
           1 => NULL,
           2 => 
@@ -225,13 +245,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/backups' => 
+      '/siimut/backups' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.pages.backups',
+            '_route' => 'filament.siimut.pages.backups',
           ),
           1 => NULL,
           2 => 
@@ -245,13 +265,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/my-profile' => 
+      '/siimut/my-profile' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.pages.my-profile',
+            '_route' => 'filament.siimut.pages.my-profile',
           ),
           1 => NULL,
           2 => 
@@ -265,13 +285,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/activitylogs' => 
+      '/siimut/activitylogs' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.activitylogs.index',
+            '_route' => 'filament.siimut.resources.activitylogs.index',
           ),
           1 => NULL,
           2 => 
@@ -285,13 +305,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/daily-report-entries' => 
+      '/siimut/daily-report-entries' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.daily-report-entries.index',
+            '_route' => 'filament.siimut.resources.daily-report-entries.index',
           ),
           1 => NULL,
           2 => 
@@ -305,13 +325,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/daily-report-entries/create' => 
+      '/siimut/daily-report-entries/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.daily-report-entries.create',
+            '_route' => 'filament.siimut.resources.daily-report-entries.create',
           ),
           1 => NULL,
           2 => 
@@ -325,13 +345,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/folders' => 
+      '/siimut/folders' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.folders.index',
+            '_route' => 'filament.siimut.resources.folders.index',
           ),
           1 => NULL,
           2 => 
@@ -345,13 +365,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-categories' => 
+      '/siimut/imut-categories' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-categories.index',
+            '_route' => 'filament.siimut.resources.imut-categories.index',
           ),
           1 => NULL,
           2 => 
@@ -365,13 +385,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-categories/create' => 
+      '/siimut/imut-categories/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-categories.create',
+            '_route' => 'filament.siimut.resources.imut-categories.create',
           ),
           1 => NULL,
           2 => 
@@ -385,13 +405,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-category-resource/schema/imut-categories' => 
+      '/siimut/imut-category-resource/schema/imut-categories' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-category-resource.schema.imut-categories.index',
+            '_route' => 'filament.siimut.resources.imut-category-resource.schema.imut-categories.index',
           ),
           1 => NULL,
           2 => 
@@ -405,13 +425,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-category-resource/schema/imut-categories/create' => 
+      '/siimut/imut-category-resource/schema/imut-categories/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-category-resource.schema.imut-categories.create',
+            '_route' => 'filament.siimut.resources.imut-category-resource.schema.imut-categories.create',
           ),
           1 => NULL,
           2 => 
@@ -425,13 +445,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-category-resource/tables/imut-categories' => 
+      '/siimut/imut-category-resource/tables/imut-categories' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-category-resource.tables.imut-categories.index',
+            '_route' => 'filament.siimut.resources.imut-category-resource.tables.imut-categories.index',
           ),
           1 => NULL,
           2 => 
@@ -445,13 +465,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-category-resource/tables/imut-categories/create' => 
+      '/siimut/imut-category-resource/tables/imut-categories/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-category-resource.tables.imut-categories.create',
+            '_route' => 'filament.siimut.resources.imut-category-resource.tables.imut-categories.create',
           ),
           1 => NULL,
           2 => 
@@ -465,13 +485,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-datas' => 
+      '/siimut/imut-datas' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.index',
+            '_route' => 'filament.siimut.resources.imut-datas.index',
           ),
           1 => NULL,
           2 => 
@@ -485,13 +505,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-datas/create' => 
+      '/siimut/imut-datas/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.create',
+            '_route' => 'filament.siimut.resources.imut-datas.create',
           ),
           1 => NULL,
           2 => 
@@ -505,13 +525,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-datas/bencmarkings/region-type' => 
+      '/siimut/imut-datas/bencmarkings/region-type' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.bencmarking-region-type',
+            '_route' => 'filament.siimut.resources.imut-datas.bencmarking-region-type',
           ),
           1 => NULL,
           2 => 
@@ -525,13 +545,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-datas/overview/unit-kerja' => 
+      '/siimut/imut-datas/overview/unit-kerja' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.overview-unit-kerja',
+            '_route' => 'filament.siimut.resources.imut-datas.overview-unit-kerja',
           ),
           1 => NULL,
           2 => 
@@ -545,13 +565,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-datas/overview/summary-imut-data' => 
+      '/siimut/imut-datas/overview/summary-imut-data' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.overview-imut-data',
+            '_route' => 'filament.siimut.resources.imut-datas.overview-imut-data',
           ),
           1 => NULL,
           2 => 
@@ -565,13 +585,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-penilaians' => 
+      '/siimut/imut-penilaians' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-penilaians.edit',
+            '_route' => 'filament.siimut.resources.imut-penilaians.edit',
           ),
           1 => NULL,
           2 => 
@@ -585,13 +605,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-penilaian-resource/schema/imut-penilaians' => 
+      '/siimut/imut-penilaian-resource/schema/imut-penilaians' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-penilaian-resource.schema.imut-penilaians.edit',
+            '_route' => 'filament.siimut.resources.imut-penilaian-resource.schema.imut-penilaians.edit',
           ),
           1 => NULL,
           2 => 
@@ -605,13 +625,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-profiles' => 
+      '/siimut/imut-profiles' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-profiles.index',
+            '_route' => 'filament.siimut.resources.imut-profiles.index',
           ),
           1 => NULL,
           2 => 
@@ -625,13 +645,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-profile-resource/schema/imut-profiles' => 
+      '/siimut/imut-profile-resource/schema/imut-profiles' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-profile-resource.schema.imut-profiles.index',
+            '_route' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.index',
           ),
           1 => NULL,
           2 => 
@@ -645,13 +665,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/imut-profile-resource/tables/imut-profiles' => 
+      '/siimut/imut-profile-resource/tables/imut-profiles' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-profile-resource.tables.imut-profiles.index',
+            '_route' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.index',
           ),
           1 => NULL,
           2 => 
@@ -665,13 +685,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/laporan-imuts' => 
+      '/siimut/laporan-imuts' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.index',
+            '_route' => 'filament.siimut.resources.laporan-imuts.index',
           ),
           1 => NULL,
           2 => 
@@ -685,13 +705,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/laporan-imuts/create' => 
+      '/siimut/laporan-imuts/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.create',
+            '_route' => 'filament.siimut.resources.laporan-imuts.create',
           ),
           1 => NULL,
           2 => 
@@ -705,13 +725,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/laporan-imuts/unit-kerja-report' => 
+      '/siimut/laporan-imuts/unit-kerja-report' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.unit-kerja-report',
+            '_route' => 'filament.siimut.resources.laporan-imuts.unit-kerja-report',
           ),
           1 => NULL,
           2 => 
@@ -725,13 +745,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/laporan-imuts/unit-kerja-imut-data-report' => 
+      '/siimut/laporan-imuts/unit-kerja-imut-data-report' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.unit-kerja-imut-data-report-detail',
+            '_route' => 'filament.siimut.resources.laporan-imuts.unit-kerja-imut-data-report-detail',
           ),
           1 => NULL,
           2 => 
@@ -745,13 +765,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/laporan-imuts/imut-data-report' => 
+      '/siimut/laporan-imuts/imut-data-report' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.imut-data-report',
+            '_route' => 'filament.siimut.resources.laporan-imuts.imut-data-report',
           ),
           1 => NULL,
           2 => 
@@ -765,13 +785,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/laporan-imuts/imut-data-unit-kerja-report' => 
+      '/siimut/laporan-imuts/imut-data-unit-kerja-report' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.imut-data-unit-kerja-report-detail',
+            '_route' => 'filament.siimut.resources.laporan-imuts.imut-data-unit-kerja-report-detail',
           ),
           1 => NULL,
           2 => 
@@ -785,13 +805,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/media' => 
+      '/siimut/media' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.media.index',
+            '_route' => 'filament.siimut.resources.media.index',
           ),
           1 => NULL,
           2 => 
@@ -805,13 +825,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/region-type-bencmarkings/bencmarkings' => 
+      '/siimut/region-type-bencmarkings/bencmarkings' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.region-type-bencmarkings.index',
+            '_route' => 'filament.siimut.resources.region-type-bencmarkings.index',
           ),
           1 => NULL,
           2 => 
@@ -825,13 +845,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/shield/roles' => 
+      '/siimut/shield/roles' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.shield.roles.index',
+            '_route' => 'filament.siimut.resources.shield.roles.index',
           ),
           1 => NULL,
           2 => 
@@ -845,13 +865,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/shield/roles/create' => 
+      '/siimut/shield/roles/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.shield.roles.create',
+            '_route' => 'filament.siimut.resources.shield.roles.create',
           ),
           1 => NULL,
           2 => 
@@ -865,13 +885,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/unit-kerjas' => 
+      '/siimut/unit-kerjas' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.unit-kerjas.index',
+            '_route' => 'filament.siimut.resources.unit-kerjas.index',
           ),
           1 => NULL,
           2 => 
@@ -885,13 +905,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/unit-kerjas/create' => 
+      '/siimut/unit-kerjas/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.unit-kerjas.create',
+            '_route' => 'filament.siimut.resources.unit-kerjas.create',
           ),
           1 => NULL,
           2 => 
@@ -905,13 +925,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/users' => 
+      '/siimut/users' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.users.index',
+            '_route' => 'filament.siimut.resources.users.index',
           ),
           1 => NULL,
           2 => 
@@ -925,13 +945,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/users/create' => 
+      '/siimut/users/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.users.create',
+            '_route' => 'filament.siimut.resources.users.create',
           ),
           1 => NULL,
           2 => 
@@ -945,13 +965,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/user-resource/schema/users' => 
+      '/siimut/user-resource/schema/users' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.user-resource.schema.users.index',
+            '_route' => 'filament.siimut.resources.user-resource.schema.users.index',
           ),
           1 => NULL,
           2 => 
@@ -965,13 +985,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/user-resource/schema/users/create' => 
+      '/siimut/user-resource/schema/users/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.user-resource.schema.users.create',
+            '_route' => 'filament.siimut.resources.user-resource.schema.users.create',
           ),
           1 => NULL,
           2 => 
@@ -985,13 +1005,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/user-resource/tables/users' => 
+      '/siimut/user-resource/tables/users' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.user-resource.tables.users.index',
+            '_route' => 'filament.siimut.resources.user-resource.tables.users.index',
           ),
           1 => NULL,
           2 => 
@@ -1005,13 +1025,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/user-resource/tables/users/create' => 
+      '/siimut/user-resource/tables/users/create' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.user-resource.tables.users.create',
+            '_route' => 'filament.siimut.resources.user-resource.tables.users.create',
           ),
           1 => NULL,
           2 => 
@@ -1025,13 +1045,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/two-factor-authentication' => 
+      '/siimut/two-factor-authentication' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.auth.two-factor',
+            '_route' => 'filament.siimut.auth.two-factor',
           ),
           1 => NULL,
           2 => 
@@ -1086,6 +1106,25 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
+      '/logout' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'logout',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
       '/sanctum/csrf-cookie' => 
       array (
         0 => 
@@ -1125,13 +1164,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/livewire/livewire.min.js' => 
+      '/livewire/livewire.js' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'generated::8an0xXvCSLswRxkU',
+            '_route' => 'generated::T3Wu554A8f2ILm2S',
           ),
           1 => NULL,
           2 => 
@@ -1151,7 +1190,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Nptg1dPRlMWuexBw',
+            '_route' => 'generated::og330fpJ3pXix45J',
           ),
           1 => NULL,
           2 => 
@@ -1229,7 +1268,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::l7cDVzW4kgtDhtcS',
+            '_route' => 'generated::MkTirlsVa5TlAjSb',
           ),
           1 => NULL,
           2 => 
@@ -1249,7 +1288,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::inPrh0be7ac2fuXw',
+            '_route' => 'generated::lQoxid1l8vUSersc',
           ),
           1 => NULL,
           2 => 
@@ -1269,7 +1308,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::yvW5hsCRIO8JR8rA',
+            '_route' => 'generated::zw5ehrG8PXSyuFw5',
           ),
           1 => NULL,
           2 => 
@@ -1289,7 +1328,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::K0cGr5OAnrjhc51q',
+            '_route' => 'generated::l3sphH2Z2Wt1nJer',
           ),
           1 => NULL,
           2 => 
@@ -1370,6 +1409,26 @@ app('router')->setCompiledRoutes(
           0 => 
           array (
             '_route' => 'print.imut-indicator-report',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'home',
           ),
           1 => NULL,
           2 => 
@@ -1506,7 +1565,7 @@ app('router')->setCompiledRoutes(
     ),
     2 => 
     array (
-      0 => '{^(?|/_debugbar/c(?|lockwork/([^/]++)(*:39)|ache/([^/]++)(?:/([^/]++))?(*:73))|/oauth/callback/([^/]++)(*:105)|/f(?|ilament(?|/(?|exports/([^/]++)/download(*:157)|imports/([^/]++)/failed\\-rows/download(*:203))|\\-excel/(.*)(*:224))|olders/(?|([^/]++)(*:251)|media\\-name\\=([^/]++)(*:280)))|/a(?|ctivitylogs/([^/]++)(*:315)|pi/greeting/quote(?:/([^/]++))?(*:354))|/daily\\-report\\-entries/([^/]++)(?|(*:398)|/edit(*:411))|/imut\\-(?|categor(?|ies/([^/]++)/edit(*:457)|y\\-resource/(?|schema/imut\\-categories/([^/]++)/edit(*:517)|tables/imut\\-categories/([^/]++)/edit(*:562)))|datas/(?|edit\\=([^/]++)(*:595)|([^/]++)/(?|profile/(?|create(*:632)|edit\\=([^/]++)(*:654))|form\\-builder(?|(*:679)|/preview(*:695)))))|/l(?|aporan\\-imuts/([^/]++)/(?|edit(*:742)|penilaian\\-edit\\=([^/]++)(*:775))|ivewire/preview\\-file/([^/]++)(*:814))|/s(?|hield/roles/([^/]++)(?|(*:851)|/edit(*:864))|torage/(.*)(*:884))|/u(?|nit\\-kerjas/([^/]++)/edit(*:923)|ser(?|s/([^/]++)(?|(*:950)|/edit(*:963))|\\-resource/(?|schema/users/([^/]++)(?|(*:1010)|/edit(*:1024))|tables/users/([^/]++)(?|(*:1058)|/edit(*:1072))))))/?$}sDu',
+      0 => '{^(?|/_debugbar/c(?|lockwork/([^/]++)(*:39)|ache/([^/]++)(?:/([^/]++))?(*:73))|/oauth/callback/([^/]++)(*:105)|/filament(?|/(?|exports/([^/]++)/download(*:154)|imports/([^/]++)/failed\\-rows/download(*:200))|\\-excel/(.*)(*:221))|/s(?|iimut/(?|activitylogs/([^/]++)(*:265)|daily\\-report\\-entries/([^/]++)(?|(*:307)|/edit(*:320))|folders/(?|([^/]++)(*:348)|media\\-name\\=([^/]++)(*:377))|imut\\-(?|categor(?|ies/([^/]++)/edit(*:422)|y\\-resource/(?|schema/imut\\-categories/([^/]++)/edit(*:482)|tables/imut\\-categories/([^/]++)/edit(*:527)))|datas/(?|edit\\=([^/]++)(*:560)|([^/]++)/(?|profile/(?|create(*:597)|edit\\=([^/]++)(*:619))|form\\-builder(?|(*:644)|/preview(*:660)))))|laporan\\-imuts/([^/]++)/(?|edit(*:703)|penilaian\\-edit\\=([^/]++)(*:736))|shield/roles/([^/]++)(?|(*:769)|/edit(*:782))|u(?|nit\\-kerjas/([^/]++)/edit(*:820)|ser(?|s/([^/]++)(?|(*:847)|/edit(*:860))|\\-resource/(?|schema/users/([^/]++)(?|(*:907)|/edit(*:920))|tables/users/([^/]++)(?|(*:953)|/edit(*:966))))))|torage/(.*)(*:990))|/livewire/preview\\-file/([^/]++)(*:1031)|/api/greeting/quote(?:/([^/]++))?(*:1073))/?$}sDu',
     ),
     3 => 
     array (
@@ -1581,7 +1640,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      157 => 
+      154 => 
       array (
         0 => 
         array (
@@ -1604,7 +1663,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      203 => 
+      200 => 
       array (
         0 => 
         array (
@@ -1627,7 +1686,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      224 => 
+      221 => 
       array (
         0 => 
         array (
@@ -1650,13 +1709,82 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      251 => 
+      265 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.folders.view',
+            '_route' => 'filament.siimut.resources.activitylogs.view',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      307 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.daily-report-entries.view',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      320 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.daily-report-entries.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      348 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.folders.view',
           ),
           1 => 
           array (
@@ -1673,13 +1801,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      280 => 
+      377 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.folders.media',
+            '_route' => 'filament.siimut.resources.folders.media',
           ),
           1 => 
           array (
@@ -1696,83 +1824,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      315 => 
+      422 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.activitylogs.view',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      354 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'generated::xBRseemYLtusTeu3',
-            'timeKey' => NULL,
-          ),
-          1 => 
-          array (
-            0 => 'timeKey',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      398 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.daily-report-entries.view',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      411 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.daily-report-entries.edit',
+            '_route' => 'filament.siimut.resources.imut-categories.edit',
           ),
           1 => 
           array (
@@ -1789,13 +1847,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      457 => 
+      482 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-categories.edit',
+            '_route' => 'filament.siimut.resources.imut-category-resource.schema.imut-categories.edit',
           ),
           1 => 
           array (
@@ -1812,13 +1870,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      517 => 
+      527 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-category-resource.schema.imut-categories.edit',
+            '_route' => 'filament.siimut.resources.imut-category-resource.tables.imut-categories.edit',
           ),
           1 => 
           array (
@@ -1835,36 +1893,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      562 => 
+      560 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-category-resource.tables.imut-categories.edit',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      595 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.imut-datas.edit',
+            '_route' => 'filament.siimut.resources.imut-datas.edit',
           ),
           1 => 
           array (
@@ -1881,13 +1916,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      632 => 
+      597 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.create-profile',
+            '_route' => 'filament.siimut.resources.imut-datas.create-profile',
           ),
           1 => 
           array (
@@ -1904,13 +1939,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      654 => 
+      619 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.edit-profile',
+            '_route' => 'filament.siimut.resources.imut-datas.edit-profile',
           ),
           1 => 
           array (
@@ -1928,13 +1963,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      679 => 
+      644 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.manage-form-builder',
+            '_route' => 'filament.siimut.resources.imut-datas.manage-form-builder',
           ),
           1 => 
           array (
@@ -1951,13 +1986,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      695 => 
+      660 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.imut-datas.preview-form',
+            '_route' => 'filament.siimut.resources.imut-datas.preview-form',
           ),
           1 => 
           array (
@@ -1974,13 +2009,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      742 => 
+      703 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.edit',
+            '_route' => 'filament.siimut.resources.laporan-imuts.edit',
           ),
           1 => 
           array (
@@ -1997,13 +2032,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      775 => 
+      736 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.laporan-imuts.edit-penilaian',
+            '_route' => 'filament.siimut.resources.laporan-imuts.edit-penilaian',
           ),
           1 => 
           array (
@@ -2021,36 +2056,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      814 => 
+      769 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'livewire.preview-file',
-          ),
-          1 => 
-          array (
-            0 => 'filename',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      851 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.shield.roles.view',
+            '_route' => 'filament.siimut.resources.shield.roles.view',
           ),
           1 => 
           array (
@@ -2067,13 +2079,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      864 => 
+      782 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.shield.roles.edit',
+            '_route' => 'filament.siimut.resources.shield.roles.edit',
           ),
           1 => 
           array (
@@ -2090,7 +2102,168 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      884 => 
+      820 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.unit-kerjas.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      847 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.users.view',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      860 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.users.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      907 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.user-resource.schema.users.view',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      920 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.user-resource.schema.users.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      953 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.user-resource.tables.users.view',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      966 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.user-resource.tables.users.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      990 => 
       array (
         0 => 
         array (
@@ -2113,40 +2286,17 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      923 => 
+      1031 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.unit-kerjas.edit',
+            '_route' => 'livewire.preview-file',
           ),
           1 => 
           array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      950 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.users.view',
-          ),
-          1 => 
-          array (
-            0 => 'record',
+            0 => 'filename',
           ),
           2 => 
           array (
@@ -2159,40 +2309,18 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      963 => 
+      1073 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.admin.resources.users.edit',
+            '_route' => 'generated::s8IQExgZaBaz6jy4',
+            'timeKey' => NULL,
           ),
           1 => 
           array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1010 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.user-resource.schema.users.view',
-          ),
-          1 => 
-          array (
-            0 => 'record',
+            0 => 'timeKey',
           ),
           2 => 
           array (
@@ -2202,75 +2330,6 @@ app('router')->setCompiledRoutes(
           3 => NULL,
           4 => false,
           5 => true,
-          6 => NULL,
-        ),
-      ),
-      1024 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.user-resource.schema.users.edit',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1058 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.user-resource.tables.users.view',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      1072 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.admin.resources.user-resource.tables.users.edit',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
           6 => NULL,
         ),
         1 => 
@@ -2699,28 +2758,40 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'logout' => 
+    'filament.siimut.auth.login' => 
     array (
       'methods' => 
       array (
-        0 => 'POST',
+        0 => 'GET',
+        1 => 'HEAD',
       ),
-      'uri' => 'logout',
+      'uri' => 'siimut/login',
       'action' => 
       array (
+        'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'web',
-          1 => 'web',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
         ),
-        'uses' => 'Juniyasyos\\IamClient\\Http\\Controllers\\LogoutController@__invoke',
-        'controller' => 'Juniyasyos\\IamClient\\Http\\Controllers\\LogoutController',
+        'uses' => 'App\\Filament\\Pages\\Login@__invoke',
+        'controller' => 'App\\Filament\\Pages\\Login',
+        'as' => 'filament.siimut.auth.login',
         'namespace' => NULL,
-        'prefix' => '',
+        'prefix' => '/siimut',
         'where' => 
         array (
         ),
-        'as' => 'logout',
       ),
       'fallback' => false,
       'defaults' => 
@@ -2736,21 +2807,71 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.dashboard' => 
+    'filament.siimut.auth.logout' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'siimut/logout',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'uses' => 'Filament\\Http\\Controllers\\Auth\\LogoutController@__invoke',
+        'controller' => 'Filament\\Http\\Controllers\\Auth\\LogoutController',
+        'as' => 'filament.siimut.auth.logout',
+        'namespace' => NULL,
+        'prefix' => '/siimut',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'filament.siimut.pages.dashboard' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => '/',
+      'uri' => 'siimut',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -2766,9 +2887,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Pages\\Dashboard@__invoke',
         'controller' => 'App\\Filament\\Pages\\Dashboard',
-        'as' => 'filament.admin.pages.dashboard',
+        'as' => 'filament.siimut.pages.dashboard',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => 'siimut/',
         'where' => 
         array (
         ),
@@ -2790,21 +2911,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.daily-report-dashboard' => 
+    'filament.siimut.pages.daily-report-dashboard' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'daily-report-dashboard',
+      'uri' => 'siimut/daily-report-dashboard',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -2820,9 +2941,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Pages\\DailyReportDashboard@__invoke',
         'controller' => 'App\\Filament\\Pages\\DailyReportDashboard',
-        'as' => 'filament.admin.pages.daily-report-dashboard',
+        'as' => 'filament.siimut.pages.daily-report-dashboard',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => 'siimut/',
         'where' => 
         array (
         ),
@@ -2844,21 +2965,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.daily-report-periods' => 
+    'filament.siimut.pages.daily-report-periods' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'daily-report-periods',
+      'uri' => 'siimut/daily-report-periods',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -2874,9 +2995,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Pages\\DailyReportPeriods@__invoke',
         'controller' => 'App\\Filament\\Pages\\DailyReportPeriods',
-        'as' => 'filament.admin.pages.daily-report-periods',
+        'as' => 'filament.siimut.pages.daily-report-periods',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => 'siimut/',
         'where' => 
         array (
         ),
@@ -2898,21 +3019,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.pwa-settings-page' => 
+    'filament.siimut.pages.pwa-settings-page' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'pwa-settings-page',
+      'uri' => 'siimut/pwa-settings-page',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -2928,9 +3049,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Juniyasyos\\FilamentPWA\\Filament\\Pages\\PWASettingsPage@__invoke',
         'controller' => 'Juniyasyos\\FilamentPWA\\Filament\\Pages\\PWASettingsPage',
-        'as' => 'filament.admin.pages.pwa-settings-page',
+        'as' => 'filament.siimut.pages.pwa-settings-page',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => 'siimut/',
         'where' => 
         array (
         ),
@@ -2952,21 +3073,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.backups' => 
+    'filament.siimut.pages.backups' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'backups',
+      'uri' => 'siimut/backups',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -2982,9 +3103,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Juniyasyos\\FilamentLaravelBackup\\Pages\\Backups@__invoke',
         'controller' => 'Juniyasyos\\FilamentLaravelBackup\\Pages\\Backups',
-        'as' => 'filament.admin.pages.backups',
+        'as' => 'filament.siimut.pages.backups',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => 'siimut/',
         'where' => 
         array (
         ),
@@ -3006,21 +3127,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.pages.my-profile' => 
+    'filament.siimut.pages.my-profile' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'my-profile',
+      'uri' => 'siimut/my-profile',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3036,9 +3157,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Jeffgreco13\\FilamentBreezy\\Pages\\MyProfilePage@__invoke',
         'controller' => 'Jeffgreco13\\FilamentBreezy\\Pages\\MyProfilePage',
-        'as' => 'filament.admin.pages.my-profile',
+        'as' => 'filament.siimut.pages.my-profile',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => 'siimut/',
         'where' => 
         array (
         ),
@@ -3060,21 +3181,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.activitylogs.index' => 
+    'filament.siimut.resources.activitylogs.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'activitylogs',
+      'uri' => 'siimut/activitylogs',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3093,9 +3214,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Rmsramos\\Activitylog\\Resources\\ActivitylogResource\\Pages\\ListActivitylog@__invoke',
         'controller' => 'Rmsramos\\Activitylog\\Resources\\ActivitylogResource\\Pages\\ListActivitylog',
-        'as' => 'filament.admin.resources.activitylogs.index',
+        'as' => 'filament.siimut.resources.activitylogs.index',
         'namespace' => NULL,
-        'prefix' => '/activitylogs',
+        'prefix' => 'siimut/activitylogs',
         'where' => 
         array (
         ),
@@ -3114,21 +3235,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.activitylogs.view' => 
+    'filament.siimut.resources.activitylogs.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'activitylogs/{record}',
+      'uri' => 'siimut/activitylogs/{record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3147,9 +3268,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Rmsramos\\Activitylog\\Resources\\ActivitylogResource\\Pages\\ViewActivitylog@__invoke',
         'controller' => 'Rmsramos\\Activitylog\\Resources\\ActivitylogResource\\Pages\\ViewActivitylog',
-        'as' => 'filament.admin.resources.activitylogs.view',
+        'as' => 'filament.siimut.resources.activitylogs.view',
         'namespace' => NULL,
-        'prefix' => '/activitylogs',
+        'prefix' => 'siimut/activitylogs',
         'where' => 
         array (
         ),
@@ -3168,21 +3289,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.daily-report-entries.index' => 
+    'filament.siimut.resources.daily-report-entries.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'daily-report-entries',
+      'uri' => 'siimut/daily-report-entries',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3201,9 +3322,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\ListDailyReportEntries@__invoke',
         'controller' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\ListDailyReportEntries',
-        'as' => 'filament.admin.resources.daily-report-entries.index',
+        'as' => 'filament.siimut.resources.daily-report-entries.index',
         'namespace' => NULL,
-        'prefix' => '/daily-report-entries',
+        'prefix' => 'siimut/daily-report-entries',
         'where' => 
         array (
         ),
@@ -3222,21 +3343,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.daily-report-entries.create' => 
+    'filament.siimut.resources.daily-report-entries.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'daily-report-entries/create',
+      'uri' => 'siimut/daily-report-entries/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3255,9 +3376,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\CreateDailyReportEntry@__invoke',
         'controller' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\CreateDailyReportEntry',
-        'as' => 'filament.admin.resources.daily-report-entries.create',
+        'as' => 'filament.siimut.resources.daily-report-entries.create',
         'namespace' => NULL,
-        'prefix' => '/daily-report-entries',
+        'prefix' => 'siimut/daily-report-entries',
         'where' => 
         array (
         ),
@@ -3276,21 +3397,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.daily-report-entries.view' => 
+    'filament.siimut.resources.daily-report-entries.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'daily-report-entries/{record}',
+      'uri' => 'siimut/daily-report-entries/{record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3309,9 +3430,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\ViewDailyReportEntry@__invoke',
         'controller' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\ViewDailyReportEntry',
-        'as' => 'filament.admin.resources.daily-report-entries.view',
+        'as' => 'filament.siimut.resources.daily-report-entries.view',
         'namespace' => NULL,
-        'prefix' => '/daily-report-entries',
+        'prefix' => 'siimut/daily-report-entries',
         'where' => 
         array (
         ),
@@ -3330,21 +3451,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.daily-report-entries.edit' => 
+    'filament.siimut.resources.daily-report-entries.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'daily-report-entries/{record}/edit',
+      'uri' => 'siimut/daily-report-entries/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3363,9 +3484,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\EditDailyReportEntry@__invoke',
         'controller' => 'App\\Filament\\Resources\\DailyReportEntryResource\\Pages\\EditDailyReportEntry',
-        'as' => 'filament.admin.resources.daily-report-entries.edit',
+        'as' => 'filament.siimut.resources.daily-report-entries.edit',
         'namespace' => NULL,
-        'prefix' => '/daily-report-entries',
+        'prefix' => 'siimut/daily-report-entries',
         'where' => 
         array (
         ),
@@ -3384,21 +3505,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.folders.index' => 
+    'filament.siimut.resources.folders.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'folders',
+      'uri' => 'siimut/folders',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3417,9 +3538,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\FolderCustomResource\\Pages\\ListFoldersCustom@__invoke',
         'controller' => 'App\\Filament\\Resources\\FolderCustomResource\\Pages\\ListFoldersCustom',
-        'as' => 'filament.admin.resources.folders.index',
+        'as' => 'filament.siimut.resources.folders.index',
         'namespace' => NULL,
-        'prefix' => '/folders',
+        'prefix' => 'siimut/folders',
         'where' => 
         array (
         ),
@@ -3438,21 +3559,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.folders.view' => 
+    'filament.siimut.resources.folders.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'folders/{folder}',
+      'uri' => 'siimut/folders/{folder}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3471,9 +3592,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Juniyasyos\\FilamentMediaManager\\Resources\\FolderResource\\Pages\\ViewFolder@__invoke',
         'controller' => 'Juniyasyos\\FilamentMediaManager\\Resources\\FolderResource\\Pages\\ViewFolder',
-        'as' => 'filament.admin.resources.folders.view',
+        'as' => 'filament.siimut.resources.folders.view',
         'namespace' => NULL,
-        'prefix' => '/folders',
+        'prefix' => 'siimut/folders',
         'where' => 
         array (
         ),
@@ -3492,21 +3613,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.folders.media' => 
+    'filament.siimut.resources.folders.media' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'folders/media-name={folderName}',
+      'uri' => 'siimut/folders/media-name={folderName}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3525,9 +3646,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\MediaCustomResource\\Pages\\ListMediaCustom@__invoke',
         'controller' => 'App\\Filament\\Resources\\MediaCustomResource\\Pages\\ListMediaCustom',
-        'as' => 'filament.admin.resources.folders.media',
+        'as' => 'filament.siimut.resources.folders.media',
         'namespace' => NULL,
-        'prefix' => '/folders',
+        'prefix' => 'siimut/folders',
         'where' => 
         array (
         ),
@@ -3546,21 +3667,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-categories.index' => 
+    'filament.siimut.resources.imut-categories.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-categories',
+      'uri' => 'siimut/imut-categories',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3579,9 +3700,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\ListImutCategories@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\ListImutCategories',
-        'as' => 'filament.admin.resources.imut-categories.index',
+        'as' => 'filament.siimut.resources.imut-categories.index',
         'namespace' => NULL,
-        'prefix' => '/imut-categories',
+        'prefix' => 'siimut/imut-categories',
         'where' => 
         array (
         ),
@@ -3600,21 +3721,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-categories.create' => 
+    'filament.siimut.resources.imut-categories.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-categories/create',
+      'uri' => 'siimut/imut-categories/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3633,9 +3754,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\CreateImutCategory@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\CreateImutCategory',
-        'as' => 'filament.admin.resources.imut-categories.create',
+        'as' => 'filament.siimut.resources.imut-categories.create',
         'namespace' => NULL,
-        'prefix' => '/imut-categories',
+        'prefix' => 'siimut/imut-categories',
         'where' => 
         array (
         ),
@@ -3654,21 +3775,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-categories.edit' => 
+    'filament.siimut.resources.imut-categories.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-categories/{record}/edit',
+      'uri' => 'siimut/imut-categories/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3687,9 +3808,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\EditImutCategory@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\EditImutCategory',
-        'as' => 'filament.admin.resources.imut-categories.edit',
+        'as' => 'filament.siimut.resources.imut-categories.edit',
         'namespace' => NULL,
-        'prefix' => '/imut-categories',
+        'prefix' => 'siimut/imut-categories',
         'where' => 
         array (
         ),
@@ -3708,21 +3829,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-category-resource.schema.imut-categories.index' => 
+    'filament.siimut.resources.imut-category-resource.schema.imut-categories.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-category-resource/schema/imut-categories',
+      'uri' => 'siimut/imut-category-resource/schema/imut-categories',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3741,9 +3862,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\ListImutCategories@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\ListImutCategories',
-        'as' => 'filament.admin.resources.imut-category-resource.schema.imut-categories.index',
+        'as' => 'filament.siimut.resources.imut-category-resource.schema.imut-categories.index',
         'namespace' => NULL,
-        'prefix' => '/imut-category-resource/schema/imut-categories',
+        'prefix' => 'siimut/imut-category-resource/schema/imut-categories',
         'where' => 
         array (
         ),
@@ -3762,21 +3883,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-category-resource.schema.imut-categories.create' => 
+    'filament.siimut.resources.imut-category-resource.schema.imut-categories.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-category-resource/schema/imut-categories/create',
+      'uri' => 'siimut/imut-category-resource/schema/imut-categories/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3795,9 +3916,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\CreateImutCategory@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\CreateImutCategory',
-        'as' => 'filament.admin.resources.imut-category-resource.schema.imut-categories.create',
+        'as' => 'filament.siimut.resources.imut-category-resource.schema.imut-categories.create',
         'namespace' => NULL,
-        'prefix' => '/imut-category-resource/schema/imut-categories',
+        'prefix' => 'siimut/imut-category-resource/schema/imut-categories',
         'where' => 
         array (
         ),
@@ -3816,21 +3937,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-category-resource.schema.imut-categories.edit' => 
+    'filament.siimut.resources.imut-category-resource.schema.imut-categories.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-category-resource/schema/imut-categories/{record}/edit',
+      'uri' => 'siimut/imut-category-resource/schema/imut-categories/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3849,9 +3970,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\EditImutCategory@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\EditImutCategory',
-        'as' => 'filament.admin.resources.imut-category-resource.schema.imut-categories.edit',
+        'as' => 'filament.siimut.resources.imut-category-resource.schema.imut-categories.edit',
         'namespace' => NULL,
-        'prefix' => '/imut-category-resource/schema/imut-categories',
+        'prefix' => 'siimut/imut-category-resource/schema/imut-categories',
         'where' => 
         array (
         ),
@@ -3870,21 +3991,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-category-resource.tables.imut-categories.index' => 
+    'filament.siimut.resources.imut-category-resource.tables.imut-categories.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-category-resource/tables/imut-categories',
+      'uri' => 'siimut/imut-category-resource/tables/imut-categories',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3903,9 +4024,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\ListImutCategories@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\ListImutCategories',
-        'as' => 'filament.admin.resources.imut-category-resource.tables.imut-categories.index',
+        'as' => 'filament.siimut.resources.imut-category-resource.tables.imut-categories.index',
         'namespace' => NULL,
-        'prefix' => '/imut-category-resource/tables/imut-categories',
+        'prefix' => 'siimut/imut-category-resource/tables/imut-categories',
         'where' => 
         array (
         ),
@@ -3924,21 +4045,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-category-resource.tables.imut-categories.create' => 
+    'filament.siimut.resources.imut-category-resource.tables.imut-categories.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-category-resource/tables/imut-categories/create',
+      'uri' => 'siimut/imut-category-resource/tables/imut-categories/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -3957,9 +4078,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\CreateImutCategory@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\CreateImutCategory',
-        'as' => 'filament.admin.resources.imut-category-resource.tables.imut-categories.create',
+        'as' => 'filament.siimut.resources.imut-category-resource.tables.imut-categories.create',
         'namespace' => NULL,
-        'prefix' => '/imut-category-resource/tables/imut-categories',
+        'prefix' => 'siimut/imut-category-resource/tables/imut-categories',
         'where' => 
         array (
         ),
@@ -3978,21 +4099,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-category-resource.tables.imut-categories.edit' => 
+    'filament.siimut.resources.imut-category-resource.tables.imut-categories.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-category-resource/tables/imut-categories/{record}/edit',
+      'uri' => 'siimut/imut-category-resource/tables/imut-categories/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4011,9 +4132,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\EditImutCategory@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutCategoryResource\\Pages\\EditImutCategory',
-        'as' => 'filament.admin.resources.imut-category-resource.tables.imut-categories.edit',
+        'as' => 'filament.siimut.resources.imut-category-resource.tables.imut-categories.edit',
         'namespace' => NULL,
-        'prefix' => '/imut-category-resource/tables/imut-categories',
+        'prefix' => 'siimut/imut-category-resource/tables/imut-categories',
         'where' => 
         array (
         ),
@@ -4032,21 +4153,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.index' => 
+    'filament.siimut.resources.imut-datas.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas',
+      'uri' => 'siimut/imut-datas',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4065,9 +4186,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\ListImutData@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\ListImutData',
-        'as' => 'filament.admin.resources.imut-datas.index',
+        'as' => 'filament.siimut.resources.imut-datas.index',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4086,21 +4207,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.create' => 
+    'filament.siimut.resources.imut-datas.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/create',
+      'uri' => 'siimut/imut-datas/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4119,9 +4240,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\CreateImutData@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\CreateImutData',
-        'as' => 'filament.admin.resources.imut-datas.create',
+        'as' => 'filament.siimut.resources.imut-datas.create',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4140,21 +4261,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.edit' => 
+    'filament.siimut.resources.imut-datas.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/edit={record}',
+      'uri' => 'siimut/imut-datas/edit={record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4173,9 +4294,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\EditImutData@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\EditImutData',
-        'as' => 'filament.admin.resources.imut-datas.edit',
+        'as' => 'filament.siimut.resources.imut-datas.edit',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4195,21 +4316,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.create-profile' => 
+    'filament.siimut.resources.imut-datas.create-profile' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/{imutDataSlug}/profile/create',
+      'uri' => 'siimut/imut-datas/{imutDataSlug}/profile/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4228,9 +4349,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\CreateImutProfile@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\CreateImutProfile',
-        'as' => 'filament.admin.resources.imut-datas.create-profile',
+        'as' => 'filament.siimut.resources.imut-datas.create-profile',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4249,21 +4370,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.edit-profile' => 
+    'filament.siimut.resources.imut-datas.edit-profile' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/{imutDataSlug}/profile/edit={record}',
+      'uri' => 'siimut/imut-datas/{imutDataSlug}/profile/edit={record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4282,9 +4403,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\EditImutProfile@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\EditImutProfile',
-        'as' => 'filament.admin.resources.imut-datas.edit-profile',
+        'as' => 'filament.siimut.resources.imut-datas.edit-profile',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4303,21 +4424,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.bencmarking-region-type' => 
+    'filament.siimut.resources.imut-datas.bencmarking-region-type' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/bencmarkings/region-type',
+      'uri' => 'siimut/imut-datas/bencmarkings/region-type',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4336,9 +4457,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\RegionTypeBencmarkingResource\\Pages\\ListRegionTypeBencmarkings@__invoke',
         'controller' => 'App\\Filament\\Resources\\RegionTypeBencmarkingResource\\Pages\\ListRegionTypeBencmarkings',
-        'as' => 'filament.admin.resources.imut-datas.bencmarking-region-type',
+        'as' => 'filament.siimut.resources.imut-datas.bencmarking-region-type',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4357,21 +4478,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.overview-unit-kerja' => 
+    'filament.siimut.resources.imut-datas.overview-unit-kerja' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/overview/unit-kerja',
+      'uri' => 'siimut/imut-datas/overview/unit-kerja',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4390,9 +4511,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\UnitKerjaOverview@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\UnitKerjaOverview',
-        'as' => 'filament.admin.resources.imut-datas.overview-unit-kerja',
+        'as' => 'filament.siimut.resources.imut-datas.overview-unit-kerja',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4411,21 +4532,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.overview-imut-data' => 
+    'filament.siimut.resources.imut-datas.overview-imut-data' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/overview/summary-imut-data',
+      'uri' => 'siimut/imut-datas/overview/summary-imut-data',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4444,9 +4565,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\SummaryDiagram@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\SummaryDiagram',
-        'as' => 'filament.admin.resources.imut-datas.overview-imut-data',
+        'as' => 'filament.siimut.resources.imut-datas.overview-imut-data',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4465,21 +4586,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.manage-form-builder' => 
+    'filament.siimut.resources.imut-datas.manage-form-builder' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/{record}/form-builder',
+      'uri' => 'siimut/imut-datas/{record}/form-builder',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4498,9 +4619,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\ManageFormBuilder@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\ManageFormBuilder',
-        'as' => 'filament.admin.resources.imut-datas.manage-form-builder',
+        'as' => 'filament.siimut.resources.imut-datas.manage-form-builder',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4520,21 +4641,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-datas.preview-form' => 
+    'filament.siimut.resources.imut-datas.preview-form' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-datas/{record}/form-builder/preview',
+      'uri' => 'siimut/imut-datas/{record}/form-builder/preview',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4553,9 +4674,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\PreviewFormBuilder@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutDataResource\\Pages\\PreviewFormBuilder',
-        'as' => 'filament.admin.resources.imut-datas.preview-form',
+        'as' => 'filament.siimut.resources.imut-datas.preview-form',
         'namespace' => NULL,
-        'prefix' => '/imut-datas',
+        'prefix' => 'siimut/imut-datas',
         'where' => 
         array (
         ),
@@ -4575,21 +4696,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-penilaians.edit' => 
+    'filament.siimut.resources.imut-penilaians.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-penilaians',
+      'uri' => 'siimut/imut-penilaians',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4608,9 +4729,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutPenilaianResource\\Pages\\EditImutPenilaian@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutPenilaianResource\\Pages\\EditImutPenilaian',
-        'as' => 'filament.admin.resources.imut-penilaians.edit',
+        'as' => 'filament.siimut.resources.imut-penilaians.edit',
         'namespace' => NULL,
-        'prefix' => '/imut-penilaians',
+        'prefix' => 'siimut/imut-penilaians',
         'where' => 
         array (
         ),
@@ -4629,21 +4750,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-penilaian-resource.schema.imut-penilaians.edit' => 
+    'filament.siimut.resources.imut-penilaian-resource.schema.imut-penilaians.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-penilaian-resource/schema/imut-penilaians',
+      'uri' => 'siimut/imut-penilaian-resource/schema/imut-penilaians',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4662,9 +4783,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutPenilaianResource\\Pages\\EditImutPenilaian@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutPenilaianResource\\Pages\\EditImutPenilaian',
-        'as' => 'filament.admin.resources.imut-penilaian-resource.schema.imut-penilaians.edit',
+        'as' => 'filament.siimut.resources.imut-penilaian-resource.schema.imut-penilaians.edit',
         'namespace' => NULL,
-        'prefix' => '/imut-penilaian-resource/schema/imut-penilaians',
+        'prefix' => 'siimut/imut-penilaian-resource/schema/imut-penilaians',
         'where' => 
         array (
         ),
@@ -4683,21 +4804,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-profiles.index' => 
+    'filament.siimut.resources.imut-profiles.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-profiles',
+      'uri' => 'siimut/imut-profiles',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4716,9 +4837,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles',
-        'as' => 'filament.admin.resources.imut-profiles.index',
+        'as' => 'filament.siimut.resources.imut-profiles.index',
         'namespace' => NULL,
-        'prefix' => '/imut-profiles',
+        'prefix' => 'siimut/imut-profiles',
         'where' => 
         array (
         ),
@@ -4737,21 +4858,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-profile-resource.schema.imut-profiles.index' => 
+    'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-profile-resource/schema/imut-profiles',
+      'uri' => 'siimut/imut-profile-resource/schema/imut-profiles',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4770,9 +4891,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles',
-        'as' => 'filament.admin.resources.imut-profile-resource.schema.imut-profiles.index',
+        'as' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.index',
         'namespace' => NULL,
-        'prefix' => '/imut-profile-resource/schema/imut-profiles',
+        'prefix' => 'siimut/imut-profile-resource/schema/imut-profiles',
         'where' => 
         array (
         ),
@@ -4791,21 +4912,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.imut-profile-resource.tables.imut-profiles.index' => 
+    'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'imut-profile-resource/tables/imut-profiles',
+      'uri' => 'siimut/imut-profile-resource/tables/imut-profiles',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4824,9 +4945,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles',
-        'as' => 'filament.admin.resources.imut-profile-resource.tables.imut-profiles.index',
+        'as' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.index',
         'namespace' => NULL,
-        'prefix' => '/imut-profile-resource/tables/imut-profiles',
+        'prefix' => 'siimut/imut-profile-resource/tables/imut-profiles',
         'where' => 
         array (
         ),
@@ -4845,21 +4966,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.index' => 
+    'filament.siimut.resources.laporan-imuts.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts',
+      'uri' => 'siimut/laporan-imuts',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4878,9 +4999,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\ListLaporanImuts@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\ListLaporanImuts',
-        'as' => 'filament.admin.resources.laporan-imuts.index',
+        'as' => 'filament.siimut.resources.laporan-imuts.index',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -4899,21 +5020,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.create' => 
+    'filament.siimut.resources.laporan-imuts.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/create',
+      'uri' => 'siimut/laporan-imuts/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4932,9 +5053,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\CreateLaporanImut@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\CreateLaporanImut',
-        'as' => 'filament.admin.resources.laporan-imuts.create',
+        'as' => 'filament.siimut.resources.laporan-imuts.create',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -4953,21 +5074,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.edit' => 
+    'filament.siimut.resources.laporan-imuts.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/{record}/edit',
+      'uri' => 'siimut/laporan-imuts/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -4986,9 +5107,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\EditLaporanImut@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\EditLaporanImut',
-        'as' => 'filament.admin.resources.laporan-imuts.edit',
+        'as' => 'filament.siimut.resources.laporan-imuts.edit',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -5008,21 +5129,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.unit-kerja-report' => 
+    'filament.siimut.resources.laporan-imuts.unit-kerja-report' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/unit-kerja-report',
+      'uri' => 'siimut/laporan-imuts/unit-kerja-report',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5041,9 +5162,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\UnitKerjaReport@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\UnitKerjaReport',
-        'as' => 'filament.admin.resources.laporan-imuts.unit-kerja-report',
+        'as' => 'filament.siimut.resources.laporan-imuts.unit-kerja-report',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -5062,21 +5183,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.unit-kerja-imut-data-report-detail' => 
+    'filament.siimut.resources.laporan-imuts.unit-kerja-imut-data-report-detail' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/unit-kerja-imut-data-report',
+      'uri' => 'siimut/laporan-imuts/unit-kerja-imut-data-report',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5095,9 +5216,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\UnitKerjaImutDataReport@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\UnitKerjaImutDataReport',
-        'as' => 'filament.admin.resources.laporan-imuts.unit-kerja-imut-data-report-detail',
+        'as' => 'filament.siimut.resources.laporan-imuts.unit-kerja-imut-data-report-detail',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -5116,21 +5237,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.imut-data-report' => 
+    'filament.siimut.resources.laporan-imuts.imut-data-report' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/imut-data-report',
+      'uri' => 'siimut/laporan-imuts/imut-data-report',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5149,9 +5270,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\ImutDataReport@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\ImutDataReport',
-        'as' => 'filament.admin.resources.laporan-imuts.imut-data-report',
+        'as' => 'filament.siimut.resources.laporan-imuts.imut-data-report',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -5170,21 +5291,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.imut-data-unit-kerja-report-detail' => 
+    'filament.siimut.resources.laporan-imuts.imut-data-unit-kerja-report-detail' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/imut-data-unit-kerja-report',
+      'uri' => 'siimut/laporan-imuts/imut-data-unit-kerja-report',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5203,9 +5324,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\ImutDataUnitKerjaReport@__invoke',
         'controller' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\ImutDataUnitKerjaReport',
-        'as' => 'filament.admin.resources.laporan-imuts.imut-data-unit-kerja-report-detail',
+        'as' => 'filament.siimut.resources.laporan-imuts.imut-data-unit-kerja-report-detail',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -5224,21 +5345,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.laporan-imuts.edit-penilaian' => 
+    'filament.siimut.resources.laporan-imuts.edit-penilaian' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'laporan-imuts/{laporanSlug}/penilaian-edit={record}',
+      'uri' => 'siimut/laporan-imuts/{laporanSlug}/penilaian-edit={record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5257,9 +5378,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\ImutPenilaianResource\\Pages\\EditImutPenilaian@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutPenilaianResource\\Pages\\EditImutPenilaian',
-        'as' => 'filament.admin.resources.laporan-imuts.edit-penilaian',
+        'as' => 'filament.siimut.resources.laporan-imuts.edit-penilaian',
         'namespace' => NULL,
-        'prefix' => '/laporan-imuts',
+        'prefix' => 'siimut/laporan-imuts',
         'where' => 
         array (
         ),
@@ -5278,21 +5399,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.media.index' => 
+    'filament.siimut.resources.media.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'media',
+      'uri' => 'siimut/media',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5311,9 +5432,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\MediaCustomResource\\Pages\\ListMediaCustom@__invoke',
         'controller' => 'App\\Filament\\Resources\\MediaCustomResource\\Pages\\ListMediaCustom',
-        'as' => 'filament.admin.resources.media.index',
+        'as' => 'filament.siimut.resources.media.index',
         'namespace' => NULL,
-        'prefix' => '/media',
+        'prefix' => 'siimut/media',
         'where' => 
         array (
         ),
@@ -5332,21 +5453,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.region-type-bencmarkings.index' => 
+    'filament.siimut.resources.region-type-bencmarkings.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'region-type-bencmarkings/bencmarkings',
+      'uri' => 'siimut/region-type-bencmarkings/bencmarkings',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5365,9 +5486,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\RegionTypeBencmarkingResource\\Pages\\ListRegionTypeBencmarkings@__invoke',
         'controller' => 'App\\Filament\\Resources\\RegionTypeBencmarkingResource\\Pages\\ListRegionTypeBencmarkings',
-        'as' => 'filament.admin.resources.region-type-bencmarkings.index',
+        'as' => 'filament.siimut.resources.region-type-bencmarkings.index',
         'namespace' => NULL,
-        'prefix' => '/region-type-bencmarkings',
+        'prefix' => 'siimut/region-type-bencmarkings',
         'where' => 
         array (
         ),
@@ -5386,21 +5507,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.shield.roles.index' => 
+    'filament.siimut.resources.shield.roles.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'shield/roles',
+      'uri' => 'siimut/shield/roles',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5419,9 +5540,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\RoleResource\\Pages\\ListRoles@__invoke',
         'controller' => 'App\\Filament\\Resources\\RoleResource\\Pages\\ListRoles',
-        'as' => 'filament.admin.resources.shield.roles.index',
+        'as' => 'filament.siimut.resources.shield.roles.index',
         'namespace' => NULL,
-        'prefix' => '/shield/roles',
+        'prefix' => 'siimut/shield/roles',
         'where' => 
         array (
         ),
@@ -5440,21 +5561,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.shield.roles.create' => 
+    'filament.siimut.resources.shield.roles.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'shield/roles/create',
+      'uri' => 'siimut/shield/roles/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5473,9 +5594,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\RoleResource\\Pages\\CreateRole@__invoke',
         'controller' => 'App\\Filament\\Resources\\RoleResource\\Pages\\CreateRole',
-        'as' => 'filament.admin.resources.shield.roles.create',
+        'as' => 'filament.siimut.resources.shield.roles.create',
         'namespace' => NULL,
-        'prefix' => '/shield/roles',
+        'prefix' => 'siimut/shield/roles',
         'where' => 
         array (
         ),
@@ -5494,21 +5615,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.shield.roles.view' => 
+    'filament.siimut.resources.shield.roles.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'shield/roles/{record}',
+      'uri' => 'siimut/shield/roles/{record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5527,9 +5648,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\RoleResource\\Pages\\ViewRole@__invoke',
         'controller' => 'App\\Filament\\Resources\\RoleResource\\Pages\\ViewRole',
-        'as' => 'filament.admin.resources.shield.roles.view',
+        'as' => 'filament.siimut.resources.shield.roles.view',
         'namespace' => NULL,
-        'prefix' => '/shield/roles',
+        'prefix' => 'siimut/shield/roles',
         'where' => 
         array (
         ),
@@ -5548,21 +5669,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.shield.roles.edit' => 
+    'filament.siimut.resources.shield.roles.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'shield/roles/{record}/edit',
+      'uri' => 'siimut/shield/roles/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5581,9 +5702,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\RoleResource\\Pages\\EditRole@__invoke',
         'controller' => 'App\\Filament\\Resources\\RoleResource\\Pages\\EditRole',
-        'as' => 'filament.admin.resources.shield.roles.edit',
+        'as' => 'filament.siimut.resources.shield.roles.edit',
         'namespace' => NULL,
-        'prefix' => '/shield/roles',
+        'prefix' => 'siimut/shield/roles',
         'where' => 
         array (
         ),
@@ -5602,21 +5723,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.unit-kerjas.index' => 
+    'filament.siimut.resources.unit-kerjas.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'unit-kerjas',
+      'uri' => 'siimut/unit-kerjas',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5635,9 +5756,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UnitKerjaResource\\Pages\\ListUnitKerja@__invoke',
         'controller' => 'App\\Filament\\Resources\\UnitKerjaResource\\Pages\\ListUnitKerja',
-        'as' => 'filament.admin.resources.unit-kerjas.index',
+        'as' => 'filament.siimut.resources.unit-kerjas.index',
         'namespace' => NULL,
-        'prefix' => '/unit-kerjas',
+        'prefix' => 'siimut/unit-kerjas',
         'where' => 
         array (
         ),
@@ -5656,21 +5777,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.unit-kerjas.create' => 
+    'filament.siimut.resources.unit-kerjas.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'unit-kerjas/create',
+      'uri' => 'siimut/unit-kerjas/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5689,9 +5810,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UnitKerjaResource\\Pages\\CreateUnitKerja@__invoke',
         'controller' => 'App\\Filament\\Resources\\UnitKerjaResource\\Pages\\CreateUnitKerja',
-        'as' => 'filament.admin.resources.unit-kerjas.create',
+        'as' => 'filament.siimut.resources.unit-kerjas.create',
         'namespace' => NULL,
-        'prefix' => '/unit-kerjas',
+        'prefix' => 'siimut/unit-kerjas',
         'where' => 
         array (
         ),
@@ -5710,21 +5831,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.unit-kerjas.edit' => 
+    'filament.siimut.resources.unit-kerjas.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'unit-kerjas/{record}/edit',
+      'uri' => 'siimut/unit-kerjas/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5743,9 +5864,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UnitKerjaResource\\Pages\\EditUnitKerja@__invoke',
         'controller' => 'App\\Filament\\Resources\\UnitKerjaResource\\Pages\\EditUnitKerja',
-        'as' => 'filament.admin.resources.unit-kerjas.edit',
+        'as' => 'filament.siimut.resources.unit-kerjas.edit',
         'namespace' => NULL,
-        'prefix' => '/unit-kerjas',
+        'prefix' => 'siimut/unit-kerjas',
         'where' => 
         array (
         ),
@@ -5765,21 +5886,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.users.index' => 
+    'filament.siimut.resources.users.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'users',
+      'uri' => 'siimut/users',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5798,9 +5919,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\ListUsers@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\ListUsers',
-        'as' => 'filament.admin.resources.users.index',
+        'as' => 'filament.siimut.resources.users.index',
         'namespace' => NULL,
-        'prefix' => '/users',
+        'prefix' => 'siimut/users',
         'where' => 
         array (
         ),
@@ -5819,21 +5940,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.users.create' => 
+    'filament.siimut.resources.users.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'users/create',
+      'uri' => 'siimut/users/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5852,9 +5973,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\CreateUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\CreateUser',
-        'as' => 'filament.admin.resources.users.create',
+        'as' => 'filament.siimut.resources.users.create',
         'namespace' => NULL,
-        'prefix' => '/users',
+        'prefix' => 'siimut/users',
         'where' => 
         array (
         ),
@@ -5873,21 +5994,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.users.view' => 
+    'filament.siimut.resources.users.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'users/{record}',
+      'uri' => 'siimut/users/{record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5906,9 +6027,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\ViewUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\ViewUser',
-        'as' => 'filament.admin.resources.users.view',
+        'as' => 'filament.siimut.resources.users.view',
         'namespace' => NULL,
-        'prefix' => '/users',
+        'prefix' => 'siimut/users',
         'where' => 
         array (
         ),
@@ -5927,21 +6048,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.users.edit' => 
+    'filament.siimut.resources.users.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'users/{record}/edit',
+      'uri' => 'siimut/users/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -5960,9 +6081,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\EditUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\EditUser',
-        'as' => 'filament.admin.resources.users.edit',
+        'as' => 'filament.siimut.resources.users.edit',
         'namespace' => NULL,
-        'prefix' => '/users',
+        'prefix' => 'siimut/users',
         'where' => 
         array (
         ),
@@ -5981,21 +6102,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.schema.users.index' => 
+    'filament.siimut.resources.user-resource.schema.users.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/schema/users',
+      'uri' => 'siimut/user-resource/schema/users',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6014,9 +6135,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\ListUsers@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\ListUsers',
-        'as' => 'filament.admin.resources.user-resource.schema.users.index',
+        'as' => 'filament.siimut.resources.user-resource.schema.users.index',
         'namespace' => NULL,
-        'prefix' => '/user-resource/schema/users',
+        'prefix' => 'siimut/user-resource/schema/users',
         'where' => 
         array (
         ),
@@ -6035,21 +6156,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.schema.users.create' => 
+    'filament.siimut.resources.user-resource.schema.users.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/schema/users/create',
+      'uri' => 'siimut/user-resource/schema/users/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6068,9 +6189,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\CreateUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\CreateUser',
-        'as' => 'filament.admin.resources.user-resource.schema.users.create',
+        'as' => 'filament.siimut.resources.user-resource.schema.users.create',
         'namespace' => NULL,
-        'prefix' => '/user-resource/schema/users',
+        'prefix' => 'siimut/user-resource/schema/users',
         'where' => 
         array (
         ),
@@ -6089,21 +6210,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.schema.users.view' => 
+    'filament.siimut.resources.user-resource.schema.users.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/schema/users/{record}',
+      'uri' => 'siimut/user-resource/schema/users/{record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6122,9 +6243,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\ViewUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\ViewUser',
-        'as' => 'filament.admin.resources.user-resource.schema.users.view',
+        'as' => 'filament.siimut.resources.user-resource.schema.users.view',
         'namespace' => NULL,
-        'prefix' => '/user-resource/schema/users',
+        'prefix' => 'siimut/user-resource/schema/users',
         'where' => 
         array (
         ),
@@ -6143,21 +6264,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.schema.users.edit' => 
+    'filament.siimut.resources.user-resource.schema.users.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/schema/users/{record}/edit',
+      'uri' => 'siimut/user-resource/schema/users/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6176,9 +6297,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\EditUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\EditUser',
-        'as' => 'filament.admin.resources.user-resource.schema.users.edit',
+        'as' => 'filament.siimut.resources.user-resource.schema.users.edit',
         'namespace' => NULL,
-        'prefix' => '/user-resource/schema/users',
+        'prefix' => 'siimut/user-resource/schema/users',
         'where' => 
         array (
         ),
@@ -6197,21 +6318,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.tables.users.index' => 
+    'filament.siimut.resources.user-resource.tables.users.index' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/tables/users',
+      'uri' => 'siimut/user-resource/tables/users',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6230,9 +6351,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\ListUsers@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\ListUsers',
-        'as' => 'filament.admin.resources.user-resource.tables.users.index',
+        'as' => 'filament.siimut.resources.user-resource.tables.users.index',
         'namespace' => NULL,
-        'prefix' => '/user-resource/tables/users',
+        'prefix' => 'siimut/user-resource/tables/users',
         'where' => 
         array (
         ),
@@ -6251,21 +6372,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.tables.users.create' => 
+    'filament.siimut.resources.user-resource.tables.users.create' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/tables/users/create',
+      'uri' => 'siimut/user-resource/tables/users/create',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6284,9 +6405,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\CreateUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\CreateUser',
-        'as' => 'filament.admin.resources.user-resource.tables.users.create',
+        'as' => 'filament.siimut.resources.user-resource.tables.users.create',
         'namespace' => NULL,
-        'prefix' => '/user-resource/tables/users',
+        'prefix' => 'siimut/user-resource/tables/users',
         'where' => 
         array (
         ),
@@ -6305,21 +6426,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.tables.users.view' => 
+    'filament.siimut.resources.user-resource.tables.users.view' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/tables/users/{record}',
+      'uri' => 'siimut/user-resource/tables/users/{record}',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6338,9 +6459,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\ViewUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\ViewUser',
-        'as' => 'filament.admin.resources.user-resource.tables.users.view',
+        'as' => 'filament.siimut.resources.user-resource.tables.users.view',
         'namespace' => NULL,
-        'prefix' => '/user-resource/tables/users',
+        'prefix' => 'siimut/user-resource/tables/users',
         'where' => 
         array (
         ),
@@ -6359,21 +6480,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.resources.user-resource.tables.users.edit' => 
+    'filament.siimut.resources.user-resource.tables.users.edit' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'user-resource/tables/users/{record}/edit',
+      'uri' => 'siimut/user-resource/tables/users/{record}/edit',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6392,9 +6513,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'App\\Filament\\Resources\\UserResource\\Pages\\EditUser@__invoke',
         'controller' => 'App\\Filament\\Resources\\UserResource\\Pages\\EditUser',
-        'as' => 'filament.admin.resources.user-resource.tables.users.edit',
+        'as' => 'filament.siimut.resources.user-resource.tables.users.edit',
         'namespace' => NULL,
-        'prefix' => '/user-resource/tables/users',
+        'prefix' => 'siimut/user-resource/tables/users',
         'where' => 
         array (
         ),
@@ -6413,21 +6534,21 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'filament.admin.auth.two-factor' => 
+    'filament.siimut.auth.two-factor' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'two-factor-authentication',
+      'uri' => 'siimut/two-factor-authentication',
       'action' => 
       array (
         'domain' => NULL,
         'middleware' => 
         array (
-          0 => 'panel:admin',
-          1 => 'panel:admin',
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
           2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
           3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
           4 => 'Illuminate\\Session\\Middleware\\StartSession',
@@ -6441,9 +6562,9 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'Jeffgreco13\\FilamentBreezy\\Pages\\TwoFactorPage@__invoke',
         'controller' => 'Jeffgreco13\\FilamentBreezy\\Pages\\TwoFactorPage',
-        'as' => 'filament.admin.auth.two-factor',
+        'as' => 'filament.siimut.auth.two-factor',
         'namespace' => NULL,
-        'prefix' => '/',
+        'prefix' => '/siimut',
         'where' => 
         array (
         ),
@@ -6539,6 +6660,43 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'logout' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'logout',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'web',
+        ),
+        'uses' => 'Juniyasyos\\IamClient\\Http\\Controllers\\LogoutController@__invoke',
+        'controller' => 'Juniyasyos\\IamClient\\Http\\Controllers\\LogoutController',
+        'namespace' => NULL,
+        'prefix' => '',
+        'where' => 
+        array (
+        ),
+        'as' => 'logout',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'sanctum.csrf-cookie' => 
     array (
       'methods' => 
@@ -6607,19 +6765,19 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::8an0xXvCSLswRxkU' => 
+    'generated::T3Wu554A8f2ILm2S' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'livewire/livewire.min.js',
+      'uri' => 'livewire/livewire.js',
       'action' => 
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
-        'as' => 'generated::8an0xXvCSLswRxkU',
+        'as' => 'generated::T3Wu554A8f2ILm2S',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6635,7 +6793,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Nptg1dPRlMWuexBw' => 
+    'generated::og330fpJ3pXix45J' => 
     array (
       'methods' => 
       array (
@@ -6647,7 +6805,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
-        'as' => 'generated::Nptg1dPRlMWuexBw',
+        'as' => 'generated::og330fpJ3pXix45J',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6736,7 +6894,7 @@ app('router')->setCompiledRoutes(
         \\response()
             ->download($path, $filename)
             ->deleteFileAfterSend();
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000013de0000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000013f10000000000000000";}}',
         'middleware' => 
         array (
           0 => 'web',
@@ -6812,7 +6970,7 @@ app('router')->setCompiledRoutes(
     return \\redirect(
         \\session()->pull(\'impersonate.back_to\')
     );
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015cc0000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015df0000000000000000";}}',
         'as' => 'filament-impersonate.leave',
         'middleware' => 
         array (
@@ -6833,7 +6991,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::l7cDVzW4kgtDhtcS' => 
+    'generated::MkTirlsVa5TlAjSb' => 
     array (
       'methods' => 
       array (
@@ -6850,13 +7008,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:77:"function (\\Illuminate\\Http\\Request $request) {
     return $request->user();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016390000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000164c0000000000000000";}}',
         'namespace' => NULL,
         'prefix' => 'api',
         'where' => 
         array (
         ),
-        'as' => 'generated::l7cDVzW4kgtDhtcS',
+        'as' => 'generated::MkTirlsVa5TlAjSb',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6872,7 +7030,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::inPrh0be7ac2fuXw' => 
+    'generated::lQoxid1l8vUSersc' => 
     array (
       'methods' => 
       array (
@@ -6893,7 +7051,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::inPrh0be7ac2fuXw',
+        'as' => 'generated::lQoxid1l8vUSersc',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6909,7 +7067,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::xBRseemYLtusTeu3' => 
+    'generated::s8IQExgZaBaz6jy4' => 
     array (
       'methods' => 
       array (
@@ -6930,7 +7088,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::xBRseemYLtusTeu3',
+        'as' => 'generated::s8IQExgZaBaz6jy4',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6946,7 +7104,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::yvW5hsCRIO8JR8rA' => 
+    'generated::zw5ehrG8PXSyuFw5' => 
     array (
       'methods' => 
       array (
@@ -6967,7 +7125,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::yvW5hsCRIO8JR8rA',
+        'as' => 'generated::zw5ehrG8PXSyuFw5',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6983,7 +7141,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::K0cGr5OAnrjhc51q' => 
+    'generated::l3sphH2Z2Wt1nJer' => 
     array (
       'methods' => 
       array (
@@ -7011,8 +7169,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/juni/projects/SIIMUT/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000016380000000000000000";}}',
-        'as' => 'generated::K0cGr5OAnrjhc51q',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"000000000000164b0000000000000000";}}',
+        'as' => 'generated::l3sphH2Z2Wt1nJer',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7163,6 +7321,59 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'home' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => '/',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'web',
+        ),
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:549:"function () {
+        // If authenticated, go to admin dashboard
+        if (\\Illuminate\\Support\\Facades\\Auth::check()) {
+            return \\redirect(\'/admin\');
+        }
+
+        // If not authenticated, check SSO mode
+        $ssoEnabled = \\config(\'iam.enabled\', false) || \\env(\'USE_SSO\', false);
+
+        if ($ssoEnabled) {
+            // Production: Redirect to SSO login
+            return \\redirect(\'/login\');
+        } else {
+            // Development: Redirect to custom login
+            return \\redirect(\'/siimut/login\');
+        }
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016490000000000000000";}}',
+        'namespace' => NULL,
+        'prefix' => '',
+        'where' => 
+        array (
+        ),
+        'as' => 'home',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7331,7 +7542,7 @@ app('router')->setCompiledRoutes(
             \'cookies\' => \\request()->cookies->all(),
             \'laravel_session_cookie\' => \\request()->cookie(\'laravel_session\'),
         ]);
-    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016350000000000000000";}}',
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016460000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -7363,13 +7574,13 @@ app('router')->setCompiledRoutes(
       'uri' => 'storage/{path}',
       'action' => 
       array (
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:3:{s:4:"disk";s:5:"local";s:6:"config";a:4:{s:6:"driver";s:5:"local";s:4:"root";s:46:"/home/juni/projects/SIIMUT/storage/app/private";s:5:"serve";b:1;s:5:"throw";b:0;}s:12:"isProduction";b:1;}s:8:"function";s:323:"function (\\Illuminate\\Http\\Request $request, string $path) use ($disk, $config, $isProduction) {
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:3:{s:4:"disk";s:5:"local";s:6:"config";a:4:{s:6:"driver";s:5:"local";s:4:"root";s:46:"/home/juni/projects/SIIMUT/storage/app/private";s:5:"serve";b:1;s:5:"throw";b:0;}s:12:"isProduction";b:0;}s:8:"function";s:323:"function (\\Illuminate\\Http\\Request $request, string $path) use ($disk, $config, $isProduction) {
                     return (new \\Illuminate\\Filesystem\\ServeFile(
                         $disk,
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000162a0000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016040000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,
@@ -7404,7 +7615,7 @@ app('router')->setCompiledRoutes(
                         \'spec\' => $generator($config),
                         \'config\' => $config,
                     ]);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000162f0000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000163d0000000000000000";}}',
         'as' => 'scramble.docs.ui',
         'middleware' => 
         array (
@@ -7439,7 +7650,7 @@ app('router')->setCompiledRoutes(
                     $config = \\Dedoc\\Scramble\\Scramble::getGeneratorConfig($api);
 
                     return response()->json($generator($config), options: JSON_PRETTY_PRINT);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016400000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016530000000000000000";}}',
         'as' => 'scramble.docs.document',
         'middleware' => 
         array (
