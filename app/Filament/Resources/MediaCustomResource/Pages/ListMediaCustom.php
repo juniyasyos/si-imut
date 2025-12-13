@@ -26,37 +26,21 @@ class ListMediaCustom extends ListMedia
         return $this->folder->name;
     }
 
-    // public function mount(): void
-    // {
-    //     parent::mount();
-
-    //     if (! request()->has('folder_id')) {
-    //         abort(404, 'Folder ID is required');
-    //     }
-
-    //     dd(Folder::find(request()->get('folder_id')));
-    //     $folder = Folder::find(request()->get('folder_id'));
-    //     if (! $folder) {
-    //         abort(404, 'Folder ID is required');
-    //     } else {
-    //         if ($folder->is_protected && ! session()->has('folder_password')) {
-    //             abort(403, 'You Cannot Access This Folder');
-    //         }
-    //     }
-
-    //     $this->folder = $folder;
-    //     $this->folder_id = request()->get('folder_id');
-    //     session()->put('folder_id', $this->folder_id);
-    // }
-
-    public function mount(): void
+    protected function loadFolder(): void
     {
-        parent::mount();
+        $folderUuid = request()->route('folder');
 
-        $this->folderName = request()->route('folderName');
-        $this->loadFolder();
-        $this->validateFolderAccess();
-        session()->put('folder_id', $this->folder->id);
+        if (! $folderUuid) {
+            abort(404, 'Folder UUID is required');
+        }
+
+        $this->folder = Folder::where('uuid', $folderUuid)->first();
+
+        if (! $this->folder) {
+            abort(404, 'Folder not found');
+        }
+
+        $this->folder_id = $this->folder->id;
     }
 
     protected function getHeaderActions(): array
