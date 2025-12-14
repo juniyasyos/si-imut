@@ -183,8 +183,6 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
         } else {
             Log::warning("⚠️ Folder yang dihapus tidak ditemukan saat restore UnitKerja ID {$unitKerja->id}");
         }
-    }
-            Log::warning("⚠️ Folder tidak ditemukan saat mencoba memulihkan nama untuk UnitKerja ID {$unitKerja->id}");
-        }
+        Log::warning("⚠️ Folder tidak ditemukan saat mencoba memulihkan nama untuk UnitKerja ID {$unitKerja->id}");
     }
 }
