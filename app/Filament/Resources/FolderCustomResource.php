@@ -50,6 +50,9 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
                 $user = \Illuminate\Support\Facades\Auth::user();
                 $query = Folder::query();
 
+                // IMPORTANT: Filter hanya root folders (parent_id = null)
+                $query->whereNull('parent_id');
+
                 // Filter berdasarkan permission
                 if (! $user->can('view_all_folder::custom') && $user->can('view_by_unit_kerja_folder::custom')) {
                     $unitKerjas = $user->unitKerjas
@@ -57,28 +60,12 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
                         ->map(fn($name) => \Illuminate\Support\Str::slug($name))
                         ->toArray();
 
+                    // Filter by collection karena collection pakai slug
                     $query->whereIn('collection', $unitKerjas);
                 }
 
                 if (! $user->can('view_all_folder::custom') && ! $user->can('view_by_unit_kerja_folder::custom')) {
                     $query->whereRaw('0 = 1');
-                }
-
-                // Tambahan filter dari URL parameter (model_type dan collection)
-                if (request()->has('model_type') && ! request()->has('collection')) {
-                    $query->where('model_type', request()->get('model_type'))
-                        ->whereNull('model_id')
-                        ->whereNotNull('collection');
-                } elseif (request()->has('model_type') && request()->has('collection')) {
-                    $query->where('model_type', request()->get('model_type'))
-                        ->whereNotNull('model_id')
-                        ->where('collection', request()->get('collection'));
-                } else {
-                    $query->where(function ($subQuery) {
-                        $subQuery->whereNull('model_id')
-                            ->whereNull('collection')
-                            ->orWhereNull('model_type');
-                    });
                 }
 
                 return $query;

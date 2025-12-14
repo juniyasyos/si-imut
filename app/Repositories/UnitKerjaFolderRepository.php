@@ -47,11 +47,11 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
     {
         $user = Auth::user();
 
-        // Buat folder utama unit kerja
+        // Buat folder utama unit kerja dengan nama proper (bisa pakai spasi)
         $mainFolder = Folder::create([
-            'name' => Str::slug($unitKerja->unit_name),
+            'name' => $unitKerja->unit_name, // Nama asli dengan spasi
             'description' => "Media untuk Unit Kerja: {$unitKerja->unit_name}",
-            'collection' => Str::slug($unitKerja->unit_name),
+            'collection' => Str::slug($unitKerja->unit_name), // Collection tetap slug untuk consistency
             'color' => null,
             'is_protected' => false,
             'is_hidden' => false,
@@ -78,9 +78,9 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
     {
         foreach ($this->standardSubfolders as $slug => $config) {
             Folder::create([
-                'name' => Str::slug($unitKerja->unit_name . '-' . $slug),
+                'name' => $config['name'], // Gunakan nama proper dari config
                 'description' => $config['description'],
-                'collection' => Str::slug($unitKerja->unit_name . '-' . $slug),
+                'collection' => Str::slug($unitKerja->unit_name . '-' . $slug), // Collection tetap slug
                 'color' => $config['color'],
                 'is_protected' => false,
                 'is_hidden' => false,
@@ -91,21 +91,24 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
                 'model_id' => null,
                 'user_id' => $user?->id ?? 1,
                 'user_type' => $user ? get_class($user) : User::class,
-                'parent_id' => $parentFolder->id,
+                'parent_id' => $parentFolder->id, // Set parent_id untuk nested structure
             ]);
         }
     }
 
     public function updateFolder(UnitKerja $unitKerja): void
     {
-        $slug = Str::slug($unitKerja->unit_name);
+        $collection = Str::slug($unitKerja->unit_name);
 
-        $folder = Folder::where('name', $slug)->first();
+        $folder = Folder::where('collection', $collection)
+            ->whereNull('parent_id')
+            ->first();
 
         if ($folder) {
             $folder->update([
-                'name' => $slug,
+                'name' => $unitKerja->unit_name, // Update dengan nama proper
                 'description' => "Updated folder for Unit Kerja: {$unitKerja->unit_name}",
+                'collection' => $collection,
             ]);
         } else {
             Log::warning("⚠️ Folder tidak ditemukan saat update UnitKerja ID {$unitKerja->id}");
@@ -114,9 +117,11 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
 
     public function markFolderAsDeleted(UnitKerja $unitKerja): void
     {
-        $slug = Str::slug($unitKerja->unit_name);
+        $collection = Str::slug($unitKerja->unit_name);
 
-        $folder = Folder::where('name', $slug)->first();
+        $folder = Folder::where('collection', $collection)
+            ->whereNull('parent_id')
+            ->first();
 
         if ($folder && ! str_starts_with($folder->name, '[Dihapus]')) {
             // Update folder utama
@@ -141,28 +146,30 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
 
     public function restoreFolder(UnitKerja $unitKerja): void
     {
-        $slug = '[Dihapus] ' . Str::slug($unitKerja->unit_name);
+        $collection = Str::slug($unitKerja->unit_name);
 
-        $folder = Folder::where('name', $slug)->first();
+        $folder = Folder::where('collection', $collection)
+            ->whereNull('parent_id')
+            ->where('name', 'like', '[Dihapus] %')
+            ->first();
 
         if ($folder) {
             // Restore folder utama
             $folder->update([
-                'name' => Str::slug($unitKerja->unit_name),
+                'name' => $unitKerja->unit_name, // Restore dengan nama proper
                 'color' => null,
             ]);
 
             // Restore semua subfolder juga
             Folder::where('parent_id', $folder->id)
                 ->where('name', 'like', '[Dihapus] %')
-                ->each(function ($subfolder) use ($unitKerja) {
+                ->each(function ($subfolder) {
                     $originalName = str_replace('[Dihapus] ', '', $subfolder->name);
 
-                    // Cari warna asli dari config
+                    // Cari warna asli dari config berdasarkan nama
                     $originalColor = null;
                     foreach ($this->standardSubfolders as $slug => $config) {
-                        $expectedName = Str::slug($unitKerja->unit_name . '-' . $slug);
-                        if ($originalName === $expectedName) {
+                        if ($originalName === $config['name']) {
                             $originalColor = $config['color'];
                             break;
                         }
@@ -174,6 +181,9 @@ class UnitKerjaFolderRepository implements UnitKerjaFolderRepositoryInterface
                     ]);
                 });
         } else {
+            Log::warning("⚠️ Folder yang dihapus tidak ditemukan saat restore UnitKerja ID {$unitKerja->id}");
+        }
+    }
             Log::warning("⚠️ Folder tidak ditemukan saat mencoba memulihkan nama untuk UnitKerja ID {$unitKerja->id}");
         }
     }
