@@ -37,9 +37,18 @@ class CreateLaporanImut extends CreateRecord
 
         if ($existingReport) {
             $monthNames = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
 
             $monthName = $monthNames[$data['report_month']] ?? $data['report_month'];
@@ -53,11 +62,11 @@ class CreateLaporanImut extends CreateRecord
                 // ->actions([
                 //     \Filament\Notifications\Actions\Action::make('lihat')
                 //         ->label('Lihat Laporan Existing')
-                //         ->url(route('filament.admin.resources.laporan-imuts.view', $existingReport->id))
+                //         ->url(route('filament.siimut.resources.laporan-imuts.view', $existingReport->id))
                 //         ->button(),
                 //     \Filament\Notifications\Actions\Action::make('edit')
                 //         ->label('Edit Laporan Existing')
-                //         ->url(route('filament.admin.resources.laporan-imuts.edit', $existingReport->id))
+                //         ->url(route('filament.siimut.resources.laporan-imuts.edit', $existingReport->id))
                 //         ->button(),
                 // ])
                 ->send();
@@ -80,9 +89,18 @@ class CreateLaporanImut extends CreateRecord
             // Handle duplicate entry error specifically
             if ($e->getCode() === '23000' && strpos($e->getMessage(), 'unique_periode_laporan') !== false) {
                 $monthNames = [
-                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    1 => 'Januari',
+                    2 => 'Februari',
+                    3 => 'Maret',
+                    4 => 'April',
+                    5 => 'Mei',
+                    6 => 'Juni',
+                    7 => 'Juli',
+                    8 => 'Agustus',
+                    9 => 'September',
+                    10 => 'Oktober',
+                    11 => 'November',
+                    12 => 'Desember'
                 ];
 
                 $monthName = $monthNames[$data['report_month']] ?? $data['report_month'];
@@ -95,15 +113,15 @@ class CreateLaporanImut extends CreateRecord
                 Notification::make()
                     ->title('Laporan Periode Sudah Ada')
                     ->body("Laporan untuk periode {$monthName} {$data['report_year']} sudah dibuat" .
-                           ($existingReport ? " dengan nama: \"{$existingReport->name}\"" : '.'))
+                        ($existingReport ? " dengan nama: \"{$existingReport->name}\"" : '.'))
                     ->warning()
                     ->persistent()
                     // ->actions([
                     //     \Filament\Notifications\Actions\Action::make('lihat')
                     //         ->label('Lihat Laporan Existing')
                     //         ->url($existingReport ?
-                    //             route('filament.admin.resources.laporan-imuts.view', $existingReport->id) :
-                    //             route('filament.admin.resources.laporan-imuts.index')
+                    //             route('filament.siimut.resources.laporan-imuts.view', $existingReport->id) :
+                    //             route('filament.siimut.resources.laporan-imuts.index')
                     //         )
                     //         ->button(),
                     // ])
@@ -134,7 +152,7 @@ class CreateLaporanImut extends CreateRecord
     public function getBreadcrumbs(): array
     {
         return [
-            route('filament.admin.resources.laporan-imuts.index') => 'Laporan IMUT',
+            route('filament.siimut.resources.laporan-imuts.index') => 'Laporan IMUT',
             null => 'Tambah Data Baru',
         ];
     }

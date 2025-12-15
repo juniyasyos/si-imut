@@ -106,7 +106,7 @@ class EditImutData extends EditRecord
     public function getBreadcrumbs(): array
     {
         return [
-            route('filament.admin.resources.imut-datas.index') => 'IMUT Data',
+            route('filament.siimut.resources.imut-datas.index') => 'IMUT Data',
             null => $this->record->title,
         ];
     }

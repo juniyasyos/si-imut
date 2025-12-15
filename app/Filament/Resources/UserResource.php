@@ -76,7 +76,7 @@ class UserResource extends Resource implements HasShieldPermissions
 
     public static function getGlobalSearchResultUrl(Model $record): ?string
     {
-        return route('filament.admin.resources.users.edit', $record);
+        return route('filament.siimut.resources.users.edit', $record);
     }
 
     public static function getGlobalSearchResultImage(Model $record): ?string

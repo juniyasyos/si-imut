@@ -47,9 +47,9 @@ class EditImutProfile extends EditRecord
             : 'Data Tidak Ditemukan';
 
         return [
-            route('filament.admin.resources.imut-datas.index') => 'Imut Datas',
+            route('filament.siimut.resources.imut-datas.index') => 'Imut Datas',
             $imutData
-                ? route('filament.admin.resources.imut-datas.edit', ['record' => $imutData->slug])
+                ? route('filament.siimut.resources.imut-datas.edit', ['record' => $imutData->slug])
                 : '#' => $label,
             null => 'Edit Profile | ' . $this->record->version,
         ];

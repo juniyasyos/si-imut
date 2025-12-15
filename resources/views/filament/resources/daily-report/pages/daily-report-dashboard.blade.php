@@ -56,12 +56,12 @@
                     </div>
 
                     <div class="mt-6 flex gap-2">
-                        <a href="{{ route('filament.admin.pages.daily-report-periods') }}?indicator={{ $indicator['id'] }}"
+                        <a href="{{ route('filament.siimut.pages.daily-report-periods') }}?indicator={{ $indicator['id'] }}"
                             class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                             @svg("heroicon-o-eye", "w-4 h-4 mr-2")
                             Lihat Detail
                         </a>
-                        <a href="{{ route('filament.admin.resources.daily-report-entries.create') }}?indicator={{ $indicator['id'] }}"
+                        <a href="{{ route('filament.siimut.resources.daily-report-entries.create') }}?indicator={{ $indicator['id'] }}"
                             class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors">
                             @svg("heroicon-o-plus", "w-4 h-4 mr-1")
                             Input

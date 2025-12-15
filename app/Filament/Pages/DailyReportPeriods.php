@@ -72,7 +72,7 @@ class DailyReportPeriods extends Page
     public function getBreadcrumbs(): array
     {
         return [
-            route('filament.admin.pages.daily-report-dashboard') => 'Laporan Harian',
+            route('filament.siimut.pages.daily-report-dashboard') => 'Laporan Harian',
             '#' => $this->getTitle(),
         ];
     }

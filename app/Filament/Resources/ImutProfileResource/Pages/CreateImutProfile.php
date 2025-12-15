@@ -93,7 +93,7 @@ class CreateImutProfile extends CreateRecord
             ->success()
             // ->actions([
             //     NotificationAction::make('Lihat Profil')
-            //         ->url(route('filament.admin.resources.imut-datas.edit-profile', [
+            //         ->url(route('filament.siimut.resources.imut-datas.edit-profile', [
             //             'imutDataSlug' => $imutData->slug,
             //             'record' => $record->id,
             //         ]))
@@ -109,8 +109,8 @@ class CreateImutProfile extends CreateRecord
         $imutData = $this->imutData;
 
         return [
-            route('filament.admin.resources.imut-datas.index') => 'IMUT Data',
-            $imutData ? route('filament.admin.resources.imut-datas.edit', ['record' => $imutData->slug]) : '#' => $imutData->title ?? 'Data Tidak Ditemukan',
+            route('filament.siimut.resources.imut-datas.index') => 'IMUT Data',
+            $imutData ? route('filament.siimut.resources.imut-datas.edit', ['record' => $imutData->slug]) : '#' => $imutData->title ?? 'Data Tidak Ditemukan',
             null => 'Tambah Data Profile',
         ];
     }
@@ -120,7 +120,7 @@ class CreateImutProfile extends CreateRecord
         $record = $this->record; // sudah tersedia di CreateRecord
         $imutData = ImutData::find($record->imut_data_id);
 
-        return route('filament.admin.resources.imut-datas.edit-profile', [
+        return route('filament.siimut.resources.imut-datas.edit-profile', [
             'imutDataSlug' => $imutData->slug,
             'record' => $record->slug,
         ]);

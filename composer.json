@@ -34,7 +34,7 @@
         "jeffgreco13/filament-breezy": "^2.4",
         "juniyasyos/dash-stack-theme-juniyasyos": "^1.3",
         "juniyasyos/filament-backup": "^1.2",
-        "juniyasyos/filament-media-manager": "@dev",
+        "juniyasyos/filament-media-manager": "v1.3.7",
         "juniyasyos/filament-pwa-kaido": "^2.1",
         "juniyasyos/filament-settings-hub-kaido": "^4.0",
         "juniyasyos/laravel-iam-client": "v1.3.0",
@@ -139,12 +139,6 @@
             "dont-discover": []
         }
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/juniyasyos/filament-media-manager"
-        }
-    ],
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

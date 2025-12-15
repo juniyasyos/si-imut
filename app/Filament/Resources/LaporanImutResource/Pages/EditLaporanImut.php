@@ -65,7 +65,7 @@ class EditLaporanImut extends EditRecord
                 // ->actions([
                 //     \Filament\Notifications\Actions\Action::make('lihat')
                 //         ->label('Lihat Laporan Existing')
-                //         ->url(route('filament.admin.resources.laporan-imuts.view', $existingReport->id))
+                //         ->url(route('filament.siimut.resources.laporan-imuts.view', $existingReport->id))
                 //         ->button(),
                 // ])
                 ->send();
@@ -121,8 +121,8 @@ class EditLaporanImut extends EditRecord
                             ->label('Lihat Laporan Existing')
                             ->url(
                                 $existingReport ?
-                                    route('filament.admin.resources.laporan-imuts.view', $existingReport->id) :
-                                    route('filament.admin.resources.laporan-imuts.index')
+                                    route('filament.siimut.resources.laporan-imuts.view', $existingReport->id) :
+                                    route('filament.siimut.resources.laporan-imuts.index')
                             )
                             ->button(),
                     ])
@@ -147,7 +147,7 @@ class EditLaporanImut extends EditRecord
     public function getBreadcrumbs(): array
     {
         return [
-            route('filament.admin.resources.laporan-imuts.index') => 'Laporan IMUT',
+            route('filament.siimut.resources.laporan-imuts.index') => 'Laporan IMUT',
             null => 'Edit: ' . $this->record->name,
         ];
     }

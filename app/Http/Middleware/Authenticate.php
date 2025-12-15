@@ -20,8 +20,8 @@ class Authenticate extends Middleware
             }
 
             // Check if Filament login exists
-            if (\Illuminate\Support\Facades\Route::has('filament.admin.auth.login')) {
-                return route('filament.admin.auth.login');
+            if (\Illuminate\Support\Facades\Route::has('filament.siimut.auth.login')) {
+                return route('filament.siimut.auth.login');
             }
 
             // Fallback to login route

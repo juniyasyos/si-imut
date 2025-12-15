@@ -222,13 +222,13 @@ php artisan route:list | grep -E "(login|admin)"
 
 **Expected Output (Development):**
 ```
-GET|HEAD   admin/login .... filament.admin.auth.login
+GET|HEAD   admin/login .... filament.siimut.auth.login
 GET|HEAD   login .......... login (will redirect to /admin/login)
 ```
 
 **Expected Output (Production):**
 ```
-GET|HEAD   admin/login .... filament.admin.auth.login (will redirect to /login)
+GET|HEAD   admin/login .... filament.siimut.auth.login (will redirect to /login)
 GET|HEAD   login .......... login (SSO)
 ```
 
@@ -252,7 +252,7 @@ GET|HEAD   login .......... login (SSO)
 - [ ] Production mode: `/login` redirects to IAM server
 - [ ] Production mode: `/admin/login` redirects to `/login`
 - [ ] Switch script works: `./switch-auth-mode.sh dev|prod|status`
-- [ ] Route `filament.admin.auth.login` exists
+- [ ] Route `filament.siimut.auth.login` exists
 - [ ] No route conflicts
 - [ ] Cache clearing works
 
