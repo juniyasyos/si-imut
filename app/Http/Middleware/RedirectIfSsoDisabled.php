@@ -12,7 +12,7 @@ class RedirectIfSsoDisabled
     /**
      * Handle an incoming request.
      *
-     * Middleware ini akan redirect ke /admin/login ketika SSO disabled (development mode)
+     * Middleware ini akan redirect ke /siimut/login ketika SSO disabled (development mode)
      * dan user mencoba mengakses SSO routes seperti /login atau /oauth/callback
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next

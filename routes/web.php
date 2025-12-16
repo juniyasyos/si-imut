@@ -31,7 +31,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('/', function () {
         // If authenticated, go to admin dashboard
         if (Auth::check()) {
-            return redirect('/admin');
+            return redirect('/siimut');
         }
 
         // If not authenticated, check SSO mode
