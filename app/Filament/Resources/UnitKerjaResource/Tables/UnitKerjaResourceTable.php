@@ -4,6 +4,8 @@ namespace App\Filament\Resources\UnitKerjaResource\Tables;
 
 use App\Filament\Exports\UnitKerjaExporter;
 use App\Filament\Resources\UnitKerjaResource;
+use App\Filament\Resources\UnitKerjaResource\RelationManagers\ImutDataRelationManager;
+use App\Filament\Resources\UnitKerjaResource\RelationManagers\UsersRelationManager;
 use App\Models\UnitKerja;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\ActionGroup;
@@ -61,18 +63,28 @@ class UnitKerjaResourceTable extends UnitKerjaResource
     public static function actions(): array
     {
         return [
-            // Primary visible action: Edit (compact button)
-            EditAction::make()
-                ->visible(fn($record) => method_exists($record, 'trashed') && ! $record->trashed())
-                ->icon('heroicon-o-pencil'),
+            \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('users')
+                ->slideOver()
+                ->label('Pegawai')
+                ->icon('heroicon-o-user-group')
+                ->color('success')
+                ->relationManager(UsersRelationManager::make()),
 
-            DeleteAction::make()
-                ->requiresConfirmation()
-                ->visible(fn($record) => Gate::allows('delete', $record)),
-            // Put destructive and restore actions into a compact group (not rendering as a large grouped button)
+            \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('imutData')
+                ->slideOver()
+                ->label('Imut Data')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->relationManager(ImutDataRelationManager::make()),
+
             ActionGroup::make([
+                EditAction::make('edit')
+                    ->label('Edit')
+                    ->tooltip('Edit')
+                    ->visible(fn($record) => method_exists($record, 'trashed') && ! $record->trashed())
+                    ->icon('heroicon-o-pencil-square'),
 
-                RestoreAction::make()
+                RestoreAction::make('restore')
                     ->visible(
                         fn($record) =>
                         Gate::allows('restore', $record) &&
@@ -80,7 +92,7 @@ class UnitKerjaResourceTable extends UnitKerjaResource
                             $record->trashed()
                     ),
 
-                ForceDeleteAction::make()
+                ForceDeleteAction::make('forceDelete')
                     ->requiresConfirmation()
                     ->visible(
                         fn($record) =>

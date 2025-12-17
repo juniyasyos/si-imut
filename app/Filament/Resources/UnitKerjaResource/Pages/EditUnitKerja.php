@@ -15,12 +15,19 @@ class EditUnitKerja extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            RelationManagerAction::make()
+            RelationManagerAction::make('users')
                 ->slideOver()
                 ->icon('heroicon-o-user')
                 ->record($this->getRecord())
                 ->label(__('filament-forms::unit-kerja.actions.attach'))
                 ->relationManager(UsersRelationManager::make()),
+
+            RelationManagerAction::make('imutData')
+                ->slideOver()
+                ->icon('heroicon-o-document-text')
+                ->record($this->getRecord())
+                ->label('Imut Data')
+                ->relationManager(ImutDataRelationManager::make()),
         ];
     }
 

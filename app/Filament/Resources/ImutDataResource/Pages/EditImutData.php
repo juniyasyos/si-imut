@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
+use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
 use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
 use Filament\Actions\Action;
@@ -27,53 +28,45 @@ class EditImutData extends EditRecord
         return [
             ActionGroup::make([
                 Action::make('lihat_grafik')
-                    ->label('📊 IMUT DATA')
+                    ->label('Lihat Grafik IMUT')
                     ->color('primary')
+                    ->icon('heroicon-s-chart-bar')
                     ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
+
+                Action::make('manage_form_builder')
+                    ->label('Form Laporan Harian')
+                    ->color('info')
+                    ->icon('heroicon-s-document-text')
+                    ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', ['record' => $record]))
+                    ->visible(fn($record) => self::canEditProfilIndikator($record)),
+            ])
+                ->button()
+                ->label('Laporan & Grafik')
+                ->icon('heroicon-s-chart-bar')
+                ->color('primary')
+                ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
+
+            ActionGroup::make([
+                RelationManagerAction::make('profiles')
+                    ->slideOver()
+                    ->label('Kelola Profiles')
+                    ->icon('heroicon-s-user-group')
+                    ->record($this->getRecord())
+                    ->color('gray')
+                    ->relationManager(ProfilesRelationManager::make()),
 
                 RelationManagerAction::make('unit-kerja-relation')
                     ->slideOver()
-                    ->label('🏢 Unit Kerja')
+                    ->label('Unit Kerja')
+                    ->icon('heroicon-s-building-office')
                     ->record($this->getRecord())
-                    ->color('primary')
+                    ->color('gray')
                     ->relationManager(UnitKerjaRelationManager::make()),
             ])
                 ->button()
-                ->label('Lihat Grafik')
-                ->icon('heroicon-s-chart-bar')
-                ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
-
-            Action::make('manage_form_builder')
-                ->label('📝 Laporan Harian')
-                ->color('info')
-                ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', ['record' => $record]))
-                ->visible(fn($record) => self::canEditProfilIndikator($record)),
-
-            // Action::make('lihat_berdasarkan_unit_kerja')
-            //     ->label('🏢 Lihat Grafik')
-            //     ->color('success')
-            //     ->visible(function () {
-            //         $user = Auth::user();
-
-            //         return $user->can('view_by_unit_kerja_imut::data') &&
-            //             ! $user->can('view_all_data_imut::data') &&
-            //             $user->unitKerjas->isNotEmpty();
-            //     })
-            //     ->url(function ($record) {
-            //         $user = Auth::user();
-            //         $unitKerja = $user->unitKerjas->first();
-
-            //         if (! $unitKerja) {
-            //             return '#';
-            //         }
-
-            //         return [
-            //             UnitKerjaChart::make([
-            //                 'record_imut_data' => $record->id,
-            //                 'record_unit_kerja' => $unitKerja->id,
-            //             ])
-            //         ];
-            //     }),
+                ->label('🔧 Kelola Data')
+                ->icon('heroicon-s-cog-6-tooth')
+                ->color('gray'),
 
             $this->getDeleteAction(),
         ];

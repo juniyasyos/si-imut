@@ -100,18 +100,18 @@ class LaporanImutTable extends LaporanImutResource
             Action::make('isi_penilaian')
                 ->label(fn($record) => match (self::resolveStatus($record)) {
                     'coming_soon' => 'Belum Dibuka',
-                    'complete' => 'Hasil Penilaian',
+                    'complete' => 'Lihat Hasil',
                     default => 'Isi Penilaian',
                 })
                 ->icon(fn($record) => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'heroicon-s-clock',
-                    'complete' => 'heroicon-s-document-check',
-                    default => 'heroicon-s-clipboard-document-list',
+                    'coming_soon' => 'heroicon-o-clock',
+                    'complete' => 'heroicon-o-document-check',
+                    default => 'heroicon-o-clipboard-document-list',
                 })
                 ->color(fn($record) => match (self::resolveStatus($record)) {
                     'coming_soon' => 'gray',
                     'complete' => 'success',
-                    default => 'warning',
+                    default => 'primary',
                 })
                 ->disabled(fn($record) => self::resolveStatus($record) === 'coming_soon')
                 ->visible(
@@ -130,73 +130,55 @@ class LaporanImutTable extends LaporanImutResource
                 }),
 
             ActionGroup::make([
-                EditAction::make()
-                    ->visible(fn($record) => method_exists($record, 'trashed') && ! $record->trashed()),
-
-                DeleteAction::make()
-                    ->visible(fn($record) => method_exists($record, 'trashed') && ! $record->trashed()),
-
-                Action::make('summary')
-                    ->label('Summary')
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->color('success')
+                Action::make('summary_unit_kerja')
+                    ->label('Summary Unit')
+                    ->icon('heroicon-o-building-office')
+                    ->color('info')
                     ->visible(
                         fn($record) => method_exists($record, 'trashed') &&
-                            ! $record->trashed() && Auth::user()->can([
-                                'view_unit_kerja_report_laporan::imut',
-                                'view_imut_data_report_laporan::imut',
-                            ])
+                            ! $record->trashed() &&
+                            Auth::user()->can('view_unit_kerja_report_laporan::imut')
                     )
-                    ->form([
-                        Select::make('summary_type')
-                            ->label('Pilih Tipe Summary')
-                            ->options([
-                                'unit_kerja' => 'Summary Unit Kerja – menampilkan rekapitulasi per unit kerja',
-                                'imut_data' => 'Summary IMUT DATA – menampilkan detail tiap IMUT',
-                            ])
-                            ->required(),
-                    ])
-                    ->modalHeading('Pilih Summary')
-                    ->modalSubmitActionLabel('Lihat')
-                    ->action(function ($record, array $data) {
-                        $type = $data['summary_type'];
+                    ->url(fn($record) => UnitKerjaReport::getUrl(['laporan_id' => $record->id])),
 
-                        $map = [
-                            'unit_kerja' => [
-                                'permission' => 'view_unit_kerja_report_laporan::imut',
-                                'redirect' => UnitKerjaReport::getUrl(['laporan_id' => $record->id]),
-                            ],
-                            'imut_data' => [
-                                'permission' => 'view_imut_data_report_laporan::imut',
-                                'redirect' => ImutDataReport::getUrl(['laporan_id' => $record->id]),
-                            ],
-                        ];
+                Action::make('summary_imut_data')
+                    ->label('Summary IMUT')
+                    ->icon('heroicon-o-document-chart-bar')
+                    ->color('info')
+                    ->visible(
+                        fn($record) => method_exists($record, 'trashed') &&
+                            ! $record->trashed() &&
+                            Auth::user()->can('view_imut_data_report_laporan::imut')
+                    )
+                    ->url(fn($record) => ImutDataReport::getUrl(['laporan_id' => $record->id])),
+            ])
+                ->tooltip('Lihat Laporan Ringkasan')
+                ->icon('heroicon-o-chart-bar')
+                ->label('Laporan Ringkasan')
+                ->color('secondary'),
 
-                        abort_unless(
-                            isset($map[$type]) && Gate::allows($map[$type]['permission']),
-                            403,
-                            'Anda tidak memiliki izin untuk mengakses summary ini.'
-                        );
-
-                        return redirect()->to($map[$type]['redirect']);
-                    }),
-            ]),
-
-            RestoreAction::make()
-                ->visible(
-                    fn($record) =>
-                    Gate::allows('restore', $record) &&
-                        method_exists($record, 'trashed') &&
-                        $record->trashed()
-                ),
-
-            ForceDeleteAction::make()
-                ->visible(
-                    fn($record) =>
-                    Gate::allows('forceDelete', $record) &&
-                        method_exists($record, 'trashed') &&
-                        $record->trashed()
-                ),
+            ActionGroup::make([
+                EditAction::make(),
+                DeleteAction::make(),
+                RestoreAction::make()
+                    ->visible(
+                        fn($record) =>
+                        Gate::allows('restore', $record) &&
+                            method_exists($record, 'trashed') &&
+                            $record->trashed()
+                    ),
+                ForceDeleteAction::make()
+                    ->visible(
+                        fn($record) =>
+                        Gate::allows('forceDelete', $record) &&
+                            method_exists($record, 'trashed') &&
+                            $record->trashed()
+                    ),
+            ])
+                ->tooltip('Kelola Laporan')
+                ->icon('heroicon-o-ellipsis-horizontal')
+                ->label('Aksi')
+                ->color('gray'),
         ];
     }
 

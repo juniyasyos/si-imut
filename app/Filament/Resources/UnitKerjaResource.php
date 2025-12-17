@@ -86,14 +86,6 @@ class UnitKerjaResource extends Resource implements HasShieldPermissions
             ->bulkActions(UnitKerjaResourceTable::bulkActions());
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            // UsersRelationManager::class,
-            ImutDataRelationManager::class,
-        ];
-    }
-
     public static function getPages(): array
     {
         return [

@@ -22,7 +22,10 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Guava\FilamentModalRelationManagers\Actions\ModalRelationManagerAction;
+use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use Filament\Notifications\Notification;
+use Guava\FilamentModalRelationManagers\Actions\Action\RelationManagerAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -167,10 +170,12 @@ class ImutDataSchema extends ImutDataResource
                                             ->schema([
                                                 TableRepeater::make("{$regionType->type}_benchmarkings")
                                                     ->label('')
-                                                    ->relationship('benchmarkings', fn($query) => $query
-                                                        ->where('region_type_id', $regionType->id)
-                                                        ->orderBy('is_active', 'desc')
-                                                        ->orderByDesc('period_start')
+                                                    ->relationship(
+                                                        'benchmarkings',
+                                                        fn($query) => $query
+                                                            ->where('region_type_id', $regionType->id)
+                                                            ->orderBy('is_active', 'desc')
+                                                            ->orderByDesc('period_start')
                                                     )
                                                     ->headers([
                                                         Header::make('benchmark_value')->label('Nilai (%)')->width('100px'),
@@ -257,7 +262,6 @@ class ImutDataSchema extends ImutDataResource
                         ])
                         ->visible(fn(?Model $record) => $record !== null
                             && $record->categories->is_benchmark_category === 1),
-
                 ]),
         ];
     }

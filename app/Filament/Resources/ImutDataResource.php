@@ -117,13 +117,6 @@ class ImutDataResource extends Resource implements HasShieldPermissions
         return $query->whereRaw('1 = 0');
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            ProfilesRelationManager::class,
-        ];
-    }
-
     public static function getPages(): array
     {
         return [

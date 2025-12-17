@@ -55,7 +55,7 @@ class LaporanImutSchema extends LaporanImutResource
                                 ])
                                 ->required()
                                 ->default(now()->month)
-                                ->reactive()
+                                ->live()
                                 ->afterStateUpdated(function (callable $get, callable $set, $state) {
                                     static::updateLaporanName($get, $set);
                                 })
@@ -73,7 +73,7 @@ class LaporanImutSchema extends LaporanImutResource
                                 })
                                 ->required()
                                 ->default(now()->year)
-                                ->reactive()
+                                ->live()
                                 ->afterStateUpdated(function (callable $get, callable $set, $state) {
                                     static::updateLaporanName($get, $set);
                                 })
@@ -85,21 +85,18 @@ class LaporanImutSchema extends LaporanImutResource
                         ->label('Dimulainya Periode Asesmen')
                         ->placeholder('YYYY-MM-DD')
                         ->required()
-                        ->reactive()
+                        ->live()
                         ->default(now()->format('Y-m-d'))
                         ->afterStateUpdated(function (callable $set, $state) {
-                            if ($state > now()->toDateString()) {
-                                $set('status', 'coming_soon');
-                            } else {
-                                $set('status', 'process');
-                            }
+                            if (!$state) return;
+
+                            $today = now()->toDateString();
+                            $set('status', $state > $today ? 'coming_soon' : 'process');
 
                             // Auto-update report_month dan report_year
-                            if ($state) {
-                                $date = Carbon::parse($state);
-                                $set('report_month', $date->month);
-                                $set('report_year', $date->year);
-                            }
+                            $date = Carbon::parse($state);
+                            $set('report_month', $date->month);
+                            $set('report_year', $date->year);
                         }),
 
                     DatePicker::make('assessment_period_end')
@@ -108,12 +105,12 @@ class LaporanImutSchema extends LaporanImutResource
                         ->required()
                         ->minDate(fn(callable $get) => $get('assessment_period_start'))
                         ->rule('after_or_equal:assessment_period_start')
+                        ->live()
                         ->afterStateUpdated(function (callable $set, $state) {
-                            if ($state < now()->toDateString()) {
-                                $set('status', 'complete');
-                            } else {
-                                $set('status', 'process');
-                            }
+                            if (!$state) return;
+
+                            $today = now()->toDateString();
+                            $set('status', $state < $today ? 'complete' : 'process');
                         }),
 
                     ToggleButtons::make('status')
@@ -155,61 +152,16 @@ class LaporanImutSchema extends LaporanImutResource
                             CheckboxList::make('unitKerjas')
                                 ->relationship('unitKerjas', 'unit_name')
                                 ->label('Daftar Unit Kerja yang Berpartisipasi')
-                                ->columns(2)
+                                ->columns(4)
                                 ->required()
                                 ->bulkToggleable()
-                                ->default(UnitKerja::pluck('id')->toArray())
+                                ->default(fn() => UnitKerja::pluck('id')->toArray())
                                 ->searchable()
                                 ->disabled(fn($record) => $record?->status === 'complete')
-                                ->descriptions(function ($state, $record) {
-                                    // Hanya tampilkan statistik pada mode edit
-                                    if (!$record?->id) {
-                                        return [];
-                                    }
-
-                                    $stats = static::getUnitKerjaPenilaianStats($record->id);
-                                    $descriptions = [];
-
-                                    foreach (UnitKerja::all() as $unitKerja) {
-                                        if (isset($stats[$unitKerja->id])) {
-                                            $stat = $stats[$unitKerja->id];
-                                            $total = $stat['total'];
-                                            $filled = $stat['filled'];
-                                            $percentage = $total > 0 ? round(($filled / $total) * 100) : 0;
-
-                                            if ($total > 0) {
-                                                // Tentukan badge warna berdasarkan progress
-                                                if ($percentage >= 80) {
-                                                    $badge = '✅'; // Hijau - Baik
-                                                } elseif ($percentage >= 50) {
-                                                    $badge = '⚠️'; // Kuning - Sedang
-                                                } elseif ($percentage > 0) {
-                                                    $badge = '🔶'; // Oranye - Mulai
-                                                } else {
-                                                    $badge = '⭕'; // Merah - Kosong
-                                                }
-
-                                                $descriptions[$unitKerja->id] = sprintf(
-                                                    '%s %d dari %d penilaian terisi • Progress: %d%%',
-                                                    $badge,
-                                                    $filled,
-                                                    $total,
-                                                    $percentage
-                                                );
-                                            } else {
-                                                $descriptions[$unitKerja->id] = '⚪ Belum ada data penilaian';
-                                            }
-                                        } else {
-                                            $descriptions[$unitKerja->id] = '⚪ Belum ada data penilaian';
-                                        }
-                                    }
-
-                                    return $descriptions;
-                                })
-                                ->helperText(fn($record) => $record?->status === 'complete' 
+                                ->helperText(fn($record) => $record?->status === 'complete'
                                     ? '🔒 Laporan sudah selesai. Pemilihan unit kerja tidak dapat diubah.'
-                                    : '⚠️ PERINGATAN: Menghapus centang pada unit kerja yang sudah memiliki data akan **menghapus permanen** semua penilaian yang telah diinput oleh unit tersebut.')
-                                ->hint('Pilih semua unit yang relevan')
+                                    : 'Pilih unit kerja yang akan berpartisipasi dalam laporan ini.')
+                                ->hint(fn($record) => $record?->id ? 'Lihat progress di halaman summary laporan' : 'Pilih semua unit yang relevan')
                                 ->hintIcon('heroicon-m-information-circle'),
                         ]),
                 ])
@@ -249,36 +201,7 @@ class LaporanImutSchema extends LaporanImutResource
     }
 
     /**
-     * Get statistics for unit kerja penilaian counts
-     * Returns array with unit_kerja_id as key and count as value
+     * Get statistics for unit kerja penilaian counts (REMOVED FOR PERFORMANCE)
+     * Use summary pages to view detailed statistics instead
      */
-    public static function getUnitKerjaPenilaianStats(?int $laporanId): array
-    {
-        if (!$laporanId) {
-            return [];
-        }
-
-        $laporan = \App\Models\LaporanImut::with(['laporanUnitKerjas.imutPenilaians'])->find($laporanId);
-
-        if (!$laporan) {
-            return [];
-        }
-
-        $stats = [];
-        foreach ($laporan->laporanUnitKerjas as $laporanUnitKerja) {
-            $unitKerjaId = $laporanUnitKerja->unit_kerja_id;
-            $penilaianCount = $laporanUnitKerja->imutPenilaians()->count();
-            $penilaianFilled = $laporanUnitKerja->imutPenilaians()
-                ->whereNotNull('numerator_value')->whereNotNull('denominator_value')
-                ->count();
-
-            $stats[$unitKerjaId] = [
-                'total' => $penilaianCount,
-                'filled' => $penilaianFilled,
-                'empty' => $penilaianCount - $penilaianFilled,
-            ];
-        }
-
-        return $stats;
-    }
 }

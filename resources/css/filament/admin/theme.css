@@ -4,6 +4,8 @@
 
 @import '/vendor/awcodes/filament-table-repeater/resources/css/plugin.css';
 
+@source '../../../../vendor/guava/filament-modal-relation-managers/resources/**/*';
+
 @config 'tailwind.config.js';
 
 

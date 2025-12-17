@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     <div class="space-y-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div class="fi-section-header">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                     @svg("heroicon-o-document-text", "w-6 h-6 text-primary-600 dark:text-primary-400")
@@ -21,7 +21,7 @@
                             <li>Tambah pertanyaan dengan klik tombol "+ Tambah Pertanyaan"</li>
                             <li>Pilih tipe input sesuai kebutuhan (Text, Number, Date, Boolean, dll)</li>
                             <li>Untuk Select/Radio/Checkbox, tambahkan opsi pilihan</li>
-                            <li>Drag untuk mengatur urutan pertanyaan</li>
+                            <li>Drag untuk mengatur urutan pertanyaan</li>  
                             <li>Klik "Simpan Form" untuk menyimpan</li>
                         </ul>
                     </div>
