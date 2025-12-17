@@ -4,12 +4,12 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/app-t1AUIXT6.css",
+    "file": "assets/app-nHqXIlOD.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-Y3Ip25o6.css",
+    "file": "assets/theme-C1MCeZGN.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },

@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
                 RegionTypeSeeder::class,
                 ImutDataOldSeeder::class,
                 FormHeaderSeeder::class,
+                EnhancedFormBuilderSeeder::class,
                 UpdateRoleSeeder::class
                 // LaporanImutSeeder::class,
                 // ImutDataSeeder::class,
