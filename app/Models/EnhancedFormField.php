@@ -51,12 +51,15 @@ class EnhancedFormField extends Model
             return 0;
         }
 
+        // Only certain field types contribute to compliance scoring
         switch ($this->field_type) {
             case 'boolean':
                 return $this->scoreBooleanField($value);
 
             case 'single_select':
             case 'multi_select':
+            case 'conditional_trigger':
+            case 'compliance_checker':
                 return $this->scoreSelectField($value);
 
             case 'time_duration':
@@ -68,8 +71,15 @@ class EnhancedFormField extends Model
             case 'rating_scale':
                 return $this->scoreRatingScale($value);
 
+            case 'short_text':
+            case 'long_text':
+            case 'number':
+                // Text and number fields are for supplementary data only
+                // They don't contribute to compliance scoring
+                return 0;
+
             default:
-                return $this->scoreDefaultField($value);
+                return 0;
         }
     }
 
@@ -148,8 +158,9 @@ class EnhancedFormField extends Model
 
     private function scoreDefaultField($value): float
     {
-        // For text/number fields, just check if not empty
-        return !empty($value) ? 100 : 0;
+        // This method is deprecated - scoring is now handled per field type
+        // Text fields should not contribute to compliance scoring
+        return 0;
     }
 
     public function shouldShowField(array $allResponses): bool

@@ -28,6 +28,7 @@ class DailyReportResponse extends Model
     protected $casts = [
         'report_date' => 'date',
         'auto_calculated' => 'boolean',
+        'compliance_status' => 'boolean',
         'calculation_details' => 'array',
     ];
 

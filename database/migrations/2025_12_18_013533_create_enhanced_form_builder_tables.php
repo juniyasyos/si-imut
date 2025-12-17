@@ -61,7 +61,7 @@ return new class extends Migration
             $table->foreignId('form_field_id')->constrained('enhanced_form_fields')->onDelete('cascade');
             $table->string('option_key');
             $table->string('option_label');
-            $table->integer('compliance_value')->default(0); // 0=fail, 1=pass, 2=excellent
+            $table->integer('compliance_value')->default(0);
             $table->text('option_description')->nullable();
             $table->integer('order_index')->default(0);
             $table->timestamps();

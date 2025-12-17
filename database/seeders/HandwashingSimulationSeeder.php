@@ -181,13 +181,10 @@ class HandwashingSimulationSeeder extends Seeder
         $details = $complianceResult['calculation_details'];
         $this->command->info("Score: {$details['raw_score']}/{$details['max_score']} = {$complianceResult['total_score']}%");
 
-        $statusColor = match ($complianceResult['compliance_status']) {
-            'compliant' => '🟢',
-            'non_compliant' => '🔴',
-            default => '🟡'
-        };
+        $statusColor = $complianceResult['compliance_status'] ? '🟢' : '🔴';
+        $statusText = $complianceResult['compliance_status'] ? 'COMPLIANT' : 'NON-COMPLIANT';
 
-        $this->command->info("Status: {$statusColor} " . strtoupper($complianceResult['compliance_status']));
+        $this->command->info("Status: {$statusColor} {$statusText}");
 
         if ($complianceResult['critical_failed']) {
             $this->command->warn('⚠️  CRITICAL FIELD FAILED - Auto Non-Compliant');

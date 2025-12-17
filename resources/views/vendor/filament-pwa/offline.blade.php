@@ -53,7 +53,7 @@
         <div>
             <p>Sorry for the inconvenience but we&rsquo;re currently offline or performing some maintenance.
                 We&rsquo;ll be back online shortly!</p>
-            <p>&mdash; The Team RSCH</p>
+            <p>&mdash; The Team IT RSCH</p>
 
             <div class="actions">
                 <button onclick="location.reload()">Refresh</button>
