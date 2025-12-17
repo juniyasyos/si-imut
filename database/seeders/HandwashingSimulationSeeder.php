@@ -36,7 +36,7 @@ class HandwashingSimulationSeeder extends Seeder
         // Simulasi 3 scenario berbeda
         $scenarios = [
             ['name' => 'Compliance Sangat Baik', 'compliance' => 'excellent'],
-            ['name' => 'Compliance Baik', 'compliance' => 'good'], 
+            ['name' => 'Compliance Baik', 'compliance' => 'good'],
             ['name' => 'Compliance Kurang', 'compliance' => 'poor']
         ];
 
@@ -53,25 +53,25 @@ class HandwashingSimulationSeeder extends Seeder
     private function showFormStructure(FormTemplate $template): void
     {
         $this->command->info('📝 STRUKTUR FORM:');
-        
+
         foreach ($template->fields as $field) {
             $critical = $field->is_critical_field ? ' [CRITICAL]' : '';
             $weight = $field->compliance_weight > 0 ? " (Weight: {$field->compliance_weight})" : '';
-            
+
             $this->command->info("{$field->order_index}. {$field->field_name} ({$field->field_type}){$critical}{$weight}");
-            
+
             if ($field->options->count() > 0) {
                 foreach ($field->options as $option) {
-                    $compliance = match($option->compliance_value) {
+                    $compliance = match ($option->compliance_value) {
                         2 => '🟢 Excellent',
-                        1 => '🟡 Pass', 
+                        1 => '🟡 Pass',
                         0 => '🔴 Fail',
                         default => '⚪ N/A'
                     };
                     $this->command->info("   - {$option->option_text} → {$compliance}");
                 }
             }
-            
+
             if ($field->parent_field_id) {
                 $parent = EnhancedFormField::find($field->parent_field_id);
                 $this->command->info("   [Conditional: Shows when '{$parent->field_name}' = '{$field->condition_value}']");
@@ -93,7 +93,7 @@ class HandwashingSimulationSeeder extends Seeder
 
         // Get existing form header for backward compatibility
         $formHeader = \App\Models\FormHeader::first();
-        
+
         // Create daily report response
         $dailyReport = DailyReportResponse::create([
             'form_template_id' => $template->id,
@@ -112,10 +112,10 @@ class HandwashingSimulationSeeder extends Seeder
         // Simulasi response untuk setiap field
         foreach ($template->fields as $field) {
             $response = $this->generateFieldResponse($field, $complianceLevel);
-            
+
             if ($response !== null) {
                 $responses[$field->field_key] = $response;
-                
+
                 // Create field response record
                 FieldResponse::create([
                     'daily_report_response_id' => $dailyReport->id,
@@ -134,7 +134,7 @@ class HandwashingSimulationSeeder extends Seeder
 
         // Calculate final compliance
         $complianceResult = $template->calculateCompliance($responses);
-        
+
         // Update daily report with results
         $dailyReport->update([
             'total_score' => $complianceResult['total_score'],
@@ -153,20 +153,20 @@ class HandwashingSimulationSeeder extends Seeder
             return null;
         }
 
-        return match($field->field_key) {
+        return match ($field->field_key) {
             'data_collector' => 'Dr. Siti Nurhaliza, SpKJ',
             'handwashing_compliance' => $complianceLevel,
-            'total_observations' => match($complianceLevel) {
+            'total_observations' => match ($complianceLevel) {
                 'excellent' => 100,
                 'good' => 85,
                 'poor' => 50,
                 default => 75
             },
             'validation_status' => 'true',
-            'additional_notes' => $complianceLevel === 'poor' 
-                ? 'Perlu pelatihan ulang dan monitoring ketat untuk minggu depan' 
+            'additional_notes' => $complianceLevel === 'poor'
+                ? 'Perlu pelatihan ulang dan monitoring ketat untuk minggu depan'
                 : null,
-            default => match($field->field_type) {
+            default => match ($field->field_type) {
                 'short_text' => 'Sample text',
                 'boolean' => 'true',
                 'number' => rand(1, 100),
@@ -180,15 +180,15 @@ class HandwashingSimulationSeeder extends Seeder
         $this->command->info('📊 HASIL COMPLIANCE:');
         $details = $complianceResult['calculation_details'];
         $this->command->info("Score: {$details['raw_score']}/{$details['max_score']} = {$complianceResult['total_score']}%");
-        
-        $statusColor = match($complianceResult['compliance_status']) {
+
+        $statusColor = match ($complianceResult['compliance_status']) {
             'compliant' => '🟢',
             'non_compliant' => '🔴',
             default => '🟡'
         };
-        
+
         $this->command->info("Status: {$statusColor} " . strtoupper($complianceResult['compliance_status']));
-        
+
         if ($complianceResult['critical_failed']) {
             $this->command->warn('⚠️  CRITICAL FIELD FAILED - Auto Non-Compliant');
         }

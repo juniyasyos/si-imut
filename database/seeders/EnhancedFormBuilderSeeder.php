@@ -23,7 +23,7 @@ class EnhancedFormBuilderSeeder extends Seeder
 
         // Create Handwashing Compliance Form Template
         $this->createHandwashingComplianceForm($imutData);
-        
+
         // Create Medication Safety Form Template
         $this->createMedicationSafetyForm($imutData);
 
