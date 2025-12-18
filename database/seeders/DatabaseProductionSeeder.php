@@ -16,13 +16,15 @@ class DatabaseProductionSeeder extends Seeder
     {
         $this->call(
             [
-                PositionSeeder::class,
+                KaidoSettingSeeder::class,
                 ShieldSeeder::class,
                 UserSeeder::class,
                 UnitKerjaSeeder::class,
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
                 ImutDataProdSeeder::class,
+                FormHeaderSeeder::class,
+                EnhancedFormBuilderSeeder::class,
             ]
         );
     }

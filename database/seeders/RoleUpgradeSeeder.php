@@ -15,74 +15,10 @@ class RoleUpgradeSeeder extends Seeder
     {
         $this->command->info('🔄 Starting Role System Upgrade...');
 
-        // Step 1: Create/Update role structure (no deletion)
-        $this->createNewRoleStructure();
-
-        // Step 2: Migrate existing users to new roles
+        // Step: Migrate existing users to new roles
         $this->migrateExistingUsers();
 
         $this->command->info('✅ Role System Upgrade Complete!');
-    }
-
-    private function updateExistingRoles(): void
-    {
-        $this->command->info('🔄 Updating existing roles...');
-
-        // Update existing role mappings (keep data, just update labels)
-        $roleUpdates = [
-            'super_admin' => ['name' => 'super_admin', 'label' => 'Administrator'],
-            'Administrator Application' => ['name' => 'admin', 'label' => 'Administrator'],
-            'unit_kerja' => ['name' => 'pengumpul_data', 'label' => 'Unit Kerja - Pengumpul Data'],
-        ];
-
-        foreach ($roleUpdates as $oldName => $newData) {
-            $role = Role::where('name', $oldName)->first();
-            if ($role) {
-                $role->update($newData);
-                $this->command->info("   ✓ Updated: {$oldName} → {$newData['label']}");
-            }
-        }
-    }
-
-    private function createNewRoleStructure(): void
-    {
-        $this->command->info('🆕 Creating/Updating role structure...');
-
-        // First update existing roles
-        $this->updateExistingRoles();
-
-        // Then ensure all required roles exist
-        $roles = [
-            [
-                'name' => 'super_admin',
-                'label' => 'Administrator',
-                'guard_name' => 'web'
-            ],
-            [
-                'name' => 'tim_mutu',
-                'label' => 'Tim Mutu',
-                'guard_name' => 'web'
-            ],
-            [
-                'name' => 'pengumpul_data',
-                'label' => 'Unit Kerja - Pengumpul Data',
-                'guard_name' => 'web'
-            ],
-            [
-                'name' => 'validator_pic',
-                'label' => 'Unit Kerja - Validator/PIC Indikator',
-                'guard_name' => 'web'
-            ]
-        ];
-
-        foreach ($roles as $roleData) {
-            $role = Role::updateOrCreate(
-                ['name' => $roleData['name']],
-                $roleData
-            );
-            $action = $role->wasRecentlyCreated ? 'Created' : 'Updated';
-            $this->command->info("   ✓ {$action}: {$roleData['label']}");
-        }
     }
 
     private function migrateExistingUsers(): void
@@ -95,7 +31,7 @@ class RoleUpgradeSeeder extends Seeder
         foreach ($users as $user) {
             // Skip users who already have valid roles
             $currentRoles = $user->roles->pluck('name')->toArray();
-            $validRoles = ['admin', 'tim_mutu', 'pengumpul_data', 'validator_pic'];
+            $validRoles = ['super_admin', 'tim_mutu', 'pengumpul_data', 'validator_pic'];
 
             if (!empty(array_intersect($currentRoles, $validRoles))) {
                 $this->command->info("   - {$user->name} → Already has valid role(s): " . implode(', ', $currentRoles));
@@ -104,7 +40,7 @@ class RoleUpgradeSeeder extends Seeder
 
             // Assign role based on email or other criteria (only if no valid role exists)
             if (str_contains($user->email, 'admin') || $user->nip === '0000.00000') {
-                $user->assignRole('admin');
+                $user->assignRole('super_admin');
                 $this->command->info("   - {$user->name} → Administrator (new assignment)");
             } elseif (str_contains($user->email, 'mutu')) {
                 $user->assignRole('tim_mutu');

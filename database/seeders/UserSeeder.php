@@ -40,8 +40,6 @@ class UserSeeder extends Seeder
             return;
         }
 
-
-
         $usersToInsert = [];
 
         foreach ($data as $userData) {

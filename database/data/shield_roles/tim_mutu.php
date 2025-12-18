@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'name' => 'Tim Mutu',
+    'name' => 'tim_mutu',
+    'label' => 'Tim Mutu',
     'guard_name' => 'web',
     'description' => 'Role untuk Tim Mutu, memiliki akses manajemen pengguna, IMUT, laporan, dan laporan penilaian.',
     'permissions' => [

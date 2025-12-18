@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
                 ImutDataOldSeeder::class,
                 FormHeaderSeeder::class,
                 EnhancedFormBuilderSeeder::class,
-                RoleUpgradeSeeder::class
+                // RoleUpgradeSeeder::class
                 // LaporanImutSeeder::class,
                 // ImutDataSeeder::class,
                 // ImutProfileSeeder::class,

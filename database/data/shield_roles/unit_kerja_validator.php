@@ -1,9 +1,10 @@
 <?php
 
 return [
-    'name' => 'Unit Kerja',
+    'name' => 'validator_pic',
+    'label' => 'Unit Kerja - Validator PIC Indikator Mutu',
     'guard_name' => 'web',
-    'description' => 'Role untuk pengguna Unit Kerja, akses terbatas pada laporan, media, dan folder milik unit kerja.',
+    'description' => 'Role untuk pengguna Unit Kerja sebagai Validator atau PIC Indikator Mutu, akses terbatas pada validasi dan penilaian IMUT.',
     'permissions' => [
         // Pages
         'page_MyProfilePage',
