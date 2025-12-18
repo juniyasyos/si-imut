@@ -20,23 +20,5 @@ class Role extends Model
         return $this->name === 'super_admin';
     }
 
-    // Cegah perubahan pada role super_admin
-    public static function boot()
-    {
-        parent::boot();
-
-        // Cegah update jika role adalah super_admin
-        static::updating(function ($role) {
-            if ($role->isSuperAdmin()) {
-                throw new \Exception('Role super_admin tidak dapat diubah.');
-            }
-        });
-
-        // Cegah penghapusan jika role adalah super_admin
-        static::deleting(function ($role) {
-            if ($role->isSuperAdmin()) {
-                throw new \Exception('Role super_admin tidak dapat dihapus.');
-            }
-        });
-    }
+    // Removed boot method restrictions - super_admin can now be edited
 }

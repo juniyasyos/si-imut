@@ -52,8 +52,7 @@ class RoleResourceTable extends RoleResource
     {
         return [
             EditAction::make(),
-            DeleteAction::make()
-                ->visible(fn($record) => $record->name !== 'super_admin'),
+            DeleteAction::make(),
         ];
     }
 
