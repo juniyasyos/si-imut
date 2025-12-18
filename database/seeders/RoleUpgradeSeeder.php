@@ -15,48 +15,46 @@ class RoleUpgradeSeeder extends Seeder
     {
         $this->command->info('🔄 Starting Role System Upgrade...');
 
-        // Step 1: Delete old/unwanted roles
-        $this->cleanupOldRoles();
-
-        // Step 2: Create/Update new role structure
+        // Step 1: Create/Update role structure (no deletion)
         $this->createNewRoleStructure();
 
-        // Step 3: Migrate existing users to new roles
+        // Step 2: Migrate existing users to new roles
         $this->migrateExistingUsers();
 
         $this->command->info('✅ Role System Upgrade Complete!');
     }
 
-    private function cleanupOldRoles(): void
+    private function updateExistingRoles(): void
     {
-        $this->command->info('🗑️  Cleaning up old roles...');
+        $this->command->info('🔄 Updating existing roles...');
 
-        $rolesToDelete = [
-            'tim_it',
-            'IT',
-            'unit_kerja',
-            'super_admin',
-            'Administrator Application'
+        // Update existing role mappings (keep data, just update labels)
+        $roleUpdates = [
+            'super_admin' => ['name' => 'super_admin', 'label' => 'Administrator'],
+            'Administrator Application' => ['name' => 'admin', 'label' => 'Administrator'],
+            'unit_kerja' => ['name' => 'pengumpul_data', 'label' => 'Unit Kerja - Pengumpul Data'],
         ];
 
-        foreach ($rolesToDelete as $roleName) {
-            $role = Role::where('name', $roleName)->first();
+        foreach ($roleUpdates as $oldName => $newData) {
+            $role = Role::where('name', $oldName)->first();
             if ($role) {
-                $this->command->info("   - Deleting role: {$roleName}");
-                // Detach users before deleting role
-                $role->users()->detach();
-                $role->delete();
+                $role->update($newData);
+                $this->command->info("   ✓ Updated: {$oldName} → {$newData['label']}");
             }
         }
     }
 
     private function createNewRoleStructure(): void
     {
-        $this->command->info('🆕 Creating new role structure...');
+        $this->command->info('🆕 Creating/Updating role structure...');
 
+        // First update existing roles
+        $this->updateExistingRoles();
+
+        // Then ensure all required roles exist
         $roles = [
             [
-                'name' => 'admin',
+                'name' => 'super_admin',
                 'label' => 'Administrator',
                 'guard_name' => 'web'
             ],
@@ -82,7 +80,8 @@ class RoleUpgradeSeeder extends Seeder
                 ['name' => $roleData['name']],
                 $roleData
             );
-            $this->command->info("   ✓ {$roleData['label']}");
+            $action = $role->wasRecentlyCreated ? 'Created' : 'Updated';
+            $this->command->info("   ✓ {$action}: {$roleData['label']}");
         }
     }
 
@@ -94,25 +93,30 @@ class RoleUpgradeSeeder extends Seeder
         $users = User::all();
 
         foreach ($users as $user) {
-            // Remove all existing roles
-            $user->syncRoles([]);
+            // Skip users who already have valid roles
+            $currentRoles = $user->roles->pluck('name')->toArray();
+            $validRoles = ['admin', 'tim_mutu', 'pengumpul_data', 'validator_pic'];
 
-            // Assign default role based on email or other criteria
-            if (str_contains($user->email, 'admin') || $user->nip === '001') {
+            if (!empty(array_intersect($currentRoles, $validRoles))) {
+                $this->command->info("   - {$user->name} → Already has valid role(s): " . implode(', ', $currentRoles));
+                continue;
+            }
+
+            // Assign role based on email or other criteria (only if no valid role exists)
+            if (str_contains($user->email, 'admin') || $user->nip === '0000.00000') {
                 $user->assignRole('admin');
-                $this->command->info("   - {$user->name} → Administrator");
+                $this->command->info("   - {$user->name} → Administrator (new assignment)");
             } elseif (str_contains($user->email, 'mutu')) {
                 $user->assignRole('tim_mutu');
-                $this->command->info("   - {$user->name} → Tim Mutu");
+                $this->command->info("   - {$user->name} → Tim Mutu (new assignment)");
             } elseif ($user->unitKerjas->isNotEmpty()) {
                 // If user has unit kerja, assign pengumpul_data as default
-                // You can modify this logic based on your business rules
                 $user->assignRole('pengumpul_data');
-                $this->command->info("   - {$user->name} → Pengumpul Data");
+                $this->command->info("   - {$user->name} → Pengumpul Data (new assignment)");
             } else {
                 // Default to pengumpul_data if no specific criteria met
                 $user->assignRole('pengumpul_data');
-                $this->command->info("   - {$user->name} → Pengumpul Data (default)");
+                $this->command->info("   - {$user->name} → Pengumpul Data (default assignment)");
             }
         }
 
