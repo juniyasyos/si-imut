@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Position;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -24,7 +22,6 @@ class UserSeeder extends Seeder
             'email' => 'admin@admin.com',
             'password' => Hash::make('adminpassword'),
             'status' => 'active',
-            'position_id' => Position::first()?->id,
         ]);
 
         $filePath = database_path('data/user.json');
@@ -43,12 +40,7 @@ class UserSeeder extends Seeder
             return;
         }
 
-        $allPositions = Position::all();
-        if ($allPositions->isEmpty()) {
-            Log::warning('Tidak ada data posisi ditemukan di database.');
 
-            return;
-        }
 
         $usersToInsert = [];
 
@@ -80,7 +72,6 @@ class UserSeeder extends Seeder
                 'email' => $email,
                 'password' => Hash::make('Rsch123'),
                 'status' => 'active',
-                'position_id' => $allPositions->random()->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -89,19 +80,7 @@ class UserSeeder extends Seeder
         if (count($usersToInsert) > 0) {
             User::insert($usersToInsert);
             Log::info('Data pengguna berhasil dimasukkan ke dalam database.');
-
-            $newUsers = User::where('nip', '!=', '0000.00000')->get();
-
-            $unitKerjaRole = Role::where('name', 'Unit Kerja')->first();
-
-            if (! $unitKerjaRole) {
-                Log::error('Role "Unit Kerja" tidak ditemukan.');
-                return;
-            }
-
-            foreach ($newUsers as $user) {
-                $user->roles()->sync([$unitKerjaRole->id]);
-            }
+            Log::info('Role assignment akan dilakukan oleh RoleUpgradeSeeder.');
         } else {
             Log::warning('Tidak ada data pengguna untuk dimasukkan.');
         }

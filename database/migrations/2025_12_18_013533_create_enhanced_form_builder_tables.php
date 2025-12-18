@@ -67,21 +67,23 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Daily Report Responses
-        Schema::create('daily_report_responses', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('form_template_id')->constrained('form_templates');
-            $table->foreignId('unit_kerja_id')->constrained('unit_kerja');
-            $table->foreignId('user_id')->constrained('users');
-            $table->date('report_date');
-            $table->decimal('total_score', 5, 2)->default(0);
-            $table->enum('compliance_status', ['compliant', 'non_compliant', 'pending'])->default('pending');
-            $table->boolean('auto_calculated')->default(true);
-            $table->json('calculation_details')->nullable();
-            $table->timestamps();
-
-            $table->unique(['form_template_id', 'unit_kerja_id', 'report_date']);
-        });
+        // Update existing Daily Report Responses table
+        if (Schema::hasTable('daily_report_responses')) {
+            Schema::table('daily_report_responses', function (Blueprint $table) {
+                if (!Schema::hasColumn('daily_report_responses', 'form_template_id')) {
+                    $table->foreignId('form_template_id')->nullable()->constrained('form_templates');
+                }
+                if (!Schema::hasColumn('daily_report_responses', 'total_score')) {
+                    $table->decimal('total_score', 5, 2)->default(0);
+                }
+                if (!Schema::hasColumn('daily_report_responses', 'auto_calculated')) {
+                    $table->boolean('auto_calculated')->default(true);
+                }
+                if (!Schema::hasColumn('daily_report_responses', 'calculation_details')) {
+                    $table->json('calculation_details')->nullable();
+                }
+            });
+        }
 
         // Field Responses
         Schema::create('field_responses', function (Blueprint $table) {
@@ -102,7 +104,26 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('field_responses');
-        Schema::dropIfExists('daily_report_responses');
+
+        // Only drop columns we added, not the entire table
+        if (Schema::hasTable('daily_report_responses')) {
+            Schema::table('daily_report_responses', function (Blueprint $table) {
+                if (Schema::hasColumn('daily_report_responses', 'calculation_details')) {
+                    $table->dropColumn('calculation_details');
+                }
+                if (Schema::hasColumn('daily_report_responses', 'auto_calculated')) {
+                    $table->dropColumn('auto_calculated');
+                }
+                if (Schema::hasColumn('daily_report_responses', 'total_score')) {
+                    $table->dropColumn('total_score');
+                }
+                if (Schema::hasColumn('daily_report_responses', 'form_template_id')) {
+                    $table->dropForeign(['form_template_id']);
+                    $table->dropColumn('form_template_id');
+                }
+            });
+        }
+
         Schema::dropIfExists('form_field_options');
         Schema::dropIfExists('enhanced_form_fields');
         Schema::dropIfExists('form_templates');
