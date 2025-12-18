@@ -25,7 +25,7 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * Model User
  *
  * Model ini mewakili pengguna dalam sistem, dengan atribut yang menyimpan informasi pribadi,
- * kontak, keamanan, dan status. Relasi dengan `Position` dan `UnitKerja` juga dikelola melalui
+ * kontak, keamanan, dan status. Relasi dengan `UnitKerja` juga dikelola melalui
  * model ini.
  *
  * @property int $id
@@ -39,7 +39,6 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * @property string|null $email
  * @property string|null $password
  * @property string|null $status
- * @property int|null $position_id
  * @property \Carbon\Carbon|null $email_verified_at
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
@@ -88,7 +87,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'email',
         'password',
         'status',
-        'position_id',
     ];
 
     /**
@@ -116,15 +114,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     }
 
 
-    /**
-     * Relasi User ke Position (One to One)
-     *
-     * @return BelongsTo
-     */
-    public function position(): BelongsTo
-    {
-        return $this->belongsTo(Position::class);
-    }
+
 
     /**
      * Relasi ke UnitKerja dengan tabel pivot

@@ -63,8 +63,8 @@ class FormSchemaBuilder
                 ])
                 ->columns(2),
 
-            Section::make('Field Builder')
-                ->description('💡 Tips: Field yang paling penting untuk harian adalah pengumpul data, validasi dan matching data.')
+            Section::make('Field Builder - Sederhana untuk Pelaporan Mutu')
+                ->description('🎯 Fokus pada 3 elemen utama: (1) Pengumpul Data, (2) Data Validasi, (3) Matching/Compliance. Pilih field type yang sesuai kebutuhan pelaporan.')
                 ->schema([
                     Repeater::make('fields')
                         ->label('Fields')
@@ -100,7 +100,7 @@ class FormSchemaBuilder
                         ->label('Tipe Field')
                         ->options(FormFieldMapper::getAllFieldTypes())
                         ->required()
-                        ->default('text_input')
+                        ->default('short_text')
                         ->live(),
 
                     Select::make('compliance_weight')
@@ -132,39 +132,22 @@ class FormSchemaBuilder
                         ->maxLength(255),
                 ]),
 
-            // Validation Configuration
-            Fieldset::make('Konfigurasi Validasi')
+            // Validation Configuration (Simplified)
+            Grid::make(3)
                 ->schema([
-                    Group::make([
-                        Toggle::make('validation_config.required')
-                            ->label('Wajib Diisi'),
+                    Toggle::make('validation_config.required')
+                        ->label('Wajib Diisi'),
 
-                        TextInput::make('validation_config.min_length')
-                            ->label('Panjang Minimal')
-                            ->numeric()
-                            ->visible(fn($get) => in_array($get('field_type'), ['text_input', 'textarea_input'])),
+                    TextInput::make('validation_config.min')
+                        ->label('Nilai Minimal')
+                        ->numeric()
+                        ->visible(fn($get) => $get('field_type') === 'number'),
 
-                        TextInput::make('validation_config.max_length')
-                            ->label('Panjang Maksimal')
-                            ->numeric()
-                            ->visible(fn($get) => in_array($get('field_type'), ['text_input', 'textarea_input'])),
-
-                        TextInput::make('validation_config.min')
-                            ->label('Nilai Minimal')
-                            ->numeric()
-                            ->visible(fn($get) => $get('field_type') === 'numeric_input'),
-
-                        TextInput::make('validation_config.max')
-                            ->label('Nilai Maksimal')
-                            ->numeric()
-                            ->visible(fn($get) => $get('field_type') === 'numeric_input'),
-
-                        TextInput::make('validation_config.regex')
-                            ->label('Pattern Regex')
-                            ->visible(fn($get) => in_array($get('field_type'), ['text_input', 'phone_input'])),
-                    ])->columns(3),
-                ])
-                ->columnSpanFull(),
+                    TextInput::make('validation_config.max')
+                        ->label('Nilai Maksimal')
+                        ->numeric()
+                        ->visible(fn($get) => $get('field_type') === 'number'),
+                ]),
 
             // Options untuk field yang membutuhkan
             Repeater::make('options')
@@ -195,89 +178,6 @@ class FormSchemaBuilder
                 ->addActionLabel('Tambah Opsi')
                 ->visible(fn($get) => FormFieldMapper::requiresOptions($get('field_type')))
                 ->columnSpanFull(),
-
-            // Conditional Logic
-            Fieldset::make('Logic Kondisional (Opsional)')
-                ->schema([
-                    Select::make('conditional_logic.trigger_field')
-                        ->label('Field Pemicu')
-                        ->options(function ($get) {
-                            $formData = $get('../../');
-                            return self::getAvailableFieldsFromState($formData);
-                        })
-                        ->live(),
-
-                    Select::make('conditional_logic.trigger_condition')
-                        ->label('Kondisi')
-                        ->options([
-                            'equals' => 'Sama dengan',
-                            'not_equals' => 'Tidak sama dengan',
-                            'contains' => 'Mengandung',
-                            'not_empty' => 'Tidak kosong',
-                            'empty' => 'Kosong',
-                        ])
-                        ->live(),
-
-                    Select::make('conditional_logic.trigger_value')
-                        ->label('Nilai Pemicu')
-                        ->options(function ($get) {
-                            $triggerField = $get('conditional_logic.trigger_field');
-                            $formData = $get('../../');
-                            return self::getFieldOptionsFromState($formData, $triggerField);
-                        })
-                        ->visible(fn($get) => in_array($get('conditional_logic.trigger_condition'), ['equals', 'not_equals', 'contains'])),
-
-                    Select::make('conditional_logic.action')
-                        ->label('Aksi')
-                        ->options([
-                            'show' => 'Tampilkan Field',
-                            'hide' => 'Sembunyikan Field',
-                            'require' => 'Wajibkan Field',
-                            'unrequire' => 'Tidak Wajibkan Field',
-                        ]),
-                ])
-                ->columns(2)
-                ->columnSpanFull(),
         ];
-    }
-
-    private static function getAvailableFieldsFromState($formData): array
-    {
-        $fields = $formData['fields'] ?? [];
-        $options = [];
-
-        foreach ($fields as $field) {
-            if (!empty($field['field_name'])) {
-                $key = $field['field_key'] ?? \Illuminate\Support\Str::slug($field['field_name']);
-                $options[$key] = $field['field_name'];
-            }
-        }
-
-        return $options;
-    }
-
-    private static function getFieldOptionsFromState($formData, ?string $fieldKey): array
-    {
-        if (!$fieldKey) return [];
-
-        $fields = $formData['fields'] ?? [];
-
-        foreach ($fields as $field) {
-            $currentKey = $field['field_key'] ?? \Illuminate\Support\Str::slug($field['field_name']);
-            if ($currentKey === $fieldKey) {
-                $options = $field['options'] ?? [];
-                $result = [];
-
-                foreach ($options as $option) {
-                    if (is_array($option) && isset($option['option_text'])) {
-                        $result[$option['option_value']] = $option['option_text'];
-                    }
-                }
-
-                return $result;
-            }
-        }
-
-        return [];
     }
 }

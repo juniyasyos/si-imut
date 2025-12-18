@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Database\Seeders\UserSeeder;
-use Database\Seeders\PositionSeeder;
 use Database\Seeders\ImutDataSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -17,7 +16,6 @@ class DatabaseSeeder extends Seeder
         $this->call(
             [
                 KaidoSettingSeeder::class,
-                PositionSeeder::class,
                 ShieldSeeder::class,
                 UserSeeder::class,
                 UnitKerjaSeeder::class,
@@ -26,7 +24,7 @@ class DatabaseSeeder extends Seeder
                 ImutDataOldSeeder::class,
                 FormHeaderSeeder::class,
                 EnhancedFormBuilderSeeder::class,
-                UpdateRoleSeeder::class
+                RoleUpgradeSeeder::class
                 // LaporanImutSeeder::class,
                 // ImutDataSeeder::class,
                 // ImutProfileSeeder::class,

@@ -45,20 +45,42 @@ class UserResourceTable extends UserResource
                         ->label(__('filament-forms::users.fields.name'))
                         ->searchable()
                         ->weight(FontWeight::Bold),
-                    TextColumn::make('position.name')
-                        ->label(__('filament-forms::users.fields.position'))
+
+                    TextColumn::make('roles.label')
+                        ->label(__('filament-forms::users.fields.roles'))
                         ->searchable()
-                        ->sortable()
-                        ->icon('heroicon-o-briefcase')
-                        ->badge()
-                        ->color(''),
+                        ->icon('heroicon-o-shield-check')
+                        ->grow(false)
                 ])->alignStart()->space(1),
                 Stack::make([
                     TextColumn::make('roles.name')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->searchable()
                         ->icon('heroicon-o-shield-check')
-                        ->grow(false),
+                        ->grow(false)
+                        ->formatStateUsing(function ($record) {
+                            $roles = $record->roles->pluck('name')->toArray();
+
+                            // Jika user memiliki role pengumpul_data atau validator_pic, tampilkan unit kerja
+                            if (in_array('pengumpul_data', $roles) || in_array('validator_pic', $roles)) {
+                                $unitKerja = $record->unitKerjas->first();
+                                $roleLabel = in_array('pengumpul_data', $roles) ? 'Pengumpul Data' : 'Validator/PIC';
+                                $unitName = $unitKerja ? $unitKerja->unit_name : 'Unit Tidak Ditemukan';
+                                return "{$roleLabel} - {$unitName}";
+                            }
+
+                            // Untuk admin dan tim_mutu, tampilkan label role
+                            $roleLabels = [
+                                'admin' => 'Administrator',
+                                'tim_mutu' => 'Tim Mutu',
+                            ];
+
+                            $displayRoles = array_map(function ($role) use ($roleLabels) {
+                                return $roleLabels[$role] ?? ucwords(str_replace('_', ' ', $role));
+                            }, $roles);
+
+                            return implode(', ', $displayRoles);
+                        }),
                     TextColumn::make('nip')
                         ->label(__('filament-forms::users.fields.email'))
                         ->icon('heroicon-m-finger-print')
@@ -79,11 +101,6 @@ class UserResourceTable extends UserResource
             SelectFilter::make('roles')
                 ->label(__('filament-forms::users.filters.roles'))
                 ->relationship('roles', 'name')
-                ->multiple()
-                ->preload(),
-            SelectFilter::make('position')
-                ->label(__('filament-forms::users.filters.position'))
-                ->relationship('position', 'name')
                 ->multiple()
                 ->preload(),
         ];

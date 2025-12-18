@@ -163,8 +163,9 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     ->color('gray'),
             ])
             ->actions([
+                $this->buildDetailInfo(),
                 $this->buildIsiPenilaianAction(),
-                $this->buildLihatDetailAction(),
+                // $this->buildLihatDetailAction(),
             ])
             ->recordAction('isi_penilaian')
             ->bulkActions([]);
@@ -210,6 +211,60 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
                     Section::make('Analisis dan Rekomendasi')
                         ->schema($this->buildAnalysisSchemaForAction($livewireComponent)),
+                ];
+            })
+            ->action(function ($record, array $data) {
+                $penilaian = ImutPenilaian::find($record->id);
+
+                if (!$penilaian) {
+                    return;
+                }
+
+                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+                $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+
+                $penilaian->update([
+                    'numerator_value'   => $data['numerator_value'] ?? null,
+                    'denominator_value' => $data['denominator_value'] ?? null,
+                    'analysis'          => $data['analysis'] ?? null,
+                    'recommendations'   => $data['recommendations'] ?? null,
+                    'selected_collection' => $folder?->collection ?? 'default',
+                ]);
+            })
+            ->successNotificationTitle('Penilaian berhasil disimpan')
+            ->after(fn() => $this->dispatch('$refresh'));
+    }
+
+    protected function buildDetailInfo(): Action
+    {
+        $livewireComponent = $this;
+
+        return Action::make('detail_info')
+            ->label('Detail Info')
+            ->icon('heroicon-o-information-circle')
+            ->color('primary')
+            ->slideOver()
+            ->modalHeading(fn($record) => ($record->imut_data ?? ''))
+            ->modalSubmitActionLabel('Simpan')
+            ->closeModalByClickingAway(false)
+            ->closeModalByEscaping(false)
+            // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
+            ->mountUsing(function (Form $form, $record) {
+                $penilaian = ImutPenilaian::find($record->id);
+                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+
+                $form->fill([
+                    'numerator_value'       => $record->numerator_value ?? null,
+                    'denominator_value'     => $record->denominator_value ?? null,
+                    'analysis'              => $record->analysis ?? '',
+                    'recommendations'       => $record->recommendations ?? '',
+                ]);
+            })
+            ->form(function () use ($livewireComponent) {
+                return [
+                    Section::make('Perhitungan')
+                        ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
+                        ->columns(3),
                 ];
             })
             ->action(function ($record, array $data) {
@@ -296,17 +351,39 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             Textarea::make('analysis')
                 ->label('Analisis')
                 ->rows(4)
-                ->nullable()
+                ->required()
+                ->minLength(20)
+                ->maxLength(100000)
                 ->readOnly($shouldLock)
-                ->placeholder('Tuliskan hasil analisis (opsional)...')
+                ->live(onBlur: true)
+                ->placeholder('Tuliskan hasil analisis lengkap minimal 20 karakter. Contoh: Berdasarkan data yang terkumpul, tingkat kepatuhan cuci tangan masih rendah karena...')
+                ->helperText(function ($state) {
+                    $length = strlen($state ?? '');
+                    $remaining = max(0, 20 - $length);
+                    if ($remaining > 0) {
+                        return "Minimal 20 karakter. Kurang {$remaining} karakter lagi. ({$length}/20)";
+                    }
+                    return "Karakter: {$length}/100000";
+                })
                 ->columnSpanFull(),
 
             Textarea::make('recommendations')
                 ->label('Rekomendasi')
-                ->nullable()
+                ->required()
+                ->minLength(20)
+                ->maxLength(100000)
                 ->disabled(!$canRecommend)
                 ->rows(4)
-                ->placeholder('Berikan saran atau rekomendasi (opsional)...')
+                ->live(onBlur: true)
+                ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
+                ->helperText(function ($state) {
+                    $length = strlen($state ?? '');
+                    $remaining = max(0, 20 - $length);
+                    if ($remaining > 0) {
+                        return "Minimal 20 karakter. Kurang {$remaining} karakter lagi. ({$length}/20)";
+                    }
+                    return "Karakter: {$length}/100000";
+                })
                 ->columnSpanFull(),
         ];
     }
