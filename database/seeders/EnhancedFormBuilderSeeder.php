@@ -87,8 +87,8 @@ class EnhancedFormBuilderSeeder extends Seeder
 
         FormFieldOption::create([
             'enhanced_form_field_id' => $handwashing->id,
-            'option_label' => 'Kurang (<80%)',
-            'option_key' => 'poor',
+            'option_text' => 'Kurang (<80%)',
+            'option_value' => 'poor',
             'compliance_value' => 0,
             'order_index' => 3,
         ]);
