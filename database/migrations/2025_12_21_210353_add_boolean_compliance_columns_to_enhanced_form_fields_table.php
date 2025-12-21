@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('enhanced_form_fields', function (Blueprint $table) {
             $table->json('compliance_rules')->nullable()->after('conditional_logic');
         });
-        
+
         Schema::table('form_field_options', function (Blueprint $table) {
             $table->boolean('is_correct')->default(true)->after('option_value');
         });
@@ -28,7 +28,7 @@ return new class extends Migration
         Schema::table('enhanced_form_fields', function (Blueprint $table) {
             $table->dropColumn('compliance_rules');
         });
-        
+
         Schema::table('form_field_options', function (Blueprint $table) {
             $table->dropColumn('is_correct');
         });
