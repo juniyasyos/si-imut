@@ -178,6 +178,59 @@ class FormSchemaBuilder
                 ->addActionLabel('Tambah Opsi')
                 ->visible(fn($get) => FormFieldMapper::requiresOptions($get('field_type')))
                 ->columnSpanFull(),
+
+            // Conditional Logic Configuration  
+            Section::make('Logika Kondisional')
+                ->schema([
+                    Toggle::make('has_conditional_logic')
+                        ->label('Aktifkan Logika Kondisional')
+                        ->helperText('Field ini akan muncul/hilang berdasarkan field lain')
+                        ->live(),
+
+                    Grid::make(2)
+                        ->schema([
+                            Select::make('conditional_logic.depends_on_field')
+                                ->label('Bergantung pada Field')
+                                ->options(fn($get) => self::getAvailableFieldsForCondition($get('../../fields') ?? []))
+                                ->helperText('Field yang akan mempengaruhi visibility')
+                                ->visible(fn($get) => $get('has_conditional_logic')),
+
+                            Select::make('conditional_logic.condition_type')
+                                ->label('Jenis Kondisi')
+                                ->options([
+                                    'show_when' => 'Tampilkan Ketika',
+                                    'hide_when' => 'Sembunyikan Ketika',
+                                    'required_when' => 'Wajib Ketika',
+                                ])
+                                ->default('show_when')
+                                ->visible(fn($get) => $get('has_conditional_logic')),
+                        ]),
+
+                    TagsInput::make('conditional_logic.trigger_values')
+                        ->label('Nilai Pemicu')
+                        ->helperText('Field akan merespons ketika field dependency memiliki nilai ini (pisahkan dengan koma)')
+                        ->visible(fn($get) => $get('has_conditional_logic'))
+                        ->columnSpanFull(),
+                ])
+                ->collapsed()
+                ->visible(fn($get) => in_array($get('field_type'), ['single_select', 'multi_select', 'text', 'number']))
+                ->columnSpanFull(),
         ];
+    }
+
+    /**
+     * Get available fields for conditional logic dependency
+     */
+    private static function getAvailableFieldsForCondition(array $fields): array
+    {
+        $options = [];
+
+        foreach ($fields as $index => $field) {
+            if (!empty($field['field_key']) && !empty($field['field_name'])) {
+                $options[$field['field_key']] = $field['field_name'];
+            }
+        }
+
+        return $options;
     }
 }
