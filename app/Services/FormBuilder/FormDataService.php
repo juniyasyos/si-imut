@@ -28,9 +28,9 @@ class FormDataService
         $fields = $formTemplate->formFields->map(function ($field) {
             $options = $field->options->map(function ($option) {
                 return [
-                    'option_text' => $option->option_text,
-                    'option_value' => $option->option_value,
-                    'compliance_value' => $option->compliance_value,
+                    'label' => $option->option_text, // Map option_text to label for UI
+                    'value' => $option->option_value,
+                    'is_correct' => $option->is_correct ?? true, // Boolean compliance
                 ];
             })->toArray();
 
@@ -44,6 +44,7 @@ class FormDataService
                 'compliance_weight' => $field->compliance_weight,
                 'is_critical_field' => $field->is_critical_field,
                 'conditional_logic' => $field->conditional_logic,
+                'compliance_rules' => $field->compliance_rules, // Add compliance_rules
                 'has_conditional_logic' => !empty($field->conditional_logic), // Add toggle state based on data
                 'options' => $options,
                 'order_index' => $field->order_index,
@@ -77,7 +78,17 @@ class FormDataService
                             return [
                                 'label' => $item,
                                 'value' => Str::slug($item, '_'),
+                                'is_correct' => true, // Default to true for legacy options
                             ];
+                        })->toArray();
+                    } else {
+                        // Convert existing format to include is_correct if not present
+                        $options = collect($options)->map(function ($item) {
+                            if (isset($item['compliance_value']) && !isset($item['is_correct'])) {
+                                $item['is_correct'] = (bool) $item['compliance_value'];
+                                unset($item['compliance_value']);
+                            }
+                            return $item;
                         })->toArray();
                     }
                 }
@@ -92,6 +103,7 @@ class FormDataService
                     'compliance_weight' => 1,
                     'is_critical_field' => false,
                     'conditional_logic' => null,
+                    'compliance_rules' => null, // Legacy fields don't have compliance rules
                     'has_conditional_logic' => false, // Legacy fields don't have conditional logic
                     'options' => $options,
                     'order_index' => $field->order,
