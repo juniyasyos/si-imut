@@ -1,0 +1,120 @@
+{
+    "form_template": {
+        "title": "Ketepatan Identifikasi Pasien",
+        "description": "Form audit ketepatan identifikasi pasien dengan minimal 2 identitas sesuai standar keselamatan pasien",
+        "compliance_method": "auto_calculate",
+        "auto_fail_on_critical": true
+    },
+    "form_fields": [
+        {
+            "field_key": "identification_method",
+            "field_label": "Metode Identifikasi",
+            "field_description": "Bagaimana petugas melakukan identifikasi pasien?",
+            "field_type": "single_select",
+            "validation_config": {
+                "required": true
+            },
+            "compliance_weight": 5,
+            "is_critical_field": true,
+            "order_index": 1,
+            "options": [
+                {
+                    "option_text": "Minimal 2 identitas (nama + tanggal lahir/No RM) ✅",
+                    "option_value": "dua_identitas",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Hanya 1 identitas (nama saja) ❌",
+                    "option_value": "satu_identitas",
+                    "is_correct": false
+                },
+                {
+                    "option_text": "Tidak melakukan identifikasi ❌",
+                    "option_value": "tidak_identifikasi",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "field_key": "verification_timing",
+            "field_label": "Kapan Dilakukan Verifikasi",
+            "field_description": "Pilih kapan identifikasi pasien dilakukan (boleh pilih lebih dari satu)",
+            "field_type": "multi_select",
+            "validation_config": {
+                "required": true,
+                "min_selections": 1
+            },
+            "compliance_weight": 4,
+            "is_critical_field": true,
+            "compliance_rules": {
+                "minimum_correct": 2,
+                "allow_wrong_selections": true
+            },
+            "conditional_logic": {
+                "depends_on_field": "identification_method",
+                "condition_type": "show_when",
+                "trigger_values": [
+                    "dua_identitas",
+                    "satu_identitas"
+                ]
+            },
+            "order_index": 2,
+            "options": [
+                {
+                    "option_text": "Sebelum pemberian obat",
+                    "option_value": "sebelum_obat",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Sebelum tindakan/prosedur",
+                    "option_value": "sebelum_tindakan",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Sebelum pengambilan sampel",
+                    "option_value": "sebelum_sampel",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Setiap pergantian shift",
+                    "option_value": "pergantian_shift",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Saat visitasi dokter",
+                    "option_value": "visitasi",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "field_key": "bracelet_compliance",
+            "field_label": "Gelang Identitas Pasien",
+            "field_description": "Apakah gelang identitas pasien terpasang dan benar?",
+            "field_type": "single_select",
+            "validation_config": {
+                "required": true
+            },
+            "compliance_weight": 3,
+            "is_critical_field": false,
+            "order_index": 3,
+            "options": [
+                {
+                    "option_text": "Terpasang dan data benar ✅",
+                    "option_value": "benar",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Terpasang tapi ada data salah ❌",
+                    "option_value": "data_salah",
+                    "is_correct": false
+                },
+                {
+                    "option_text": "Tidak terpasang ❌",
+                    "option_value": "tidak_terpasang",
+                    "is_correct": false
+                }
+            ]
+        }
+    ]
+}

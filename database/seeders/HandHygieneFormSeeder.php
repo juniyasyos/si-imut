@@ -40,14 +40,7 @@ class HandHygieneFormSeeder extends Seeder
         try {
             // Find atau create ImutData untuk audit cuci tangan
             $imutData = ImutData::firstOrCreate(
-                ['title' => 'Monitoring Kepatuhan Cuci Tangan'],
-                [
-                    'slug' => 'monitoring-kepatuhan-cuci-tangan',
-                    'description' => 'Indikator mutu untuk monitoring dan evaluasi kepatuhan cuci tangan tenaga kesehatan berdasarkan standar WHO',
-                    'status' => true,
-                    'created_by' => 1, // Adjust sesuai user ID yang ada
-                    'imut_kategori_id' => 1, // Adjust sesuai kategori yang ada
-                ]
+                ['title' => 'Kepatuhan Kebersihan Tangan'],
             );
 
             $this->command->info("ImutData created/found: {$imutData->title}");

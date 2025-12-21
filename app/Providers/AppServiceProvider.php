@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Models\ImutBenchmarking;
+use App\Models\ImutData;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
 use App\Observers\ImutBenchmarkingObserver;
+use App\Observers\ImutDataObserver;
 use App\Observers\ImutPenilaianObserver;
 use App\Observers\LaporanImutObserver;
 use App\Observers\MediaObserver;
@@ -33,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
         // Register Vite asset for Filament panel
         FilamentView::registerRenderHook(
             'panels::body.end',
-            fn (): string => Blade::render("@vite('resources/js/app.js')")
+            fn(): string => Blade::render("@vite('resources/js/app.js')")
         );
     }
 
@@ -60,14 +62,15 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerModelPolicies(): void
     {
-        collect(glob(app_path('Models').'/*.php'))
-            ->map(fn ($file) => [
-                'model' => 'App\\Models\\'.pathinfo($file, PATHINFO_FILENAME),
-                'policy' => 'App\\Policies\\'.pathinfo($file, PATHINFO_FILENAME).'Policy',
+        collect(glob(app_path('Models') . '/*.php'))
+            ->map(fn($file) => [
+                'model' => 'App\\Models\\' . pathinfo($file, PATHINFO_FILENAME),
+                'policy' => 'App\\Policies\\' . pathinfo($file, PATHINFO_FILENAME) . 'Policy',
             ])
-            ->each(fn ($item) => class_exists($item['model']) && class_exists($item['policy'])
-                ? Gate::policy($item['model'], $item['policy'])
-                : null
+            ->each(
+                fn($item) => class_exists($item['model']) && class_exists($item['policy'])
+                    ? Gate::policy($item['model'], $item['policy'])
+                    : null
             );
     }
 
@@ -106,7 +109,7 @@ class AppServiceProvider extends ServiceProvider
             $hasTranslationFiles = collect(File::directories($packagePath))
                 ->contains(function ($localePath) {
                     return collect(File::files($localePath))
-                        ->contains(fn ($file) => in_array($file->getExtension(), ['php', 'json']));
+                        ->contains(fn($file) => in_array($file->getExtension(), ['php', 'json']));
                 });
 
             if ($hasTranslationFiles) {
@@ -123,6 +126,7 @@ class AppServiceProvider extends ServiceProvider
         UnitKerja::observe(UnitKerjaObserver::class);
         Media::observe(MediaObserver::class);
         ImutBenchmarking::observe(ImutBenchmarkingObserver::class);
+        ImutData::observe(ImutDataObserver::class);
         LaporanImut::observe(LaporanImutObserver::class);
         ImutPenilaian::observe(ImutPenilaianObserver::class);
     }

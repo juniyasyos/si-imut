@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\DailyReportEntry;
 use App\Models\FormHeader;
+use App\Models\FormTemplate;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
@@ -16,14 +17,19 @@ class DailyReportEntrySeeder extends Seeder
      */
     public function run(): void
     {
-        // Cari form header Kebersihan Tangan
-        $formHeader = FormHeader::whereHas('imutdata', function ($query) {
-            $query->where('title', 'LIKE', '%Kebersihan Tangan%');
-        })->first();
+        // Preferensi: cari FormTemplate yang relevan (modern). Jika tidak ada, fallback ke legacy FormHeader.
+        $formTemplate = FormTemplate::where('title', 'LIKE', '%Kebersihan Tangan%')->first();
+        $formHeader = null;
 
-        if (!$formHeader) {
-            $this->command->error('Form Header Kebersihan Tangan tidak ditemukan!');
-            return;
+        if (!$formTemplate) {
+            $formHeader = FormHeader::whereHas('imutdata', function ($query) {
+                $query->where('title', 'LIKE', '%Kebersihan Tangan%');
+            })->first();
+
+            if (!$formHeader) {
+                $this->command->error('Form Template / Header Kebersihan Tangan tidak ditemukan!');
+                return;
+            }
         }
 
         // Cari unit kerja (contoh: IGD)
@@ -42,7 +48,8 @@ class DailyReportEntrySeeder extends Seeder
             return;
         }
 
-        $this->command->info("Membuat data untuk Form: {$formHeader->title}");
+        $formLabel = $formTemplate->title ?? $formHeader->title;
+        $this->command->info("Membuat data untuk Form: {$formLabel}");
         $this->command->info("Unit Kerja: {$unitKerja->unit_name}");
         $this->command->info("User: {$user->name}");
 
@@ -64,13 +71,13 @@ class DailyReportEntrySeeder extends Seeder
 
         for ($i = 0; $i < 4; $i++) {
             $date = $today->copy()->subDays($i);
-            
+
             // Generate 3-5 entry per hari
             $entriesPerDay = rand(3, 5);
-            
+
             for ($j = 0; $j < $entriesPerDay; $j++) {
                 $handHygieneDone = rand(0, 100) < 85; // 85% compliance rate
-                
+
                 $responses = [
                     'observer_name' => 'Observer ' . fake()->name(),
                     'healthcare_worker_profession' => fake()->randomElement($professions),
@@ -91,7 +98,8 @@ class DailyReportEntrySeeder extends Seeder
                 }
 
                 DailyReportEntry::create([
-                    'form_header_id' => $formHeader->id,
+                    'form_header_id' => $formHeader->id ?? null,
+                    'form_template_id' => $formTemplate->id ?? null,
                     'unit_kerja_id' => $unitKerja->id,
                     'submitted_by' => $user->id,
                     'report_date' => $date,

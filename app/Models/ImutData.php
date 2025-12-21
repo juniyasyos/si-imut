@@ -143,6 +143,14 @@ class ImutData extends Model
     }
 
     /**
+     * function to get the form templates of the indicator
+     */
+    public function formTemplates(): HasMany
+    {
+        return $this->hasMany(FormTemplate::class);
+    }
+
+    /**
      * function to get the benchmarking of the indicator
      */
     public function unitKerja(): BelongsToMany

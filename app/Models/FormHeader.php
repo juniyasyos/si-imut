@@ -12,14 +12,14 @@ class FormHeader extends Model
     use HasFactory;
 
     protected $fillable = [
-        'imutdata_id',
+        'imutdata_profile_id',
         'title',
         'description',
     ];
 
-    public function imutdata(): BelongsTo
+    public function imutdataProfile(): BelongsTo
     {
-        return $this->belongsTo(Imutdata::class, 'imutdata_id');
+        return $this->belongsTo(ImutProfile::class, 'imutdata_profile_id');
     }
 
     public function formFields(): HasMany

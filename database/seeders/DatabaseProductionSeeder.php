@@ -23,7 +23,7 @@ class DatabaseProductionSeeder extends Seeder
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
                 ImutDataProdSeeder::class,
-                FormHeaderSeeder::class,
+                // FormHeaderSeeder::class, // Deprecated: replaced by FormTemplate/EnhancedFormBuilder
                 EnhancedFormBuilderSeeder::class,
             ]
         );

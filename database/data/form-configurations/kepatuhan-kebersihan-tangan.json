@@ -1,97 +1,147 @@
 {
-    "slug": "kepatuhan-kebersihan-tangan",
-    "fields": [
+    "form_template": {
+        "title": "Kepatuhan Kebersihan Tangan",
+        "description": "Form sederhana untuk audit kepatuhan cuci tangan berdasarkan 5 momen WHO dan 6 langkah cuci tangan",
+        "compliance_method": "auto_calculate",
+        "auto_fail_on_critical": true
+    },
+    "form_fields": [
         {
-            "key": "observer_name",
-            "label": "Nama Observer",
-            "description": "Nama petugas yang melakukan observasi kebersihan tangan",
-            "type": "text",
-            "is_required": true,
-            "options": null,
-            "order": 1
-        },
-        {
-            "key": "healthcare_worker_profession",
-            "label": "Profesi Tenaga Kesehatan",
-            "description": "Pilih profesi tenaga kesehatan yang diobservasi",
-            "type": "select",
-            "is_required": true,
+            "field_key": "hand_hygiene_method",
+            "field_label": "Cuci Tangan Dengan Apa",
+            "field_description": "Metode cuci tangan yang digunakan oleh tenaga kesehatan",
+            "field_type": "single_select",
+            "validation_config": {
+                "required": true
+            },
+            "compliance_weight": 3,
+            "is_critical_field": true,
+            "order_index": 1,
             "options": [
-                "Dokter",
-                "Perawat",
-                "Bidan",
-                "Apoteker",
-                "Analis",
-                "Radiografer",
-                "Fisioterapis",
-                "Nutrisionis",
-                "Petugas Kebersihan",
-                "Lainnya"
-            ],
-            "order": 2
+                {
+                    "option_text": "Hand Rub (Antiseptik berbasis alkohol) ✅",
+                    "option_value": "hand_rub",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Air + Sabun ✅",
+                    "option_value": "air_sabun",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Tidak melakukan cuci tangan ❌",
+                    "option_value": "tidak_cuci_tangan",
+                    "is_correct": false
+                }
+            ]
         },
         {
-            "key": "observation_location",
-            "label": "Lokasi Observasi",
-            "description": "Ruangan atau area tempat observasi dilakukan",
-            "type": "text",
-            "is_required": true,
-            "options": null,
-            "order": 3
-        },
-        {
-            "key": "five_moments",
-            "label": "Indikasi Five Moments",
-            "description": "Pilih momen kebersihan tangan yang diobservasi",
-            "type": "select",
-            "is_required": true,
+            "field_key": "hand_hygiene_indication",
+            "field_label": "Indikasi Cuci Tangan - 5 Momen WHO",
+            "field_description": "Pilih indikasi cuci tangan sesuai 5 momen WHO (dapat memilih lebih dari satu)",
+            "field_type": "multi_select",
+            "validation_config": {
+                "required": true,
+                "min_selections": 1
+            },
+            "compliance_weight": 4,
+            "is_critical_field": true,
+            "compliance_rules": {
+                "minimum_correct": 2,
+                "allow_wrong_selections": true
+            },
+            "conditional_logic": {
+                "depends_on_field": "hand_hygiene_method",
+                "condition_type": "show_when",
+                "trigger_values": [
+                    "hand_rub",
+                    "air_sabun"
+                ]
+            },
+            "order_index": 2,
             "options": [
-                "Sebelum kontak dengan pasien",
-                "Sebelum tindakan aseptik",
-                "Setelah kontak dengan cairan tubuh pasien",
-                "Setelah kontak dengan pasien",
-                "Setelah kontak dengan lingkungan pasien"
-            ],
-            "order": 4
+                {
+                    "option_text": "1. Sebelum kontak dengan pasien",
+                    "option_value": "sebelum_kontak_pasien",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "2. Sebelum prosedur bersih/aseptik",
+                    "option_value": "sebelum_prosedur_aseptik",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "3. Setelah prosedur/risiko terpapar cairan tubuh",
+                    "option_value": "setelah_risiko_cairan",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "4. Setelah kontak dengan pasien",
+                    "option_value": "setelah_kontak_pasien",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "5. Setelah kontak dengan area sekitar pasien",
+                    "option_value": "setelah_kontak_area_sekitar",
+                    "is_correct": true
+                }
+            ]
         },
         {
-            "key": "hand_hygiene_performed",
-            "label": "Kebersihan Tangan Dilakukan",
-            "description": "Apakah tenaga kesehatan melakukan kebersihan tangan sesuai indikasi?",
-            "type": "bool",
-            "is_required": true,
-            "options": null,
-            "order": 5
-        },
-        {
-            "key": "hand_hygiene_method",
-            "label": "Metode Kebersihan Tangan",
-            "description": "Metode yang digunakan jika kebersihan tangan dilakukan",
-            "type": "radio",
-            "is_required": false,
+            "field_key": "six_steps_compliance",
+            "field_label": "6 Langkah Cuci Tangan",
+            "field_description": "Checklist kepatuhan 6 langkah cuci tangan WHO (semua langkah harus dilakukan untuk compliance penuh)",
+            "field_type": "multi_select",
+            "validation_config": {
+                "required": false
+            },
+            "compliance_weight": 5,
+            "is_critical_field": true,
+            "compliance_rules": {
+                "minimum_correct": 4,
+                "allow_wrong_selections": true
+            },
+            "conditional_logic": {
+                "depends_on_field": "hand_hygiene_method",
+                "condition_type": "show_when",
+                "trigger_values": [
+                    "hand_rub",
+                    "air_sabun"
+                ]
+            },
+            "order_index": 3,
             "options": [
-                "Handrub (alcohol-based)",
-                "Handwash (sabun dan air)"
-            ],
-            "order": 6
-        },
-        {
-            "key": "six_steps_correct",
-            "label": "6 Langkah Benar",
-            "description": "Apakah 6 langkah kebersihan tangan dilakukan dengan benar?",
-            "type": "bool",
-            "is_required": false,
-            "options": null,
-            "order": 7
-        },
-        {
-            "key": "notes",
-            "label": "Catatan",
-            "description": "Catatan tambahan terkait observasi (opsional)",
-            "type": "textarea",
-            "is_required": false,
-            "options": null,
-            "order": 8
+                {
+                    "option_text": "1. Gosok kedua telapak tangan",
+                    "option_value": "gosok_telapak_tangan",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "2. Gosok punggung-sela jari kanan-kiri",
+                    "option_value": "gosok_punggung_sela_jari",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "3. Gosok kedua telapak dan sela jari",
+                    "option_value": "gosok_telapak_sela_jari",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "4. Jari sisi dalam kedua tangan mengunci",
+                    "option_value": "jari_sisi_dalam_mengunci",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "5. Gosok ibu jari berputar dlm genggaman",
+                    "option_value": "gosok_ibu_jari_berputar",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "6. Ujung jari berputar ke telapak kanan-kiri",
+                    "option_value": "ujung_jari_berputar",
+                    "is_correct": true
+                }
+            ]
         }
     ]
 }

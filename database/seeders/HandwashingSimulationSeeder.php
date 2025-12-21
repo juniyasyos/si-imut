@@ -91,13 +91,14 @@ class HandwashingSimulationSeeder extends Seeder
             return;
         }
 
-        // Get existing form header for backward compatibility
+        // Try to get an existing legacy FormHeader for compatibility (optional)
         $formHeader = \App\Models\FormHeader::first();
+        $formHeaderId = $formHeader->id ?? null;
 
-        // Create daily report response
+        // Create daily report response; always include form_template_id and optionally form_header_id
         $dailyReport = DailyReportResponse::create([
             'form_template_id' => $template->id,
-            'form_header_id' => $formHeader->id,  // Required for FK constraint
+            'form_header_id' => $formHeaderId,
             'unit_kerja_id' => $unitKerja->id,
             'submitted_by' => $user->id,
             'report_date' => Carbon::today(),

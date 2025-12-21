@@ -1,0 +1,125 @@
+{
+    "form_template": {
+        "title": "Keselamatan Pasien - Pencegahan Risiko Jatuh",
+        "description": "Form evaluasi implementasi pencegahan risiko jatuh pasien di unit rawat inap",
+        "compliance_method": "auto_calculate",
+        "auto_fail_on_critical": true
+    },
+    "form_fields": [
+        {
+            "field_key": "risk_assessment",
+            "field_label": "Asesmen Risiko Jatuh",
+            "field_description": "Apakah dilakukan asesmen risiko jatuh pada semua pasien?",
+            "field_type": "single_select",
+            "validation_config": {
+                "required": true
+            },
+            "compliance_weight": 5,
+            "is_critical_field": true,
+            "order_index": 1,
+            "options": [
+                {
+                    "option_text": "Ya, semua pasien dinilai ✅",
+                    "option_value": "semua_dinilai",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Sebagian pasien dinilai ⚠️",
+                    "option_value": "sebagian_dinilai",
+                    "is_correct": false
+                },
+                {
+                    "option_text": "Tidak ada asesmen ❌",
+                    "option_value": "tidak_ada_asesmen",
+                    "is_correct": false
+                }
+            ]
+        },
+        {
+            "field_key": "prevention_interventions",
+            "field_label": "Intervensi Pencegahan",
+            "field_description": "Pilih intervensi pencegahan yang diterapkan (boleh pilih lebih dari satu)",
+            "field_type": "multi_select",
+            "validation_config": {
+                "required": true,
+                "min_selections": 1
+            },
+            "compliance_weight": 4,
+            "is_critical_field": false,
+            "compliance_rules": {
+                "minimum_correct": 3,
+                "allow_wrong_selections": true
+            },
+            "conditional_logic": {
+                "depends_on_field": "risk_assessment",
+                "condition_type": "show_when",
+                "trigger_values": [
+                    "semua_dinilai",
+                    "sebagian_dinilai"
+                ]
+            },
+            "order_index": 2,
+            "options": [
+                {
+                    "option_text": "Penggunaan bed rail/side rail",
+                    "option_value": "bed_rail",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Gelang identifikasi risiko jatuh",
+                    "option_value": "gelang_risiko",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Edukasi pasien dan keluarga",
+                    "option_value": "edukasi",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Call bell dalam jangkauan",
+                    "option_value": "call_bell",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Lantai tidak licin/kering",
+                    "option_value": "lantai_aman",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Pencahayaan yang adekuat",
+                    "option_value": "pencahayaan",
+                    "is_correct": true
+                }
+            ]
+        },
+        {
+            "field_key": "documentation_compliance",
+            "field_label": "Dokumentasi",
+            "field_description": "Apakah asesmen dan intervensi terdokumentasi dengan baik?",
+            "field_type": "single_select",
+            "validation_config": {
+                "required": true
+            },
+            "compliance_weight": 3,
+            "is_critical_field": false,
+            "order_index": 3,
+            "options": [
+                {
+                    "option_text": "Lengkap dan akurat ✅",
+                    "option_value": "lengkap",
+                    "is_correct": true
+                },
+                {
+                    "option_text": "Ada tapi kurang lengkap ⚠️",
+                    "option_value": "kurang_lengkap",
+                    "is_correct": false
+                },
+                {
+                    "option_text": "Tidak ada dokumentasi ❌",
+                    "option_value": "tidak_ada",
+                    "is_correct": false
+                }
+            ]
+        }
+    ]
+}

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\FormHeader;
+use App\Models\FormTemplate;
 use App\Models\DailyReportEntry;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +42,7 @@ class DailyReportDashboard extends Page
         }
 
         // Get all form headers where the imutdata is assigned to user's units
-        $indicators = FormHeader::with('imutdata')
+        $indicators = FormTemplate::with('imutdata')
             ->whereHas('imutdata', function ($query) use ($unitKerjaIds) {
                 $query->whereHas('unitKerja', function ($q) use ($unitKerjaIds) {
                     $q->whereIn('unit_kerja.id', $unitKerjaIds);
@@ -50,37 +50,37 @@ class DailyReportDashboard extends Page
             })
             ->get();
 
-        $this->indicatorStats = $indicators->map(function ($formHeader) use ($unitKerjaIds) {
-            $totalEntries = DailyReportEntry::where('form_header_id', $formHeader->id)
+        $this->indicatorStats = $indicators->map(function ($formTemplate) use ($unitKerjaIds) {
+            $totalEntries = DailyReportEntry::where('form_header_id', $formTemplate->id)
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->count();
 
-            $thisMonthEntries = DailyReportEntry::where('form_header_id', $formHeader->id)
+            $thisMonthEntries = DailyReportEntry::where('form_header_id', $formTemplate->id)
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->whereMonth('report_date', now()->month)
                 ->whereYear('report_date', now()->year)
                 ->count();
 
-            $thisWeekEntries = DailyReportEntry::where('form_header_id', $formHeader->id)
+            $thisWeekEntries = DailyReportEntry::where('form_header_id', $formTemplate->id)
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->whereBetween('report_date', [now()->startOfWeek(), now()->endOfWeek()])
                 ->count();
 
-            $lastEntry = DailyReportEntry::where('form_header_id', $formHeader->id)
+            $lastEntry = DailyReportEntry::where('form_header_id', $formTemplate->id)
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->latest('created_at')
                 ->first();
 
-            $activePeriods = DailyReportEntry::where('form_header_id', $formHeader->id)
+            $activePeriods = DailyReportEntry::where('form_header_id', $formTemplate->id)
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->selectRaw('COUNT(DISTINCT DATE_FORMAT(report_date, "%Y-%m")) as months')
                 ->value('months') ?? 0;
 
             return [
-                'id' => $formHeader->id,
-                'slug' => $formHeader->imutdata->slug ?? $formHeader->id,
-                'title' => $formHeader->imutdata->title ?? $formHeader->title,
-                'description' => $formHeader->description,
+                'id' => $formTemplate->id,
+                'slug' => $formTemplate->imutdata->slug ?? $formTemplate->id,
+                'title' => $formTemplate->imutdata->title ?? $formTemplate->title,
+                'description' => $formTemplate->description,
                 'total_entries' => $totalEntries,
                 'this_month' => $thisMonthEntries,
                 'this_week' => $thisWeekEntries,
