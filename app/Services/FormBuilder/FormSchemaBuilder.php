@@ -192,7 +192,7 @@ class FormSchemaBuilder
                         ]),
                 ])
                 ->visible(fn($get) => $get('field_type') === 'multi_select')
-                ->collapsed()
+                ->collapsed(false)
                 ->columnSpanFull(),
 
             // Conditional Logic Configuration  
@@ -231,7 +231,7 @@ class FormSchemaBuilder
                         ->live()
                         ->columnSpanFull(),
                 ])
-                ->collapsed()
+                ->collapsed(false)
                 ->visible(fn($get) => in_array($get('field_type'), ['single_select', 'multi_select', 'text', 'number']))
                 ->columnSpanFull(),
         ];

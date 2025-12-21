@@ -58,12 +58,6 @@ class ManageFormBuilder extends Page implements HasForms
                 ->icon('heroicon-o-eye')
                 ->action('preview')
                 ->color('info'),
-
-            Action::make('calculate_compliance')
-                ->label('Hitung Compliance')
-                ->icon('heroicon-o-calculator')
-                ->action('calculateCompliance')
-                ->color('warning'),
         ];
     }
 
@@ -133,25 +127,6 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Redirect to preview page
         $this->redirect(static::getResource()::getUrl('preview-form', ['record' => $this->record]));
-    }
-
-    public function calculateCompliance(): void
-    {
-        try {
-            $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->calculateAndUpdateCompliance($this->record);
-
-            Notification::make()
-                ->title('Compliance berhasil dihitung ulang')
-                ->success()
-                ->send();
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Gagal menghitung compliance')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
-        }
     }
 
     public function getAvailableFields(): array
