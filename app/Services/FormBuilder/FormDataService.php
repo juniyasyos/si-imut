@@ -44,6 +44,7 @@ class FormDataService
                 'compliance_weight' => $field->compliance_weight,
                 'is_critical_field' => $field->is_critical_field,
                 'conditional_logic' => $field->conditional_logic,
+                'has_conditional_logic' => !empty($field->conditional_logic), // Add toggle state based on data
                 'options' => $options,
                 'order_index' => $field->order_index,
             ];
@@ -91,6 +92,7 @@ class FormDataService
                     'compliance_weight' => 1,
                     'is_critical_field' => false,
                     'conditional_logic' => null,
+                    'has_conditional_logic' => false, // Legacy fields don't have conditional logic
                     'options' => $options,
                     'order_index' => $field->order,
                 ];

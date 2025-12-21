@@ -81,6 +81,7 @@ class HandHygieneFormSeeder extends Seeder
                     'compliance_weight' => $fieldData['compliance_weight'],
                     'is_critical_field' => $fieldData['is_critical_field'],
                     'conditional_logic' => $fieldData['conditional_logic'] ?? null,
+                    'compliance_rules' => $fieldData['compliance_rules'] ?? null,
                     'order_index' => $fieldData['order_index'],
                 ]);
 
@@ -93,7 +94,7 @@ class HandHygieneFormSeeder extends Seeder
                             'enhanced_form_field_id' => $field->id,
                             'option_text' => $optionData['option_text'],
                             'option_value' => $optionData['option_value'],
-                            'compliance_value' => $optionData['compliance_value'],
+                            'is_correct' => $optionData['is_correct'] ?? true,
                             'order_index' => $index + 1,
                         ]);
                     }

@@ -43,6 +43,12 @@ class FormPersistenceService
     private function saveEnhancedFields(FormTemplate $formTemplate, array $fields): void
     {
         foreach ($fields as $index => $fieldData) {
+            // Only save conditional_logic if has_conditional_logic is true and conditional_logic has data
+            $conditionalLogic = null;
+            if (($fieldData['has_conditional_logic'] ?? false) && !empty($fieldData['conditional_logic'])) {
+                $conditionalLogic = $fieldData['conditional_logic'];
+            }
+
             $field = EnhancedFormField::create([
                 'form_template_id' => $formTemplate->id,
                 'field_key' => $this->generateFieldKey($fieldData),
@@ -52,7 +58,8 @@ class FormPersistenceService
                 'validation_config' => $fieldData['validation_config'] ?? [],
                 'compliance_weight' => $fieldData['compliance_weight'] ?? 2,
                 'is_critical_field' => $fieldData['is_critical_field'] ?? false,
-                'conditional_logic' => $fieldData['conditional_logic'] ?? null,
+                'conditional_logic' => $conditionalLogic,
+                'compliance_rules' => $fieldData['compliance_rules'] ?? null,
                 'order_index' => $index + 1,
                 'status' => true,
             ]);
@@ -68,7 +75,7 @@ class FormPersistenceService
                 'enhanced_form_field_id' => $field->id,
                 'option_text' => $optionData['option_text'],
                 'option_value' => $optionData['option_value'],
-                'compliance_value' => $optionData['compliance_value'] ?? 1,
+                'is_correct' => $optionData['is_correct'] ?? true,
                 'order_index' => $index + 1,
                 'status' => true,
             ]);

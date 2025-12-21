@@ -163,20 +163,36 @@ class FormSchemaBuilder
                                 ->label('Value Opsi')
                                 ->required(),
 
-                            Select::make('compliance_value')
-                                ->label('Nilai Compliance')
-                                ->options([
-                                    0 => 'Tidak Compliant (0)',
-                                    0.5 => 'Sebagian Compliant (0.5)',
-                                    1 => 'Compliant Penuh (1)',
-                                ])
-                                ->default(1)
-                                ->helperText('Nilai untuk kalkulasi compliance'),
+                            Toggle::make('is_correct')
+                                ->label('Opsi Benar/Pass')
+                                ->helperText('Centang jika opsi ini menandakan compliance/benar')
+                                ->default(true),
                         ]),
                 ])
                 ->defaultItems(0)
                 ->addActionLabel('Tambah Opsi')
                 ->visible(fn($get) => FormFieldMapper::requiresOptions($get('field_type')))
+                ->columnSpanFull(),
+
+            // Simple Compliance Rules for Multi-Select
+            Section::make('Aturan Compliance (untuk Multi-Select)')
+                ->schema([
+                    Grid::make(2)
+                        ->schema([
+                            TextInput::make('compliance_rules.minimum_correct')
+                                ->label('Minimal Pilihan Benar')
+                                ->numeric()
+                                ->default(1)
+                                ->helperText('Minimal berapa opsi benar yang harus dipilih untuk Pass'),
+
+                            Toggle::make('compliance_rules.allow_wrong_selections')
+                                ->label('Boleh Ada Pilihan Salah')
+                                ->default(true)
+                                ->helperText('Jika OFF, pilih opsi salah = otomatis Fail'),
+                        ]),
+                ])
+                ->visible(fn($get) => $get('field_type') === 'multi_select')
+                ->collapsed()
                 ->columnSpanFull(),
 
             // Conditional Logic Configuration  
@@ -193,7 +209,8 @@ class FormSchemaBuilder
                                 ->label('Bergantung pada Field')
                                 ->options(fn($get) => self::getAvailableFieldsForCondition($get('../../fields') ?? []))
                                 ->helperText('Field yang akan mempengaruhi visibility')
-                                ->visible(fn($get) => $get('has_conditional_logic')),
+                                ->visible(fn($get) => $get('has_conditional_logic'))
+                                ->live(),
 
                             Select::make('conditional_logic.condition_type')
                                 ->label('Jenis Kondisi')
@@ -206,10 +223,12 @@ class FormSchemaBuilder
                                 ->visible(fn($get) => $get('has_conditional_logic')),
                         ]),
 
-                    TagsInput::make('conditional_logic.trigger_values')
+                    CheckboxList::make('conditional_logic.trigger_values')
                         ->label('Nilai Pemicu')
-                        ->helperText('Field akan merespons ketika field dependency memiliki nilai ini (pisahkan dengan koma)')
-                        ->visible(fn($get) => $get('has_conditional_logic'))
+                        ->helperText('Field akan muncul/hilang ketika field dependency memiliki nilai yang dipilih')
+                        ->options(fn($get) => self::getDependentFieldOptions($get('../../fields') ?? [], $get('conditional_logic.depends_on_field')))
+                        ->visible(fn($get) => $get('has_conditional_logic') && !empty($get('conditional_logic.depends_on_field')))
+                        ->live()
                         ->columnSpanFull(),
                 ])
                 ->collapsed()
@@ -228,6 +247,38 @@ class FormSchemaBuilder
         foreach ($fields as $index => $field) {
             if (!empty($field['field_key']) && !empty($field['field_label'])) {
                 $options[$field['field_key']] = $field['field_label'];
+            }
+        }
+
+        return $options;
+    }
+
+    /**
+     * Get options from dependent field for trigger values
+     */
+    private static function getDependentFieldOptions(array $fields, ?string $dependentFieldKey): array
+    {
+        if (empty($dependentFieldKey)) {
+            return [];
+        }
+
+        $options = [];
+
+        foreach ($fields as $field) {
+            if (($field['field_key'] ?? '') === $dependentFieldKey) {
+                // Get options from the dependent field
+                $fieldOptions = $field['options'] ?? [];
+
+                foreach ($fieldOptions as $option) {
+                    $value = $option['option_value'] ?? '';
+                    $text = $option['option_text'] ?? $value;
+
+                    if (!empty($value)) {
+                        $options[$value] = $text;
+                    }
+                }
+
+                break;
             }
         }
 

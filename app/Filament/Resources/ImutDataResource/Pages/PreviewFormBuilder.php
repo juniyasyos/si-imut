@@ -319,24 +319,37 @@ class PreviewFormBuilder extends Page implements HasForms
                         case 'single_select':
                             $option = $field->options->where('option_value', $fieldValue)->first();
                             if ($option) {
-                                $fieldScore = ($option->compliance_value / 2) * $field->compliance_weight;
+                                // Simple boolean: is_correct = Pass (full weight), not correct = Fail (0)
+                                $fieldScore = ($option->is_correct ?? false) ? $field->compliance_weight : 0;
                             }
                             break;
 
                         case 'multi_select':
                             if (is_array($fieldValue)) {
-                                $totalOptions = $field->options->count();
-                                $selectedCompliance = 0;
+                                $correctSelected = 0;
+                                $wrongSelected = 0;
 
                                 foreach ($fieldValue as $value) {
                                     $option = $field->options->where('option_value', $value)->first();
                                     if ($option) {
-                                        $selectedCompliance += $option->compliance_value;
+                                        if ($option->is_correct ?? false) {
+                                            $correctSelected++;
+                                        } else {
+                                            $wrongSelected++;
+                                        }
                                     }
                                 }
 
-                                $ratio = $totalOptions > 0 ? $selectedCompliance / $totalOptions : 0;
-                                $fieldScore = $ratio * $field->compliance_weight;
+                                // Apply boolean rules
+                                $complianceRules = $field->compliance_rules ?? [];
+                                $minCorrect = $complianceRules['minimum_correct'] ?? 1;
+                                $allowWrong = $complianceRules['allow_wrong_selections'] ?? true;
+
+                                // Check if passes rules
+                                $passesMinimum = $correctSelected >= $minCorrect;
+                                $passesWrongRule = $allowWrong || $wrongSelected == 0;
+
+                                $fieldScore = ($passesMinimum && $passesWrongRule) ? $field->compliance_weight : 0;
                             }
                             break;
 
@@ -448,26 +461,26 @@ class PreviewFormBuilder extends Page implements HasForms
                 ->url(fn() => static::getResource()::getUrl('manage-form-builder', ['record' => $this->record]))
                 ->color('gray'),
 
-            Action::make('calculate_compliance')
-                ->label('Hitung Ulang Compliance')
-                ->icon('heroicon-o-calculator')
-                ->action(function () {
-                    try {
-                        $currentData = $this->form->getState();
-                    } catch (\Exception $e) {
-                        // Use current preview data if form validation fails
-                        $currentData = $this->previewData ?? [];
-                    }
+            // Action::make('calculate_compliance')
+            //     ->label('Hitung Ulang Compliance')
+            //     ->icon('heroicon-o-calculator')
+            //     ->action(function () {
+            //         try {
+            //             $currentData = $this->form->getState();
+            //         } catch (\Exception $e) {
+            //             // Use current preview data if form validation fails
+            //             $currentData = $this->previewData ?? [];
+            //         }
 
-                    $this->complianceScore = $this->calculateCompliance($currentData);
+            //         $this->complianceScore = $this->calculateCompliance($currentData);
 
-                    Notification::make()
-                        ->title('Compliance Score Updated')
-                        ->body('Score: ' . number_format($this->complianceScore['score'], 1) . '%')
-                        ->success()
-                        ->send();
-                })
-                ->color('primary'),
+            //         Notification::make()
+            //             ->title('Compliance Score Updated')
+            //             ->body('Score: ' . number_format($this->complianceScore['score'], 1) . '%')
+            //             ->success()
+            //             ->send();
+            //     })
+            //     ->color('primary'),
         ];
     }
 

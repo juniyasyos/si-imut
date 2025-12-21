@@ -21,6 +21,7 @@ class EnhancedFormField extends Model
         'compliance_weight',
         'is_critical_field',
         'conditional_logic',
+        'compliance_rules',
         'order_index',
     ];
 
@@ -28,6 +29,7 @@ class EnhancedFormField extends Model
         'validation_config' => 'array',
         'is_critical_field' => 'boolean',
         'conditional_logic' => 'array',
+        'compliance_rules' => 'array',
     ];
 
     public function formTemplate(): BelongsTo
@@ -94,18 +96,41 @@ class EnhancedFormField extends Model
     private function scoreSelectField($value): float
     {
         $values = is_array($value) ? $value : [$value];
-        $totalScore = 0;
-        $optionCount = 0;
+
+        // For single select (not array), return 100 if is_correct = true, else 0
+        if (!is_array($value)) {
+            $option = $this->options()->where('option_value', $value)->first();
+            if ($option) {
+                return ($option->is_correct ?? false) ? 100 : 0;
+            }
+            return 0;
+        }
+
+        // For multi-select, apply boolean rules
+        $correctSelected = 0;
+        $wrongSelected = 0;
 
         foreach ($values as $selectedValue) {
             $option = $this->options()->where('option_value', $selectedValue)->first();
             if ($option) {
-                $totalScore += $option->compliance_value * 50; // 0=0, 1=50, 2=100
-                $optionCount++;
+                if ($option->is_correct ?? false) {
+                    $correctSelected++;
+                } else {
+                    $wrongSelected++;
+                }
             }
         }
 
-        return $optionCount > 0 ? $totalScore / $optionCount : 0;
+        // Apply compliance rules
+        $complianceRules = $this->compliance_rules ?? [];
+        $minCorrect = $complianceRules['minimum_correct'] ?? 1;
+        $allowWrong = $complianceRules['allow_wrong_selections'] ?? true;
+
+        // Simple boolean: Pass or Fail
+        $passesMinimum = $correctSelected >= $minCorrect;
+        $passesWrongRule = $allowWrong || $wrongSelected == 0;
+
+        return ($passesMinimum && $passesWrongRule) ? 100 : 0;
     }
 
     private function scoreTimeDuration($value): float

@@ -132,7 +132,7 @@ class ManageFormBuilder extends Page implements HasForms
         }
 
         // Redirect to preview page
-        $this->redirect(static::getResource()::getUrl('preview-form-builder', ['record' => $this->record]));
+        $this->redirect(static::getResource()::getUrl('preview-form', ['record' => $this->record]));
     }
 
     public function calculateCompliance(): void

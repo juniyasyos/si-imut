@@ -15,6 +15,7 @@ class FormFieldOption extends Model
         'option_text',
         'option_value',
         'compliance_value',
+        'is_correct',
         'order_index',
     ];
 
