@@ -155,11 +155,11 @@ class FormSchemaBuilder
                 ->schema([
                     Grid::make(3)
                         ->schema([
-                            TextInput::make('option_text')
+                            TextInput::make('label')
                                 ->label('Label Opsi')
                                 ->required(),
 
-                            TextInput::make('option_value')
+                            TextInput::make('value')
                                 ->label('Value Opsi')
                                 ->required(),
 
@@ -270,8 +270,8 @@ class FormSchemaBuilder
                 $fieldOptions = $field['options'] ?? [];
 
                 foreach ($fieldOptions as $option) {
-                    $value = $option['option_value'] ?? '';
-                    $text = $option['option_text'] ?? $value;
+                    $value = $option['value'] ?? $option['option_value'] ?? '';
+                    $text = $option['label'] ?? $option['option_text'] ?? $value;
 
                     if (!empty($value)) {
                         $options[$value] = $text;

@@ -73,8 +73,8 @@ class FormPersistenceService
         foreach ($options as $index => $optionData) {
             FormFieldOption::create([
                 'enhanced_form_field_id' => $field->id,
-                'option_text' => $optionData['option_text'],
-                'option_value' => $optionData['option_value'],
+                'option_text' => $optionData['label'] ?? $optionData['option_text'] ?? '',
+                'option_value' => $optionData['value'] ?? $optionData['option_value'] ?? '',
                 'is_correct' => $optionData['is_correct'] ?? true,
                 'order_index' => $index + 1,
                 'status' => true,
@@ -151,10 +151,10 @@ class FormPersistenceService
 
         $formatted = [];
         foreach ($options as $option) {
-            if (is_array($option) && isset($option['option_text'])) {
+            if (is_array($option)) {
                 $formatted[] = [
-                    'label' => $option['option_text'],
-                    'value' => $option['option_value'],
+                    'label' => $option['label'] ?? $option['option_text'] ?? '',
+                    'value' => $option['value'] ?? $option['option_value'] ?? '',
                 ];
             }
         }
