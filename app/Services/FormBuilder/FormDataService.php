@@ -37,7 +37,7 @@ class FormDataService
             return [
                 'id' => $field->id,
                 'field_key' => $field->field_key,
-                'field_name' => $field->field_label, // Fixed: EnhancedFormField uses field_label column
+                'field_label' => $field->field_label, // Fixed: EnhancedFormField uses field_label column
                 'field_description' => $field->field_description,
                 'field_type' => $field->field_type ?: 'text', // Fallback for empty field_type
                 'validation_config' => $field->validation_config,
@@ -84,7 +84,7 @@ class FormDataService
                 return [
                     'id' => $field->id,
                     'field_key' => $field->key,
-                    'field_name' => $field->label, // Fixed: should be field_name, not field_label
+                    'field_label' => $field->label, // Map legacy label to field_label
                     'field_description' => $field->description,
                     'field_type' => FormFieldMapper::mapLegacyFieldType($field->type),
                     'validation_config' => ['required' => $field->is_required],
@@ -120,8 +120,8 @@ class FormDataService
 
         $options = [];
         foreach ($fields as $field) {
-            if (!empty($field['field_name'])) {
-                $options[$field['field_key'] ?? Str::slug($field['field_name'])] = $field['field_name'];
+            if (!empty($field['field_label'])) {
+                $options[$field['field_key'] ?? Str::slug($field['field_label'])] = $field['field_label'];
             }
         }
 
@@ -135,7 +135,7 @@ class FormDataService
         $fields = $formData['fields'] ?? [];
 
         foreach ($fields as $field) {
-            if (($field['field_key'] ?? Str::slug($field['field_name'])) === $fieldKey) {
+            if (($field['field_key'] ?? Str::slug($field['field_label'])) === $fieldKey) {
                 $options = $field['options'] ?? [];
                 $result = [];
 

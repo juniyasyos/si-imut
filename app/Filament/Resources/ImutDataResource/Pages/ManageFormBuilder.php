@@ -14,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ManageFormBuilder extends Page implements HasForms
 {
@@ -115,20 +116,23 @@ class ManageFormBuilder extends Page implements HasForms
         } catch (\Exception $e) {
             DB::rollBack();
             // Silent fail - only log error, don't show notification
-            \Log::warning('Auto-save failed: ' . $e->getMessage());
+            Log::warning('Auto-save failed: ' . $e->getMessage());
         }
     }
 
     public function preview(): void
     {
-        $data = $this->form->getState();
+        // Save current form data before redirecting to preview
+        try {
+            $data = $this->form->getState();
+            $formPersistenceService = new FormPersistenceService();
+            $formPersistenceService->saveFormData($this->record, $data);
+        } catch (\Exception $e) {
+            // Continue to preview even if save fails
+        }
 
-        // Generate preview logic here
-        Notification::make()
-            ->title('Preview Form')
-            ->body('Fitur preview akan segera tersedia')
-            ->info()
-            ->send();
+        // Redirect to preview page
+        $this->redirect(static::getResource()::getUrl('preview-form-builder', ['record' => $this->record]));
     }
 
     public function calculateCompliance(): void

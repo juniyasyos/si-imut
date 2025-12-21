@@ -75,7 +75,7 @@ class FormSchemaBuilder
                         ->collapsible()
                         ->itemLabel(function (array $state): ?string {
                             $icon = FormFieldMapper::getFieldIcon($state['field_type'] ?? 'text_input');
-                            $name = $state['field_name'] ?? 'Field Baru';
+                            $name = $state['field_label'] ?? 'Field Baru';
                             $critical = ($state['is_critical_field'] ?? false) ? ' 🔥' : '';
 
                             return "📋 {$name}{$critical}";
@@ -90,7 +90,7 @@ class FormSchemaBuilder
         return [
             Grid::make(3)
                 ->schema([
-                    TextInput::make('field_name')
+                    TextInput::make('field_label')
                         ->label('Nama Field')
                         ->required()
                         ->maxLength(255)
@@ -226,8 +226,8 @@ class FormSchemaBuilder
         $options = [];
 
         foreach ($fields as $index => $field) {
-            if (!empty($field['field_key']) && !empty($field['field_name'])) {
-                $options[$field['field_key']] = $field['field_name'];
+            if (!empty($field['field_key']) && !empty($field['field_label'])) {
+                $options[$field['field_key']] = $field['field_label'];
             }
         }
 

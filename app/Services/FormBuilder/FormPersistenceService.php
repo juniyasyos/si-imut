@@ -46,7 +46,7 @@ class FormPersistenceService
             $field = EnhancedFormField::create([
                 'form_template_id' => $formTemplate->id,
                 'field_key' => $this->generateFieldKey($fieldData),
-                'field_name' => $fieldData['field_name'],
+                'field_label' => $fieldData['field_label'],
                 'field_description' => $fieldData['field_description'] ?? null,
                 'field_type' => $fieldData['field_type'],
                 'validation_config' => $fieldData['validation_config'] ?? [],
@@ -94,7 +94,7 @@ class FormPersistenceService
 
             $formHeader->formFields()->create([
                 'key' => $this->generateFieldKey($fieldData),
-                'label' => $fieldData['field_name'],
+                'label' => $fieldData['field_label'],
                 'description' => $fieldData['field_description'] ?? '',
                 'type' => $legacyType,
                 'is_required' => $fieldData['validation_config']['required'] ?? false,
@@ -110,7 +110,7 @@ class FormPersistenceService
             return $fieldData['field_key'];
         }
 
-        return Str::slug($fieldData['field_name'], '_');
+        return Str::slug($fieldData['field_label'] ?? 'field', '_');
     }
 
     private function mapToLegacyFieldType(string $enhancedType): string
