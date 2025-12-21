@@ -22,9 +22,9 @@ class DatabaseSeeder extends Seeder
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
                 ImutDataOldSeeder::class,
-                FormHeaderSeeder::class,
-                EnhancedFormBuilderSeeder::class,
-                // HandHygieneFormSeeder::class, // Disabled: conflict with EnhancedFormBuilderSeeder
+                // FormHeaderSeeder::class,
+                // EnhancedFormBuilderSeeder::class,
+                HandHygieneFormSeeder::class,
                 // RoleUpgradeSeeder::class
                 // LaporanImutSeeder::class,
                 // ImutDataSeeder::class,
