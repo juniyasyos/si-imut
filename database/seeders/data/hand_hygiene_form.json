@@ -159,7 +159,10 @@
             "conditional_logic": {
                 "depends_on_field": "hand_hygiene_method",
                 "condition_type": "show_when",
-                "trigger_values": ["hand_rub", "air_sabun"]
+                "trigger_values": [
+                    "hand_rub",
+                    "air_sabun"
+                ]
             },
             "order_index": 6,
             "options": [
