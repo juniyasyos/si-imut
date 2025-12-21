@@ -25,6 +25,7 @@ class ManageFormBuilder extends Page implements HasForms
 
     public ?array $data = [];
     public ?ImutData $record = null;
+    public bool $autoSaveEnabled = true;
 
     public function mount(ImutData $record): void
     {
@@ -93,6 +94,31 @@ class ManageFormBuilder extends Page implements HasForms
         }
     }
 
+    public function autoSave(): void
+    {
+        if (!$this->autoSaveEnabled) {
+            return;
+        }
+
+        $data = $this->form->getState();
+
+        try {
+            DB::beginTransaction();
+
+            $formPersistenceService = new FormPersistenceService();
+            $formPersistenceService->saveFormData($this->record, $data);
+            $formPersistenceService->calculateAndUpdateCompliance($this->record);
+
+            DB::commit();
+
+            // Silent save - no notification to avoid disrupting user
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Silent fail - only log error, don't show notification
+            \Log::warning('Auto-save failed: ' . $e->getMessage());
+        }
+    }
+
     public function preview(): void
     {
         $data = $this->form->getState();
@@ -134,5 +160,34 @@ class ManageFormBuilder extends Page implements HasForms
     {
         $formDataService = new FormDataService();
         return $formDataService->getFieldOptions($this->data, $fieldKey);
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [];
+    }
+
+    protected function getViewData(): array
+    {
+        return array_merge(parent::getViewData(), [
+            'autoSaveScript' => "
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Auto-save every 20 seconds
+                        setInterval(function() {
+                            if (window.Livewire) {
+                                try {
+                                    Livewire.find('" . $this->getId() . "').call('autoSave');
+                                } catch (e) {
+                                    console.log('Auto-save skipped:', e.message);
+                                }
+                            }
+                        }, 20000); // 20 seconds
+                        
+                        console.log('Auto-save initialized - saving every 20 seconds');
+                    });
+                </script>
+            "
+        ]);
     }
 }

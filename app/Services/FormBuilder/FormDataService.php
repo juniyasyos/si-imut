@@ -37,9 +37,9 @@ class FormDataService
             return [
                 'id' => $field->id,
                 'field_key' => $field->field_key,
-                'field_name' => $field->field_name,
+                'field_name' => $field->field_label, // Fixed: EnhancedFormField uses field_label column
                 'field_description' => $field->field_description,
-                'field_type' => $field->field_type,
+                'field_type' => $field->field_type ?: 'text', // Fallback for empty field_type
                 'validation_config' => $field->validation_config,
                 'compliance_weight' => $field->compliance_weight,
                 'is_critical_field' => $field->is_critical_field,
@@ -84,7 +84,7 @@ class FormDataService
                 return [
                     'id' => $field->id,
                     'field_key' => $field->key,
-                    'field_label' => $field->label,
+                    'field_name' => $field->label, // Fixed: should be field_name, not field_label
                     'field_description' => $field->description,
                     'field_type' => FormFieldMapper::mapLegacyFieldType($field->type),
                     'validation_config' => ['required' => $field->is_required],

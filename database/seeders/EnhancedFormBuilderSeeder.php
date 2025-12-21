@@ -70,23 +70,23 @@ class EnhancedFormBuilderSeeder extends Seeder
 
         // Options for handwashing compliance
         FormFieldOption::create([
-            'form_field_id' => $handwashing->id,
-            'option_label' => 'Sangat Baik (≥95%)',
-            'option_key' => 'excellent',
+            'enhanced_form_field_id' => $handwashing->id,
+            'option_text' => 'Sangat Baik (≥95%)',
+            'option_value' => 'excellent',
             'compliance_value' => 2,
             'order_index' => 1,
         ]);
 
         FormFieldOption::create([
-            'form_field_id' => $handwashing->id,
-            'option_label' => 'Baik (80-94%)',
-            'option_key' => 'good',
+            'enhanced_form_field_id' => $handwashing->id,
+            'option_text' => 'Baik (80-94%)',
+            'option_value' => 'good',
             'compliance_value' => 1,
             'order_index' => 2,
         ]);
 
         FormFieldOption::create([
-            'form_field_id' => $handwashing->id,
+            'enhanced_form_field_id' => $handwashing->id,
             'option_label' => 'Kurang (<80%)',
             'option_key' => 'poor',
             'compliance_value' => 0,
@@ -121,17 +121,17 @@ class EnhancedFormBuilderSeeder extends Seeder
 
         // Options for validation
         FormFieldOption::create([
-            'form_field_id' => $validation->id,
-            'option_label' => 'Valid - Data telah diverifikasi',
-            'option_key' => 'true',
+            'enhanced_form_field_id' => $validation->id,
+            'option_text' => 'Valid - Data telah diverifikasi',
+            'option_value' => 'true',
             'compliance_value' => 1,
             'order_index' => 1,
         ]);
 
         FormFieldOption::create([
-            'form_field_id' => $validation->id,
-            'option_label' => 'Tidak Valid - Perlu observasi ulang',
-            'option_key' => 'false',
+            'enhanced_form_field_id' => $validation->id,
+            'option_text' => 'Tidak Valid - Perlu observasi ulang',
+            'option_value' => 'false',
             'compliance_value' => 0,
             'order_index' => 2,
         ]);
@@ -201,9 +201,9 @@ class EnhancedFormBuilderSeeder extends Seeder
             ];
 
             FormFieldOption::create([
-                'form_field_id' => $sixRights->id,
-                'option_label' => $descriptions[$i],
-                'option_key' => (string)$i,
+                'enhanced_form_field_id' => $sixRights->id,
+                'option_text' => $descriptions[$i],
+                'option_value' => (string)$i,
                 'compliance_value' => $i >= 4 ? 2 : ($i >= 3 ? 1 : 0),
                 'order_index' => $i,
             ]);
@@ -236,17 +236,17 @@ class EnhancedFormBuilderSeeder extends Seeder
         ]);
 
         FormFieldOption::create([
-            'form_field_id' => $validation->id,
-            'option_label' => 'Tervalidasi',
-            'option_key' => 'true',
+            'enhanced_form_field_id' => $validation->id,
+            'option_text' => 'Tervalidasi',
+            'option_value' => 'true',
             'compliance_value' => 1,
             'order_index' => 1,
         ]);
 
         FormFieldOption::create([
-            'form_field_id' => $validation->id,
-            'option_label' => 'Belum Tervalidasi',
-            'option_key' => 'false',
+            'enhanced_form_field_id' => $validation->id,
+            'option_text' => 'Belum Tervalidasi',
+            'option_value' => 'false',
             'compliance_value' => 0,
             'order_index' => 2,
         ]);
