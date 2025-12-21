@@ -39,7 +39,7 @@ class RoleUpgradeSeeder extends Seeder
             }
 
             // Assign role based on email or other criteria (only if no valid role exists)
-            if (str_contains($user->email, 'admin') || $user->nip === '0000.00000') {
+            if ($user->nip === '0000.00000') {
                 $user->assignRole('super_admin');
                 $this->command->info("   - {$user->name} → Administrator (new assignment)");
             } elseif (str_contains($user->email, 'mutu')) {
