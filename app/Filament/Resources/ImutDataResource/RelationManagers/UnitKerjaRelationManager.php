@@ -34,7 +34,7 @@ class UnitKerjaRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('unit_name')->label('Nama Unit Kerja')->searchable(),
                 Tables\Columns\TextColumn::make('pivot.assignedBy.name')
-                    ->label('Ditugaskan Oleh')
+                    ->label('Dikaitkan Oleh')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('pivot.assigned_at')
                     ->label('Tanggal Penugasan')

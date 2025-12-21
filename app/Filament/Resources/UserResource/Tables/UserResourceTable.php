@@ -56,7 +56,7 @@ class UserResourceTable extends UserResource
                     TextColumn::make('roles.name')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->searchable()
-                        ->icon('heroicon-o-shield-check')
+                        ->icon('heroicon-o-document-text')
                         ->grow(false)
                         ->formatStateUsing(function ($record) {
                             $roles = $record->roles->pluck('name')->toArray();
@@ -64,9 +64,9 @@ class UserResourceTable extends UserResource
                             // Jika user memiliki role pengumpul_data atau validator_pic, tampilkan unit kerja
                             if (in_array('pengumpul_data', $roles) || in_array('validator_pic', $roles)) {
                                 $unitKerja = $record->unitKerjas->first();
-                                $roleLabel = in_array('pengumpul_data', $roles) ? 'Pengumpul Data' : 'Validator/PIC';
+                                // $roleLabel = in_array('pengumpul_data', $roles) ? 'Pengumpul Data' : 'Validator/PIC';
                                 $unitName = $unitKerja ? $unitKerja->unit_name : 'Unit Tidak Ditemukan';
-                                return "{$roleLabel} - {$unitName}";
+                                return "Unit Kerja : {$unitName}";
                             }
 
                             // Untuk admin dan tim_mutu, tampilkan label role
@@ -117,7 +117,7 @@ class UserResourceTable extends UserResource
                 ->form([
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
-                        ->relationship('roles', 'name')
+                        ->relationship('roles', 'label')
                         ->multiple()
                         ->searchable()
                         ->preload()
