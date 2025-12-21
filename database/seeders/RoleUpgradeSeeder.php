@@ -15,6 +15,15 @@ class RoleUpgradeSeeder extends Seeder
     {
         $this->command->info('🔄 Starting Role System Upgrade...');
 
+        // Ensure required roles exist to avoid RoleDoesNotExist errors
+        $requiredRoles = ['super_admin', 'tim_mutu', 'pengumpul_data', 'validator_pic'];
+        foreach ($requiredRoles as $roleName) {
+            Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
+        }
+
         // Step: Migrate existing users to new roles
         $this->migrateExistingUsers();
 
