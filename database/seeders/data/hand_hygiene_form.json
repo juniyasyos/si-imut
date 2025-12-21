@@ -1,77 +1,11 @@
 {
     "form_template": {
-        "title": "Formulir Pengumpulan Data - Audit Cuci Tangan",
-        "description": "Form untuk monitoring dan audit kepatuhan cuci tangan berdasarkan 5 momen WHO dan 6 langkah cuci tangan",
+        "title": "Audit Cuci Tangan - 5 Momen & 6 Langkah WHO",
+        "description": "Form sederhana untuk audit kepatuhan cuci tangan berdasarkan 5 momen WHO dan 6 langkah cuci tangan",
         "compliance_method": "auto_calculate",
         "auto_fail_on_critical": true
     },
     "form_fields": [
-        {
-            "field_key": "unit_observer",
-            "field_label": "Unit/Tanggal/Observer",
-            "field_description": "Unit kerja, tanggal observasi, dan nama observer",
-            "field_type": "text",
-            "validation_config": {
-                "required": true,
-                "max_length": 255
-            },
-            "compliance_weight": 0,
-            "is_critical_field": false,
-            "order_index": 1,
-            "options": []
-        },
-        {
-            "field_key": "observation_time",
-            "field_label": "Jam Observasi",
-            "field_description": "Waktu dilakukan observasi cuci tangan",
-            "field_type": "text",
-            "validation_config": {
-                "required": true
-            },
-            "compliance_weight": 0,
-            "is_critical_field": false,
-            "order_index": 2,
-            "options": []
-        },
-        {
-            "field_key": "profession",
-            "field_label": "Profesi",
-            "field_description": "Profesi tenaga kesehatan yang diobservasi",
-            "field_type": "single_select",
-            "validation_config": {
-                "required": true
-            },
-            "compliance_weight": 0,
-            "is_critical_field": false,
-            "order_index": 3,
-            "options": [
-                {
-                    "option_text": "Dokter",
-                    "option_value": "dokter",
-                    "compliance_value": 1
-                },
-                {
-                    "option_text": "Perawat",
-                    "option_value": "perawat",
-                    "compliance_value": 1
-                },
-                {
-                    "option_text": "Bidan",
-                    "option_value": "bidan",
-                    "compliance_value": 1
-                },
-                {
-                    "option_text": "Farmasis",
-                    "option_value": "farmasis",
-                    "compliance_value": 1
-                },
-                {
-                    "option_text": "Teknisi/Support",
-                    "option_value": "teknisi",
-                    "compliance_value": 1
-                }
-            ]
-        },
         {
             "field_key": "hand_hygiene_indication",
             "field_label": "Indikasi Cuci Tangan - 5 Momen WHO",
@@ -83,7 +17,7 @@
             },
             "compliance_weight": 3,
             "is_critical_field": true,
-            "order_index": 4,
+            "order_index": 1,
             "options": [
                 {
                     "option_text": "1. Sebelum kontak dengan pasien",
@@ -122,7 +56,7 @@
             },
             "compliance_weight": 2,
             "is_critical_field": true,
-            "order_index": 5,
+            "order_index": 2,
             "options": [
                 {
                     "option_text": "Hand Rub (Antiseptik berbasis alkohol)",
@@ -138,11 +72,6 @@
                     "option_text": "Tidak melakukan cuci tangan",
                     "option_value": "tidak_cuci_tangan",
                     "compliance_value": 0
-                },
-                {
-                    "option_text": "Menggunakan Sarung Tangan saja",
-                    "option_value": "sarung_tangan_saja",
-                    "compliance_value": 0.5
                 }
             ]
         },
@@ -164,7 +93,7 @@
                     "air_sabun"
                 ]
             },
-            "order_index": 6,
+            "order_index": 3,
             "options": [
                 {
                     "option_text": "1. Gosok kedua telapak tangan",
@@ -197,49 +126,6 @@
                     "compliance_value": 1
                 }
             ]
-        },
-        {
-            "field_key": "overall_compliance",
-            "field_label": "Penilaian Compliance Keseluruhan",
-            "field_description": "Penilaian compliance berdasarkan observasi keseluruhan",
-            "field_type": "single_select",
-            "validation_config": {
-                "required": true
-            },
-            "compliance_weight": 3,
-            "is_critical_field": true,
-            "order_index": 7,
-            "options": [
-                {
-                    "option_text": "Sesuai - Semua tahap dilakukan dengan benar",
-                    "option_value": "sesuai",
-                    "compliance_value": 1
-                },
-                {
-                    "option_text": "Tidak Sesuai - Ada tahap yang terlewat/salah",
-                    "option_value": "tidak_sesuai",
-                    "compliance_value": 0
-                },
-                {
-                    "option_text": "Sebagian Sesuai - Beberapa tahap benar",
-                    "option_value": "sebagian_sesuai",
-                    "compliance_value": 0.5
-                }
-            ]
-        },
-        {
-            "field_key": "additional_notes",
-            "field_label": "Catatan Tambahan",
-            "field_description": "Catatan observer mengenai observasi atau hal-hal yang perlu ditindaklanjuti",
-            "field_type": "text",
-            "validation_config": {
-                "required": false,
-                "max_length": 500
-            },
-            "compliance_weight": 0,
-            "is_critical_field": false,
-            "order_index": 8,
-            "options": []
         }
     ]
 }
