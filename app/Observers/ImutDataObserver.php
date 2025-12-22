@@ -59,26 +59,9 @@ class ImutDataObserver
                     $jsonTitle = $content['form_template']['title'];
                     Log::info("Checking JSON file: {$file->getFilename()} with title: {$jsonTitle}");
 
-                    // Check if title matches using keyword search
-                    $titleWords = explode(' ', strtolower($title));
-                    $jsonTitleWords = explode(' ', strtolower($jsonTitle));
-
-                    // Count matching words
-                    $matchCount = 0;
-                    foreach ($titleWords as $word) {
-                        if (strlen($word) > 3) { // Only consider words longer than 3 chars
-                            foreach ($jsonTitleWords as $jsonWord) {
-                                if (strpos($jsonWord, $word) !== false || strpos($word, $jsonWord) !== false) {
-                                    $matchCount++;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    // If we have at least 1 meaningful word match, use this config
-                    if ($matchCount > 0) {
-                        Log::info("Found matching JSON config: {$file->getFilename()} with {$matchCount} matching words");
+                    // Use improved title matching (normalize + stricter threshold)
+                    if ($this->titlesMatch($title, $jsonTitle)) {
+                        Log::info("Found matching JSON config: {$file->getFilename()} for title: {$title}");
                         return $content;
                     }
                 }
@@ -98,26 +81,9 @@ class ImutDataObserver
                         $jsonTitle = $content['form_template']['title'];
                         Log::info("Checking seeders JSON file: {$file->getFilename()} with title: {$jsonTitle}");
 
-                        // Check if title matches using keyword search
-                        $titleWords = explode(' ', strtolower($title));
-                        $jsonTitleWords = explode(' ', strtolower($jsonTitle));
-
-                        // Count matching words
-                        $matchCount = 0;
-                        foreach ($titleWords as $word) {
-                            if (strlen($word) > 3) { // Only consider words longer than 3 chars
-                                foreach ($jsonTitleWords as $jsonWord) {
-                                    if (strpos($jsonWord, $word) !== false || strpos($word, $jsonWord) !== false) {
-                                        $matchCount++;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        // If we have at least 1 meaningful word match, use this config
-                        if ($matchCount > 0) {
-                            Log::info("Found matching JSON config in seeders: {$file->getFilename()} with {$matchCount} matching words");
+                        // Use improved title matching (normalize + stricter threshold)
+                        if ($this->titlesMatch($title, $jsonTitle)) {
+                            Log::info("Found matching JSON config in seeders: {$file->getFilename()} for title: {$title}");
                             return $content;
                         }
                     }
@@ -127,6 +93,55 @@ class ImutDataObserver
 
         Log::info("No matching JSON configuration found for: {$title}");
         return null;
+    }
+
+    /**
+     * Determine whether two titles are a good match.
+     * Prioritize exact normalized match; otherwise require at least
+     * 2 matching meaningful words or a match ratio >= 0.5.
+     */
+    private function titlesMatch(string $title, string $jsonTitle): bool
+    {
+        $normalize = function (string $s): string {
+            $s = mb_strtolower($s);
+            // remove punctuation and parentheses, keep alphanumerics and spaces
+            $s = preg_replace('/[^a-z0-9\s]+/u', ' ', $s);
+            $s = preg_replace('/\s+/u', ' ', $s);
+            return trim($s);
+        };
+
+        $t1 = $normalize($title);
+        $t2 = $normalize($jsonTitle);
+
+        if ($t1 === $t2) {
+            return true;
+        }
+
+        $words1 = array_filter(explode(' ', $t1), function ($w) {
+            return mb_strlen($w) > 3;
+        });
+        $words2 = array_filter(explode(' ', $t2), function ($w) {
+            return mb_strlen($w) > 3;
+        });
+
+        if (count($words1) === 0 || count($words2) === 0) {
+            return false;
+        }
+
+        $matchCount = 0;
+        foreach ($words1 as $word) {
+            foreach ($words2 as $jsonWord) {
+                if (strpos($jsonWord, $word) !== false || strpos($word, $jsonWord) !== false) {
+                    $matchCount++;
+                    break;
+                }
+            }
+        }
+
+        $maxWords = max(count($words1), count($words2));
+        $ratio = $matchCount / $maxWords;
+
+        return ($matchCount >= 2) || ($ratio >= 0.5);
     }
 
     /**
