@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('form_fields', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_header_id')->constrained('form_headers')->onDelete('cascade');
+            $table->foreignId('form_template_id')->constrained('form_templates')->onDelete('cascade');
             $table->string('key');
             $table->string('label');
             $table->text('description')->nullable();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamps();
 
-            $table->unique(['form_header_id', 'key']);
+            $table->unique(['form_template_id', 'key']);
         });
     }
 

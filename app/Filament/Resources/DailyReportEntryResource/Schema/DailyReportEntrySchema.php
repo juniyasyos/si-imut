@@ -46,7 +46,7 @@ class DailyReportEntrySchema extends DailyReportEntryResource
 
         $fields = [];
 
-        // Hidden field for form_header_id (auto-filled from query parameter)
+        // Hidden field for form_template_id (auto-filled from query parameter)
         if ($indicatorId) {
             $fields[] = Select::make('form_template_id')
                 ->label('Indikator Mutu')

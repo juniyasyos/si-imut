@@ -13,7 +13,7 @@ class DailyReportResponse extends Model
 
     protected $fillable = [
         'form_template_id',
-        'form_header_id',
+        'form_template_id',
         'unit_kerja_id',
         'submitted_by',
         'report_date',

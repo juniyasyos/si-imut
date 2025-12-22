@@ -111,7 +111,7 @@ class ListDailyReportEntries extends ListRecords
             ->whereBetween('report_date', [$startDate, $endDate])
             ->get()
             ->groupBy(function ($entry) {
-                $indicatorId = $entry->form_template_id ?? $entry->form_header_id;
+                $indicatorId = $entry->form_template_id ?? $entry->form_template_id;
                 return $indicatorId . '_' . $entry->report_date->format('Y-m-d');
             });
 

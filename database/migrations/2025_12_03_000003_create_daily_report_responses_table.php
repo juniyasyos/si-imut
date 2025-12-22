@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('daily_report_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_header_id')->constrained('form_headers')->onDelete('cascade');
+            $table->foreignId('form_template_id')->constrained('form_templates')->onDelete('cascade');
             $table->foreignId('unit_kerja_id')->constrained('unit_kerja')->onDelete('cascade');
             $table->foreignId('submitted_by')->constrained('users')->onDelete('cascade');
             $table->date('report_date');
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index(['form_header_id', 'report_date']);
+            $table->index(['form_template_id', 'report_date']);
             $table->index(['unit_kerja_id', 'report_date']);
         });
     }

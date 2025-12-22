@@ -23,7 +23,7 @@ Enhanced Daily Report Form Builder adalah sistem peningkatan untuk monitoring in
 ```
 Legacy System                    Enhanced System
 ┌─────────────────┐             ┌─────────────────┐
-│ form_headers    │             │ form_templates  │
+│ form_templates    │             │ form_templates  │
 │ form_fields     │    ====>    │ enhanced_form_  │
 │ (basic)         │             │ fields          │
 │                 │             │ form_field_     │

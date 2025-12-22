@@ -52,14 +52,14 @@ class DailyReportDashboard extends Page
 
         $this->indicatorStats = $indicators->map(function ($formTemplate) use ($unitKerjaIds) {
             $totalEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_header_id', $formTemplate->id)
+                $q->where('form_template_id', $formTemplate->id)
                     ->orWhere('form_template_id', $formTemplate->id);
             })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->count();
 
             $thisMonthEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_header_id', $formTemplate->id)
+                $q->where('form_template_id', $formTemplate->id)
                     ->orWhere('form_template_id', $formTemplate->id);
             })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
@@ -68,7 +68,7 @@ class DailyReportDashboard extends Page
                 ->count();
 
             $thisWeekEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_header_id', $formTemplate->id)
+                $q->where('form_template_id', $formTemplate->id)
                     ->orWhere('form_template_id', $formTemplate->id);
             })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
@@ -76,7 +76,7 @@ class DailyReportDashboard extends Page
                 ->count();
 
             $lastEntry = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_header_id', $formTemplate->id)
+                $q->where('form_template_id', $formTemplate->id)
                     ->orWhere('form_template_id', $formTemplate->id);
             })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
@@ -84,7 +84,7 @@ class DailyReportDashboard extends Page
                 ->first();
 
             $activePeriods = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_header_id', $formTemplate->id)
+                $q->where('form_template_id', $formTemplate->id)
                     ->orWhere('form_template_id', $formTemplate->id);
             })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)

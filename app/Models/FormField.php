@@ -11,7 +11,7 @@ class FormField extends Model
     use HasFactory;
 
     protected $fillable = [
-        'form_header_id',
+        'form_template_id',
         'key',
         'label',
         'description',
