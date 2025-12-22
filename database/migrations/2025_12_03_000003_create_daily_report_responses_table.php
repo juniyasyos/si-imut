@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index(['form_template_id', 'report_date']);
             $table->index(['unit_kerja_id', 'report_date']);
         });
     }
