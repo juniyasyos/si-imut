@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('daily_report_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_template_id')->constrained('form_templates')->onDelete('cascade');
             $table->foreignId('unit_kerja_id')->constrained('unit_kerja')->onDelete('cascade');
             $table->foreignId('submitted_by')->constrained('users')->onDelete('cascade');
             $table->date('report_date');

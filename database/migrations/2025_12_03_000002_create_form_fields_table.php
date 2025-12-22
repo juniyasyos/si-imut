@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('form_fields', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_template_id')->constrained('form_templates')->onDelete('cascade');
             $table->string('key');
             $table->string('label');
             $table->text('description')->nullable();
