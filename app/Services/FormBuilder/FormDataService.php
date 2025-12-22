@@ -3,7 +3,6 @@
 namespace App\Services\FormBuilder;
 
 use App\Models\FormTemplate;
-use App\Models\FormHeader;
 use App\Models\ImutData;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
@@ -13,14 +12,8 @@ class FormDataService
 {
     public function loadFormData(ImutData $record): array
     {
-        // Try to load from new FormTemplate first, fallback to old FormHeader
         $formTemplate = FormTemplate::where('imut_data_id', $record->id)->first();
-
-        if ($formTemplate) {
-            return $this->loadFromFormTemplate($formTemplate);
-        } else {
-            return $this->loadFromLegacyFormHeader($record);
-        }
+        return $this->loadFromFormTemplate($formTemplate);
     }
 
     private function loadFromFormTemplate(FormTemplate $formTemplate): array
@@ -57,74 +50,6 @@ class FormDataService
             'compliance_method' => $formTemplate->compliance_method,
             'auto_fail_on_critical' => $formTemplate->auto_fail_on_critical,
             'fields' => $fields,
-        ];
-    }
-
-    private function loadFromLegacyFormHeader(ImutData $record): array
-    {
-        $formHeader = FormHeader::where('imutdata_id', $record->id)->first();
-
-        if ($formHeader) {
-            $fields = $formHeader->formFields->map(function ($field) {
-                $options = $field->options;
-
-                // Konversi options dari array sederhana ke format repeater
-                if (is_array($options) && !empty($options)) {
-                    $firstItem = reset($options);
-
-                    if (!is_array($firstItem)) {
-                        // Konversi dari array sederhana ke format repeater
-                        $options = collect($options)->map(function ($item) {
-                            return [
-                                'label' => $item,
-                                'value' => Str::slug($item, '_'),
-                                'is_correct' => true, // Default to true for legacy options
-                            ];
-                        })->toArray();
-                    } else {
-                        // Convert existing format to include is_correct if not present
-                        $options = collect($options)->map(function ($item) {
-                            if (isset($item['compliance_value']) && !isset($item['is_correct'])) {
-                                $item['is_correct'] = (bool) $item['compliance_value'];
-                                unset($item['compliance_value']);
-                            }
-                            return $item;
-                        })->toArray();
-                    }
-                }
-
-                return [
-                    'id' => $field->id,
-                    'field_key' => $field->key,
-                    'field_label' => $field->label, // Map legacy label to field_label
-                    'field_description' => $field->description,
-                    'field_type' => FormFieldMapper::mapLegacyFieldType($field->type),
-                    'validation_config' => ['required' => $field->is_required],
-                    'compliance_weight' => 1,
-                    'is_critical_field' => false,
-                    'conditional_logic' => null,
-                    'compliance_rules' => null, // Legacy fields don't have compliance rules
-                    'has_conditional_logic' => false, // Legacy fields don't have conditional logic
-                    'options' => $options,
-                    'order_index' => $field->order,
-                ];
-            })->toArray();
-
-            return [
-                'title' => $formHeader->title,
-                'description' => $formHeader->description,
-                'compliance_method' => 'auto_calculate',
-                'auto_fail_on_critical' => true,
-                'fields' => $fields,
-            ];
-        }
-
-        return [
-            'title' => '',
-            'description' => '',
-            'compliance_method' => 'auto_calculate',
-            'auto_fail_on_critical' => true,
-            'fields' => [],
         ];
     }
 

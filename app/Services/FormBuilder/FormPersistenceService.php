@@ -4,7 +4,6 @@ namespace App\Services\FormBuilder;
 
 use App\Models\ImutData;
 use App\Models\FormTemplate;
-use App\Models\FormHeader;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
 use Illuminate\Support\Str;
@@ -14,16 +13,15 @@ class FormPersistenceService
 {
     public function saveFormData(ImutData $record, array $data): void
     {
+        // Keep cleanup of legacy data, but persist only the enhanced format (FormTemplate)
         $this->cleanupOldData($record);
         $this->saveToEnhancedFormat($record, $data);
-        $this->saveLegacyFormat($record, $data);
     }
 
     private function cleanupOldData(ImutData $record): void
     {
         // Hapus data lama jika ada
         FormTemplate::where('imut_data_id', $record->id)->delete();
-        FormHeader::where('imutdata_id', $record->id)->delete();
     }
 
     private function saveToEnhancedFormat(ImutData $record, array $data): void
@@ -78,35 +76,6 @@ class FormPersistenceService
                 'is_correct' => $optionData['is_correct'] ?? true,
                 'order_index' => $index + 1,
                 'status' => true,
-            ]);
-        }
-    }
-
-    private function saveLegacyFormat(ImutData $record, array $data): void
-    {
-        $formHeader = FormHeader::create([
-            'imutdata_id' => $record->id,
-            'title' => $data['title'],
-            'description' => $data['description'],
-        ]);
-
-        $this->saveLegacyFields($formHeader, $data['fields'] ?? []);
-    }
-
-    private function saveLegacyFields($formHeader, array $fields): void
-    {
-        foreach ($fields as $index => $fieldData) {
-            $legacyType = $this->mapToLegacyFieldType($fieldData['field_type']);
-            $options = $this->formatLegacyOptions($fieldData['options'] ?? []);
-
-            $formHeader->formFields()->create([
-                'key' => $this->generateFieldKey($fieldData),
-                'label' => $fieldData['field_label'],
-                'description' => $fieldData['field_description'] ?? '',
-                'type' => $legacyType,
-                'is_required' => $fieldData['validation_config']['required'] ?? false,
-                'options' => $options,
-                'order' => $index + 1,
             ]);
         }
     }

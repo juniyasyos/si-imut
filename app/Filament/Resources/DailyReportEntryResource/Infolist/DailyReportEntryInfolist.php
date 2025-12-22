@@ -35,7 +35,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
                 Split::make([
                     Grid::make(2)
                         ->schema([
-                            TextEntry::make('formHeader.imutdata.title')
+                            TextEntry::make('formTemplate.imutdata.title')
                                 ->label('Indikator Mutu')
                                 ->icon('heroicon-o-clipboard-document-list')
                                 ->iconColor('primary')
@@ -43,7 +43,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
                                 ->size('lg')
                                 ->columnSpanFull(),
 
-                            TextEntry::make('formHeader.imutdata.categories.title')
+                            TextEntry::make('formTemplate.imutdata.categories.title')
                                 ->label('Kategori IMUT')
                                 ->badge()
                                 ->color('info')
@@ -118,7 +118,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
         return Section::make('Data Laporan')
             ->description('Data yang dilaporkan sesuai dengan indikator mutu')
             ->schema(function ($record) {
-                if (!$record || !$record->formHeader) {
+                if (!$record || !$record->formTemplate) {
                     return [
                         TextEntry::make('info')
                             ->label('')
@@ -128,7 +128,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
                 }
 
                 $fields = [];
-                $formFields = $record->formHeader->formFields()
+                $formFields = $record->formTemplate->formFields()
                     ->orderBy('order')
                     ->get();
 

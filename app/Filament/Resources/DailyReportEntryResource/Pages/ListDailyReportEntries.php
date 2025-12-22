@@ -4,7 +4,7 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\DailyReportEntry;
-use App\Models\FormHeader;
+use App\Models\FormTemplate;
 use Carbon\Carbon;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
@@ -81,19 +81,19 @@ class ListDailyReportEntries extends ListRecords
             return;
         }
 
-        // Get indicators for user's units
-        $this->indicators = FormHeader::with('imutdata.categories')
+        // Get indicators for user's units (use modern FormTemplate)
+        $this->indicators = FormTemplate::with('imutdata.categories')
             ->whereHas('imutdata', function ($query) use ($unitKerjaIds) {
                 $query->whereHas('unitKerja', function ($q) use ($unitKerjaIds) {
                     $q->whereIn('unit_kerja.id', $unitKerjaIds);
                 });
             })
             ->get()
-            ->map(function ($formHeader) {
+            ->map(function ($formTemplate) {
                 return [
-                    'id' => $formHeader->id,
-                    'title' => $formHeader->imutdata->title ?? $formHeader->title,
-                    'category' => $formHeader->imutdata->categories->title ?? null,
+                    'id' => $formTemplate->id,
+                    'title' => $formTemplate->imutdata->title ?? $formTemplate->title,
+                    'category' => $formTemplate->imutdata->categories->title ?? null,
                 ];
             })
             ->toArray();
@@ -111,7 +111,8 @@ class ListDailyReportEntries extends ListRecords
             ->whereBetween('report_date', [$startDate, $endDate])
             ->get()
             ->groupBy(function ($entry) {
-                return $entry->form_header_id . '_' . $entry->report_date->format('Y-m-d');
+                $indicatorId = $entry->form_template_id ?? $entry->form_header_id;
+                return $indicatorId . '_' . $entry->report_date->format('Y-m-d');
             });
 
         // Build matrix data

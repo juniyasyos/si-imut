@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
-use App\Models\FormHeader;
+use App\Models\FormTemplate;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
@@ -22,9 +22,9 @@ class CreateDailyReportEntry extends CreateRecord
         $indicatorId = request()->query('indicator');
 
         if ($indicatorId) {
-            $formHeader = FormHeader::with('imutdata')->find($indicatorId);
-            if ($formHeader && $formHeader->imutdata) {
-                return 'Input Laporan: ' . $formHeader->imutdata->title;
+            $formTemplate = FormTemplate::with('imutdata')->find($indicatorId);
+            if ($formTemplate && $formTemplate->imutdata) {
+                return 'Input Laporan: ' . $formTemplate->imutdata->title;
             }
         }
 
@@ -39,10 +39,10 @@ class CreateDailyReportEntry extends CreateRecord
         $indicatorId = request()->query('indicator');
 
         if ($indicatorId) {
-            $formHeader = FormHeader::with('imutdata.categories')->find($indicatorId);
-            if ($formHeader) {
-                $category = $formHeader->imutdata->categories->title ?? null;
-                $desc = $formHeader->description;
+            $formTemplate = FormTemplate::with('imutdata.categories')->find($indicatorId);
+            if ($formTemplate) {
+                $category = $formTemplate->imutdata->categories->title ?? null;
+                $desc = $formTemplate->description;
 
                 $parts = [];
                 if ($category) {

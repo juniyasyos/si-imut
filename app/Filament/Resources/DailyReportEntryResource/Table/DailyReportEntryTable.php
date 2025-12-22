@@ -23,9 +23,9 @@ class DailyReportEntryTable extends DailyReportEntryResource
     public static function columns(): array
     {
         return [
-            TextColumn::make('formHeader.imutdata.title')
+            TextColumn::make('formTemplate.imutdata.title')
                 ->label('Indikator Mutu')
-                ->description(fn($record) => $record->formHeader->imutdata->categories->title ?? null)
+                ->description(fn($record) => $record->formTemplate->imutdata->categories->title ?? null)
                 ->searchable()
                 ->sortable()
                 ->wrap()
@@ -86,9 +86,9 @@ class DailyReportEntryTable extends DailyReportEntryResource
     public static function filters(): array
     {
         return [
-            SelectFilter::make('form_header_id')
+            SelectFilter::make('form_template_id')
                 ->label('Indikator Mutu')
-                ->relationship('formHeader', 'title')
+                ->relationship('formTemplate', 'title')
                 ->searchable()
                 ->preload()
                 ->multiple()

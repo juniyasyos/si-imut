@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($periods as $period)
-        <a href="{{ route('filament.siimut.pages.daily-report-entries') }}?indicator={{ $formHeader->id }}&period={{ $period['period'] }}"
+        <a href="{{ route('filament.siimut.pages.daily-report-entries') }}?indicator={{ $formTemplate->id }}&period={{ $period['period'] }}"
             class="block p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 transition-colors">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">

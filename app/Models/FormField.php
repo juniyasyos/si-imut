@@ -26,8 +26,8 @@ class FormField extends Model
         'options' => 'array',
     ];
 
-    public function formHeader(): BelongsTo
+    public function formTemplate(): BelongsTo
     {
-        return $this->belongsTo(FormHeader::class);
+        return $this->belongsTo(FormTemplate::class);
     }
 }

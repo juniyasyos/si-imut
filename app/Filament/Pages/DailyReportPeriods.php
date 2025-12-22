@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\FormHeader;
+use App\Models\FormTemplate;
 use App\Models\DailyReportEntry;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +14,7 @@ class DailyReportPeriods extends Page
 
     protected static bool $shouldRegisterNavigation = false;
 
-    public ?FormHeader $formHeader = null;
+    public ?FormTemplate $formTemplate = null;
     public array $periods = [];
 
     public function mount(): void
@@ -25,7 +25,7 @@ class DailyReportPeriods extends Page
             abort(404, 'Indicator parameter required');
         }
 
-        $this->formHeader = FormHeader::with('imutdata')->findOrFail($indicatorId);
+        $this->formTemplate = FormTemplate::with('imutdata')->findOrFail($indicatorId);
 
         $this->loadPeriods();
     }
@@ -35,7 +35,7 @@ class DailyReportPeriods extends Page
         $user = Auth::user();
         $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
 
-        $entries = DailyReportEntry::where('form_header_id', $this->formHeader->id)
+        $entries = DailyReportEntry::where('form_template_id', $this->formTemplate->id)
             ->whereIn('unit_kerja_id', $unitKerjaIds)
             ->selectRaw('
                 DATE_FORMAT(report_date, "%Y-%m") as period,
@@ -66,7 +66,7 @@ class DailyReportPeriods extends Page
 
     public function getTitle(): string
     {
-        return $this->formHeader?->imutdata->title ?? 'Laporan Harian';
+        return $this->formTemplate?->imutdata->title ?? 'Laporan Harian';
     }
 
     public function getBreadcrumbs(): array

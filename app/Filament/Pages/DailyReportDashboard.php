@@ -51,27 +51,42 @@ class DailyReportDashboard extends Page
             ->get();
 
         $this->indicatorStats = $indicators->map(function ($formTemplate) use ($unitKerjaIds) {
-            $totalEntries = DailyReportEntry::where('form_header_id', $formTemplate->id)
+            $totalEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
+                $q->where('form_header_id', $formTemplate->id)
+                    ->orWhere('form_template_id', $formTemplate->id);
+            })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->count();
 
-            $thisMonthEntries = DailyReportEntry::where('form_header_id', $formTemplate->id)
+            $thisMonthEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
+                $q->where('form_header_id', $formTemplate->id)
+                    ->orWhere('form_template_id', $formTemplate->id);
+            })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->whereMonth('report_date', now()->month)
                 ->whereYear('report_date', now()->year)
                 ->count();
 
-            $thisWeekEntries = DailyReportEntry::where('form_header_id', $formTemplate->id)
+            $thisWeekEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
+                $q->where('form_header_id', $formTemplate->id)
+                    ->orWhere('form_template_id', $formTemplate->id);
+            })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->whereBetween('report_date', [now()->startOfWeek(), now()->endOfWeek()])
                 ->count();
 
-            $lastEntry = DailyReportEntry::where('form_header_id', $formTemplate->id)
+            $lastEntry = DailyReportEntry::where(function ($q) use ($formTemplate) {
+                $q->where('form_header_id', $formTemplate->id)
+                    ->orWhere('form_template_id', $formTemplate->id);
+            })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->latest('created_at')
                 ->first();
 
-            $activePeriods = DailyReportEntry::where('form_header_id', $formTemplate->id)
+            $activePeriods = DailyReportEntry::where(function ($q) use ($formTemplate) {
+                $q->where('form_header_id', $formTemplate->id)
+                    ->orWhere('form_template_id', $formTemplate->id);
+            })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->selectRaw('COUNT(DISTINCT DATE_FORMAT(report_date, "%Y-%m")) as months')
                 ->value('months') ?? 0;

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\DailyReportEntry;
-use App\Models\FormHeader;
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
 use App\Models\User;
@@ -17,20 +16,7 @@ class DailyReportEntrySeeder extends Seeder
      */
     public function run(): void
     {
-        // Preferensi: cari FormTemplate yang relevan (modern). Jika tidak ada, fallback ke legacy FormHeader.
         $formTemplate = FormTemplate::where('title', 'LIKE', '%Kebersihan Tangan%')->first();
-        $formHeader = null;
-
-        if (!$formTemplate) {
-            $formHeader = FormHeader::whereHas('imutdata', function ($query) {
-                $query->where('title', 'LIKE', '%Kebersihan Tangan%');
-            })->first();
-
-            if (!$formHeader) {
-                $this->command->error('Form Template / Header Kebersihan Tangan tidak ditemukan!');
-                return;
-            }
-        }
 
         // Cari unit kerja (contoh: IGD)
         $unitKerja = UnitKerja::where('unit_name', 'LIKE', '%IGD%')->first();
@@ -48,7 +34,7 @@ class DailyReportEntrySeeder extends Seeder
             return;
         }
 
-        $formLabel = $formTemplate->title ?? $formHeader->title;
+        $formLabel = $formTemplate->title ?? 'Unknown Form';
         $this->command->info("Membuat data untuk Form: {$formLabel}");
         $this->command->info("Unit Kerja: {$unitKerja->unit_name}");
         $this->command->info("User: {$user->name}");
@@ -98,7 +84,6 @@ class DailyReportEntrySeeder extends Seeder
                 }
 
                 DailyReportEntry::create([
-                    'form_header_id' => $formHeader->id ?? null,
                     'form_template_id' => $formTemplate->id ?? null,
                     'unit_kerja_id' => $unitKerja->id,
                     'submitted_by' => $user->id,

@@ -135,14 +135,6 @@ class ImutData extends Model
     }
 
     /**
-     * function to get the form headers of the indicator
-     */
-    public function formHeaders(): HasMany
-    {
-        return $this->hasMany(FormHeader::class, 'imutdata_id');
-    }
-
-    /**
      * function to get the form templates of the indicator
      */
     public function formTemplates(): HasMany

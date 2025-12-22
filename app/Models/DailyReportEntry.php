@@ -15,7 +15,6 @@ class DailyReportEntry extends Model
     protected $table = 'daily_report_entries';
 
     protected $fillable = [
-        'form_header_id',
         'form_template_id',
         'unit_kerja_id',
         'submitted_by',
@@ -36,12 +35,6 @@ class DailyReportEntry extends Model
     public static function getPolicy(): string
     {
         return DailyReportEntryPolicy::class;
-    }
-
-    // Relations
-    public function formHeader(): BelongsTo
-    {
-        return $this->belongsTo(FormHeader::class);
     }
 
     public function formTemplate(): BelongsTo
@@ -66,11 +59,11 @@ class DailyReportEntry extends Model
         return $query->whereIn('unit_kerja_id', $unitKerjaIds);
     }
 
-    public function scopeForIndicator(Builder $query, int $formHeaderId): Builder
+    public function scopeForIndicator(Builder $query, int $formTemplateId): Builder
     {
-        return $query->where(function ($q) use ($formHeaderId) {
-            $q->where('form_header_id', $formHeaderId)
-                ->orWhere('form_template_id', $formHeaderId);
+        return $query->where(function ($q) use ($formTemplateId) {
+            $q->where('form_template_id', $formTemplateId)
+                ->orWhere('form_template_id', $formTemplateId);
         });
     }
 

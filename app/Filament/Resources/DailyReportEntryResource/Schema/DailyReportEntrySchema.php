@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\DailyReportEntryResource\Schema;
 
 use App\Filament\Resources\DailyReportEntryResource;
-use App\Models\FormHeader;
+use App\Models\FormTemplate;
 use App\Traits\BuildsDynamicForm;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
@@ -18,19 +18,19 @@ class DailyReportEntrySchema extends DailyReportEntryResource
      */
     public static function make(): array
     {
-        $formHeaderId = request()->query('indicator') ?? request()->route('record');
+        $formTemplateId = request()->query('indicator') ?? request()->route('record');
 
-        $formHeader = $formHeaderId
-            ? FormHeader::with('formFields')->find($formHeaderId)
+        $formTemplate = $formTemplateId
+            ? FormTemplate::with('formFields')->find($formTemplateId)
             : null;
 
         $schema = [
-            static::getInformationSection($formHeader),
+            static::getInformationSection($formTemplate),
         ];
 
         // Add dynamic fields if form header exists
-        if ($formHeader && $formHeader->formFields->isNotEmpty()) {
-            $schema[] = static::getDataSection($formHeader);
+        if ($formTemplate && $formTemplate->formFields->isNotEmpty()) {
+            $schema[] = static::getDataSection($formTemplate);
         }
 
         return $schema;
@@ -39,7 +39,7 @@ class DailyReportEntrySchema extends DailyReportEntryResource
     /**
      * Information section for report metadata
      */
-    protected static function getInformationSection(?FormHeader $formHeader = null): Section
+    protected static function getInformationSection(?FormTemplate $formTemplate = null): Section
     {
         // Get indicator from query parameter
         $indicatorId = request()->query('indicator');
@@ -48,9 +48,9 @@ class DailyReportEntrySchema extends DailyReportEntryResource
 
         // Hidden field for form_header_id (auto-filled from query parameter)
         if ($indicatorId) {
-            $fields[] = Select::make('form_header_id')
+            $fields[] = Select::make('form_template_id')
                 ->label('Indikator Mutu')
-                ->relationship('formHeader', 'title')
+                ->relationship('formTemplate', 'title')
                 ->required()
                 ->default($indicatorId)
                 ->disabled()
@@ -70,7 +70,7 @@ class DailyReportEntrySchema extends DailyReportEntryResource
             ->columnSpanFull();
 
         return Section::make('📋 Informasi Laporan')
-            ->description($formHeader ? "Indikator: {$formHeader->title}" : 'Isi informasi laporan')
+            ->description($formTemplate ? "Indikator: {$formTemplate->title}" : 'Isi informasi laporan')
             ->schema($fields)
             ->columns(1)
             ->collapsible()
@@ -80,13 +80,13 @@ class DailyReportEntrySchema extends DailyReportEntryResource
     /**
      * Data section with dynamic form fields
      */
-    protected static function getDataSection(FormHeader $formHeader): Section
+    protected static function getDataSection(FormTemplate $formTemplate): Section
     {
         $instance = new static();
-        $dynamicFields = $instance->buildFormFields($formHeader->formFields);
+        $dynamicFields = $instance->buildFormFields($formTemplate->formFields);
 
         return Section::make('📝 Data Laporan')
-            ->description($formHeader->description ?? 'Isi data laporan sesuai dengan indikator mutu')
+            ->description($formTemplate->description ?? 'Isi data laporan sesuai dengan indikator mutu')
             ->schema($dynamicFields)
             ->columns(2)
             ->collapsible()
