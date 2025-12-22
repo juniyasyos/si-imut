@@ -10,13 +10,13 @@ class DailyReportEntryPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
-    }
+    // /**
+    //  * Determine whether the user can view any models.
+    //  */
+    // public function viewAny(User $user): bool
+    // {
+    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    // }
 
     /**
      * Determine whether the user can view the model.
@@ -28,13 +28,13 @@ class DailyReportEntryPolicy
             && in_array($dailyReportEntry->unit_kerja_id, $unitKerjaIds);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
-    }
+    // /**
+    //  * Determine whether the user can create models.
+    //  */
+    // public function create(User $user): bool
+    // {
+    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    // }
 
     /**
      * Determine whether the user can update the model.

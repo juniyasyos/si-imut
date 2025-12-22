@@ -103,20 +103,20 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    /**
-     * Check if user can view any records
-     */
-    public static function canViewAny(): bool
-    {
-        $user = Auth::user();
+    // /**
+    //  * Check if user can view any records
+    //  */
+    // public static function canViewAny(): bool
+    // {
+    //     $user = Auth::user();
 
-        if (!$user) {
-            return false;
-        }
+    //     if (!$user) {
+    //         return false;
+    //     }
 
-        /** @var \App\Models\User $user */
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
-    }
+    //     /** @var \App\Models\User $user */
+    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    // }
 
     /**
      * Modify query to show only user's unit data

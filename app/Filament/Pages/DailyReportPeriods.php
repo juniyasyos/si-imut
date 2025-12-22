@@ -77,9 +77,9 @@ class DailyReportPeriods extends Page
         ];
     }
 
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
-    }
+    // public static function canAccess(): bool
+    // {
+    //     $user = Auth::user();
+    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    // }
 }

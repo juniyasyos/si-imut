@@ -24,16 +24,18 @@ class DailyReportDashboard extends Page
     protected static bool $shouldRegisterNavigation = false;
 
     public array $indicatorStats = [];
+    public string $filterPeriod = 'today';
+    public ?int $filterIndicator = null;
+
     public function mount(): void
     {
+        $this->filterPeriod = 'today'; // Default filter
         $this->loadIndicatorStats();
     }
 
     public function loadIndicatorStats(): void
     {
         $user = Auth::user();
-
-        // Get user's unit IDs (they might have multiple units)
         $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
 
         if (empty($unitKerjaIds)) {
@@ -41,7 +43,6 @@ class DailyReportDashboard extends Page
             return;
         }
 
-        // Get all form headers where the imutdata is assigned to user's units
         $indicators = FormTemplate::with('imutdata')
             ->whereHas('imutdata', function ($query) use ($unitKerjaIds) {
                 $query->whereHas('unitKerja', function ($q) use ($unitKerjaIds) {
@@ -51,41 +52,25 @@ class DailyReportDashboard extends Page
             ->get();
 
         $this->indicatorStats = $indicators->map(function ($formTemplate) use ($unitKerjaIds) {
-            $totalEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_template_id', $formTemplate->id)
-                    ->orWhere('form_template_id', $formTemplate->id);
+            $query = DailyReportEntry::where(function ($q) use ($formTemplate) {
+                $q->where('form_template_id', $formTemplate->id);
             })
-                ->whereIn('unit_kerja_id', $unitKerjaIds)
-                ->count();
+                ->whereIn('unit_kerja_id', $unitKerjaIds);
 
-            $thisMonthEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_template_id', $formTemplate->id)
-                    ->orWhere('form_template_id', $formTemplate->id);
-            })
-                ->whereIn('unit_kerja_id', $unitKerjaIds)
-                ->whereMonth('report_date', now()->month)
-                ->whereYear('report_date', now()->year)
-                ->count();
+            if ($this->filterPeriod === 'today') {
+                $query->whereDate('report_date', now());
+            } elseif ($this->filterPeriod === 'weekly') {
+                $query->whereBetween('report_date', [now()->startOfWeek(), now()->endOfWeek()]);
+            } elseif ($this->filterPeriod === 'monthly') {
+                $query->whereMonth('report_date', now()->month)->whereYear('report_date', now()->year);
+            }
 
-            $thisWeekEntries = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_template_id', $formTemplate->id)
-                    ->orWhere('form_template_id', $formTemplate->id);
-            })
-                ->whereIn('unit_kerja_id', $unitKerjaIds)
-                ->whereBetween('report_date', [now()->startOfWeek(), now()->endOfWeek()])
-                ->count();
+            $totalEntries = $query->count();
 
-            $lastEntry = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_template_id', $formTemplate->id)
-                    ->orWhere('form_template_id', $formTemplate->id);
-            })
-                ->whereIn('unit_kerja_id', $unitKerjaIds)
-                ->latest('created_at')
-                ->first();
+            $lastEntry = $query->latest('created_at')->first();
 
             $activePeriods = DailyReportEntry::where(function ($q) use ($formTemplate) {
-                $q->where('form_template_id', $formTemplate->id)
-                    ->orWhere('form_template_id', $formTemplate->id);
+                $q->where('form_template_id', $formTemplate->id);
             })
                 ->whereIn('unit_kerja_id', $unitKerjaIds)
                 ->selectRaw('COUNT(DISTINCT DATE_FORMAT(report_date, "%Y-%m")) as months')
@@ -97,8 +82,6 @@ class DailyReportDashboard extends Page
                 'title' => $formTemplate->imutdata->title ?? $formTemplate->title,
                 'description' => $formTemplate->description,
                 'total_entries' => $totalEntries,
-                'this_month' => $thisMonthEntries,
-                'this_week' => $thisWeekEntries,
                 'last_entry_date' => $lastEntry?->report_date?->format('d M Y'),
                 'last_entry_time' => $lastEntry?->created_at?->format('H:i'),
                 'active_periods' => $activePeriods,
@@ -106,9 +89,9 @@ class DailyReportDashboard extends Page
         })->toArray();
     }
 
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
-    }
+    // public static function canAccess(): bool
+    // {
+    //     $user = Auth::user();
+    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    // }
 }

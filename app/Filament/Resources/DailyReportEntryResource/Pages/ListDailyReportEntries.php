@@ -154,7 +154,10 @@ class ListDailyReportEntries extends ListRecords
 
         $cellDate = Carbon::parse($cellData['date']);
         $today = now()->startOfDay();
-        $sevenDaysAgo = now()->subDays(7)->startOfDay();
+        $sixDaysAgo = now()->subDays(6)->startOfDay();
+
+        // Use rolling 7-day window (today and previous 6 days) for editable range
+        // (cells older than 6 days before today are considered overdue)
 
         // Future date
         if ($cellDate->isAfter($today)) {
@@ -166,8 +169,8 @@ class ListDailyReportEntries extends ListRecords
             return 'done';
         }
 
-        // Too old (more than 7 days ago)
-        if ($cellDate->isBefore($sevenDaysAgo)) {
+        // Too old (more than 6 days ago)
+        if ($cellDate->isBefore($sixDaysAgo)) {
             return 'overdue';
         }
 

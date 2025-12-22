@@ -1,4 +1,4 @@
-<td class="px-3 py-3" style="border-color: #f3f4f6; {{ $isToday ? 'background-color: rgba(37, 99, 235, 0.05);' : '' }}">
+<td x-show="shouldShowCell({{ $day }})" class="px-3 py-3" :class="filterPeriod === 'today' ? 'min-w-[460px] h-28 p-4' : 'w-12 h-16'" style="border-color: #f3f4f6; {{ $isToday ? 'background-color: rgba(37, 99, 235, 0.05);' : '' }}">
     {{-- State: DONE (Sudah diisi) --}}
     @if($state === 'done')
     <div x-data="{ showPopover: false }" class="relative">
@@ -7,12 +7,14 @@
             @mouseenter="showPopover = true"
             @mouseleave="showPopover = false"
             class="w-full group">
-            <div class="flex flex-col items-center justify-center px-4 py-3 rounded-lg transition-all duration-200"
-                style="{{ $isToday 
-                    ? 'background-color: #dcfce7; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);' 
+            <div class="flex flex-col items-center justify-center px-8 py-3 rounded-lg transition-all duration-200"
+                style="{{ $isToday
+                    ? 'background-color: #dcfce7; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);'
                     : 'background-color: #f0fdf4;' }}"
-                onmouseover="if(!{{ $isToday ? 'true' : 'false' }}) { this.style.backgroundColor='#dcfce7'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'; }"
-                onmouseout="if(!{{ $isToday ? 'true' : 'false' }}) { this.style.backgroundColor='#f0fdf4'; this.style.boxShadow=''; }">
+                @if(!$isToday)
+                onmouseover="this.style.backgroundColor='#dcfce7'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';"
+                onmouseout="this.style.backgroundColor='#f0fdf4'; this.style.boxShadow='';"
+                @endif>
                 <x-heroicon-m-check-circle class="w-7 h-7 mb-1.5" style="color: #16a34a;" />
                 @if($summary)
                 <span class="text-base font-bold leading-tight" style="color: #15803d;">
@@ -74,12 +76,14 @@
     <button
         wire:click="openSlideOver({{ $indicatorId }}, '{{ $dateStr }}')"
         class="w-full group">
-        <div class="flex flex-col items-center justify-center px-4 py-3 rounded-lg transition-all duration-200"
+        <div class="flex flex-col items-center justify-center px-8 py-3 rounded-lg transition-all duration-200"
             style="{{ $isToday 
                 ? 'background-color: #ffedd5; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5); color: #c2410c;' 
                 : 'background-color: #f97316; color: #ffffff;' }}"
-            onmouseover="if(!{{ $isToday ? 'true' : 'false' }}) { this.style.backgroundColor='#ea580c'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.1)'; this.style.transform='scale(1.05)'; }"
-            onmouseout="if(!{{ $isToday ? 'true' : 'false' }}) { this.style.backgroundColor='#f97316'; this.style.boxShadow=''; this.style.transform=''; }">
+            @if(!$isToday)
+            onmouseover="this.style.backgroundColor='#ea580c'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.1)'; this.style.transform='scale(1.05)';"
+            onmouseout="this.style.backgroundColor='#f97316'; this.style.boxShadow=''; this.style.transform='';"
+            @endif>
             @svg("heroicon-o-plus-circle", "w-7 h-7 mb-1.5")
             <span class="text-base font-bold leading-tight">0%</span>
             <span class="text-xs mt-0.5" style="opacity: 0.9;">0/0</span>

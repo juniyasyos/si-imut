@@ -25,7 +25,7 @@
         wire:click="closeSlideOver"></div>
 
     <!-- Slide Over Panel -->
-    <div class="!fixed !inset-y-0 !right-0 !left-auto flex max-w-full pl-10 sm:pl-16 pointer-events-none"
+    <div class="!fixed !inset-y-0 !right-0 !left-auto flex max-w-full pl-0 sm:pl-10 md:pl-16 pointer-events-none"
         style="position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: auto !important; z-index: 10000 !important;">
         <div class="w-screen max-w-full md:max-w-5xl pointer-events-auto"
             x-show="show"
