@@ -38,7 +38,7 @@
 
             <div class="flex h-full flex-col shadow-[0_0_80px_rgba(0,0,0,0.5)] ring-1 backdrop-blur-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-700">
                 <!-- Header with enhanced gradient and glass effect -->
-                <div class="relative px-6 py-7 shadow-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900"
+                <div class="relative px-6 py-7 shadow-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800"
                     x-data="{ headerVisible: false }"
                     x-init="setTimeout(() => headerVisible = true, 150)"
                     x-show="headerVisible"
