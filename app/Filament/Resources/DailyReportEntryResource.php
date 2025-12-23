@@ -19,7 +19,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = DailyReportEntry::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?string $navigationLabel = 'Laporan Harian';
 
@@ -100,6 +100,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreateDailyReportEntry::route('/create'),
             'view' => Pages\ViewDailyReportEntry::route('/{record}'),
             'edit' => Pages\EditDailyReportEntry::route('/{record}/edit'),
+            // 'list' => Pages\ListUnitKerjaDailyReport::route('/list'),
         ];
     }
 

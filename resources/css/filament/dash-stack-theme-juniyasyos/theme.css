@@ -9,7 +9,7 @@
 
 /* Progres Bar */
 .progress-bar {
-    @apply h-4 w-full bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner overflow-hidden
+    @apply h-4 w-full bg-gray-100 dark:bg-slate-800/80 rounded-full shadow-inner overflow-hidden
 }
 
 .progress-bar-value {

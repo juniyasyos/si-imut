@@ -194,7 +194,7 @@ $closeEventHandler = filled($id) ? '$dispatch(' . \Illuminate\Support\Js::from($
                         ($extraModalWindowAttributeBag ?? new \Illuminate\View\ComponentAttributeBag)->class([
                             'fi-modal-window pointer-events-auto relative row-start-2 flex w-full cursor-default flex-col shadow-xl ring-1',
                             'bg-white ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10' => ! $slideOver,
-                            'fi-modal-slide-over-window ms-auto overflow-y-auto backdrop-blur-xl bg-gray-50 dark:bg-gray-800 ring-gray-200/50 dark:ring-gray-700/50' => $slideOver,
+                            'fi-modal-slide-over-window ms-auto overflow-y-auto backdrop-blur-xl bg-gray-50 dark:bg-slate-800/80 ring-gray-200/50 dark:ring-gray-700/50' => $slideOver,
                             // Using an arbitrary value instead of the h-dvh class that was added in Tailwind CSS v3.4.0
                             // to ensure compatibility with custom themes that may use an older version of Tailwind CSS.
                             'h-[100dvh]' => $slideOver || ($width === MaxWidth::Screen),

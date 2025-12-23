@@ -27,7 +27,7 @@
             {{-- Statistics Grid --}}
             <div class="grid grid-cols-2 gap-2">
                 <div
-                    class="px-4 py-3 border rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    class="px-4 py-3 border rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-slate-800/80/50">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Penanggung Jawab</p>
@@ -40,7 +40,7 @@
                 </div>
 
                 <div
-                    class="px-4 py-3 border rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    class="px-4 py-3 border rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-slate-800/80/50">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total Laporan</p>

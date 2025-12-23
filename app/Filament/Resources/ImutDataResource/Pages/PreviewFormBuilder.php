@@ -249,14 +249,14 @@ class PreviewFormBuilder extends Page implements HasForms
 
         // Overall Score
         $scoreColor = $compliance['score'] >= 80 ? 'green' : ($compliance['score'] >= 60 ? 'yellow' : 'red');
-        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">';
+        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/80">';
         $html .= '<h3 class="text-lg font-semibold mb-2">Overall Compliance Score</h3>';
         $html .= '<div class="text-2xl font-bold text-' . $scoreColor . '-600">' . number_format($compliance['score'], 1) . '%</div>';
         $html .= '<p class="text-sm text-gray-600">' . $compliance['status'] . '</p>';
         $html .= '</div>';
 
         // Field Breakdown
-        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">';
+        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/80">';
         $html .= '<h4 class="font-semibold mb-3">Field Breakdown</h4>';
         $html .= '<div class="space-y-2 text-sm">';
 

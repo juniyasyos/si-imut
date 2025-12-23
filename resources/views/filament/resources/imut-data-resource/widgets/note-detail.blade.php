@@ -56,7 +56,7 @@
     @if($note->additional_notes)
     <div>
         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Catatan Tambahan</label>
-        <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div class="mt-1 p-3 bg-gray-50 dark:bg-slate-800/80 rounded-lg">
             <p class="text-base text-gray-900 dark:text-white whitespace-pre-wrap">{{ $note->additional_notes }}</p>
         </div>
     </div>

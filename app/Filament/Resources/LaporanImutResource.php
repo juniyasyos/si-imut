@@ -28,9 +28,9 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $navigationLabel = 'Laporan IMUT';
+    protected static ?string $navigationLabel = 'Audit Bulanan';
 
-    protected static ?string $modelLabel = 'Laporan IMUT';
+    protected static ?string $modelLabel = 'Audit Bulanan';
 
     public static function getGloballySearchableAttributes(): array
     {

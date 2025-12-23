@@ -13,7 +13,7 @@
         $dayOfWeek = \Carbon\Carbon::parse($selectedMonth . '-' . str_pad($day, 2, '0', STR_PAD_LEFT))->dayOfWeek;
         $isWeekend = in_array($dayOfWeek, [0]); // 0=Sunday
         @endphp
-        <th class="px-4 py-3 border-b-2 border-gray-300 dark:border-gray-600 min-w-[100px] {{ $isWeekend ? 'bg-gray-100 dark:bg-gray-800' : '' }}">
+        <th class="px-4 py-3 border-b-2 border-gray-300 dark:border-gray-600 min-w-[100px] {{ $isWeekend ? 'bg-gray-100 dark:bg-slate-800/80' : '' }}">
             <div class="flex flex-col items-center gap-1
                 {{ $isToday
                     ? 'bg-primary-100 dark:bg-primary-900/40 rounded-lg py-1.5 px-2 ring-2 ring-primary-400 dark:ring-primary-600'

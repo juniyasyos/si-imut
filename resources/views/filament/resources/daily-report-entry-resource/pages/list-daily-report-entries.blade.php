@@ -43,11 +43,11 @@
         <div style="margin-bottom: -20px;">
             <div class="flex flex-row justify-end gap-3">
                 <!-- Segmented Control -->
-                <div class="bg-white dark:bg-gray-800 rounded-md shadow-sm inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                <div class="bg-white dark:bg-slate-700/80 rounded-md shadow-sm inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
                     <button
                         @click="filterPeriod = 'today'"
                         :class="filterPeriod === 'today'
-                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
+                ? 'bg-white dark:bg-slate-600/80 text-gray-900 dark:text-white shadow'
                 : 'text-gray-500 dark:text-gray-300'"
                         class="px-4 py-2 text-sm rounded-md transition">
                         Hari Ini
@@ -56,7 +56,7 @@
                     <button
                         @click="filterPeriod = 'weekly'"
                         :class="filterPeriod === 'weekly'
-                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
+                ? 'bg-white dark:bg-slate-600/80 text-gray-900 dark:text-white shadow'
                 : 'text-gray-500 dark:text-gray-300'"
                         class="px-4 py-2 text-sm rounded-md transition">
                         Minggu Ini
@@ -65,7 +65,7 @@
                     <button
                         @click="filterPeriod = 'monthly'"
                         :class="filterPeriod === 'monthly'
-                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
+                ? 'bg-white dark:bg-slate-600/80 text-gray-900 dark:text-white shadow'
                 : 'text-gray-500 dark:text-gray-300'"
                         class="px-4 py-2 text-sm rounded-md transition">
                         Bulan Ini
@@ -73,12 +73,12 @@
                 </div>
             </div>
         </div>
-        <div x-show="!isMobile" class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div x-show="!isMobile" class="bg-white dark:bg-slate-700/80 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse">
-                    <thead class="bg-gray-50 dark:bg-gray-900/50">
-                        <tr class="border-b border-gray-200 dark:border-gray-700">
-                            <th class="sticky left-0 z-20 bg-gray-50 dark:bg-gray-900/50 px-6 py-4 text-left border-r-2 border-gray-200 dark:border-gray-700 min-w-[220px]">
+                    <thead class="bg-gray-50 dark:bg-slate-900/50">
+                        <tr class="border-b border-slate-200 dark:border-slate-700">
+                            <th class="sticky left-0 z-20 bg-gray-50 dark:bg-slate-900/50 px-6 py-4 text-left border-r-2 border-slate-200 dark:border-slate-700 min-w-[220px]">
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">Indikator Mutu</span>
                             </th>
 
@@ -90,7 +90,7 @@
                             $isToday = $date->isToday();
                             @endphp
                             <th x-show="shouldShowCell({{ $day }})"
-                                class="relative text-center border-r border-gray-200 dark:border-gray-700 w-12 px-2 py-3 {{ $isWeekend ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-gray-900/50' }}"
+                                class="relative text-center border-r border-slate-200 dark:border-slate-700 w-12 px-2 py-3 {{ $isWeekend ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-slate-900/50' }}"
                                 :class="filterPeriod === 'today' ? 'min-w-[760px] px-6 py-5' : ''">
                                 <div class="space-y-1">
                                     @if($isToday)
@@ -114,7 +114,7 @@
                         @forelse($indicators as $indicator)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/40 transition-colors duration-150">
                             <!-- Nama indikator -->
-                            <td class="sticky left-0 z-10 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/40 px-6 py-4 border-r-2 border-gray-200 dark:border-gray-700 transition-colors duration-150 min-w-[220px]">
+                            <td class="sticky left-0 z-10 bg-white dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-gray-900/40 px-6 py-4 border-r-2 border-slate-200 dark:border-slate-700 transition-colors duration-150 min-w-[220px]">
                                 <div class="flex items-start gap-3">
                                     <div class="flex flex-col space-y-1 flex-1 min-w-0">
                                         <span class="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
@@ -186,7 +186,7 @@
 
             @foreach($indicators as $indicator)
             <div
-                class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                class="bg-white dark:bg-slate-800/80 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-4">
                 <!-- Indicator Header -->
                 <div class="mb-3">
                     <div class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
@@ -223,7 +223,7 @@
                     transition
                     {{ $isToday
                         ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20'
-                        : 'bg-gray-50 border-gray-200 dark:bg-gray-900/40 dark:border-gray-700'
+                        : 'bg-gray-50 border-slate-200 dark:bg-gray-900/40 dark:border-slate-700'
                     }}
                 ">
                         <!-- Date & Status -->
