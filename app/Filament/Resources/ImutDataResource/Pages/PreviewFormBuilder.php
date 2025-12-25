@@ -20,6 +20,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Resources\Pages\Page;
 use Filament\Actions\Action;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Illuminate\Support\HtmlString;
 
@@ -139,13 +140,14 @@ class PreviewFormBuilder extends Page implements HasForms
             'helperText' => $field->field_description,
         ];
 
-        // Add conditional logic
+        // Add conditional logic: set disabled if not visible
+        $disabledCondition = false;
         if ($field->conditional_logic) {
             $logic = $field->conditional_logic;
             if ($logic['condition_type'] === 'show_when') {
-                $baseConfig['visible'] = function ($get) use ($logic) {
+                $disabledCondition = function ($get) use ($logic) {
                     $dependentValue = $get($logic['depends_on_field']);
-                    return in_array($dependentValue, $logic['trigger_values']);
+                    return !in_array($dependentValue, $logic['trigger_values']);
                 };
             }
         }
@@ -156,8 +158,8 @@ class PreviewFormBuilder extends Page implements HasForms
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->maxLength($field->validation_config['max_length'] ?? 255)
-                    ->required(false) // Make optional in preview mode
-                    ->visible($baseConfig['visible'] ?? true);
+                    ->required(false)
+                    ->disabled($disabledCondition);
 
             case 'number':
                 return TextInput::make($field->field_key)
@@ -166,8 +168,8 @@ class PreviewFormBuilder extends Page implements HasForms
                     ->numeric()
                     ->minValue($field->validation_config['min'] ?? null)
                     ->maxValue($field->validation_config['max'] ?? null)
-                    ->required(false) // Make optional in preview mode
-                    ->visible($baseConfig['visible'] ?? true);
+                    ->required(false)
+                    ->disabled($disabledCondition);
 
             case 'single_select':
                 $options = [];
@@ -175,12 +177,13 @@ class PreviewFormBuilder extends Page implements HasForms
                     $options[$option->option_value] = $option->option_text;
                 }
 
-                return Select::make($field->field_key)
+                return ToggleButtons::make($field->field_key)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->options($options)
-                    ->required(false) // Make optional in preview mode
-                    ->visible($baseConfig['visible'] ?? true)
+                    ->inline()
+                    ->required(false)
+                    ->disabled($disabledCondition)
                     ->live();
 
             case 'multi_select':
@@ -193,8 +196,8 @@ class PreviewFormBuilder extends Page implements HasForms
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->options($options)
-                    ->required(false) // Make optional in preview mode
-                    ->visible($baseConfig['visible'] ?? true)
+                    ->required(false)
+                    ->disabled($disabledCondition)
                     ->live()
                     ->columns(1);
 
@@ -209,15 +212,15 @@ class PreviewFormBuilder extends Page implements HasForms
                         ->label($baseConfig['label'])
                         ->helperText($baseConfig['helperText'])
                         ->options($options)
-                        ->required(false) // Make optional in preview mode
-                        ->visible($baseConfig['visible'] ?? true)
+                        ->required(false)
+                        ->disabled($disabledCondition)
                         ->live();
                 } else {
                     return Toggle::make($field->field_key)
                         ->label($baseConfig['label'])
                         ->helperText($baseConfig['helperText'])
-                        ->required(false) // Make optional in preview mode
-                        ->visible($baseConfig['visible'] ?? true)
+                        ->required(false)
+                        ->disabled($disabledCondition)
                         ->live();
                 }
 
@@ -225,8 +228,8 @@ class PreviewFormBuilder extends Page implements HasForms
                 return TextInput::make($field->field_key)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
-                    ->required(false) // Make optional in preview mode
-                    ->visible($baseConfig['visible'] ?? true);
+                    ->required(false)
+                    ->disabled($disabledCondition);
         }
     }
 
