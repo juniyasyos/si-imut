@@ -51,7 +51,7 @@ class FormFields
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->maxLength($field->validation_config['max_length'] ?? 255)
-                    ->required(false)
+                    ->required($disabledCondition)
                     ->disabled($disabledCondition);
 
             case 'number':
@@ -61,7 +61,7 @@ class FormFields
                     ->numeric()
                     ->minValue($field->validation_config['min'] ?? null)
                     ->maxValue($field->validation_config['max'] ?? null)
-                    ->required(false)
+                    ->required($disabledCondition)
                     ->disabled($disabledCondition);
 
             case 'single_select':
@@ -75,7 +75,7 @@ class FormFields
                     ->helperText($baseConfig['helperText'])
                     ->options($options)
                     ->inline()
-                    ->required(false)
+                    ->required($disabledCondition)
                     ->disabled($disabledCondition)
                     ->live();
 
@@ -89,7 +89,7 @@ class FormFields
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->options($options)
-                    ->required(false)
+                    ->required($disabledCondition)
                     ->bulkToggleable()
                     ->disabled($disabledCondition)
                     ->live()
@@ -106,14 +106,14 @@ class FormFields
                         ->label($baseConfig['label'])
                         ->helperText($baseConfig['helperText'])
                         ->options($options)
-                        ->required(false)
+                        ->required($disabledCondition)
                         ->disabled($disabledCondition)
                         ->live();
                 } else {
                     return ToggleButtons::make($field->field_key)
                         ->label($baseConfig['label'])
                         ->helperText($baseConfig['helperText'])
-                        ->required(false)
+                        ->required($disabledCondition)
                         ->disabled($disabledCondition)
                         ->live();
                 }
@@ -122,7 +122,7 @@ class FormFields
                 return TextInput::make($field->field_key)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
-                    ->required(false)
+                    ->required($disabledCondition)
                     ->disabled($disabledCondition);
         }
     }
