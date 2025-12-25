@@ -129,7 +129,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             'overview-unit-kerja' => UnitKerjaOverview::route('/overview/unit-kerja'),
             'overview-imut-data' => SummaryDiagram::route('overview/summary-imut-data'),
             'manage-form-builder' => Pages\ManageFormBuilder::route('/{record:slug}/form-builder'),
-            'preview-form' => Pages\PreviewFormBuilder::route('/{record:slug}/form-builder/preview'),
+            'preview-form' => Pages\FormBuilder::route('/{record:slug}/form-builder/preview'),
         ];
     }
 }

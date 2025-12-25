@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
+use App\Filament\Resources\ImutDataResource\Pages\Helper\FormFields;
 use App\Models\ImutData;
 use App\Models\FormTemplate;
 use App\Services\FormBuilder\FormDataService;
@@ -24,7 +25,7 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Illuminate\Support\HtmlString;
 
-class PreviewFormBuilder extends Page implements HasForms
+class FormBuilder extends Page implements HasForms
 {
     use InteractsWithForms;
 
@@ -109,9 +110,14 @@ class PreviewFormBuilder extends Page implements HasForms
         $sortedFields = $this->formTemplate->formFields->sortBy('order_index');
 
         foreach ($sortedFields as $field) {
-            $component = $this->createFormComponent($field);
+            $component = FormFields::createFormComponent($field);
             if ($component) {
-                $formFieldsSchema[] = $component;
+                // Wrap each field in its own Section to improve visual separation
+                $formFieldsSchema[] = Section::make($field->field_label)
+                    ->schema([
+                        $component->label(''),
+                    ])
+                    ->columns(1);
             }
         }
 
@@ -126,111 +132,9 @@ class PreviewFormBuilder extends Page implements HasForms
                 Placeholder::make('compliance_calculation')
                     ->content(fn() => $this->generateCompliancePreview())
                     ->columnSpanFull(),
-            ])
-            ->collapsed()
-            ->collapsible();
+            ]);
 
         return $fields;
-    }
-
-    protected function createFormComponent($field)
-    {
-        $baseConfig = [
-            'label' => $field->field_label,
-            'helperText' => $field->field_description,
-        ];
-
-        // Add conditional logic: set disabled if not visible
-        $disabledCondition = false;
-        if ($field->conditional_logic) {
-            $logic = $field->conditional_logic;
-            if ($logic['condition_type'] === 'show_when') {
-                $disabledCondition = function ($get) use ($logic) {
-                    $dependentValue = $get($logic['depends_on_field']);
-                    return !in_array($dependentValue, $logic['trigger_values']);
-                };
-            }
-        }
-
-        switch ($field->field_type) {
-            case 'text':
-                return TextInput::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->maxLength($field->validation_config['max_length'] ?? 255)
-                    ->required(false)
-                    ->disabled($disabledCondition);
-
-            case 'number':
-                return TextInput::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->numeric()
-                    ->minValue($field->validation_config['min'] ?? null)
-                    ->maxValue($field->validation_config['max'] ?? null)
-                    ->required(false)
-                    ->disabled($disabledCondition);
-
-            case 'single_select':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                return ToggleButtons::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->options($options)
-                    ->inline()
-                    ->required(false)
-                    ->disabled($disabledCondition)
-                    ->live();
-
-            case 'multi_select':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                return CheckboxList::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->options($options)
-                    ->required(false)
-                    ->disabled($disabledCondition)
-                    ->live()
-                    ->columns(1);
-
-            case 'boolean':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                if (count($options) > 0) {
-                    return Radio::make($field->field_key)
-                        ->label($baseConfig['label'])
-                        ->helperText($baseConfig['helperText'])
-                        ->options($options)
-                        ->required(false)
-                        ->disabled($disabledCondition)
-                        ->live();
-                } else {
-                    return Toggle::make($field->field_key)
-                        ->label($baseConfig['label'])
-                        ->helperText($baseConfig['helperText'])
-                        ->required(false)
-                        ->disabled($disabledCondition)
-                        ->live();
-                }
-
-            default:
-                return TextInput::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->required(false)
-                    ->disabled($disabledCondition);
-        }
     }
 
     protected function generateCompliancePreview(): HtmlString
@@ -309,7 +213,7 @@ class PreviewFormBuilder extends Page implements HasForms
             $fieldScore = 0;
 
             // Skip if field is not visible due to conditional logic
-            if ($field->conditional_logic && !$this->isFieldVisible($field, $data)) {
+            if ($field->conditional_logic && !FormFields::isFieldVisible($field, $data)) {
                 continue;
             }
 
@@ -405,22 +309,6 @@ class PreviewFormBuilder extends Page implements HasForms
         ];
     }
 
-    protected function isFieldVisible($field, $data): bool
-    {
-        if (!$field->conditional_logic) {
-            return true;
-        }
-
-        $logic = $field->conditional_logic;
-        $dependentValue = $data[$logic['depends_on_field']] ?? null;
-
-        if ($logic['condition_type'] === 'show_when') {
-            return in_array($dependentValue, $logic['trigger_values']);
-        }
-
-        return true;
-    }
-
     protected function initializePreviewData(): void
     {
         $this->previewData = [];
@@ -463,27 +351,6 @@ class PreviewFormBuilder extends Page implements HasForms
                 ->icon('heroicon-o-arrow-left')
                 ->url(fn() => static::getResource()::getUrl('manage-form-builder', ['record' => $this->record]))
                 ->color('gray'),
-
-            // Action::make('calculate_compliance')
-            //     ->label('Hitung Ulang Compliance')
-            //     ->icon('heroicon-o-calculator')
-            //     ->action(function () {
-            //         try {
-            //             $currentData = $this->form->getState();
-            //         } catch (\Exception $e) {
-            //             // Use current preview data if form validation fails
-            //             $currentData = $this->previewData ?? [];
-            //         }
-
-            //         $this->complianceScore = $this->calculateCompliance($currentData);
-
-            //         Notification::make()
-            //             ->title('Compliance Score Updated')
-            //             ->body('Score: ' . number_format($this->complianceScore['score'], 1) . '%')
-            //             ->success()
-            //             ->send();
-            //     })
-            //     ->color('primary'),
         ];
     }
 

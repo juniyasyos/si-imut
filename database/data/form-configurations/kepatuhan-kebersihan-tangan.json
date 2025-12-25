@@ -98,7 +98,7 @@
             "compliance_weight": 5,
             "is_critical_field": true,
             "compliance_rules": {
-                "minimum_correct": 4,
+                "minimum_correct": 6,
                 "allow_wrong_selections": true
             },
             "conditional_logic": {
