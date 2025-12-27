@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('daily_report_entries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_template_id')->constrained('daily_reports')->onDelete('cascade');
+            $table->foreignId('form_template_id')->constrained('form_templates')->onDelete('cascade');
             $table->foreignId('unit_kerja_id')->constrained('unit_kerja')->onDelete('cascade');
             $table->date('report_date');
             $table->timestamps();
