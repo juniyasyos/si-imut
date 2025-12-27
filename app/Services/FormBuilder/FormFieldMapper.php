@@ -66,7 +66,7 @@ class FormFieldMapper
             'number' => '🔢 Angka (Numerik)',
             'date' => '📅 Tanggal',
             'boolean' => '✅ Ya/Tidak (Boolean)',
-            'single_select' => '📋 Pilihan Tunggal (Dropdown)',
+            'single_select' => '📋 Pilihan Tunggal (Toggle Buttons)',
             'multi_select' => '📄 Pilihan Multi (Checkbox)',
             'rating_scale' => '⭐ Skala Rating (1-5)',
             'time_duration' => '⏱️ Durasi Waktu',

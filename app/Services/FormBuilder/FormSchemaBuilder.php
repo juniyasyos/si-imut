@@ -8,22 +8,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Builder;
-use Filament\Forms\Components\KeyValue;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\MarkdownEditor;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Hidden;
+use Illuminate\Support\Str;
 
 class FormSchemaBuilder
 {
@@ -94,7 +82,13 @@ class FormSchemaBuilder
                         ->label('Nama Field')
                         ->required()
                         ->maxLength(255)
-                        ->live(onBlur: true),
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(function ($state, $set) {
+                            // auto-generate field_key from label
+                            if (!empty($state)) {
+                                $set('field_key', Str::slug($state));
+                            }
+                        }),
 
                     Select::make('field_type')
                         ->label('Tipe Field')
@@ -126,15 +120,9 @@ class FormSchemaBuilder
                         ->label('Field Kritical')
                         ->helperText('Field kritical harus terisi untuk compliance'),
 
-                    TextInput::make('field_key')
-                        ->label('Key Field')
-                        ->helperText('Otomatis diisi dari nama field')
-                        ->maxLength(255),
-                ]),
+                    Hidden::make('field_key')
+                        ->default(fn($get) => Str::slug($get('field_label') ?? '')),
 
-            // Validation Configuration (Simplified)
-            Grid::make(3)
-                ->schema([
                     Toggle::make('validation_config.required')
                         ->label('Wajib Diisi'),
 
@@ -157,11 +145,15 @@ class FormSchemaBuilder
                         ->schema([
                             TextInput::make('label')
                                 ->label('Label Opsi')
-                                ->required(),
+                                ->required()
+                                ->afterStateUpdated(function ($state, $set) {
+                                    if (!empty($state)) {
+                                        $set('value', Str::slug($state));
+                                    }
+                                }),
 
-                            TextInput::make('value')
-                                ->label('Value Opsi')
-                                ->required(),
+                            Hidden::make('value')
+                                ->default(fn($get) => Str::slug($get('label') ?? '')),
 
                             Toggle::make('is_correct')
                                 ->label('Opsi Benar/Pass')
@@ -200,7 +192,7 @@ class FormSchemaBuilder
                 ->schema([
                     Toggle::make('has_conditional_logic')
                         ->label('Aktifkan Logika Kondisional')
-                        ->helperText('Field ini akan muncul/hilang berdasarkan field lain')
+                        ->helperText('Field ini akan bergantung pada nilai field lain; pada preview, jika kondisi tidak terpenuhi field akan tetap tampil tetapi dinonaktifkan.')
                         ->live(),
 
                     Grid::make(2)
@@ -208,7 +200,7 @@ class FormSchemaBuilder
                             Select::make('conditional_logic.depends_on_field')
                                 ->label('Bergantung pada Field')
                                 ->options(fn($get) => self::getAvailableFieldsForCondition($get('../../fields') ?? []))
-                                ->helperText('Field yang akan mempengaruhi visibility')
+                                ->helperText('Field yang mempengaruhi kondisi (pada preview, jika kondisi tidak terpenuhi field akan dinonaktifkan)')
                                 ->visible(fn($get) => $get('has_conditional_logic'))
                                 ->live(),
 
@@ -225,7 +217,7 @@ class FormSchemaBuilder
 
                     CheckboxList::make('conditional_logic.trigger_values')
                         ->label('Nilai Pemicu')
-                        ->helperText('Field akan muncul/hilang ketika field dependency memiliki nilai yang dipilih')
+                        ->helperText('Field akan aktif ketika dependency memiliki nilai pemicu; jika tidak, field akan tetap tampil tetapi dinonaktifkan pada preview.')
                         ->options(fn($get) => self::getDependentFieldOptions($get('../../fields') ?? [], $get('conditional_logic.depends_on_field')))
                         ->visible(fn($get) => $get('has_conditional_logic') && !empty($get('conditional_logic.depends_on_field')))
                         ->live()

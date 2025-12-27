@@ -44,7 +44,7 @@
                 "required": true,
                 "min_selections": 1
             },
-            "compliance_weight": 4,
+            "compliance_weight": 3,
             "is_critical_field": true,
             "compliance_rules": {
                 "minimum_correct": 1,
