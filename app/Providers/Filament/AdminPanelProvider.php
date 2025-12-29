@@ -49,30 +49,6 @@ class AdminPanelProvider extends PanelProvider
 {
     private ?KaidoSetting $settings = null;
 
-    // constructor
-    // public function __construct()
-    // {
-    //     try {
-    //         if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-    //             $this->settings = app(KaidoSetting::class);
-    //         }
-    //     } catch (\Exception $e) {
-    //         $this->settings = null;
-    //         // Log the error for debugging
-    //         logger()->warning('KaidoSetting could not be loaded: ' . $e->getMessage());
-    //     }
-    // }
-
-    // private function getSettingValue(string $key, mixed $default = null): mixed
-    // {
-    //     try {
-    //         return $this->settings?->{$key} ?? $default;
-    //     } catch (\Exception $e) {
-    //         logger()->warning("Setting '{$key}' could not be accessed: " . $e->getMessage());
-    //         return $default;
-    //     }
-    // }
-
     public function panel(Panel $panel): Panel
     {
         // Check if SSO is enabled

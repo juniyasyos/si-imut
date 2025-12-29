@@ -1,47 +1,153 @@
 <?php
 
-namespace App\Filament\Resources\ImutPenilaianResource\Forms;
+namespace App\Filament\Traits\ReportDetailAction;
 
+use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Hidden;
+use App\Models\LaporanImut;
+use App\Services\Form\FormCalculationService;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\ToggleButtons;
-use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Form;
+use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use Juniyasyos\FilamentMediaManager\Models\Folder;
 
-class ImutProfileInfoForm
+trait DetailInfoReport
 {
+    protected const PROFILE_FIELDS = [
+        'imut_data_id',
+        'imut_profil',
+        'responsible_person',
+        'indicator_type',
+        'rationale',
+        'objective',
+        'operational_definition',
+        'quality_dimension',
+        'numerator_formula',
+        'denominator_formula',
+        'inclusion_criteria',
+        'exclusion_criteria',
+        'data_source',
+        'data_collection_frequency',
+        'data_collection_method',
+        'sampling_method',
+        'data_collection_tool',
+        'analysis_plan',
+        'target_operator',
+        'target_value',
+        'analysis_period_type',
+        'analysis_period_value',
+    ];
+
+    /**
+     * Prepare form fill data for profile information display.
+     */
+    protected function getProfileFormFillData($record): array
+    {
+        // Get the profile data from the record
+        $profile = null;
+
+        // Try to get profile from different possible relationships
+        if (isset($record->imut_profile)) {
+            $profile = $record->imut_profile;
+        } elseif (isset($record->imut_profil_id)) {
+            $profile = ImutProfile::find($record->imut_profil_id);
+        } elseif (isset($record->imut_data) && isset($record->imut_data->imut_profile)) {
+            $profile = $record->imut_data->imut_profile;
+        }
+
+        if (!$profile) {
+            return [];
+        }
+
+        // Fill all profile fields
+        $fill = [
+            'imut_data_id' => $profile->imut_data_id,
+            'imut_profil' => $profile->id,
+            'responsible_person' => $profile->responsible_person,
+            'indicator_type' => $profile->indicator_type,
+            'rationale' => $profile->rationale,
+            'objective' => $profile->objective,
+            'operational_definition' => $profile->operational_definition,
+            'quality_dimension' => $profile->quality_dimension,
+            'numerator_formula' => $profile->numerator_formula,
+            'denominator_formula' => $profile->denominator_formula,
+            'inclusion_criteria' => $profile->inclusion_criteria,
+            'exclusion_criteria' => $profile->exclusion_criteria,
+            'data_source' => $profile->data_source,
+            'data_collection_frequency' => $profile->data_collection_frequency,
+            'data_collection_method' => $profile->data_collection_method,
+            'sampling_method' => $profile->sampling_method,
+            'data_collection_tool' => $profile->data_collection_tool,
+            'analysis_plan' => $profile->analysis_plan,
+            'target_operator' => $profile->target_operator,
+            'target_value' => $profile->target_value,
+            'analysis_period_type' => $profile->analysis_period_type,
+            'analysis_period_value' => $profile->analysis_period_value,
+        ];
+
+        return $fill;
+    }
+
+    protected function buildDetailInfo(): Action
+    {
+        $livewireComponent = $this;
+
+        return Action::make('detail_info')
+            ->label('Detail Info')
+            ->icon('heroicon-o-information-circle')
+            ->color('primary')
+            ->slideOver()
+            ->modalHeading(fn($record) => ($record->imut_data ?? ''))
+            ->modalSubmitActionLabel('Simpan')
+            ->closeModalByClickingAway(false)
+            ->closeModalByEscaping(false)
+            // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
+            ->mountUsing(function (Form $form, $record) {
+                $form->fill($this->getProfileFormFillData($record));
+            })
+            ->form(function () use ($livewireComponent) {
+                return array_merge(
+                    self::ImutPenilaianProfileSchema(),
+                    self::basicInformationSchemaProfile(),
+                    self::operationalDefinitionSchemaProfile(),
+                    self::dataAndAnalysisSchemaProfile()
+                );
+            })
+            ->action(function ($record, array $data) {
+                $this->updatePenilaianFromAction($record, $data);
+            })
+            ->successNotificationTitle('Penilaian berhasil disimpan')
+            ->after(fn() => $this->dispatch('$refresh'));
+    }
+
+    // ============================================================================
+    // PROFILE SCHEMA SECTIONS
+    // ============================================================================
+
+    /**
+     * Schema untuk informasi profil IMUT
+     */
     protected static function ImutPenilaianProfileSchema(): array
     {
         return [
             Section::make('Informasi Profil')
-                ->disabled(fn () => ! Auth::user()?->can('update_profile_penilaian_imut::penilaian'))
                 ->description('Pilih profil dan standar IMUT yang sesuai.')
                 ->schema([
-                    // Hidden field for imut_data_id
                     Hidden::make('imut_data_id'),
-
-                    // Select: Versi Profil IMUT
-                    Select::make('imut_profile_id')
+                    Select::make('imut_profil')
                         ->label('Versi Profil IMUT')
-                        ->options(function ($get) {
-                            $imutDataId = $get('imut_data_id');
-
-                            if ($imutDataId) {
-                                return ImutProfile::where('imut_data_id', $imutDataId)
-                                    ->get()
-                                    ->mapWithKeys(fn ($profile) => [
-                                        $profile->id => "{$profile->version}",
-                                    ])
-                                    ->toArray();
-                            }
-
-                            return [];
-                        })
+                        ->options(fn($get) => self::profileOptions($get('imut_data')))
+                        ->disabled()
                         ->searchable()
                         ->preload()
                         ->reactive()
@@ -50,50 +156,12 @@ class ImutProfileInfoForm
                         ->afterStateUpdated(function ($state, callable $set) {
                             $profile = ImutProfile::find($state);
 
-                            if ($profile) {
-                                $set('imut_data_id', $profile->imut_data_id);
-                                $set('responsible_person', $profile->responsible_person);
-                                $set('indicator_type', $profile->indicator_type);
-                                $set('rationale', $profile->rationale);
-                                $set('objective', $profile->objective);
-                                $set('operational_definition', $profile->operational_definition);
-                                $set('quality_dimension', $profile->quality_dimension);
-                                $set('numerator_formula', $profile->numerator_formula);
-                                $set('denominator_formula', $profile->denominator_formula);
-                                $set('inclusion_criteria', $profile->inclusion_criteria);
-                                $set('exclusion_criteria', $profile->exclusion_criteria);
-                                $set('data_source', $profile->data_source);
-                                $set('data_collection_frequency', $profile->data_collection_frequency);
-                                $set('data_collection_method', $profile->data_collection_method);
-                                $set('sampling_method', $profile->sampling_method);
-                                $set('analysis_period_type', $profile->analysis_period_type);
-                                $set('analysis_period_value', $profile->analysis_period_value);
-                                $set('target_operator', $profile->target_operator);
-                                $set('target_value', $profile->target_value);
-                                $set('start_periode', $profile->start_periode);
-                                $set('end_periode', $profile->end_periode);
-                                $set('data_collection_tool', $profile->data_collection_tool);
-                                $set('analysis_plan', $profile->analysis_plan);
-                            } else {
-                                foreach (['imut_data_id', 'responsible_person', 'indicator_type', 'rationale', 'objective', 'operational_definition', 'quality_dimension', 'numerator_formula', 'denominator_formula', 'inclusion_criteria', 'exclusion_criteria', 'data_source', 'data_collection_frequency', 'data_collection_method', 'sampling_method', 'analysis_period_type', 'analysis_period_value', 'target_value', 'data_collection_tool', 'analysis_plan'] as $field) {
-                                    $set($field, null);
-                                }
-                            }
+                            self::populateProfileFields($set, $profile);
                         }),
 
                     Select::make('target_operator')
                         ->label('🎯 Target Nilai')
-                        ->options(function ($get) {
-                            $value = $get('target_value') ?? '-';
-
-                            return [
-                                '>=' => "≥ $value",
-                                '<=' => "≤ $value",
-                                '>' => "> $value",
-                                '<' => "< $value",
-                                '=' => "= $value",
-                            ];
-                        })
+                        ->options(fn($get) => self::targetOperatorOptions($get('target_value')))
                         ->disabled()
                         ->dehydrated(false),
                 ])
@@ -101,12 +169,14 @@ class ImutProfileInfoForm
         ];
     }
 
+    /**
+     * Schema untuk informasi dasar profil
+     */
     protected static function basicInformationSchemaProfile(): array
     {
         return [
             Section::make('Informasi Dasar')
                 ->description('Isi data umum indikator mutu profil.')
-                ->collapsed()
                 ->schema([
                     Grid::make(2)->schema([
                         TextInput::make('responsible_person')
@@ -120,6 +190,7 @@ class ImutProfileInfoForm
                         ToggleButtons::make('indicator_type')
                             ->label('Tipe Indikator')
                             ->disabled()
+                            ->inline()
                             ->options([
                                 'process' => 'Proses',
                                 'output' => 'Output',
@@ -129,55 +200,50 @@ class ImutProfileInfoForm
                                 'process' => 'heroicon-o-cog',
                                 'output' => 'heroicon-o-chart-bar',
                                 'outcome' => 'heroicon-o-academic-cap',
-                            ])
-                            ->colors([
-                                'process' => 'warning',
-                                'output' => 'info',
-                                'outcome' => 'success',
-                            ])
-                            ->inline()
+                            ]),
+                        TextInput::make('rationale')
+                            ->label('Rasional')
+                            ->placeholder('Jelaskan alasan pemilihan indikator')
                             ->required()
-                            ->columnSpan(1)
-                            ->helperText('Pilih jenis indikator yang sesuai.'),
+                            ->readOnly()
+                            ->columnSpanFull(),
+
+                        TextInput::make('objective')
+                            ->label('Tujuan')
+                            ->placeholder('Apa tujuan dari indikator ini?')
+                            ->required()
+                            ->readOnly()
+                            ->columnSpanFull(),
+
+                        TextInput::make('operational_definition')
+                            ->label('Definisi Operasional')
+                            ->required()
+                            ->readOnly()
+                            ->placeholder('Deskripsikan definisi operasional indikator')
+                            ->columnSpanFull(),
+
+                        TextInput::make('quality_dimension')
+                            ->label('Dimensi Mutu')
+                            ->readOnly(),
                     ]),
-                ]),
-
-            Section::make('Deskripsi Profil Indikator')
-                ->collapsed()
-                ->description('Uraikan latar belakang, tujuan, dan makna indikator.')
-                ->schema([
-                    TextInput::make('rationale')
-                        ->label('Rasional')
-                        ->readOnly(),
-
-                    TextArea::make('objective')
-                        ->label('Tujuan')
-                        ->readOnly(),
-
-                    TextArea::make('operational_definition')
-                        ->label('Definisi Operasional')
-                        ->readOnly(),
-
-                    TextInput::make('quality_dimension')
-                        ->label('Dimensi Mutu')
-                        ->readOnly(),
                 ]),
         ];
     }
 
+    /**
+     * Schema untuk definisi operasional profil
+     */
     protected static function operationalDefinitionSchemaProfile(): array
     {
         return [
             Section::make('💡 Perhitungan Indikator')
-                ->collapsed()
                 ->description('Masukkan rumus dan kriteria yang digunakan untuk menghitung indikator mutu.')
                 ->schema([
-
                     Fieldset::make('🧮 Rumus Perhitungan')
                         ->columns(1)
                         ->schema([
                             Textarea::make('numerator_formula')
-                                ->label('Rumus Pembilang')
+                                ->label('Rumus Pembilang (Numerator)')
                                 ->rows(3)
                                 ->readOnly()
                                 ->required()
@@ -185,7 +251,7 @@ class ImutProfileInfoForm
                                 ->helperText('Rumus untuk bagian atas (numerator) dari indikator.'),
 
                             Textarea::make('denominator_formula')
-                                ->label('Rumus Penyebut')
+                                ->label('Rumus Penyebut (Denumerator)')
                                 ->rows(3)
                                 ->readOnly()
                                 ->required()
@@ -214,15 +280,15 @@ class ImutProfileInfoForm
         ];
     }
 
+    /**
+     * Schema untuk data dan analisis profil
+     */
     protected static function dataAndAnalysisSchemaProfile(): array
     {
         return [
             Section::make('📥 Pengumpulan & 🔍 Analisis Data')
-                ->collapsed()
                 ->description('Detail proses pengumpulan data, metode, dan perencanaan analisis indikator mutu.')
                 ->schema([
-
-                    // === Fieldset: Pengumpulan Data ===
                     Fieldset::make('📋 Informasi Pengumpulan')
                         ->columns(2)
                         ->schema([
@@ -255,7 +321,6 @@ class ImutProfileInfoForm
                                 ->prefixIcon('heroicon-o-beaker'),
                         ]),
 
-                    // === Fieldset: Detail Analisis ===
                     Fieldset::make('📈 Detail Analisis')
                         ->columns(2)
                         ->schema([
@@ -283,7 +348,6 @@ class ImutProfileInfoForm
                                 ->prefixIcon('heroicon-o-arrow-trending-up'),
                         ]),
 
-                    // === Alat & Rencana Analisis ===
                     Fieldset::make('🛠️ Alat & Strategi Analisis')
                         ->columns(1)
                         ->schema([
@@ -302,6 +366,65 @@ class ImutProfileInfoForm
                                 ->helperText('Ceritakan secara ringkas bagaimana analisis dilakukan.'),
                         ]),
                 ]),
+        ];
+    }
+
+    // ==========================================================================
+    // Helper methods for profile schema (local implementations)
+    // ==========================================================================
+
+    protected static function profileOptions($imutDataId): array
+    {
+        if (! $imutDataId) {
+            return [];
+        }
+
+        return ImutProfile::where('imut_data_id', $imutDataId)
+            ->get()
+            ->mapWithKeys(fn($profile) => [$profile->id => (string) $profile->version])
+            ->toArray();
+    }
+
+    protected static function shouldDisableProfileSelection(?object $livewire): bool
+    {
+        $periodNotClosed = $livewire && method_exists($livewire, 'isLaporanPeriodClosed')
+            ? ! $livewire->isLaporanPeriodClosed()
+            : false;
+
+        return $periodNotClosed
+            || (Gate::denies('update_profile_penilaian_imut::penilaian') && Gate::denies('force_editable_imut::penilaian'));
+    }
+
+    protected static function populateProfileFields(callable $set, ?ImutProfile $profile): void
+    {
+        if (! $profile) {
+            self::resetProfileFields($set);
+
+            return;
+        }
+
+        foreach (self::PROFILE_FIELDS as $field) {
+            $set($field, $profile->{$field} ?? null);
+        }
+    }
+
+    protected static function resetProfileFields(callable $set): void
+    {
+        foreach (self::PROFILE_FIELDS as $field) {
+            $set($field, null);
+        }
+    }
+
+    protected static function targetOperatorOptions($targetValue): array
+    {
+        $value = $targetValue ?? '-';
+
+        return [
+            '>=' => "≥ $value",
+            '<=' => "≤ $value",
+            '>' => "> $value",
+            '<' => "< $value",
+            '=' => "= $value",
         ];
     }
 }

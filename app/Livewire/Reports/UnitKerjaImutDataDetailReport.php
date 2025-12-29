@@ -3,23 +3,19 @@
 namespace App\Livewire\Reports;
 
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
-use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSchema;
 use App\Models\ImutCategory;
-use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\UnitKerja;
-use App\Services\Form\FormCalculationService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
+use App\Filament\Traits\ReportDetailAction\BuildIsiPenilaian;
+use App\Filament\Traits\ReportDetailAction\DetailInfoReport;
 use Carbon\Carbon;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\Summarizers\Summarizer;
@@ -30,11 +26,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
-use Illuminate\Support\Str;
-use Juniyasyos\FilamentMediaManager\Models\Folder;
 use Livewire\Component;
 
 class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTable
@@ -43,6 +36,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
     use InteractsWithTable;
     use HasPercentageColor;
     use HasTableHelpers;
+    use BuildIsiPenilaian;
+    use DetailInfoReport;
 
     public ?int $laporanId = null;
 
@@ -78,234 +73,133 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn() => LaporanUnitKerja::getReportByUnitKerjaDetails($this->laporanId, $this->unitKerjaId))
-            ->columns([
-                TextColumn::make('imut_data')
-                    ->label('Imut Data')
-                    ->wrap()
-                    ->lineClamp(2)
-                    ->searchable(query: fn(EloquentBuilder $query, string $search) => $query->where('imut_data.title', 'like', "%{$search}%")),
-
-                TextColumn::make('imut_kategori')
-                    ->label('Imut Kategori')
-                    ->toggleable()
-                    ->sortable()
-                    ->color(fn($record) => $this->getCategoryColor($record->imut_kategori_id))
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->badge(),
-
-                TextColumn::make('imut_profil')
-                    ->label('Imut Profil')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-
-                TextColumn::make('numerator_value')
-                    ->label('N')
-                    ->alignCenter()
-                    ->toggleable()
-                    ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
-                    ->summarize(
-                        Summarizer::make()
-                            ->label('Total N')
-                            ->using(fn(Builder $query) => number_format($query->sum('numerator_value'), 2))
-                    ),
-
-                TextColumn::make('denominator_value')
-                    ->label('D')
-                    ->alignCenter()
-                    ->toggleable()
-                    ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
-                    ->summarize(
-                        Summarizer::make()
-                            ->label('Total D')
-                            ->using(fn(Builder $query) => number_format($query->sum('denominator_value'), 2))
-                    ),
-
-                TextColumn::make('percentage')
-                    ->label('Persentase (%)')
-                    ->alignCenter()
-                    ->toggleable()
-                    ->suffix('%')
-                    ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
-                    ->color(fn($record) => $this->getPercentageColor($record))
-                    ->summarize(
-                        Summarizer::make()
-                            ->label('Total Persentase')
-                            ->using(function (Builder $query) {
-                                $n = $query->sum('numerator_value');
-                                $d = $query->sum('denominator_value');
-
-                                return $d > 0 ? round(($n / $d) * 100, 2) : 0;
-                            })
-                            ->suffix('%')
-                    ),
-
-                TextColumn::make('imut_standard')
-                    ->label('Standar Indikator')
-                    ->suffix('%')
-                    ->toggleable()
-                    ->color('info')
-                    ->badge()
-                    ->alignCenter(),
-            ])
-            ->filters([
-                SelectFilter::make('imut_kategori')
-                    ->label('Imut Kategori')
-                    ->options(fn() => ImutCategory::pluck('short_name', 'id')->toArray())
-                    ->attribute('imut_kategori_id')
-                    ->multiple()
-                    ->placeholder('Semua Kategori'),
-            ])
-            ->headerActions([
-                ExportAction::make()
-                    ->exporter(SummaryUnitKerjaReportDetailExport::class)
-                    ->label(fn() => 'Export Laporan ' . UnitKerja::where('id', $this->unitKerjaId)->value('unit_name'))
-                    ->color('gray'),
-            ])
-            ->actions([
-                $this->buildDetailInfo(),
-                $this->buildIsiPenilaianAction(),
-                // $this->buildLihatDetailAction(),
-            ])
+            ->query($this->getTableQuery())
+            ->columns($this->getTableColumnsArray())
+            ->filters($this->getTableFiltersArray())
+            ->headerActions($this->getTableHeaderActionsArray())
+            ->actions($this->getTableActionsArray())
             ->recordAction('isi_penilaian')
             ->bulkActions([]);
     }
 
-    protected function buildIsiPenilaianAction(): Action
+    protected function getTableQuery()
     {
-        $livewireComponent = $this;
-
-        return Action::make('isi_penilaian')
-            ->label('Isi Penilaian')
-            ->icon('heroicon-o-pencil-square')
-            ->color('primary')
-            ->hiddenLabel()
-            ->button()
-            ->slideOver()
-            ->modalHeading(fn($record) => ($record->imut_data ?? ''))
-            ->modalSubmitActionLabel('Simpan')
-            ->closeModalByClickingAway(false)
-            ->closeModalByEscaping(false)
-            // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
-            ->mountUsing(function (Form $form, $record) {
-                $penilaian = ImutPenilaian::find($record->id);
-                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
-                $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
-
-                $form->fill([
-                    'numerator_value'       => $record->numerator_value ?? null,
-                    'denominator_value'     => $record->denominator_value ?? null,
-                    'analysis'              => $record->analysis ?? '',
-                    'recommendations'       => $record->recommendations ?? '',
-                    'selected_collection'   => $folder?->collection ?? 'default',
-                ]);
-            })
-            ->form(function () use ($livewireComponent) {
-                return [
-                    Section::make('Perhitungan')
-                        ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
-                        ->columns(3),
-
-                    Section::make('Unggah Bukti Pendukung')
-                        ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
-
-                    Section::make('Analisis dan Rekomendasi')
-                        ->schema($this->buildAnalysisSchemaForAction($livewireComponent)),
-                ];
-            })
-            ->action(function ($record, array $data) {
-                $penilaian = ImutPenilaian::find($record->id);
-
-                if (!$penilaian) {
-                    return;
-                }
-
-                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
-                $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
-
-                $penilaian->update([
-                    'numerator_value'   => $data['numerator_value'] ?? null,
-                    'denominator_value' => $data['denominator_value'] ?? null,
-                    'analysis'          => $data['analysis'] ?? null,
-                    'recommendations'   => $data['recommendations'] ?? null,
-                    'selected_collection' => $folder?->collection ?? 'default',
-                ]);
-            })
-            ->successNotificationTitle('Penilaian berhasil disimpan')
-            ->after(fn() => $this->dispatch('$refresh'));
+        return fn() => LaporanUnitKerja::getReportByUnitKerjaDetails($this->laporanId, $this->unitKerjaId);
     }
 
-    protected function buildDetailInfo(): Action
+    /**
+     * Get the table columns array.
+     */
+    protected function getTableColumnsArray(): array
     {
-        $livewireComponent = $this;
+        return [
+            TextColumn::make('imut_data')
+                ->label('Imut Data')
+                ->wrap()
+                ->lineClamp(2)
+                ->searchable(query: fn(EloquentBuilder $query, string $search) => $query->where('imut_data.title', 'like', "%{$search}%")),
 
-        return Action::make('detail_info')
-            ->label('Detail Info')
-            ->icon('heroicon-o-information-circle')
-            ->color('primary')
-            ->slideOver()
-            ->modalHeading(fn($record) => ($record->imut_data ?? ''))
-            ->modalSubmitActionLabel('Simpan')
-            ->closeModalByClickingAway(false)
-            ->closeModalByEscaping(false)
-            // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
-            ->mountUsing(function (Form $form, $record) {
-                $penilaian = ImutPenilaian::find($record->id);
-                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+            TextColumn::make('imut_kategori')
+                ->label('Imut Kategori')
+                ->toggleable()
+                ->sortable()
+                ->color(fn($record) => $this->getCategoryColor($record->imut_kategori_id))
+                ->toggleable(isToggledHiddenByDefault: false)
+                ->badge(),
 
-                $form->fill([
-                    'numerator_value'       => $record->numerator_value ?? null,
-                    'denominator_value'     => $record->denominator_value ?? null,
-                    'analysis'              => $record->analysis ?? '',
-                    'recommendations'       => $record->recommendations ?? '',
-                ]);
-            })
-            ->form(function () use ($livewireComponent) {
-                return [
-                    Section::make('Perhitungan')
-                        ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
-                        ->columns(3),
-                ];
-            })
-            ->action(function ($record, array $data) {
-                $penilaian = ImutPenilaian::find($record->id);
+            TextColumn::make('imut_profil')
+                ->label('Imut Profil')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
 
-                if (!$penilaian) {
-                    return;
-                }
+            TextColumn::make('numerator_value')
+                ->label('N')
+                ->alignCenter()
+                ->toggleable()
+                ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                ->summarize(
+                    Summarizer::make()
+                        ->label('Total N')
+                        ->using(fn(Builder $query) => number_format($query->sum('numerator_value'), 2))
+                ),
 
-                $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
-                $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+            TextColumn::make('denominator_value')
+                ->label('D')
+                ->alignCenter()
+                ->toggleable()
+                ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                ->summarize(
+                    Summarizer::make()
+                        ->label('Total D')
+                        ->using(fn(Builder $query) => number_format($query->sum('denominator_value'), 2))
+                ),
 
-                $penilaian->update([
-                    'numerator_value'   => $data['numerator_value'] ?? null,
-                    'denominator_value' => $data['denominator_value'] ?? null,
-                    'analysis'          => $data['analysis'] ?? null,
-                    'recommendations'   => $data['recommendations'] ?? null,
-                    'selected_collection' => $folder?->collection ?? 'default',
-                ]);
-            })
-            ->successNotificationTitle('Penilaian berhasil disimpan')
-            ->after(fn() => $this->dispatch('$refresh'));
+            TextColumn::make('percentage')
+                ->label('Persentase (%)')
+                ->alignCenter()
+                ->toggleable()
+                ->suffix('%')
+                ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                ->color(fn($record) => $this->getPercentageColor($record))
+                ->summarize(
+                    Summarizer::make()
+                        ->label('Total Persentase')
+                        ->using(function (Builder $query) {
+                            $n = $query->sum('numerator_value');
+                            $d = $query->sum('denominator_value');
+
+                            return $d > 0 ? round(($n / $d) * 100, 2) : 0;
+                        })
+                        ->suffix('%')
+                ),
+
+            TextColumn::make('imut_standard')
+                ->label('Standar Indikator')
+                ->suffix('%')
+                ->toggleable()
+                ->color('info')
+                ->badge()
+                ->alignCenter(),
+        ];
     }
 
-    protected function buildLihatDetailAction(): Action
+    /**
+     * Get the table filters array.
+     */
+    protected function getTableFiltersArray(): array
     {
-        return Action::make('lihat')
-            ->label('Lihat Detail')
-            ->icon('heroicon-o-eye')
-            ->color('info')
-            ->url(fn($record) => $this->getPenilaianUrl($record));
+        return [
+            SelectFilter::make('imut_kategori')
+                ->label('Imut Kategori')
+                ->options(fn() => ImutCategory::pluck('short_name', 'id')->toArray())
+                ->attribute('imut_kategori_id')
+                ->multiple()
+                ->placeholder('Semua Kategori'),
+        ];
     }
 
-    protected function getPenilaianUrl($record): string
+    /**
+     * Get the table header actions array.
+     */
+    protected function getTableHeaderActionsArray(): array
     {
-        $laporanSlug = LaporanImut::findOrFail($record->laporan_imut_id)->slug;
+        return [
+            ExportAction::make()
+                ->exporter(SummaryUnitKerjaReportDetailExport::class)
+                ->label(fn() => 'Export Laporan ' . UnitKerja::where('id', $this->unitKerjaId)->value('unit_name'))
+                ->color('gray'),
+        ];
+    }
 
-        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-            'laporanSlug' => $laporanSlug,
-            'record' => $record->id,
-        ]);
+    /**
+     * Get the table actions array.
+     */
+    protected function getTableActionsArray(): array
+    {
+        return [
+            $this->buildDetailInfo(),
+            $this->buildIsiPenilaianAction(),
+        ];
     }
 
     protected function buildPerhitunganSchemaForAction($livewireComponent): array
@@ -342,52 +236,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         ];
     }
 
-    protected function buildAnalysisSchemaForAction($livewireComponent): array
-    {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
-        $canRecommend = Gate::allows('create_recommendation_penilaian_imut::penilaian') || Gate::allows('force_editable_imut::penilaian');
-
-        return [
-            Textarea::make('analysis')
-                ->label('Analisis')
-                ->rows(4)
-                ->required()
-                ->minLength(20)
-                ->maxLength(100000)
-                ->readOnly($shouldLock)
-                ->live(onBlur: true)
-                ->placeholder('Tuliskan hasil analisis lengkap minimal 20 karakter. Contoh: Berdasarkan data yang terkumpul, tingkat kepatuhan cuci tangan masih rendah karena...')
-                ->helperText(function ($state) {
-                    $length = strlen($state ?? '');
-                    $remaining = max(0, 20 - $length);
-                    if ($remaining > 0) {
-                        return "Minimal 20 karakter. Kurang {$remaining} karakter lagi. ({$length}/20)";
-                    }
-                    return "Karakter: {$length}/100000";
-                })
-                ->columnSpanFull(),
-
-            Textarea::make('recommendations')
-                ->label('Rekomendasi')
-                ->required()
-                ->minLength(20)
-                ->maxLength(100000)
-                ->disabled(!$canRecommend)
-                ->rows(4)
-                ->live(onBlur: true)
-                ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
-                ->helperText(function ($state) {
-                    $length = strlen($state ?? '');
-                    $remaining = max(0, 20 - $length);
-                    if ($remaining > 0) {
-                        return "Minimal 20 karakter. Kurang {$remaining} karakter lagi. ({$length}/20)";
-                    }
-                    return "Karakter: {$length}/100000";
-                })
-                ->columnSpanFull(),
-        ];
-    }
-
     protected function getMediaUploadFieldForAction($livewireComponent): array
     {
         $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
@@ -413,12 +261,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ])
                 ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
         ];
-    }
-
-    protected function updateResultForAction(callable $set, callable $get): void
-    {
-        $formCalculationService = app(FormCalculationService::class);
-        $formCalculationService->updatePenilaianResult($set, $get);
     }
 
     public function isLaporanPeriodClosed(): bool
