@@ -12,7 +12,7 @@ class FormTemplate extends Model
     use HasFactory;
 
     protected $fillable = [
-        'imut_data_id',
+        'imut_profile_id',
         'title',
         'description',
         'compliance_method',
@@ -25,9 +25,9 @@ class FormTemplate extends Model
         'scoring_config' => 'array',
     ];
 
-    public function imutData(): BelongsTo
+    public function imutProfile(): BelongsTo
     {
-        return $this->belongsTo(ImutData::class);
+        return $this->belongsTo(ImutProfile::class);
     }
 
     public function formFields(): HasMany

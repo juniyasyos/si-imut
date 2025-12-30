@@ -154,15 +154,16 @@ class ImutProfile extends Model
     {
         $checkDate = is_string($date) ? \Carbon\Carbon::parse($date)->toDateString() : $date->toDateString();
 
-        return $query->where(function($q) use ($checkDate) {
-                        $q->whereNull('valid_from')
-                          ->orWhere('valid_from', '<=', $checkDate);
-                    })
-                    ->where(function($q) use ($checkDate) {
-                        $q->whereNull('valid_until')
-                          ->orWhere('valid_until', '>=', $checkDate);
-                    });
-    }    /**
+        return $query->where(function ($q) use ($checkDate) {
+            $q->whereNull('valid_from')
+                ->orWhere('valid_from', '<=', $checkDate);
+        })
+            ->where(function ($q) use ($checkDate) {
+                $q->whereNull('valid_until')
+                    ->orWhere('valid_until', '>=', $checkDate);
+            });
+    }
+    /**
      * Scope untuk profil yang valid pada periode tertentu
      */
     public function scopeValidForPeriod($query, $startDate, $endDate)
@@ -170,16 +171,16 @@ class ImutProfile extends Model
         $start = is_string($startDate) ? \Carbon\Carbon::parse($startDate)->startOfDay() : $startDate;
         $end = is_string($endDate) ? \Carbon\Carbon::parse($endDate)->endOfDay() : $endDate;
 
-        return $query->where(function($q) use ($end) {
-                        // Profil harus sudah mulai berlaku sebelum atau pada akhir periode
-                        $q->whereNull('valid_from')
-                          ->orWhere('valid_from', '<=', $end->toDateString());
-                    })
-                    ->where(function($q) use ($start) {
-                        // Profil harus belum berakhir setelah atau pada awal periode
-                        $q->whereNull('valid_until')
-                          ->orWhere('valid_until', '>=', $start->toDateString());
-                    });
+        return $query->where(function ($q) use ($end) {
+            // Profil harus sudah mulai berlaku sebelum atau pada akhir periode
+            $q->whereNull('valid_from')
+                ->orWhere('valid_from', '<=', $end->toDateString());
+        })
+            ->where(function ($q) use ($start) {
+                // Profil harus belum berakhir setelah atau pada awal periode
+                $q->whereNull('valid_until')
+                    ->orWhere('valid_until', '>=', $start->toDateString());
+            });
     }
 
     /**
@@ -243,6 +244,14 @@ class ImutProfile extends Model
     public function imutData()
     {
         return $this->belongsTo(ImutData::class);
+    }
+
+    /**
+     * Get the form templates for this profile.
+     */
+    public function formTemplates()
+    {
+        return $this->hasMany(FormTemplate::class);
     }
 
     public function penilaian()
