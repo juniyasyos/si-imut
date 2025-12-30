@@ -33,12 +33,7 @@ class EditImutData extends EditRecord
                     ->icon('heroicon-s-chart-bar')
                     ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
-                Action::make('manage_form_builder')
-                    ->label('Form Laporan Harian')
-                    ->color('info')
-                    ->icon('heroicon-s-document-text')
-                    ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', ['record' => $record]))
-                    ->visible(fn($record) => self::canEditProfilIndikator($record)),
+                // Removed: manage_form_builder moved to ImutProfile
             ])
                 ->button()
                 ->label('Laporan & Grafik')

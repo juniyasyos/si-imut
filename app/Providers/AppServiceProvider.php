@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;
+use App\Models\ImutProfile;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
 use App\Observers\ImutBenchmarkingObserver;
 use App\Observers\ImutDataObserver;
 use App\Observers\ImutPenilaianObserver;
+use App\Observers\ImutProfileObserver;
 use App\Observers\LaporanImutObserver;
 use App\Observers\MediaObserver;
 use App\Observers\UnitKerjaObserver;
@@ -127,6 +129,7 @@ class AppServiceProvider extends ServiceProvider
         Media::observe(MediaObserver::class);
         ImutBenchmarking::observe(ImutBenchmarkingObserver::class);
         ImutData::observe(ImutDataObserver::class);
+        ImutProfile::observe(ImutProfileObserver::class);
         LaporanImut::observe(LaporanImutObserver::class);
         ImutPenilaian::observe(ImutPenilaianObserver::class);
     }

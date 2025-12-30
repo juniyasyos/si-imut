@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\ImutData;
 use App\Models\ImutCategory;
+use App\Models\ImutProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -14,7 +15,7 @@ class TestImutDataFormTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('🧪 Testing automatic FormTemplate creation...');
+        $this->command->info('🧪 Testing automatic FormTemplate creation on ImutProfile...');
 
         // Get or create test category
         $category = ImutCategory::firstOrCreate(
@@ -65,7 +66,7 @@ class TestImutDataFormTemplateSeeder extends Seeder
 
             $this->command->info("Creating ImutData: {$testCase['title']}");
 
-            // Create ImutData - observer will automatically create FormTemplate
+            // Create ImutData - then create ImutProfile which will auto-create FormTemplate
             $imutData = ImutData::create([
                 'title' => $testCase['title'],
                 'description' => $testCase['description'],
@@ -76,8 +77,30 @@ class TestImutDataFormTemplateSeeder extends Seeder
 
             $this->command->info("✅ Created ImutData ID: {$imutData->id}");
 
+            // Create ImutProfile - observer will automatically create FormTemplate
+            $imutProfile = ImutProfile::create([
+                'imut_data_id' => $imutData->id,
+                'version' => 'v1.0',
+                'valid_from' => now()->toDateString(),
+                'valid_until' => now()->addMonths(6)->toDateString(),
+                'rationale' => 'Test profile for ' . $imutData->title,
+                'objective' => 'Test objective',
+                'operational_definition' => 'Test definition',
+                'indicator_type' => 'process',
+                'numerator_formula' => 'Test formula',
+                'denominator_formula' => 'Test formula',
+                'data_source' => 'Test source',
+                'data_collection_frequency' => 'monthly',
+                'analysis_plan' => 'Test plan',
+                'target_operator' => '>=',
+                'target_value' => 80,
+                'responsible_person' => 'Test Person',
+            ]);
+
+            $this->command->info("✅ Created ImutProfile ID: {$imutProfile->id}");
+
             // Check if FormTemplate was created
-            $formTemplates = $imutData->formTemplates;
+            $formTemplates = $imutProfile->formTemplates;
             if ($formTemplates->count() > 0) {
                 $this->command->info("✅ FormTemplate auto-created: {$formTemplates->first()->title}");
                 $this->command->info("   - Fields count: {$formTemplates->first()->formFields->count()}");

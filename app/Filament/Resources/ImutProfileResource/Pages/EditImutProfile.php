@@ -63,6 +63,13 @@ class EditImutProfile extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('manage_form_builder')
+                ->label('Form Laporan Harian')
+                ->color('info')
+                ->icon('heroicon-s-document-text')
+                ->url(fn($record) => ImutProfileResource::getUrl('manage-form-builder', ['record' => $record]))
+                ->visible(fn($record) => static::canEditProfilIndikator($record)),
+
             DeleteAction::make()
                 ->visible(fn() => static::canEditProfilIndikator($this->record)),
         ];

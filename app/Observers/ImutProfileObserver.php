@@ -2,37 +2,36 @@
 
 namespace App\Observers;
 
-use App\Models\ImutData;
+use App\Models\ImutProfile;
 use App\Models\FormTemplate;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
-class ImutDataObserver
+class ImutProfileObserver
 {
     /**
-     * Handle the ImutData "created" event.
+     * Handle the ImutProfile "created" event.
      */
-    public function created(ImutData $imutData): void
+    public function created(ImutProfile $imutProfile): void
     {
-        // FormTemplate creation moved to ImutProfileObserver
-        // $this->createFormTemplate($imutData);
-        Log::info("✅ ImutData created: ID {$imutData->id}");
+        $this->createFormTemplate($imutProfile);
+        Log::info("✅ ImutProfile created: ID {$imutProfile->id} - FormTemplate auto-created");
     }
 
     /**
-     * Create FormTemplate automatically when ImutData is created
+     * Create FormTemplate automatically when ImutProfile is created
      */
-    private function createFormTemplate(ImutData $imutData): void
+    private function createFormTemplate(ImutProfile $imutProfile): void
     {
         // First try to find JSON configuration based on ImutData title
-        $jsonConfig = $this->findJsonConfigByTitle($imutData->title);
+        $jsonConfig = $this->findJsonConfigByTitle($imutProfile->imutData->title);
 
         if ($jsonConfig) {
-            $this->createTemplateFromJson($imutData, $jsonConfig);
+            $this->createTemplateFromJson($imutProfile, $jsonConfig);
         } else {
-            $this->createDefaultYesNoTemplate($imutData);
+            $this->createDefaultYesNoTemplate($imutProfile);
         }
     }
 
@@ -148,15 +147,15 @@ class ImutDataObserver
     /**
      * Create FormTemplate from JSON configuration
      */
-    private function createTemplateFromJson(ImutData $imutData, array $jsonConfig): void
+    private function createTemplateFromJson(ImutProfile $imutProfile, array $jsonConfig): void
     {
         $templateData = $jsonConfig['form_template'];
 
         // Create FormTemplate
         $formTemplate = FormTemplate::create([
-            'imut_data_id' => $imutData->id,
+            'imut_profile_id' => $imutProfile->id,
             'title' => $templateData['title'],
-            'description' => $templateData['description'] ?? "Template untuk {$imutData->title}",
+            'description' => $templateData['description'] ?? "Template untuk {$imutProfile->imutData->title}",
             'compliance_method' => $templateData['compliance_method'] ?? 'auto_calculate',
             'auto_fail_on_critical' => $templateData['auto_fail_on_critical'] ?? false,
             'scoring_config' => $templateData['scoring_config'] ?? null,
@@ -196,19 +195,19 @@ class ImutDataObserver
             }
         }
 
-        Log::info("FormTemplate created from JSON for ImutData: {$imutData->title}");
+        Log::info("FormTemplate created from JSON for ImutProfile: {$imutProfile->imutData->title} - Version: {$imutProfile->version}");
     }
 
     /**
      * Create default Yes/No template when no JSON config is found
      */
-    private function createDefaultYesNoTemplate(ImutData $imutData): void
+    private function createDefaultYesNoTemplate(ImutProfile $imutProfile): void
     {
         // Create FormTemplate
         $formTemplate = FormTemplate::create([
-            'imut_data_id' => $imutData->id,
-            'title' => "Form {$imutData->title}",
-            'description' => "Template default untuk {$imutData->title} dengan pilihan Ya/Tidak",
+            'imut_profile_id' => $imutProfile->id,
+            'title' => "Form {$imutProfile->imutData->title} - {$imutProfile->version}",
+            'description' => "Template default untuk {$imutProfile->imutData->title} versi {$imutProfile->version} dengan pilihan Ya/Tidak",
             'compliance_method' => 'auto_calculate',
             'auto_fail_on_critical' => false,
         ]);
@@ -245,6 +244,6 @@ class ImutDataObserver
             'order_index' => 2,
         ]);
 
-        Log::info("Default Yes/No FormTemplate created for ImutData: {$imutData->title}");
+        Log::info("Default Yes/No FormTemplate created for ImutProfile: {$imutProfile->imutData->title} - Version: {$imutProfile->version}");
     }
 }

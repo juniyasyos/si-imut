@@ -64,7 +64,9 @@ class ImutProfileResource extends Resource implements HasShieldPermissions
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\FormTemplatesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
