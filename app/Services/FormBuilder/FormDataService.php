@@ -3,16 +3,16 @@
 namespace App\Services\FormBuilder;
 
 use App\Models\FormTemplate;
-use App\Models\ImutData;
+use App\Models\ImutProfile;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
 use Illuminate\Support\Str;
 
 class FormDataService
 {
-    public function loadFormData(ImutData $record): array
+    public function loadFormData(ImutProfile $record): array
     {
-        $formTemplate = FormTemplate::where('imut_data_id', $record->id)->first();
+        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
         return $this->loadFromFormTemplate($formTemplate);
     }
 

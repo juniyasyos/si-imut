@@ -2,7 +2,7 @@
 
 namespace App\Services\FormBuilder;
 
-use App\Models\ImutData;
+use App\Models\ImutProfile;
 use App\Models\FormTemplate;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
@@ -11,23 +11,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class FormPersistenceService
 {
-    public function saveFormData(ImutData $record, array $data): void
+    public function saveFormData(ImutProfile $record, array $data): void
     {
         // Keep cleanup of legacy data, but persist only the enhanced format (FormTemplate)
         $this->cleanupOldData($record);
         $this->saveToEnhancedFormat($record, $data);
     }
 
-    private function cleanupOldData(ImutData $record): void
+    private function cleanupOldData(ImutProfile $record): void
     {
         // Hapus data lama jika ada
-        FormTemplate::where('imut_data_id', $record->id)->delete();
+        FormTemplate::where('imut_profile_id', $record->id)->delete();
     }
 
-    private function saveToEnhancedFormat(ImutData $record, array $data): void
+    private function saveToEnhancedFormat(ImutProfile $record, array $data): void
     {
         $formTemplate = FormTemplate::create([
-            'imut_data_id' => $record->id,
+            'imut_profile_id' => $record->id,
             'title' => $data['title'],
             'description' => $data['description'],
             'compliance_method' => $data['compliance_method'],
@@ -131,9 +131,9 @@ class FormPersistenceService
         return $formatted;
     }
 
-    public function calculateAndUpdateCompliance(ImutData $record): void
+    public function calculateAndUpdateCompliance(ImutProfile $record): void
     {
-        $formTemplate = FormTemplate::where('imut_data_id', $record->id)->first();
+        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
 
         if ($formTemplate) {
             $complianceScore = $formTemplate->calculateCompliance([]);

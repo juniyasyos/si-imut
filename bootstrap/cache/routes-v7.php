@@ -1090,7 +1090,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::o68Xqep2PPMR2WrO',
+            '_route' => 'generated::Z2MqpuGJBS5SR7kk',
           ),
           1 => NULL,
           2 => 
@@ -1110,7 +1110,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::9V9SyLLYWrtDD2wr',
+            '_route' => 'generated::V1ygjuPw0EWP8iOs',
           ),
           1 => NULL,
           2 => 
@@ -1188,7 +1188,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Csug75Bze1AM3fCi',
+            '_route' => 'generated::clO4YI8tOiNOJ2R7',
           ),
           1 => NULL,
           2 => 
@@ -1208,7 +1208,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::wtYsu0Pkm76feFCw',
+            '_route' => 'generated::Qq1uqaqrWRYyWLn9',
           ),
           1 => NULL,
           2 => 
@@ -1228,7 +1228,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::N8aWX5Gz5CI0qJR3',
+            '_route' => 'generated::Q2JMtiCEbUjKllvJ',
           ),
           1 => NULL,
           2 => 
@@ -1248,7 +1248,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::taZict9sp425IkIF',
+            '_route' => 'generated::3eNP7Gzam5MYrzNH',
           ),
           1 => NULL,
           2 => 
@@ -1485,7 +1485,7 @@ app('router')->setCompiledRoutes(
     ),
     2 => 
     array (
-      0 => '{^(?|/_debugbar/c(?|lockwork/([^/]++)(*:39)|ache/([^/]++)(?:/([^/]++))?(*:73))|/oauth/callback/([^/]++)(*:105)|/filament(?|/(?|exports/([^/]++)/download(*:154)|imports/([^/]++)/failed\\-rows/download(*:200))|\\-excel/(.*)(*:221))|/s(?|iimut/(?|activitylogs/([^/]++)(*:265)|daily\\-report\\-entries/([^/]++)(?|(*:307)|/edit(*:320))|folders/([^/]++)(?|(*:348)|/media(*:362))|imut\\-(?|categor(?|ies/([^/]++)/edit(*:407)|y\\-resource/(?|schema/imut\\-categories/([^/]++)/edit(*:467)|tables/imut\\-categories/([^/]++)/edit(*:512)))|datas/(?|edit\\=([^/]++)(*:545)|([^/]++)/(?|profile/(?|create(*:582)|edit\\=([^/]++)(*:604))|form\\-builder(?|(*:629)|/preview(*:645)))))|laporan\\-imuts/([^/]++)/edit(*:685)|shield/roles/([^/]++)(?|(*:717)|/edit(*:730))|u(?|nit\\-kerjas/([^/]++)/edit(*:768)|ser(?|s/([^/]++)(?|(*:795)|/edit(*:808))|\\-resource/(?|schema/users/([^/]++)(?|(*:855)|/edit(*:868))|tables/users/([^/]++)(?|(*:901)|/edit(*:914))))))|torage/(.*)(*:938))|/livewire/preview\\-file/([^/]++)(*:979)|/api/greeting/quote(?:/([^/]++))?(*:1020))/?$}sDu',
+      0 => '{^(?|/_debugbar/c(?|lockwork/([^/]++)(*:39)|ache/([^/]++)(?:/([^/]++))?(*:73))|/oauth/callback/([^/]++)(*:105)|/filament(?|/(?|exports/([^/]++)/download(*:154)|imports/([^/]++)/failed\\-rows/download(*:200))|\\-excel/(.*)(*:221))|/s(?|iimut/(?|activitylogs/([^/]++)(*:265)|daily\\-report\\-entries/([^/]++)(?|(*:307)|/edit(*:320))|folders/([^/]++)(?|(*:348)|/media(*:362))|imut\\-(?|categor(?|ies/([^/]++)/edit(*:407)|y\\-resource/(?|schema/imut\\-categories/([^/]++)/edit(*:467)|tables/imut\\-categories/([^/]++)/edit(*:512)))|datas/(?|edit\\=([^/]++)(*:545)|([^/]++)/(?|profile/(?|create(*:582)|edit\\=([^/]++)(*:604))|form\\-builder(?|(*:629)|/preview(*:645))))|profile(?|s/([^/]++)/form\\-builder(?|(*:693)|/preview(*:709))|\\-resource/(?|schema/imut\\-profiles/([^/]++)/form\\-builder(?|(*:779)|/preview(*:795))|tables/imut\\-profiles/([^/]++)/form\\-builder(?|(*:851)|/preview(*:867)))))|laporan\\-imuts/([^/]++)/edit(*:907)|shield/roles/([^/]++)(?|(*:939)|/edit(*:952))|u(?|nit\\-kerjas/([^/]++)/edit(*:990)|ser(?|s/([^/]++)(?|(*:1017)|/edit(*:1031))|\\-resource/(?|schema/users/([^/]++)(?|(*:1079)|/edit(*:1093))|tables/users/([^/]++)(?|(*:1127)|/edit(*:1141))))))|torage/(.*)(*:1166))|/livewire/preview\\-file/([^/]++)(*:1208)|/api/greeting/quote(?:/([^/]++))?(*:1250))/?$}sDu',
     ),
     3 => 
     array (
@@ -1929,13 +1929,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      685 => 
+      693 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.siimut.resources.laporan-imuts.edit',
+            '_route' => 'filament.siimut.resources.imut-profiles.manage-form-builder',
           ),
           1 => 
           array (
@@ -1952,36 +1952,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      717 => 
+      709 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.siimut.resources.shield.roles.view',
-          ),
-          1 => 
-          array (
-            0 => 'record',
-          ),
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      730 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'filament.siimut.resources.shield.roles.edit',
+            '_route' => 'filament.siimut.resources.imut-profiles.preview-form',
           ),
           1 => 
           array (
@@ -1998,13 +1975,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      768 => 
+      779 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'filament.siimut.resources.unit-kerjas.edit',
+            '_route' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.manage-form-builder',
           ),
           1 => 
           array (
@@ -2027,6 +2004,167 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
+            '_route' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.preview-form',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      851 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.manage-form-builder',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      867 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.preview-form',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      907 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.laporan-imuts.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      939 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.shield.roles.view',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      952 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.shield.roles.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      990 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.unit-kerjas.edit',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1017 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
             '_route' => 'filament.siimut.resources.users.view',
           ),
           1 => 
@@ -2044,7 +2182,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      808 => 
+      1031 => 
       array (
         0 => 
         array (
@@ -2067,7 +2205,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      855 => 
+      1079 => 
       array (
         0 => 
         array (
@@ -2090,7 +2228,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      868 => 
+      1093 => 
       array (
         0 => 
         array (
@@ -2113,7 +2251,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      901 => 
+      1127 => 
       array (
         0 => 
         array (
@@ -2136,7 +2274,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      914 => 
+      1141 => 
       array (
         0 => 
         array (
@@ -2159,7 +2297,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      938 => 
+      1166 => 
       array (
         0 => 
         array (
@@ -2182,7 +2320,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      979 => 
+      1208 => 
       array (
         0 => 
         array (
@@ -2205,13 +2343,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1020 => 
+      1250 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'generated::VJdbj1vb0cHbbFYC',
+            '_route' => 'generated::qIlfpYfZ9sXL21M0',
             'timeKey' => NULL,
           ),
           1 => 
@@ -4538,6 +4676,116 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'filament.siimut.resources.imut-profiles.manage-form-builder' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profiles/{record}/form-builder',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder',
+        'as' => 'filament.siimut.resources.imut-profiles.manage-form-builder',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'filament.siimut.resources.imut-profiles.preview-form' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profiles/{record}/form-builder/preview',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder',
+        'as' => 'filament.siimut.resources.imut-profiles.preview-form',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.index' => 
     array (
       'methods' => 
@@ -4592,6 +4840,116 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.manage-form-builder' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profile-resource/schema/imut-profiles/{record}/form-builder',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder',
+        'as' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.manage-form-builder',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profile-resource/schema/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.preview-form' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profile-resource/schema/imut-profiles/{record}/form-builder/preview',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder',
+        'as' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.preview-form',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profile-resource/schema/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.index' => 
     array (
       'methods' => 
@@ -4641,6 +4999,116 @@ app('router')->setCompiledRoutes(
       ),
       'bindingFields' => 
       array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.manage-form-builder' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profile-resource/tables/imut-profiles/{record}/form-builder',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder',
+        'as' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.manage-form-builder',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profile-resource/tables/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.preview-form' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profile-resource/tables/imut-profiles/{record}/form-builder/preview',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder',
+        'as' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.preview-form',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profile-resource/tables/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
       ),
       'lockSeconds' => NULL,
       'waitSeconds' => NULL,
@@ -6391,7 +6859,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::o68Xqep2PPMR2WrO' => 
+    'generated::Z2MqpuGJBS5SR7kk' => 
     array (
       'methods' => 
       array (
@@ -6403,7 +6871,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
-        'as' => 'generated::o68Xqep2PPMR2WrO',
+        'as' => 'generated::Z2MqpuGJBS5SR7kk',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6419,7 +6887,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::9V9SyLLYWrtDD2wr' => 
+    'generated::V1ygjuPw0EWP8iOs' => 
     array (
       'methods' => 
       array (
@@ -6431,7 +6899,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
-        'as' => 'generated::9V9SyLLYWrtDD2wr',
+        'as' => 'generated::V1ygjuPw0EWP8iOs',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6520,7 +6988,7 @@ app('router')->setCompiledRoutes(
         \\response()
             ->download($path, $filename)
             ->deleteFileAfterSend();
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000014f40000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"0000000000000f2a0000000000000000";}}',
         'middleware' => 
         array (
           0 => 'web',
@@ -6596,7 +7064,7 @@ app('router')->setCompiledRoutes(
     return \\redirect(
         \\session()->pull(\'impersonate.back_to\')
     );
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016e20000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000011180000000000000000";}}',
         'as' => 'filament-impersonate.leave',
         'middleware' => 
         array (
@@ -6617,7 +7085,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Csug75Bze1AM3fCi' => 
+    'generated::clO4YI8tOiNOJ2R7' => 
     array (
       'methods' => 
       array (
@@ -6634,13 +7102,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:77:"function (\\Illuminate\\Http\\Request $request) {
     return $request->user();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000017630000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000011990000000000000000";}}',
         'namespace' => NULL,
         'prefix' => 'api',
         'where' => 
         array (
         ),
-        'as' => 'generated::Csug75Bze1AM3fCi',
+        'as' => 'generated::clO4YI8tOiNOJ2R7',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6656,7 +7124,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::wtYsu0Pkm76feFCw' => 
+    'generated::Qq1uqaqrWRYyWLn9' => 
     array (
       'methods' => 
       array (
@@ -6677,7 +7145,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::wtYsu0Pkm76feFCw',
+        'as' => 'generated::Qq1uqaqrWRYyWLn9',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6693,7 +7161,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::VJdbj1vb0cHbbFYC' => 
+    'generated::qIlfpYfZ9sXL21M0' => 
     array (
       'methods' => 
       array (
@@ -6714,7 +7182,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::VJdbj1vb0cHbbFYC',
+        'as' => 'generated::qIlfpYfZ9sXL21M0',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6730,7 +7198,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::N8aWX5Gz5CI0qJR3' => 
+    'generated::Q2JMtiCEbUjKllvJ' => 
     array (
       'methods' => 
       array (
@@ -6751,7 +7219,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::N8aWX5Gz5CI0qJR3',
+        'as' => 'generated::Q2JMtiCEbUjKllvJ',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6767,7 +7235,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::taZict9sp425IkIF' => 
+    'generated::3eNP7Gzam5MYrzNH' => 
     array (
       'methods' => 
       array (
@@ -6795,8 +7263,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/juni/projects/SIIMUT/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000017620000000000000000";}}',
-        'as' => 'generated::taZict9sp425IkIF',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000011980000000000000000";}}',
+        'as' => 'generated::3eNP7Gzam5MYrzNH',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6993,7 +7461,7 @@ app('router')->setCompiledRoutes(
             // Development: Redirect to custom login
             return \\redirect(\'/siimut/login\');
         }
-    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000017600000000000000000";}}',
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000011960000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -7168,7 +7636,7 @@ app('router')->setCompiledRoutes(
             \'cookies\' => \\request()->cookies->all(),
             \'laravel_session_cookie\' => \\request()->cookie(\'laravel_session\'),
         ]);
-    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000175d0000000000000000";}}',
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000011930000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -7206,7 +7674,7 @@ app('router')->setCompiledRoutes(
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000017070000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000113d0000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,
@@ -7241,7 +7709,7 @@ app('router')->setCompiledRoutes(
                         \'spec\' => $generator($config),
                         \'config\' => $config,
                     ]);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000017540000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000118a0000000000000000";}}',
         'as' => 'scramble.docs.ui',
         'middleware' => 
         array (
@@ -7276,7 +7744,7 @@ app('router')->setCompiledRoutes(
                     $config = \\Dedoc\\Scramble\\Scramble::getGeneratorConfig($api);
 
                     return response()->json($generator($config), options: JSON_PRETTY_PRINT);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000176a0000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000011a00000000000000000";}}',
         'as' => 'scramble.docs.document',
         'middleware' => 
         array (
