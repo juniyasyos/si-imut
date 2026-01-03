@@ -70,6 +70,13 @@ class EditImutProfile extends EditRecord
                 ->url(fn($record) => ImutProfileResource::getUrl('manage-form-builder', ['record' => $record]))
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
+            Action::make('daily_reports')
+                ->label('Lihat Laporan Harian')
+                ->color('success')
+                ->icon('heroicon-s-document-chart-bar')
+                ->url(fn($record) => ImutProfileResource::getUrl('list-daily-reports', ['record' => $record]))
+                ->visible(fn($record) => static::canEditProfilIndikator($record)),
+
             DeleteAction::make()
                 ->visible(fn() => static::canEditProfilIndikator($this->record)),
         ];

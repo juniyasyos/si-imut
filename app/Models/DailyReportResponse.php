@@ -13,7 +13,6 @@ class DailyReportResponse extends Model
 
     protected $fillable = [
         'form_template_id',
-        'form_template_id',
         'unit_kerja_id',
         'submitted_by',
         'report_date',
@@ -44,7 +43,12 @@ class DailyReportResponse extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    public function submittedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
     }
 
     public function fieldResponses(): HasMany

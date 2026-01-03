@@ -2056,7 +2056,7 @@
   ),
   'debugbar' => 
   array (
-    'enabled' => false,
+    'enabled' => true,
     'hide_empty_tabs' => true,
     'except' => 
     array (

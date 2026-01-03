@@ -1,4 +1,7 @@
-<td x-show="shouldShowCell({{ $day }})" class="px-3 py-3" :class="filterPeriod === 'today' ? 'min-w-[460px] h-28 p-4' : 'w-12 h-16'" style="border-color: #f3f4f6; {{ $isToday ? 'background-color: rgba(37, 99, 235, 0.05);' : '' }}">
+<td x-show="shouldShowCell({{ $day }})"
+    class="px-2 py-2 border border-gray-200 dark:border-gray-700"
+    :class="filterPeriod === 'today' ? 'min-w-[400px] h-24 p-4' : 'w-16 h-16'"
+    style="{{ $isToday ? 'background-color: rgba(37, 99, 235, 0.05);' : '' }}">
     {{-- State: DONE (Sudah diisi) --}}
     @if($state === 'done')
     <div x-data="{ showPopover: false }" class="relative">
@@ -7,25 +10,21 @@
             @mouseenter="showPopover = true"
             @mouseleave="showPopover = false"
             class="w-full group">
-            <div class="flex flex-col items-center justify-center px-8 py-3 rounded-lg transition-all duration-200"
-                style="{{ $isToday
-                    ? 'background-color: #dcfce7; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);'
-                    : 'background-color: #f0fdf4;' }}"
-                @if(!$isToday)
-                onmouseover="this.style.backgroundColor='#dcfce7'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';"
-                onmouseout="this.style.backgroundColor='#f0fdf4'; this.style.boxShadow='';"
-                @endif>
-                <x-heroicon-m-check-circle class="w-7 h-7 mb-1.5" style="color: #16a34a;" />
+            <div class="flex flex-col items-center justify-center px-2 py-3 rounded-lg transition-all duration-200 {{ $isToday ? 'ring-2 ring-primary-300 dark:ring-primary-700' : '' }}"
+                style="background-color: #f0fdf4;">
+                <div class="flex items-center justify-center w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-lg mb-1">
+                    @svg("heroicon-m-check-circle", "w-6 h-6 text-green-600 dark:text-green-400")
+                </div>
                 @if($summary)
-                <span class="text-base font-bold leading-tight" style="color: #15803d;">
+                <span class="text-xs font-semibold text-gray-900 dark:text-white">
                     {{ $summary['percentage'] }}%
                 </span>
-                <span class="text-xs mt-0.5" style="color: #16a34a; opacity: 0.8;">
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">
                     {{ $summary['numerator'] }}/{{ $summary['denominator'] }}
                 </span>
                 @endif
                 @if($cellData && $cellData['count'] > 1)
-                <span class="mt-1 px-2 py-0.5 text-[10px] font-semibold rounded-full" style="background-color: #16a34a; color: #ffffff;">
+                <span class="mt-1 px-2 py-0.5 text-[9px] font-bold rounded-full bg-green-100 text-green-700">
                     {{ $cellData['count'] }}x
                 </span>
                 @endif
@@ -44,27 +43,27 @@
             x-transition:leave-end="opacity-0"
             class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-[60] pointer-events-none"
             style="display: none;">
-            <div class="text-xs rounded-lg shadow-xl p-3 min-w-[180px]" style="background-color: #111827; color: #ffffff;">
+            <div class="text-xs rounded-lg shadow-xl p-3 min-w-[180px] bg-gray-800 dark:bg-gray-900 text-white">
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
-                        <span style="color: #d1d5db;">Numerator:</span>
-                        <span class="font-bold" style="color: #ffffff;">{{ $summary['numerator'] }}</span>
+                        <span class="text-gray-300">Numerator:</span>
+                        <span class="font-bold text-white">{{ $summary['numerator'] }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span style="color: #d1d5db;">Denominator:</span>
-                        <span class="font-bold" style="color: #ffffff;">{{ $summary['denominator'] }}</span>
+                        <span class="text-gray-300">Denominator:</span>
+                        <span class="font-bold text-white">{{ $summary['denominator'] }}</span>
                     </div>
-                    <div class="pt-2 flex justify-between items-center" style="border-top: 1px solid #4b5563;">
-                        <span style="color: #d1d5db;">Persentase:</span>
-                        <span class="font-bold" style="color: #4ade80;">{{ $summary['percentage'] }}%</span>
+                    <div class="pt-2 flex justify-between items-center border-t border-gray-600">
+                        <span class="text-gray-300">Persentase:</span>
+                        <span class="font-bold text-green-400">{{ $summary['percentage'] }}%</span>
                     </div>
-                    <div class="text-center pt-1" style="border-top: 1px solid #4b5563;">
-                        <span class="text-[10px]" style="color: #9ca3af;">{{ $summary['count'] }} laporan harian</span>
+                    <div class="text-center pt-1 border-t border-gray-600">
+                        <span class="text-[10px] text-gray-400">{{ $summary['count'] }} laporan harian</span>
                     </div>
                 </div>
                 <!-- Arrow -->
                 <div class="absolute top-full left-1/2 transform -translate-x-1/2">
-                    <div style="border: 6px solid transparent; border-top-color: #111827;"></div>
+                    <div class="border-l-6 border-r-6 border-t-6 border-transparent border-t-gray-800"></div>
                 </div>
             </div>
         </div>
@@ -76,37 +75,37 @@
     <button
         wire:click="openSlideOver({{ $indicatorId }}, '{{ $dateStr }}')"
         class="w-full group">
-        <div class="flex flex-col items-center justify-center px-8 py-3 rounded-lg transition-all duration-200"
-            style="{{ $isToday 
-                ? 'background-color: #ffedd5; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5); color: #c2410c;' 
-                : 'background-color: #f97316; color: #ffffff;' }}"
-            @if(!$isToday)
-            onmouseover="this.style.backgroundColor='#ea580c'; this.style.boxShadow='0 10px 15px rgba(0,0,0,0.1)'; this.style.transform='scale(1.05)';"
-            onmouseout="this.style.backgroundColor='#f97316'; this.style.boxShadow=''; this.style.transform='';"
-            @endif>
-            @svg("heroicon-o-plus-circle", "w-7 h-7 mb-1.5")
-            <span class="text-base font-bold leading-tight">0%</span>
-            <span class="text-xs mt-0.5" style="opacity: 0.9;">0/0</span>
+        <div class="flex flex-col items-center justify-center px-2 py-3 rounded-lg transition-all duration-200 {{ $isToday ? 'ring-2 ring-primary-300 dark:ring-primary-700' : '' }}"
+            style="background-color: #fff7ed;">
+            <div class="flex flex-col items-center justify-center w-12 h-12 bg-orange-500 rounded-lg mb-1">
+                @svg("heroicon-o-plus-circle", "w-5 h-5 text-white mb-0.5")
+                <span class="text-[9px] font-bold text-white">0%</span>
+            </div>
+            <span class="text-xs font-semibold text-gray-900 dark:text-white">Belum Diisi</span>
+            <span class="text-[10px] text-gray-500 dark:text-gray-400">0/0</span>
         </div>
     </button>
 
     {{-- State: OVERDUE (Terlambat >7 hari) --}}
     @elseif($state === 'overdue')
-    <div class="flex flex-col items-center justify-center px-4 py-3 rounded-lg cursor-not-allowed"
-        style="{{ $isToday 
-            ? 'background-color: #fef2f2; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);' 
-            : 'background-color: #fef2f2;' }}">
-        <x-heroicon-o-lock-closed class="w-7 h-7 mb-1" style="color: #ef4444;" />
-        <span class="text-xs font-medium" style="color: #dc2626;">Terkunci</span>
+    <div class="flex flex-col items-center justify-center px-2 py-3 rounded-lg cursor-not-allowed {{ $isToday ? 'ring-2 ring-primary-300 dark:ring-primary-700' : '' }}"
+        style="background-color: #fef2f2;">
+        <div class="flex items-center justify-center w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-lg mb-1">
+            @svg("heroicon-o-lock-closed", "w-6 h-6 text-red-500 dark:text-red-400")
+        </div>
+        <span class="text-xs font-semibold text-gray-900 dark:text-white">Terkunci</span>
+        <span class="text-[10px] text-gray-500 dark:text-gray-400">Lewat 7 hari</span>
     </div>
 
     {{-- State: DISABLED (Belum tiba) --}}
     @else
-    <div class="flex items-center justify-center px-4 py-3 rounded-lg"
-        style="{{ $isToday 
-            ? 'background-color: #f3f4f6; box-shadow: 0 0 0 2px rgba(209, 213, 219, 0.5);' 
-            : 'background-color: #f9fafb;' }}">
-        <span class="text-lg font-light" style="color: #d1d5db;">-</span>
+    <div class="flex flex-col items-center justify-center px-2 py-3 rounded-lg {{ $isToday ? 'ring-2 ring-primary-300 dark:ring-primary-700' : '' }}"
+        style="background-color: #f9fafb;">
+        <div class="flex items-center justify-center w-10 h-10 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-1">
+            <span class="text-gray-300 dark:text-gray-600 text-lg font-light">-</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-900 dark:text-white">Belum Tiba</span>
+        <span class="text-[10px] text-gray-500 dark:text-gray-400">Masa depan</span>
     </div>
     @endif
 </td>

@@ -27,6 +27,8 @@
     'app.filament.resources.imut-data-resource.widgets.unit-kerja-chart' => 'App\\Filament\\Resources\\ImutDataResource\\Widgets\\UnitKerjaChart',
     'app.filament.resources.imut-profile-resource.pages.create-imut-profile' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\CreateImutProfile',
     'app.filament.resources.imut-profile-resource.pages.edit-imut-profile' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\EditImutProfile',
+    'app.filament.resources.imut-profile-resource.pages.form-builder' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder',
+    'app.filament.resources.imut-profile-resource.pages.list-daily-reports' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports',
     'app.filament.resources.imut-profile-resource.pages.list-imut-profiles' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListImutProfiles',
     'app.filament.resources.imut-profile-resource.pages.manage-form-builder' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ManageFormBuilder',
     'app.filament.resources.laporan-imut-resource.pages.create-laporan-imut' => 'App\\Filament\\Resources\\LaporanImutResource\\Pages\\CreateLaporanImut',

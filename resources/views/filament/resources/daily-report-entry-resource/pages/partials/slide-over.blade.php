@@ -4,10 +4,10 @@
     x-show="show"
     x-cloak
     style="display: none; position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; z-index: 9999 !important;"
-    x-transition:enter="transition-opacity ease-out duration-400"
+    x-transition:enter="transition-opacity ease-out duration-150"
     x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
-    x-transition:leave="transition-opacity ease-in duration-300"
+    x-transition:leave="transition-opacity ease-in duration-100"
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
     @keydown.escape.window="$wire.closeSlideOver()">
@@ -16,10 +16,10 @@
     <div class="!absolute !inset-0 backdrop-blur-md backdrop-saturate-150"
         style="background: linear-gradient(to bottom right, rgba(17, 24, 39, 0.7), rgba(17, 24, 39, 0.8), rgba(0, 0, 0, 0.9));"
         x-show="show"
-        x-transition:enter="ease-out duration-400"
+        x-transition:enter="ease-out duration-150"
         x-transition:enter-start="opacity-0 backdrop-blur-none"
         x-transition:enter-end="opacity-100 backdrop-blur-md"
-        x-transition:leave="ease-in duration-300"
+        x-transition:leave="ease-in duration-100"
         x-transition:leave-start="opacity-100 backdrop-blur-md"
         x-transition:leave-end="opacity-0 backdrop-blur-none"
         wire:click="closeSlideOver"></div>
@@ -29,10 +29,10 @@
         style="position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: auto !important; z-index: 10000 !important;">
         <div class="w-screen max-w-full md:max-w-5xl pointer-events-auto"
             x-show="show"
-            x-transition:enter="transform transition ease-out duration-500"
+            x-transition:enter="transform transition ease-out duration-200"
             x-transition:enter-start="translate-x-full opacity-0"
             x-transition:enter-end="translate-x-0 opacity-100"
-            x-transition:leave="transform transition ease-in duration-400"
+            x-transition:leave="transform transition ease-in duration-150"
             x-transition:leave-start="translate-x-0 opacity-100"
             x-transition:leave-end="translate-x-full opacity-0">
 
@@ -40,9 +40,9 @@
                 <!-- Header with enhanced gradient and glass effect -->
                 <div class="relative px-6 py-7 shadow-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800"
                     x-data="{ headerVisible: false }"
-                    x-init="setTimeout(() => headerVisible = true, 150)"
+                    x-init="setTimeout(() => headerVisible = true, 50)"
                     x-show="headerVisible"
-                    x-transition:enter="transition ease-out duration-500 delay-150"
+                    x-transition:enter="transition ease-out duration-200 delay-50"
                     x-transition:enter-start="opacity-0 -translate-y-6"
                     x-transition:enter-end="opacity-100 translate-y-0">
 
@@ -78,7 +78,7 @@
                         </div>
                         <button wire:click="closeSlideOver"
                             type="button"
-                            class="ml-4 flex-shrink-0 rounded-full p-2.5 focus:outline-none focus:ring-2 transition-all duration-300 transform hover:scale-110 hover:rotate-90 active:scale-95 backdrop-blur-sm text-sky-100 dark:text-slate-200"
+                            class="ml-4 flex-shrink-0 rounded-full p-2.5 focus:outline-none focus:ring-2 transition-all duration-150 transform hover:scale-110 hover:rotate-90 active:scale-95 backdrop-blur-sm text-sky-100 dark:text-slate-200"
                             onmouseover="this.style.backgroundColor='rgba(255,255,255,0.2)'; this.style.color='#ffffff';"
                             onmouseout="this.style.backgroundColor=''; this.style.color='#eff6ff';">
                             @svg("heroicon-o-x-mark", "h-6 w-6 drop-shadow-md")
@@ -88,31 +88,151 @@
 
                 <!-- Content with enhanced staggered animations and glass effect -->
                 <div class="flex-1 overflow-y-auto px-6 py-6 backdrop-blur-sm bg-gray-50/60 dark:bg-slate-800/60">
-                    <!-- Data List Placeholder with enhanced styling -->
+
+                    @if($this->selectedIndicatorId && $this->selectedDate)
+                    <!-- Existing Reports Section -->
                     <div class="mb-6"
                         x-data="{ contentVisible: false }"
-                        x-init="setTimeout(() => contentVisible = true, 300)"
+                        x-init="setTimeout(() => contentVisible = true, 80)"
                         x-show="contentVisible"
-                        x-transition:enter="transition ease-out duration-500 delay-250"
+                        x-transition:enter="transition ease-out duration-250 delay-80"
                         x-transition:enter-start="opacity-0 translate-y-6 scale-95"
                         x-transition:enter-end="opacity-100 translate-y-0 scale-100">
-                        <div class="backdrop-blur-xl rounded-2xl p-10 text-center border-2 border-dashed shadow-xl hover:shadow-2xl transition-all duration-300 bg-white/80 border-gray-300 dark:bg-slate-800/60 dark:border-slate-700"
-                            onmouseover="this.style.borderColor='#9ca3af';"
-                            onmouseout="this.style.borderColor='#d1d5db';">
+
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Laporan Hari Ini</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                {{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}
+                            </span>
+                        </div>
+
+                        @if(!empty($this->dailyReports))
+                        <div class="space-y-4">
+                            @foreach($this->dailyReports as $report)
+                            <div class="backdrop-blur-xl rounded-xl p-6 border shadow-lg transition-all duration-150 hover:shadow-xl bg-white/90 border-gray-200 dark:bg-slate-800/70 dark:border-slate-600">
+                                <!-- Report Header -->
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <h4 class="font-semibold text-gray-900 dark:text-white">
+                                                {{ $report['form_title'] }}
+                                            </h4>
+                                            @if($report['compliance_status'])
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                Patuh
+                                            </span>
+                                            @else
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                                Tidak Patuh
+                                            </span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                            <span class="flex items-center gap-1">
+                                                @svg("heroicon-m-building-office", "w-4 h-4")
+                                                {{ $report['unit_name'] }}
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                @svg("heroicon-m-user", "w-4 h-4")
+                                                {{ $report['submitted_by_name'] }}
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                @svg("heroicon-m-clock", "w-4 h-4")
+                                                {{ \Carbon\Carbon::parse($report['created_at'])->format('H:i') }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Score Display -->
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold {{ $report['total_score'] >= 90 ? 'text-green-600' : ($report['total_score'] >= 80 ? 'text-yellow-600' : 'text-red-600') }}">
+                                            {{ number_format($report['total_score'], 1) }}%
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Skor Kepatuhan</div>
+                                    </div>
+                                </div>
+
+                                <!-- Field Responses Summary -->
+                                <div class="mb-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        @foreach(array_slice($report['field_responses'], 0, 4) as $response)
+                                        <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50">
+                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                                                {{ $response['field_label'] }}
+                                            </span>
+                                            <span class="text-xs px-2 py-1 rounded-full {{ $response['compliance_score'] >= 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                {{ number_format($response['compliance_score'] * 100, 0) }}%
+                                            </span>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    @if(count($report['field_responses']) > 4)
+                                    <p class="text-xs text-gray-500 mt-2">Dan {{ count($report['field_responses']) - 4 }} field lainnya...</p>
+                                    @endif
+                                </div>
+
+                                <!-- Notes -->
+                                @if(!empty($report['notes']))
+                                <div class="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400">
+                                    <p class="text-sm text-blue-800 dark:text-blue-300">
+                                        <strong>Catatan:</strong> {{ $report['notes'] }}
+                                    </p>
+                                </div>
+                                @endif
+
+                                <!-- Actions -->
+                                <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-600">
+                                    <span class="text-xs text-gray-500">
+                                        ID: {{ $report['id'] }}
+                                    </span>
+                                    <div class="flex gap-2">
+                                        <button
+                                            wire:click="viewReport({{ $report['id'] }})"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50">
+                                            @svg("heroicon-m-eye", "w-3 h-3 mr-1")
+                                            Lihat Detail
+                                        </button>
+
+                                        @if(\Carbon\Carbon::parse($report['created_at'])->diffInHours(now()) <= 24)
+                                            <button
+                                            wire:click="editReport({{ $report['id'] }})"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors duration-100 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50">
+                                            @svg("heroicon-m-pencil", "w-3 h-3 mr-1")
+                                            Edit
+                                            </button>
+
+                                            <button
+                                                wire:click="deleteReport({{ $report['id'] }})"
+                                                wire:confirm="Apakah Anda yakin ingin menghapus laporan ini?"
+                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 transition-colors duration-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
+                                                @svg("heroicon-m-trash", "w-3 h-3 mr-1")
+                                                Hapus
+                                            </button>
+                                            @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <!-- Empty State -->
+                        <div class="backdrop-blur-xl rounded-2xl p-10 text-center border-2 border-dashed shadow-xl hover:shadow-2xl transition-all duration-150 bg-white/80 border-gray-300 dark:bg-slate-800/60 dark:border-slate-700">
                             <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4 shadow-lg bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-slate-700 dark:via-slate-800 dark:to-slate-700">
                                 <x-heroicon-o-document-text class="w-10 h-10 text-gray-400 dark:text-slate-400" />
                             </div>
-                            <p class="text-base font-semibold text-slate-700 dark:text-slate-200">Data list akan muncul di sini</p>
-                            <p class="text-sm mt-2 text-slate-500 dark:text-slate-400">Riwayat entry hari ini</p>
+                            <p class="text-base font-semibold text-slate-700 dark:text-slate-200">Belum ada laporan untuk hari ini</p>
+                            <p class="text-sm mt-2 text-slate-500 dark:text-slate-400">Mulai buat laporan harian dengan klik tombol di bawah</p>
                         </div>
+                        @endif
                     </div>
+                    @endif
 
                     <!-- Enhanced Divider with glow effect -->
                     <div class="relative my-8"
                         x-data="{ dividerVisible: false }"
-                        x-init="setTimeout(() => dividerVisible = true, 400)"
+                        x-init="setTimeout(() => dividerVisible = true, 100)"
                         x-show="dividerVisible"
-                        x-transition:enter="transition ease-out duration-500 delay-350"
+                        x-transition:enter="transition ease-out duration-200 delay-100"
                         x-transition:enter-start="opacity-0 scale-x-0"
                         x-transition:enter-end="opacity-100 scale-x-100">
                         <div class="absolute inset-0 flex items-center">
@@ -133,9 +253,10 @@
                         x-transition:enter-start="opacity-0 translate-y-6 scale-90"
                         x-transition:enter-end="opacity-100 translate-y-0 scale-100">
                         <button type="button"
-                            class="group relative w-full flex items-center justify-center px-6 py-5 font-bold rounded-2xl shadow-2xl transform hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 overflow-hidden backdrop-blur-sm bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white"
-                            onmouseover="this.classList.add('shadow-[0_0_50px_rgba(37,99,235,0.7)]')"
-                            onmouseout="this.classList.remove('shadow-[0_0_50px_rgba(37,99,235,0.7)]')">
+                            wire:click="createNewReport"
+                            class="group relative w-full flex items-center justify-center px-6 py-5 font-bold rounded-2xl shadow-2xl transform hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 overflow-hidden backdrop-blur-sm bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white"
+                            onmouseover="this.classList.add('shadow-[0_0_50px_rgba(34,197,94,0.7)]')"
+                            onmouseout="this.classList.remove('shadow-[0_0_50px_rgba(34,197,94,0.7)]')">>
                             <!-- Multiple shine effects on hover -->
                             <div class="absolute inset-0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"
                                 style="background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);"></div>
@@ -147,7 +268,7 @@
                                 style="background: linear-gradient(to right, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));"></div>
 
                             @svg("heroicon-o-plus-circle", "relative w-6 h-6 mr-2.5 transform group-hover:rotate-180 group-hover:scale-110 transition-all duration-500 drop-shadow-lg")
-                            <span class="relative text-base drop-shadow-md">Tambah Entry Baru</span>
+                            <span class="relative text-base drop-shadow-md">Tambah Laporan Baru</span>
                         </button>
                     </div>
 

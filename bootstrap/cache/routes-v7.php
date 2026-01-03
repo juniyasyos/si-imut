@@ -1090,7 +1090,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Z2MqpuGJBS5SR7kk',
+            '_route' => 'generated::TOzL6PTXFVXSc7jI',
           ),
           1 => NULL,
           2 => 
@@ -1110,7 +1110,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::V1ygjuPw0EWP8iOs',
+            '_route' => 'generated::E5tbgGAHOqZ0NjG7',
           ),
           1 => NULL,
           2 => 
@@ -1188,7 +1188,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::clO4YI8tOiNOJ2R7',
+            '_route' => 'generated::ZvyKtiNLQtaMboVX',
           ),
           1 => NULL,
           2 => 
@@ -1208,7 +1208,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Qq1uqaqrWRYyWLn9',
+            '_route' => 'generated::Vw0YaTV0K2ff2Kr9',
           ),
           1 => NULL,
           2 => 
@@ -1228,7 +1228,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Q2JMtiCEbUjKllvJ',
+            '_route' => 'generated::W41mBe7lzr50yY8E',
           ),
           1 => NULL,
           2 => 
@@ -1248,7 +1248,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::3eNP7Gzam5MYrzNH',
+            '_route' => 'generated::d1qk7rcwEbjR7by9',
           ),
           1 => NULL,
           2 => 
@@ -1485,7 +1485,7 @@ app('router')->setCompiledRoutes(
     ),
     2 => 
     array (
-      0 => '{^(?|/_debugbar/c(?|lockwork/([^/]++)(*:39)|ache/([^/]++)(?:/([^/]++))?(*:73))|/oauth/callback/([^/]++)(*:105)|/filament(?|/(?|exports/([^/]++)/download(*:154)|imports/([^/]++)/failed\\-rows/download(*:200))|\\-excel/(.*)(*:221))|/s(?|iimut/(?|activitylogs/([^/]++)(*:265)|daily\\-report\\-entries/([^/]++)(?|(*:307)|/edit(*:320))|folders/([^/]++)(?|(*:348)|/media(*:362))|imut\\-(?|categor(?|ies/([^/]++)/edit(*:407)|y\\-resource/(?|schema/imut\\-categories/([^/]++)/edit(*:467)|tables/imut\\-categories/([^/]++)/edit(*:512)))|datas/(?|edit\\=([^/]++)(*:545)|([^/]++)/(?|profile/(?|create(*:582)|edit\\=([^/]++)(*:604))|form\\-builder(?|(*:629)|/preview(*:645))))|profile(?|s/([^/]++)/form\\-builder(?|(*:693)|/preview(*:709))|\\-resource/(?|schema/imut\\-profiles/([^/]++)/form\\-builder(?|(*:779)|/preview(*:795))|tables/imut\\-profiles/([^/]++)/form\\-builder(?|(*:851)|/preview(*:867)))))|laporan\\-imuts/([^/]++)/edit(*:907)|shield/roles/([^/]++)(?|(*:939)|/edit(*:952))|u(?|nit\\-kerjas/([^/]++)/edit(*:990)|ser(?|s/([^/]++)(?|(*:1017)|/edit(*:1031))|\\-resource/(?|schema/users/([^/]++)(?|(*:1079)|/edit(*:1093))|tables/users/([^/]++)(?|(*:1127)|/edit(*:1141))))))|torage/(.*)(*:1166))|/livewire/preview\\-file/([^/]++)(*:1208)|/api/greeting/quote(?:/([^/]++))?(*:1250))/?$}sDu',
+      0 => '{^(?|/_debugbar/c(?|lockwork/([^/]++)(*:39)|ache/([^/]++)(?:/([^/]++))?(*:73))|/oauth/callback/([^/]++)(*:105)|/filament(?|/(?|exports/([^/]++)/download(*:154)|imports/([^/]++)/failed\\-rows/download(*:200))|\\-excel/(.*)(*:221))|/s(?|iimut/(?|activitylogs/([^/]++)(*:265)|daily\\-report\\-entries/([^/]++)(?|(*:307)|/edit(*:320))|folders/([^/]++)(?|(*:348)|/media(*:362))|imut\\-(?|categor(?|ies/([^/]++)/edit(*:407)|y\\-resource/(?|schema/imut\\-categories/([^/]++)/edit(*:467)|tables/imut\\-categories/([^/]++)/edit(*:512)))|datas/(?|edit\\=([^/]++)(*:545)|([^/]++)/(?|profile/(?|create(*:582)|edit\\=([^/]++)(*:604))|form\\-builder(?|(*:629)|/preview(*:645))))|profile(?|s/([^/]++)/(?|form\\-builder(?|(*:696)|/preview(*:712))|daily\\-reports(*:735))|\\-resource/(?|schema/imut\\-profiles/([^/]++)/(?|form\\-builder(?|(*:808)|/preview(*:824))|daily\\-reports(*:847))|tables/imut\\-profiles/([^/]++)/(?|form\\-builder(?|(*:906)|/preview(*:922))|daily\\-reports(*:945)))))|laporan\\-imuts/([^/]++)/edit(*:985)|shield/roles/([^/]++)(?|(*:1017)|/edit(*:1031))|u(?|nit\\-kerjas/([^/]++)/edit(*:1070)|ser(?|s/([^/]++)(?|(*:1098)|/edit(*:1112))|\\-resource/(?|schema/users/([^/]++)(?|(*:1160)|/edit(*:1174))|tables/users/([^/]++)(?|(*:1208)|/edit(*:1222))))))|torage/(.*)(*:1247))|/livewire/preview\\-file/([^/]++)(*:1289)|/api/greeting/quote(?:/([^/]++))?(*:1331))/?$}sDu',
     ),
     3 => 
     array (
@@ -1929,7 +1929,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      693 => 
+      696 => 
       array (
         0 => 
         array (
@@ -1952,7 +1952,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      709 => 
+      712 => 
       array (
         0 => 
         array (
@@ -1975,7 +1975,30 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      779 => 
+      735 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.imut-profiles.list-daily-reports',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      808 => 
       array (
         0 => 
         array (
@@ -1998,7 +2021,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      795 => 
+      824 => 
       array (
         0 => 
         array (
@@ -2021,7 +2044,30 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      851 => 
+      847 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.list-daily-reports',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      906 => 
       array (
         0 => 
         array (
@@ -2044,7 +2090,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      867 => 
+      922 => 
       array (
         0 => 
         array (
@@ -2067,7 +2113,30 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      907 => 
+      945 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.list-daily-reports',
+          ),
+          1 => 
+          array (
+            0 => 'record',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      985 => 
       array (
         0 => 
         array (
@@ -2090,7 +2159,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      939 => 
+      1017 => 
       array (
         0 => 
         array (
@@ -2113,7 +2182,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      952 => 
+      1031 => 
       array (
         0 => 
         array (
@@ -2136,7 +2205,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      990 => 
+      1070 => 
       array (
         0 => 
         array (
@@ -2159,7 +2228,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1017 => 
+      1098 => 
       array (
         0 => 
         array (
@@ -2182,7 +2251,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1031 => 
+      1112 => 
       array (
         0 => 
         array (
@@ -2205,7 +2274,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1079 => 
+      1160 => 
       array (
         0 => 
         array (
@@ -2228,7 +2297,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1093 => 
+      1174 => 
       array (
         0 => 
         array (
@@ -2251,7 +2320,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1127 => 
+      1208 => 
       array (
         0 => 
         array (
@@ -2274,7 +2343,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1141 => 
+      1222 => 
       array (
         0 => 
         array (
@@ -2297,7 +2366,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1166 => 
+      1247 => 
       array (
         0 => 
         array (
@@ -2320,7 +2389,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1208 => 
+      1289 => 
       array (
         0 => 
         array (
@@ -2343,13 +2412,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1250 => 
+      1331 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'generated::qIlfpYfZ9sXL21M0',
+            '_route' => 'generated::C1G1L378iF4bfre9',
             'timeKey' => NULL,
           ),
           1 => 
@@ -4786,6 +4855,61 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'filament.siimut.resources.imut-profiles.list-daily-reports' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profiles/{record}/daily-reports',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports',
+        'as' => 'filament.siimut.resources.imut-profiles.list-daily-reports',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.index' => 
     array (
       'methods' => 
@@ -4950,6 +5074,61 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.list-daily-reports' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profile-resource/schema/imut-profiles/{record}/daily-reports',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports',
+        'as' => 'filament.siimut.resources.imut-profile-resource.schema.imut-profiles.list-daily-reports',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profile-resource/schema/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.index' => 
     array (
       'methods' => 
@@ -5093,6 +5272,61 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder@__invoke',
         'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\FormBuilder',
         'as' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.preview-form',
+        'namespace' => NULL,
+        'prefix' => 'siimut/imut-profile-resource/tables/imut-profiles',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+        'record' => 'slug',
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.list-daily-reports' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'siimut/imut-profile-resource/tables/imut-profiles/{record}/daily-reports',
+      'action' => 
+      array (
+        'domain' => NULL,
+        'middleware' => 
+        array (
+          0 => 'panel:siimut',
+          1 => 'panel:siimut',
+          2 => 'Illuminate\\Cookie\\Middleware\\EncryptCookies',
+          3 => 'Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse',
+          4 => 'Illuminate\\Session\\Middleware\\StartSession',
+          5 => 'Illuminate\\Session\\Middleware\\AuthenticateSession',
+          6 => 'Illuminate\\View\\Middleware\\ShareErrorsFromSession',
+          7 => 'Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken',
+          8 => 'Illuminate\\Routing\\Middleware\\SubstituteBindings',
+          9 => 'Filament\\Http\\Middleware\\DisableBladeIconComponents',
+          10 => 'BezhanSalleh\\FilamentLanguageSwitch\\Http\\Middleware\\SwitchLanguageLocale',
+          11 => 'Filament\\Http\\Middleware\\DispatchServingFilamentEvent',
+          12 => 'Filament\\Http\\Middleware\\Authenticate',
+          13 => 'Jeffgreco13\\FilamentBreezy\\Middleware\\MustTwoFactor',
+        ),
+        'excluded_middleware' => 
+        array (
+        ),
+        'uses' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports@__invoke',
+        'controller' => 'App\\Filament\\Resources\\ImutProfileResource\\Pages\\ListDailyReports',
+        'as' => 'filament.siimut.resources.imut-profile-resource.tables.imut-profiles.list-daily-reports',
         'namespace' => NULL,
         'prefix' => 'siimut/imut-profile-resource/tables/imut-profiles',
         'where' => 
@@ -6859,7 +7093,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Z2MqpuGJBS5SR7kk' => 
+    'generated::TOzL6PTXFVXSc7jI' => 
     array (
       'methods' => 
       array (
@@ -6871,7 +7105,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
-        'as' => 'generated::Z2MqpuGJBS5SR7kk',
+        'as' => 'generated::TOzL6PTXFVXSc7jI',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6887,7 +7121,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::V1ygjuPw0EWP8iOs' => 
+    'generated::E5tbgGAHOqZ0NjG7' => 
     array (
       'methods' => 
       array (
@@ -6899,7 +7133,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
-        'as' => 'generated::V1ygjuPw0EWP8iOs',
+        'as' => 'generated::E5tbgGAHOqZ0NjG7',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6988,7 +7222,7 @@ app('router')->setCompiledRoutes(
         \\response()
             ->download($path, $filename)
             ->deleteFileAfterSend();
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"0000000000000f2a0000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000014260000000000000000";}}',
         'middleware' => 
         array (
           0 => 'web',
@@ -7064,7 +7298,7 @@ app('router')->setCompiledRoutes(
     return \\redirect(
         \\session()->pull(\'impersonate.back_to\')
     );
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000011180000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016140000000000000000";}}',
         'as' => 'filament-impersonate.leave',
         'middleware' => 
         array (
@@ -7085,7 +7319,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::clO4YI8tOiNOJ2R7' => 
+    'generated::ZvyKtiNLQtaMboVX' => 
     array (
       'methods' => 
       array (
@@ -7102,13 +7336,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:77:"function (\\Illuminate\\Http\\Request $request) {
     return $request->user();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000011990000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016950000000000000000";}}',
         'namespace' => NULL,
         'prefix' => 'api',
         'where' => 
         array (
         ),
-        'as' => 'generated::clO4YI8tOiNOJ2R7',
+        'as' => 'generated::ZvyKtiNLQtaMboVX',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7124,7 +7358,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Qq1uqaqrWRYyWLn9' => 
+    'generated::Vw0YaTV0K2ff2Kr9' => 
     array (
       'methods' => 
       array (
@@ -7145,7 +7379,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::Qq1uqaqrWRYyWLn9',
+        'as' => 'generated::Vw0YaTV0K2ff2Kr9',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7161,7 +7395,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::qIlfpYfZ9sXL21M0' => 
+    'generated::C1G1L378iF4bfre9' => 
     array (
       'methods' => 
       array (
@@ -7182,7 +7416,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::qIlfpYfZ9sXL21M0',
+        'as' => 'generated::C1G1L378iF4bfre9',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7198,7 +7432,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Q2JMtiCEbUjKllvJ' => 
+    'generated::W41mBe7lzr50yY8E' => 
     array (
       'methods' => 
       array (
@@ -7219,7 +7453,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::Q2JMtiCEbUjKllvJ',
+        'as' => 'generated::W41mBe7lzr50yY8E',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7235,7 +7469,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::3eNP7Gzam5MYrzNH' => 
+    'generated::d1qk7rcwEbjR7by9' => 
     array (
       'methods' => 
       array (
@@ -7263,8 +7497,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/juni/projects/SIIMUT/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000011980000000000000000";}}',
-        'as' => 'generated::3eNP7Gzam5MYrzNH',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000016940000000000000000";}}',
+        'as' => 'generated::d1qk7rcwEbjR7by9',
       ),
       'fallback' => false,
       'defaults' => 
@@ -7461,7 +7695,7 @@ app('router')->setCompiledRoutes(
             // Development: Redirect to custom login
             return \\redirect(\'/siimut/login\');
         }
-    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000011960000000000000000";}}',
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000016920000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -7636,7 +7870,7 @@ app('router')->setCompiledRoutes(
             \'cookies\' => \\request()->cookies->all(),
             \'laravel_session_cookie\' => \\request()->cookie(\'laravel_session\'),
         ]);
-    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000011930000000000000000";}}',
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000168f0000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -7674,7 +7908,7 @@ app('router')->setCompiledRoutes(
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000113d0000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016390000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,
@@ -7709,7 +7943,7 @@ app('router')->setCompiledRoutes(
                         \'spec\' => $generator($config),
                         \'config\' => $config,
                     ]);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000118a0000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016860000000000000000";}}',
         'as' => 'scramble.docs.ui',
         'middleware' => 
         array (
@@ -7744,7 +7978,7 @@ app('router')->setCompiledRoutes(
                     $config = \\Dedoc\\Scramble\\Scramble::getGeneratorConfig($api);
 
                     return response()->json($generator($config), options: JSON_PRETTY_PRINT);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000011a00000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000169c0000000000000000";}}',
         'as' => 'scramble.docs.document',
         'middleware' => 
         array (

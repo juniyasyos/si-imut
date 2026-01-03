@@ -54,7 +54,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             ->modifyQueryUsing(
                 fn(Builder $query) => $query
                     ->forUserUnits(Auth::user())
-                    ->with(['formTemplate.imutdata.categories', 'formTemplate.formFields', 'unitKerja', 'submittedBy'])
+                    ->with(['formTemplate.imutProfile.imutData.categories', 'formTemplate.formFields', 'unitKerja', 'submittedBy'])
                     ->latest('report_date')
             )
             ->columns(DailyReportEntryTable::columns())

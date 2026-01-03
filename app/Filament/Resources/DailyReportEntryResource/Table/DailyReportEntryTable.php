@@ -23,7 +23,7 @@ class DailyReportEntryTable extends DailyReportEntryResource
     public static function columns(): array
     {
         return [
-            TextColumn::make('formTemplate.imutdata.title')
+            TextColumn::make('formTemplate.imutProfile.imutData.title')
                 ->label('Indikator Mutu')
                 ->description(fn($record) => $record->formTemplate->imutdata->categories->title ?? null)
                 ->searchable()

@@ -1,4 +1,3 @@
-<!-- Legend -->
 <div class="bg-white dark:bg-slate-800/80 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
     <div class="flex items-center justify-center gap-8 text-sm flex-wrap">
         {{-- Sudah diisi --}}

@@ -35,7 +35,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
                 Split::make([
                     Grid::make(2)
                         ->schema([
-                            TextEntry::make('formTemplate.imutdata.title')
+                            TextEntry::make('formTemplate.imutProfile.imutData.title')
                                 ->label('Indikator Mutu')
                                 ->icon('heroicon-o-clipboard-document-list')
                                 ->iconColor('primary')
@@ -43,7 +43,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
                                 ->size('lg')
                                 ->columnSpanFull(),
 
-                            TextEntry::make('formTemplate.imutdata.categories.title')
+                            TextEntry::make('formTemplate.imutProfile.imutData.categories.title')
                                 ->label('Kategori IMUT')
                                 ->badge()
                                 ->color('info')

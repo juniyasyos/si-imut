@@ -32,7 +32,7 @@ class ImutDataOldSeeder extends Seeder
 
     protected $laporanList = [];
 
-    protected int $totalYears = 1;
+    protected int $totalYears = 2; // Extend to 2 years to include 2025-2026
 
     public function run(): void
     {
@@ -182,12 +182,13 @@ class ImutDataOldSeeder extends Seeder
             $analysisPeriodType = $profile['analysis_period_type'];
             $analysisPeriodValue = (int) $profile['analysis_period_value'];
 
-            $startPeriod = now()->startOfYear();
+            $startPeriod = now()->startOfYear(); // 2026-01-01
 
+            // Extend end period to future based on analysis period
             $endPeriod = match ($analysisPeriodType) {
-                'mingguan' => $startPeriod->copy()->addWeeks($analysisPeriodValue),
-                'bulanan' => $startPeriod->copy()->addMonths($analysisPeriodValue),
-                default => $startPeriod->copy(),
+                'mingguan' => $startPeriod->copy()->addWeeks($analysisPeriodValue)->addYear(), // +1 year
+                'bulanan' => $startPeriod->copy()->addMonths($analysisPeriodValue)->addYear(), // +1 year  
+                default => $startPeriod->copy()->addYear(), // Default +1 year
             };
 
             $baseAttributes = [
@@ -220,15 +221,17 @@ class ImutDataOldSeeder extends Seeder
 
             $initialTarget   = (float) $profile['target_value'];
             $targetOperator  = $profile['target_operator'] ?? '>=';
-            $totalQuarters = $this->totalYears * 4;
-            $startQuarter = now()->copy()->subYears($this->totalYears)->startOfYear()->startOfQuarter();
-            $versionList     = [];
+            $totalQuarters = $this->totalYears * 4; // 8 quarters (2025-2026)
 
-            // Buat daftar versi kuartal, misal ["2024-Q1", "2024-Q2", …]
+            // Start from 2025 but ensure we have active quarters in 2026  
+            $startQuarter = Carbon::create(2025, 1, 1)->startOfQuarter();
+            $versionList = [];
+
+            // Generate quarters: 2025-Q1, Q2, Q3, Q4, 2026-Q1, Q2, Q3, Q4
             for ($i = 0; $i < $totalQuarters; $i++) {
-                $q = ceil($startQuarter->month / 3);
-                $versionList[] = 'verion-' . $startQuarter->year . '-Q' . $q;
-                $startQuarter->addQuarter();
+                $currentQuarter = $startQuarter->copy()->addQuarters($i);
+                $q = ceil($currentQuarter->month / 3);
+                $versionList[] = 'verion-' . $currentQuarter->year . '-Q' . $q;
             }
 
             $currentTarget = $initialTarget;
@@ -237,8 +240,22 @@ class ImutDataOldSeeder extends Seeder
             // Fungsi bantu: hitung step acak, tapi tetap kecil (2–8%)
             $getRandomStep = fn() => rand(2, 8);
 
-            // Loop tiap kuartal
+            // Loop tiap kuartal dengan periode start/end yang tepat
             foreach ($versionList as $index => $versionKey) {
+                // Extract year and quarter from version
+                preg_match('/verion-(\d{4})-Q(\d)/', $versionKey, $matches);
+                $year = (int) $matches[1];
+                $quarter = (int) $matches[2];
+
+                // Calculate quarter start and end dates
+                $quarterStart = Carbon::create($year, ($quarter - 1) * 3 + 1, 1)->startOfMonth();
+                $quarterEnd = $quarterStart->copy()->addMonths(3)->endOfMonth();
+
+                // For the last quarter (2026-Q4), extend end period to 2027
+                if ($index === count($versionList) - 1) {
+                    $quarterEnd = Carbon::create($year + 1, 12, 31); // End of next year
+                }
+
                 // Untuk kuartal pertama, jangan lompat jauh—beri variasi kecil
                 if ($index === 0) {
                     $step = $getRandomStep();
@@ -270,11 +287,13 @@ class ImutDataOldSeeder extends Seeder
                 // Bulatkan ke integer
                 $currentTarget = round($currentTarget);
 
-                // Siapkan attributes dan simpan profile
-                $attributes               = $baseAttributes;
+                // Siapkan attributes dengan periode yang benar
+                $attributes = $baseAttributes;
                 $attributes['target_value'] = $currentTarget;
+                $attributes['start_period'] = $quarterStart->format('Y-m-d');
+                $attributes['end_period'] = $quarterEnd->format('Y-m-d');
 
-                $createdAt = now()->copy()->subQuarters($totalQuarters - $index);
+                $createdAt = $quarterStart->copy()->addDays(rand(0, 30));
 
                 $lastImutProfile = ImutProfile::firstOrCreate([
                     'imut_data_id' => $imutData->id,
