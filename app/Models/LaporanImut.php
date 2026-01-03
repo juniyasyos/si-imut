@@ -52,6 +52,7 @@ class LaporanImut extends Model
      */
     protected $fillable = [
         'name',
+        'slug',
         'status',
         'assessment_period_start',
         'assessment_period_end',

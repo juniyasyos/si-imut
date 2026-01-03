@@ -101,8 +101,16 @@ class ImutDataOldSeederOptimized extends Seeder
             $end = $start->copy()->endOfMonth();
             $assessmentStart = $end->copy()->subDays(4);
 
+            // Generate unique slug for batch insert (since Eloquent events won't fire)
+            $periodSlug = $year . str_pad($month, 2, '0', STR_PAD_LEFT);
+            $uniqueId = substr(str_replace('-', '', \Illuminate\Support\Str::uuid()), 0, 8);
+            $slug = 'laporan-imut-' . $periodSlug . '-' . $uniqueId;
+
             $laporanData[] = [
                 'name' => "Laporan IMUT Periode $month/$year",
+                'slug' => $slug,
+                'report_month' => $month,
+                'report_year' => $year,
                 'assessment_period_start' => $assessmentStart,
                 'assessment_period_end' => $end,
                 'status' => LaporanImut::STATUS_PROCESS,
@@ -112,29 +120,43 @@ class ImutDataOldSeederOptimized extends Seeder
             ];
         }
 
-        // Batch insert laporan
-        collect($laporanData)->chunk($this->batchSize)->each(function ($chunk) {
-            LaporanImut::insert($chunk->toArray());
-        });
+        // Check for existing laporans first, create only if needed
+        $existingLaporans = LaporanImut::whereIn('name', array_column($laporanData, 'name'))->get();
 
-        // Get created laporans
-        $this->laporanList = LaporanImut::latest()->take($totalMonths)->get();
+        if ($existingLaporans->count() > 0) {
+            $this->command->info("Found {$existingLaporans->count()} existing laporans, using them instead of creating new ones.");
+            $this->laporanList = $existingLaporans;
+        } else {
+            // Batch insert laporan only if none exist
+            collect($laporanData)->chunk($this->batchSize)->each(function ($chunk) {
+                LaporanImut::insert($chunk->toArray());
+            });
 
-        // Batch insert laporan_unit_kerja relations
-        foreach ($this->laporanList as $laporan) {
-            foreach ($this->unitKerjaIds as $unitKerjaId) {
-                $laporanUnitKerjaData[] = [
-                    'laporan_imut_id' => $laporan->id,
-                    'unit_kerja_id' => $unitKerjaId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
+            // Get created laporans
+            $this->laporanList = LaporanImut::latest()->take($totalMonths)->get();
         }
 
-        collect($laporanUnitKerjaData)->chunk($this->batchSize)->each(function ($chunk) {
-            LaporanUnitKerja::insert($chunk->toArray());
-        });
+        // Batch insert laporan_unit_kerja relations only if laporans were newly created
+        if ($existingLaporans->count() === 0) {
+            foreach ($this->laporanList as $laporan) {
+                foreach ($this->unitKerjaIds as $unitKerjaId) {
+                    $laporanUnitKerjaData[] = [
+                        'laporan_imut_id' => $laporan->id,
+                        'unit_kerja_id' => $unitKerjaId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+
+            if (!empty($laporanUnitKerjaData)) {
+                collect($laporanUnitKerjaData)->chunk($this->batchSize)->each(function ($chunk) {
+                    LaporanUnitKerja::insert($chunk->toArray());
+                });
+            }
+        } else {
+            $this->command->info("Skipping laporan unit kerja relations as they likely already exist.");
+        }
     }
 
     private function processIndicatorsOptimized(array $indicators, ImutCategory $category): void
@@ -332,42 +354,80 @@ class ImutDataOldSeederOptimized extends Seeder
         DB::transaction(function () use ($data) {
             // Insert ImutData
             if (!empty($data['imut_data'])) {
-                collect($data['imut_data'])->chunk($this->batchSize)->each(function ($chunk) {
-                    ImutData::insert($chunk->toArray());
-                });
-                $this->command->info("✅ Inserted " . count($data['imut_data']) . " ImutData records");
+                try {
+                    // Check for existing ImutData to avoid duplicates
+                    $titles = array_column($data['imut_data'], 'title');
+                    $existingTitles = ImutData::whereIn('title', $titles)->pluck('title')->toArray();
+
+                    if (!empty($existingTitles)) {
+                        $this->command->warn("Found " . count($existingTitles) . " existing ImutData records, skipping duplicates");
+                        $data['imut_data'] = array_filter($data['imut_data'], function ($item) use ($existingTitles) {
+                            return !in_array($item['title'], $existingTitles);
+                        });
+                    }
+
+                    if (!empty($data['imut_data'])) {
+                        collect($data['imut_data'])->chunk($this->batchSize)->each(function ($chunk) {
+                            ImutData::insert($chunk->toArray());
+                        });
+                        $this->command->info("✅ Inserted " . count($data['imut_data']) . " ImutData records");
+                    }
+                } catch (\Exception $e) {
+                    $this->command->error("Error inserting ImutData: " . $e->getMessage());
+                    throw $e;
+                }
             }
 
             // Insert ImutProfiles
             if (!empty($data['imut_profiles'])) {
-                collect($data['imut_profiles'])->chunk($this->batchSize)->each(function ($chunk) {
-                    ImutProfile::insert($chunk->toArray());
-                });
-                $this->command->info("✅ Inserted " . count($data['imut_profiles']) . " ImutProfile records");
+                try {
+                    collect($data['imut_profiles'])->chunk($this->batchSize)->each(function ($chunk) {
+                        ImutProfile::insert($chunk->toArray());
+                    });
+                    $this->command->info("✅ Inserted " . count($data['imut_profiles']) . " ImutProfile records");
+                } catch (\Exception $e) {
+                    $this->command->error("Error inserting ImutProfiles: " . $e->getMessage());
+                    throw $e;
+                }
             }
 
             // Insert Benchmarkings
             if (!empty($data['benchmarkings'])) {
-                collect($data['benchmarkings'])->chunk($this->batchSize)->each(function ($chunk) {
-                    ImutBenchmarking::insert($chunk->toArray());
-                });
-                $this->command->info("✅ Inserted " . count($data['benchmarkings']) . " Benchmarking records");
+                try {
+                    collect($data['benchmarkings'])->chunk($this->batchSize)->each(function ($chunk) {
+                        ImutBenchmarking::insert($chunk->toArray());
+                    });
+                    $this->command->info("✅ Inserted " . count($data['benchmarkings']) . " Benchmarking records");
+                } catch (\Exception $e) {
+                    $this->command->error("Error inserting Benchmarkings: " . $e->getMessage());
+                    // Continue with other inserts even if benchmarking fails
+                }
             }
 
             // Insert Penilaians
             if (!empty($data['penilaians'])) {
-                collect($data['penilaians'])->chunk($this->batchSize)->each(function ($chunk) {
-                    ImutPenilaian::insert($chunk->toArray());
-                });
-                $this->command->info("✅ Inserted " . count($data['penilaians']) . " Penilaian records");
+                try {
+                    collect($data['penilaians'])->chunk($this->batchSize)->each(function ($chunk) {
+                        ImutPenilaian::insert($chunk->toArray());
+                    });
+                    $this->command->info("✅ Inserted " . count($data['penilaians']) . " Penilaian records");
+                } catch (\Exception $e) {
+                    $this->command->error("Error inserting Penilaians: " . $e->getMessage());
+                    // Continue with other inserts
+                }
             }
 
             // Insert Unit Kerja Relations
             if (!empty($data['unit_kerja_relations'])) {
-                collect($data['unit_kerja_relations'])->chunk($this->batchSize)->each(function ($chunk) {
-                    DB::table('imut_data_unit_kerja')->insert($chunk->toArray());
-                });
-                $this->command->info("✅ Inserted " . count($data['unit_kerja_relations']) . " Unit Kerja relations");
+                try {
+                    collect($data['unit_kerja_relations'])->chunk($this->batchSize)->each(function ($chunk) {
+                        DB::table('imut_data_unit_kerja')->insert($chunk->toArray());
+                    });
+                    $this->command->info("✅ Inserted " . count($data['unit_kerja_relations']) . " Unit Kerja relations");
+                } catch (\Exception $e) {
+                    $this->command->error("Error inserting Unit Kerja relations: " . $e->getMessage());
+                    // Continue even if relations fail
+                }
             }
         });
     }
