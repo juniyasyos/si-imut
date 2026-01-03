@@ -53,74 +53,90 @@
         </div>
     </div>
 
-    <!-- Filter Section (No Print) -->
-    <div class="no-print bg-white p-5 mb-5 rounded-lg shadow-sm border border-gray-200">
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
-            <div>
-                <label class="block mb-2 font-semibold text-sm text-gray-700">Filter Periode:</label>
-                <select x-model="periodFilter" @change="applyFilters()"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <template x-for="(label, value) in periodLabels" :key="value">
-                        <option :value="value" x-text="label"></option>
-                    </template>
-                </select>
-            </div>
 
-            <div x-show="availableNotes.length > 0">
-                <label class="block mb-2 font-semibold text-sm text-gray-700">Catatan/Analisis:</label>
-                <select x-model="selectedNoteId" @change="applyFilters()"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <template x-for="note in availableNotes" :key="note.id">
-                        <option :value="note.id" x-text="note.title"></option>
-                    </template>
-                </select>
-            </div>
-
-            <div>
-                <button @click="applyFilters()"
-                    class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    🔄 Terapkan Filter
-                </button>
-            </div>
-        </div>
-    </div>
 
     <div class="max-w-6xl mx-auto bg-white p-8 shadow-xl border border-gray-200"
         style="min-height: calc(100vh - 100px);">
-        <!-- Header -->
+        
+        <!-- Header dengan Logo -->
         <div class="text-center border-b-4 border-blue-600 pb-6 mb-8">
-            <div class="text-blue-800 font-semibold text-base mb-2">SISTEM INFORMASI INDIKATOR MUTU</div>
-            <h1 class="text-2xl font-bold text-gray-900 my-3">Laporan Triwulan Indikator Mutu</h1>
-            <h2 class="text-xl font-semibold text-gray-700">RUMAH SAKIT CITRA HUSADA JEMBER</h2>
+            <div class="flex items-center justify-center gap-8 mb-4">
+                <!-- Logo Kiri -->
+                <div class="w-20 h-20 flex-shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <circle cx="50" cy="50" r="45" fill="#2563eb" />
+                        <path d="M50 20 L50 80 M20 50 L80 50" stroke="white" stroke-width="8" stroke-linecap="round" />
+                        <circle cx="50" cy="50" r="12" fill="white" />
+                    </svg>
+                </div>
+
+                <!-- Text Content -->
+                <div>
+                    <div class="text-blue-800 font-semibold text-base mb-2">SISTEM INFORMASI INDIKATOR MUTU</div>
+                    <h1 class="text-2xl font-bold text-gray-900 my-3">Laporan Triwulan Indikator Mutu</h1>
+                    <h2 class="text-xl font-semibold text-gray-700">RUMAH SAKIT CITRA HUSADA JEMBER</h2>
+                </div>
+
+                <!-- Logo Kanan -->
+                <div class="w-20 h-20 flex-shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect width="100" height="100" rx="10" fill="#10b981" />
+                        <path d="M30 50 L45 65 L70 35" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    </svg>
+                </div>
+            </div>
         </div>
 
-        <!-- Indicator Info Section -->
-        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-8 border-sky-500 p-6 mb-6 rounded-r-lg shadow-sm">
-            <h3 class="text-lg font-bold text-blue-900 mb-3" x-text="imutData.title"></h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="flex flex-col">
-                    <div class="text-xs font-semibold text-gray-500 mb-1">Kategori</div>
-                    <div class="text-sm font-bold text-gray-800" x-text="imutData.categories"></div>
-                </div>
-                <div class="flex flex-col">
-                    <div class="text-xs font-semibold text-gray-500 mb-1">Standar Target</div>
-                    <div class="text-sm font-bold text-gray-800" x-text="imutData.standard + '%'"></div>
-                </div>
-                <div class="flex flex-col">
-                    <div class="text-xs font-semibold text-gray-500 mb-1">Pencapaian Rata-rata</div>
-                    <div class="text-sm font-bold text-gray-800"
-                        x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'">
+        <!-- Enhanced Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Left Card -->
+            <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+                <h3 class="text-lg font-bold mb-4" x-text="imutData.title"></h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm opacity-90">Kategori</span>
+                        <span class="font-bold" x-text="imutData.categories"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm opacity-90">Standar Target</span>
+                        <span class="text-2xl font-bold" x-text="imutData.standard + '%'"></span>
                     </div>
                 </div>
-                <div class="flex flex-col">
-                    <div class="text-xs font-semibold text-gray-500 mb-1">Status Capaian</div>
-                    <div class="text-sm font-bold">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold"
-                            :class="summary.average_percentage >= imutData.standard ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'"
-                            x-text="summary.average_percentage >= imutData.standard ? '✓ Tercapai' : '✗ Belum Tercapai'">
-                        </span>
+            </div>
+
+            <!-- Right Card -->
+            <div class="bg-gradient-to-br from-green-500 to-green-700 text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+                <h4 class="text-lg font-bold mb-4">Pencapaian Saat Ini</h4>
+                <div class="space-y-3">
+                    <div class="text-center">
+                        <div class="text-5xl font-bold" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '...'"></div>
+                        <div class="mt-2">
+                            <span class="px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-semibold"
+                                x-text="summary.average_percentage >= imutData.standard ? '✓ Target Tercapai' : '✗ Belum Tercapai'">
+                            </span>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow-md">
+                <div class="text-xs text-gray-500 mb-1">Total Unit Kerja</div>
+                <div class="text-2xl font-bold text-gray-800" x-text="summary.total_unit_kerja ? summary.total_unit_kerja.toLocaleString() : '...'"></div>
+            </div>
+            <div class="bg-white border-l-4 border-green-500 p-4 rounded-lg shadow-md">
+                <div class="text-xs text-gray-500 mb-1">Total Numerator</div>
+                <div class="text-2xl font-bold text-gray-800" x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : '...'"></div>
+            </div>
+            <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-lg shadow-md">
+                <div class="text-xs text-gray-500 mb-1">Total Denominator</div>
+                <div class="text-2xl font-bold text-gray-800" x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : '...'"></div>
+            </div>
+            <div class="bg-white border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
+                <div class="text-xs text-gray-500 mb-1">Rata-rata</div>
+                <div class="text-2xl font-bold text-gray-800" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '...'"></div>
             </div>
         </div>
 
@@ -131,13 +147,64 @@
         </div>
 
         <!-- Chart Section -->
-        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <div class="text-base font-bold text-gray-800">Grafik Tren Pencapaian Indikator</div>
-                    <div class="text-xs text-gray-500 mt-1">Perbandingan pencapaian periode yang dipilih</div>
+        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-lg">
+            <!-- Chart Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-gray-200">
+                <div class="mb-4 md:mb-0">
+                    <div class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Grafik Tren Pencapaian Indikator
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 ml-7">Perbandingan pencapaian periode yang dipilih</div>
+                </div>
+
+                <!-- Filter Section (No Print) -->
+                <div class="no-print bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                    <div class="flex items-center gap-3 mb-3">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-700">Filter Tampilan</span>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <!-- Benchmark Filter -->
+                        <div class="flex items-center gap-3 bg-white rounded-md px-3 py-2 border border-gray-200 shadow-sm">
+                            <span class="text-xs font-medium text-gray-600 whitespace-nowrap">Tampilkan:</span>
+                            <label class="flex items-center gap-1.5 cursor-pointer group">
+                                <input type="checkbox" x-model="showBenchmarkNasional" @change="updateChart()"
+                                    class="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-2 focus:ring-yellow-400 cursor-pointer">
+                                <span class="text-xs font-medium text-gray-700 group-hover:text-yellow-600 transition-colors">Nasional</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer group">
+                                <input type="checkbox" x-model="showBenchmarkProvinsi" @change="updateChart()"
+                                    class="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-2 focus:ring-green-400 cursor-pointer">
+                                <span class="text-xs font-medium text-gray-700 group-hover:text-green-600 transition-colors">Provinsi</span>
+                            </label>
+                        </div>
+
+                        <!-- Period Filter -->
+                        <select x-model="periodFilter" @change="applyFilters()"
+                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer hover:border-blue-400 transition-colors">
+                            <template x-for="(label, value) in periodLabels" :key="value">
+                                <option :value="value" x-text="label"></option>
+                            </template>
+                        </select>
+
+                        <!-- Notes Filter -->
+                        <select x-show="availableNotes.length > 0" x-model="selectedNoteId" @change="applyFilters()"
+                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer hover:border-blue-400 transition-colors">
+                            <template x-for="note in availableNotes" :key="note.id">
+                                <option :value="note.id" x-text="note.title"></option>
+                            </template>
+                        </select>
+                    </div>
                 </div>
             </div>
+
+            <!-- Chart Area -->
             <div id="trendChart" class="w-full h-96"></div>
         </div>
 
@@ -149,26 +216,21 @@
                 <table class="w-full border-collapse text-sm bg-white">
                     <thead>
                         <tr>
-                            <th rowspan="2"
-                                class="border border-gray-300 p-2 bg-gray-50 font-semibold text-gray-700 text-center">
-                                BULAN</th>
-                            <th rowspan="2"
-                                class="border border-gray-300 p-2 bg-blue-600 text-white font-semibold text-center">
-                                STANDAR (%)</th>
-                            <th rowspan="2"
-                                class="border border-gray-300 p-2 bg-green-600 text-white font-semibold text-center">
-                                HASIL SAAT INI (%)</th>
-                            <th colspan="2"
+                            <th rowspan="2" class="border border-gray-300 p-2 bg-gray-50 font-semibold text-gray-700 text-center">BULAN</th>
+                            <th rowspan="2" class="border border-gray-300 p-2 bg-blue-600 text-white font-semibold text-center">STANDAR (%)</th>
+                            <th colspan="2" class="border border-gray-300 p-2 bg-purple-600 text-white font-semibold text-center">DATA CAPAIAN</th>
+                            <th rowspan="2" class="border border-gray-300 p-2 bg-green-600 text-white font-semibold text-center">HASIL (%)</th>
+                            <th :colspan="(showBenchmarkNasional ? 1 : 0) + (showBenchmarkProvinsi ? 1 : 0)" 
+                                x-show="showBenchmarkNasional || showBenchmarkProvinsi"
                                 class="border border-gray-300 p-2 bg-yellow-500 text-white font-semibold text-center">
-                                BENCHMARK (%)</th>
+                                BENCHMARK (%)
+                            </th>
                         </tr>
                         <tr>
-                            <th
-                                class="border border-gray-300 p-2 bg-yellow-400 text-white text-xs font-semibold text-center">
-                                Nasional</th>
-                            <th
-                                class="border border-gray-300 p-2 bg-yellow-400 text-white text-xs font-semibold text-center">
-                                Provinsi</th>
+                            <th class="border border-gray-300 p-2 bg-purple-400 text-white text-xs font-semibold text-center">N</th>
+                            <th class="border border-gray-300 p-2 bg-purple-400 text-white text-xs font-semibold text-center">D</th>
+                            <th x-show="showBenchmarkNasional" class="border border-gray-300 p-2 bg-yellow-400 text-white text-xs font-semibold text-center">Nasional</th>
+                            <th x-show="showBenchmarkProvinsi" class="border border-gray-300 p-2 bg-yellow-400 text-white text-xs font-semibold text-center">Provinsi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -178,24 +240,28 @@
                                     <span x-text="data.month_short.toUpperCase() + ' ' + data.year"></span>
                                     <span x-show="data.is_current" class="text-blue-600 text-xs"> ●</span>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center bg-blue-50"
-                                    x-text="imutData.standard + '%'"></td>
-                                <td class="border border-gray-300 p-2 text-center"
-                                    :class="data.is_current ? 'font-bold text-sm' : ''">
+                                <td class="border border-gray-300 p-2 text-center bg-blue-50" x-text="imutData.standard + '%'"></td>
+                                <td class="border border-gray-300 p-2 text-center bg-purple-50">
+                                    <span x-show="data.numerator !== null" x-text="data.numerator ? data.numerator.toLocaleString() : '-'"></span>
+                                    <span x-show="data.numerator === null" class="text-gray-400">-</span>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center bg-purple-50">
+                                    <span x-show="data.denominator !== null" x-text="data.denominator ? data.denominator.toLocaleString() : '-'"></span>
+                                    <span x-show="data.denominator === null" class="text-gray-400">-</span>
+                                </td>
+                                <td class="border border-gray-300 p-2 text-center" :class="data.is_current ? 'font-bold text-sm' : ''">
                                     <span x-show="data.percentage !== null"
                                         :class="data.percentage >= imutData.standard ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'"
                                         x-text="data.percentage ? data.percentage.toFixed(2) + '%' : '-'">
                                     </span>
                                     <span x-show="data.percentage === null" class="text-gray-400">-</span>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <span x-show="data.benchmark_nasional !== null"
-                                        x-text="data.benchmark_nasional ? data.benchmark_nasional.toFixed(2) + '%' : '-'"></span>
+                                <td x-show="showBenchmarkNasional" class="border border-gray-300 p-2 text-center">
+                                    <span x-show="data.benchmark_nasional !== null" x-text="data.benchmark_nasional ? data.benchmark_nasional.toFixed(2) + '%' : '-'"></span>
                                     <span x-show="data.benchmark_nasional === null" class="text-gray-400">-</span>
                                 </td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <span x-show="data.benchmark_provinsi !== null"
-                                        x-text="data.benchmark_provinsi ? data.benchmark_provinsi.toFixed(2) + '%' : '-'"></span>
+                                <td x-show="showBenchmarkProvinsi" class="border border-gray-300 p-2 text-center">
+                                    <span x-show="data.benchmark_provinsi !== null" x-text="data.benchmark_provinsi ? data.benchmark_provinsi.toFixed(2) + '%' : '-'"></span>
                                     <span x-show="data.benchmark_provinsi === null" class="text-gray-400">-</span>
                                 </td>
                             </tr>
@@ -208,12 +274,11 @@
             <div class="mt-5 text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <strong>Keterangan:</strong>
                 <ul class="ml-5 mt-1 space-y-1">
-                    <li><strong>Standar</strong>: Target standar yang harus dicapai (<span
-                            x-text="imutData.standard"></span>%)</li>
-                    <li><strong>Hasil Saat Ini</strong>: Pencapaian aktual di rumah sakit (warna hijau = tercapai, merah
-                        = belum tercapai)</li>
-                    <li><strong>Benchmark</strong>: Perbandingan dengan standar nasional/provinsi untuk indikator ini
-                    </li>
+                    <li><strong>Standar</strong>: Target standar yang harus dicapai (<span x-text="imutData.standard"></span>%)</li>
+                    <li><strong>N (Numerator)</strong>: <span x-text="imutData.numerator_description"></span></li>
+                    <li><strong>D (Denominator)</strong>: <span x-text="imutData.denominator_description"></span></li>
+                    <li><strong>Hasil</strong>: Pencapaian aktual = (N / D) × 100%</li>
+                    <li><strong>Benchmark</strong>: Perbandingan dengan standar nasional/provinsi</li>
                     <li>Baris dengan tanda <span class="text-blue-600">●</span> adalah periode laporan aktif</li>
                 </ul>
 
@@ -242,21 +307,18 @@
 
             <div x-show="selectedNote">
                 <div class="mb-4">
-                    <strong x-text="'Analisis Periode ' + (selectedNote ? selectedNote.period_display : periode) + ':'"
-                        class="block mb-2"></strong>
+                    <strong x-text="'Analisis Periode ' + (selectedNote ? selectedNote.period_display : periode) + ':'" class="block mb-2"></strong>
                     <p class="ml-4 text-sm leading-relaxed" x-text="selectedNote ? selectedNote.analysis : ''"></p>
                 </div>
 
                 <div class="mb-4">
                     <strong class="block mb-2">Rekomendasi Tindak Lanjut:</strong>
-                    <div class="ml-4 text-sm whitespace-pre-line leading-relaxed"
-                        x-text="selectedNote ? selectedNote.recommendation : ''"></div>
+                    <div class="ml-4 text-sm whitespace-pre-line leading-relaxed" x-text="selectedNote ? selectedNote.recommendation : ''"></div>
                 </div>
 
                 <div x-show="selectedNote && selectedNote.additional_notes">
                     <strong class="block mb-2">Catatan Tambahan:</strong>
-                    <p class="ml-4 text-sm leading-relaxed" x-text="selectedNote ? selectedNote.additional_notes : ''">
-                    </p>
+                    <p class="ml-4 text-sm leading-relaxed" x-text="selectedNote ? selectedNote.additional_notes : ''"></p>
                 </div>
             </div>
 
@@ -267,52 +329,17 @@
                     <p class="ml-4 text-sm leading-relaxed">
                         Capaian indikator <strong x-text="imutData.title"></strong> pada periode
                         <strong x-text="periode"></strong> adalah
-                        <strong
-                            x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'"></strong>.
+                        <strong x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'"></strong>.
                         Target standar yang ditetapkan adalah <strong x-text="'≥ ' + imutData.standard + '%'"></strong>.
 
-                        <span x-show="summary.average_percentage >= imutData.standard"
-                            class="text-green-700 font-semibold block mt-2">
+                        <span x-show="summary.average_percentage >= imutData.standard" class="text-green-700 font-semibold block mt-2">
                             ✓ Indikator ini telah memenuhi standar yang ditetapkan.
                         </span>
-                        <span x-show="summary.average_percentage < imutData.standard"
-                            class="text-red-700 font-semibold block mt-2">
+                        <span x-show="summary.average_percentage < imutData.standard" class="text-red-700 font-semibold block mt-2">
                             ✗ Indikator ini belum memenuhi standar yang ditetapkan
-                            (kurang <span
-                                x-text="summary.average_percentage ? (imutData.standard - summary.average_percentage).toFixed(2) : 'Loading...'"></span>%).
+                            (kurang <span x-text="summary.average_percentage ? (imutData.standard - summary.average_percentage).toFixed(2) : 'Loading...'"></span>%).
                         </span>
                     </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Summary Section -->
-        <div class="bg-gray-50 border border-gray-300 rounded-lg p-5 mb-6 shadow-sm">
-            <div class="text-sm font-bold mb-4 text-gray-800">Ringkasan Data Indikator Laporan Terbaru</div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="text-center p-3 bg-white rounded-md">
-                    <div class="text-xs text-gray-500 mb-1">Total Unit Kerja</div>
-                    <div class="text-base font-bold text-gray-800"
-                        x-text="summary.total_unit_kerja ? summary.total_unit_kerja.toLocaleString() : 'Loading...'">
-                    </div>
-                </div>
-                <div class="text-center p-3 bg-white rounded-md">
-                    <div class="text-xs text-gray-500 mb-1">Total Numerator (N)</div>
-                    <div class="text-base font-bold text-gray-800"
-                        x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : 'Loading...'">
-                    </div>
-                </div>
-                <div class="text-center p-3 bg-white rounded-md">
-                    <div class="text-xs text-gray-500 mb-1">Total Denominator (D)</div>
-                    <div class="text-base font-bold text-gray-800"
-                        x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : 'Loading...'">
-                    </div>
-                </div>
-                <div class="text-center p-3 bg-white rounded-md">
-                    <div class="text-xs text-gray-500 mb-1">Pencapaian Rata-rata</div>
-                    <div class="text-base font-bold text-gray-800"
-                        x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'">
-                    </div>
                 </div>
             </div>
         </div>
@@ -329,8 +356,7 @@
                             <th class="border border-gray-300 p-2 font-semibold text-gray-700">Unit Kerja</th>
                             <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">N</th>
                             <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">D</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Persentase
-                            </th>
+                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Persentase</th>
                             <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Standar</th>
                             <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Status</th>
                             <th class="border border-gray-300 p-2 font-semibold text-gray-700">Profil</th>
@@ -341,20 +367,13 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="border border-gray-300 p-2 text-center" x-text="index + 1"></td>
                                 <td class="border border-gray-300 p-2" x-text="data.unit_kerja"></td>
-                                <td class="border border-gray-300 p-2 text-center"
-                                    x-text="data.numerator_value ? data.numerator_value.toLocaleString() : '-'"></td>
-                                <td class="border border-gray-300 p-2 text-center"
-                                    x-text="data.denominator_value ? data.denominator_value.toLocaleString() : '-'">
-                                </td>
-                                <td class="border border-gray-300 p-2 text-right font-semibold"
-                                    x-text="data.percentage ? data.percentage.toFixed(2) + '%' : '-'"></td>
-                                <td class="border border-gray-300 p-2 text-center" x-text="data.imut_standard + '%'">
-                                </td>
+                                <td class="border border-gray-300 p-2 text-center" x-text="data.numerator_value ? data.numerator_value.toLocaleString() : '-'"></td>
+                                <td class="border border-gray-300 p-2 text-center" x-text="data.denominator_value ? data.denominator_value.toLocaleString() : '-'"></td>
+                                <td class="border border-gray-300 p-2 text-right font-semibold" x-text="data.percentage ? data.percentage.toFixed(2) + '%' : '-'"></td>
+                                <td class="border border-gray-300 p-2 text-center" x-text="data.imut_standard + '%'"></td>
                                 <td class="border border-gray-300 p-2 text-center">
-                                    <span x-show="data.percentage >= data.imut_standard"
-                                        class="text-green-600 font-semibold">✓ Tercapai</span>
-                                    <span x-show="data.percentage < data.imut_standard"
-                                        class="text-red-600 font-semibold">✗ Belum</span>
+                                    <span x-show="data.percentage >= data.imut_standard" class="text-green-600 font-semibold">✓ Tercapai</span>
+                                    <span x-show="data.percentage < data.imut_standard" class="text-red-600 font-semibold">✗ Belum</span>
                                 </td>
                                 <td class="border border-gray-300 p-2 text-xs" x-text="data.imut_profil"></td>
                             </tr>
@@ -363,20 +382,13 @@
                         <!-- Summary Row -->
                         <tr class="bg-blue-50 font-bold">
                             <td colspan="2" class="border border-gray-300 p-2 text-center">TOTAL / RATA-RATA</td>
-                            <td class="border border-gray-300 p-2 text-center"
-                                x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : '-'"></td>
-                            <td class="border border-gray-300 p-2 text-center"
-                                x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : '-'">
-                            </td>
-                            <td class="border border-gray-300 p-2 text-right text-blue-800"
-                                x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '-'">
-                            </td>
+                            <td class="border border-gray-300 p-2 text-center" x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : '-'"></td>
+                            <td class="border border-gray-300 p-2 text-center" x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : '-'"></td>
+                            <td class="border border-gray-300 p-2 text-right text-blue-800" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '-'"></td>
                             <td class="border border-gray-300 p-2 text-center" x-text="imutData.standard + '%'"></td>
                             <td class="border border-gray-300 p-2 text-center">
-                                <span x-show="summary.average_percentage >= imutData.standard" class="text-green-600">✓
-                                    Tercapai</span>
-                                <span x-show="summary.average_percentage < imutData.standard" class="text-red-600">✗
-                                    Belum Tercapai</span>
+                                <span x-show="summary.average_percentage >= imutData.standard" class="text-green-600">✓ Tercapai</span>
+                                <span x-show="summary.average_percentage < imutData.standard" class="text-red-600">✗ Belum Tercapai</span>
                             </td>
                             <td class="border border-gray-300 p-2">-</td>
                         </tr>
@@ -387,16 +399,6 @@
 
         <!-- Footer & Signature -->
         <div class="mt-10 border-t-2 border-gray-300 pt-6">
-            <div class="mb-3">
-                <strong>Catatan:</strong>
-                <ul class="ml-5 mt-2 text-sm space-y-1">
-                    <li>N = Numerator (Pembilang): <span x-text="imutData.numerator_description"></span></li>
-                    <li>D = Denominator (Penyebut): <span x-text="imutData.denominator_description"></span></li>
-                    <li>Persentase = (N / D) × 100%</li>
-                    <li>Target standar untuk indikator ini adalah ≥ <span x-text="imutData.standard"></span>%</li>
-                </ul>
-            </div>
-
             <div class="flex justify-between mt-10">
                 <div class="text-center w-56">
                     <div class="text-sm mb-20">Mengetahui,<br>Kepala Bagian Mutu</div>
@@ -404,8 +406,7 @@
                 </div>
                 <div class="text-center w-56">
                     <div class="text-sm mb-20">3 Januari 2026,<br>Penanggung Jawab</div>
-                    <div class="text-sm font-bold border-t-2 border-black pt-2"
-                        x-text="laporan.created_by || '(...........................)'"></div>
+                    <div class="text-sm font-bold border-t-2 border-black pt-2" x-text="laporan.created_by || '(...........................)'"></div>
                 </div>
             </div>
 
@@ -417,12 +418,10 @@
 
     <!-- Preview Controls -->
     <div class="no-print fixed bottom-5 right-5 flex gap-3 z-50">
-        <button onclick="history.back()"
-            class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 shadow-lg">
+        <button onclick="history.back()" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 shadow-lg">
             ← Kembali
         </button>
-        <button onclick="window.print()"
-            class="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 shadow-lg">
+        <button onclick="window.print()" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 shadow-lg">
             🖨️ Cetak
         </button>
     </div>
@@ -435,6 +434,8 @@
                 selectedNoteId: 1,
                 selectedNote: null,
                 periode: 'Juli – September 2024',
+                showBenchmarkNasional: true,
+                showBenchmarkProvinsi: true,
 
                 periodLabels: {},
                 imutData: {},
@@ -443,21 +444,17 @@
                 historicalData: [],
                 unitKerjaData: [],
                 availableNotes: [],
+                chart: null,
 
                 async init() {
                     try {
                         this.loading = true;
 
-                        // Fetch data from JSON file
                         const response = await fetch('./data.json');
-
-                        if (!response.ok) {
-                            throw new Error('Failed to fetch data');
-                        }
+                        if (!response.ok) throw new Error('Failed to fetch data');
 
                         const data = await response.json();
 
-                        // Assign data to component properties
                         this.periodLabels = data.periodLabels;
                         this.imutData = data.imutData;
                         this.laporan = data.laporan;
@@ -466,12 +463,9 @@
                         this.unitKerjaData = data.unitKerjaData;
                         this.availableNotes = data.availableNotes;
 
-                        // Set initial selected note
                         this.selectedNote = this.availableNotes[0];
-
                         this.loading = false;
 
-                        // Initialize chart after data is loaded
                         this.$nextTick(() => {
                             this.initChart();
                         });
@@ -479,17 +473,12 @@
                     } catch (error) {
                         console.error('Error loading data:', error);
                         this.loading = false;
-
-                        // Show error message
                         alert('Error loading data. Please make sure data.json file is available.');
                     }
                 },
 
                 applyFilters() {
-                    // Update selected note
                     this.selectedNote = this.availableNotes.find(note => note.id == this.selectedNoteId) || this.availableNotes[0];
-
-                    // Re-render chart with new data
                     this.$nextTick(() => {
                         this.updateChart();
                     });
@@ -505,29 +494,24 @@
                     const chartData = this.historicalData.map(d => d.percentage || 0);
                     const standard = this.imutData.standard;
 
-                    // Prepare benchmark data
                     const benchmarkNasional = this.historicalData.map(d => d.benchmark_nasional);
                     const benchmarkProvinsi = this.historicalData.map(d => d.benchmark_provinsi);
 
+                    const series = [
+                        { name: 'Pencapaian Aktual', data: chartData },
+                        { name: 'Target Standar', data: Array(chartData.length).fill(standard) }
+                    ];
+
+                    if (this.showBenchmarkNasional) {
+                        series.push({ name: 'Benchmark Nasional', data: benchmarkNasional });
+                    }
+
+                    if (this.showBenchmarkProvinsi) {
+                        series.push({ name: 'Benchmark Provinsi', data: benchmarkProvinsi });
+                    }
+
                     const options = {
-                        series: [
-                            {
-                                name: 'Pencapaian Aktual',
-                                data: chartData
-                            },
-                            {
-                                name: 'Target Standar',
-                                data: Array(chartData.length).fill(standard)
-                            },
-                            {
-                                name: 'Benchmark Nasional',
-                                data: benchmarkNasional
-                            },
-                            {
-                                name: 'Benchmark Provinsi',
-                                data: benchmarkProvinsi
-                            }
-                        ],
+                        series: series,
                         chart: {
                             type: 'line',
                             height: 380,
@@ -640,18 +624,31 @@
 
                 updateChart() {
                     if (this.chart && this.historicalData && this.historicalData.length > 0) {
-                        // Update chart data based on filters
                         const chartLabels = this.historicalData.map(d => d.month_short + ' ' + d.year);
                         const chartData = this.historicalData.map(d => d.percentage || 0);
 
+                        const series = [
+                            { name: 'Pencapaian Aktual', data: chartData },
+                            { name: 'Target Standar', data: Array(chartData.length).fill(this.imutData.standard) }
+                        ];
+
+                        if (this.showBenchmarkNasional) {
+                            series.push({
+                                name: 'Benchmark Nasional',
+                                data: this.historicalData.map(d => d.benchmark_nasional)
+                            });
+                        }
+
+                        if (this.showBenchmarkProvinsi) {
+                            series.push({
+                                name: 'Benchmark Provinsi',
+                                data: this.historicalData.map(d => d.benchmark_provinsi)
+                            });
+                        }
+
                         this.chart.updateOptions({
                             xaxis: { categories: chartLabels },
-                            series: [
-                                { name: 'Pencapaian Aktual', data: chartData },
-                                { name: 'Target Standar', data: Array(chartData.length).fill(this.imutData.standard) },
-                                { name: 'Benchmark Nasional', data: this.historicalData.map(d => d.benchmark_nasional) },
-                                { name: 'Benchmark Provinsi', data: this.historicalData.map(d => d.benchmark_provinsi) }
-                            ]
+                            series: series
                         });
                     }
                 }
