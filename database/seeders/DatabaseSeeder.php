@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
                 RoleUpgradeSeeder::class,
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
-                ImutDataOldSeeder::class,
+                ImutDataOldSeederOptimized::class, // Using optimized version
                 // HandHygieneFormSeeder::class,
                 // EnhancedFormBuilderSeeder::class,
                 // LaporanImutSeeder::class,
