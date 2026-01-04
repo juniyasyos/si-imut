@@ -46,7 +46,7 @@ class ImutProfileForm
             && ! static::userCan('force_editable_imut::profile');
     }
 
-/**
+    /**
      * Summary of make
      *
      * @return Forms\Components\Tabs[]
@@ -94,6 +94,21 @@ class ImutProfileForm
                             ->readOnly()
                             ->extraAttributes(['class' => 'bg-gray-100 text-gray-500'])
                             ->columnSpan(1),
+
+                        DatePicker::make('valid_from')
+                            ->label('Berlaku Mulai')
+                            ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
+                            ->required()
+                            ->default(now()->toDateString())
+                            ->helperText('Tanggal profil ini mulai berlaku')
+                            ->reactive(),
+
+                        DatePicker::make('valid_until')
+                            ->label('Berlaku Sampai')
+                            ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
+                            ->helperText('Kosongkan jika profil berlaku selamanya. Isi jika ingin membatasi masa berlaku.')
+                            ->reactive()
+                            ->afterOrEqual('valid_from'),
 
                         TextInput::make('responsible_person')
                             ->label('Penanggung Jawab')
@@ -290,9 +305,6 @@ class ImutProfileForm
                                 ->required()
                                 ->reactive()
                                 ->default('bulanan')
-                                ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get) {
-                                    self::calculateEndPeriod($set, $get);
-                                })
                                 ->helperText('Jenis periode yang digunakan dalam analisis.')
                                 ->prefixIcon('heroicon-o-clock'),
 
@@ -301,28 +313,9 @@ class ImutProfileForm
                                 ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
                                 ->numeric()
                                 ->required()
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get) {
-                                    self::calculateEndPeriod($set, $get);
-                                })
                                 ->placeholder('Contoh: 1, 3, 6')
                                 ->helperText('Angka yang menunjukkan rentang waktu.')
                                 ->prefixIcon('heroicon-o-adjustments-horizontal'),
-
-                            DatePicker::make('start_period')
-                                ->label('Periode Mulai')
-                                ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
-                                ->required()
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get) {
-                                    self::calculateEndPeriod($set, $get);
-                                }),
-
-                            DatePicker::make('end_period')
-                                ->label('Periode Selesai')
-                                ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
-                                ->readOnly()
-                                ->required(),
                         ]),
 
                     // === Alat & Rencana Analisis ===
@@ -345,34 +338,5 @@ class ImutProfileForm
                         ]),
                 ]),
         ];
-    }
-
-    protected static function calculateEndPeriod(\Filament\Forms\Set $set, \Filament\Forms\Get $get): void
-    {
-        $start = $get('start_period');
-        $type = $get('analysis_period_type');
-        $value = (int) $get('analysis_period_value');
-
-        if (! $start || ! $type || ! $value) {
-            return;
-        }
-
-        try {
-            $startDate = \Illuminate\Support\Carbon::parse($start);
-            $endDate = match ($type) {
-                'mingguan' => $startDate->copy()->addWeeks($value),
-                'bulanan' => $startDate->copy()->addMonths($value),
-                default => $startDate,
-            };
-
-            $set('end_period', $endDate->format('Y-m-d'));
-        } catch (\Exception $e) {
-            logger()->error('Perhitungan end_period gagal:', [
-                'start' => $start,
-                'type' => $type,
-                'value' => $value,
-                'error' => $e->getMessage(),
-            ]);
-        }
     }
 }

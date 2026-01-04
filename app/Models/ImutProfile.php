@@ -50,8 +50,6 @@ class ImutProfile extends Model
         'target_value',
         'analysis_period_type',
         'analysis_period_value',
-        'start_period',
-        'end_period',
         'data_collection_method',
         'sampling_method',
         'data_collection_tool',
@@ -64,8 +62,6 @@ class ImutProfile extends Model
     protected $casts = [
         'valid_from' => 'date',
         'valid_until' => 'date',
-        'start_period' => 'date',
-        'end_period' => 'date',
     ];
 
     protected static function boot()
@@ -81,6 +77,12 @@ class ImutProfile extends Model
             if (empty($model->valid_from)) {
                 $model->valid_from = now()->toDateString();
             }
+
+            // Validasi period overlap
+            $model->validatePeriodOverlap();
+
+            // Validasi multiple active profiles
+            $model->validateSingleActiveProfile();
         });
     }
 
@@ -145,6 +147,121 @@ class ImutProfile extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Validate that this profile doesn't overlap with existing profiles
+     * for the same ImutData
+     */
+    protected function validatePeriodOverlap(): void
+    {
+        if (!$this->valid_from || !$this->imut_data_id) {
+            return;
+        }
+
+        $query = static::where('imut_data_id', $this->imut_data_id);
+
+        // Exclude current record if updating
+        if ($this->exists) {
+            $query->where('id', '!=', $this->id);
+        }
+
+        $validUntil = $this->valid_until ?: '9999-12-31';
+
+        $overlapping = $query->where(function ($q) use ($validUntil) {
+            $q->where(function ($subQ) use ($validUntil) {
+                // Case 1: New valid_from falls within existing period
+                $subQ->where('valid_from', '<=', $this->valid_from)
+                    ->where(function ($innerQ) {
+                        $innerQ->whereNull('valid_until')
+                            ->orWhere('valid_until', '>=', $this->valid_from);
+                    });
+            })
+                ->orWhere(function ($subQ) use ($validUntil) {
+                    // Case 2: New valid_until falls within existing period  
+                    $subQ->where('valid_from', '<=', $validUntil)
+                        ->where(function ($innerQ) use ($validUntil) {
+                            $innerQ->whereNull('valid_until')
+                                ->orWhere('valid_until', '>=', $validUntil);
+                        });
+                })
+                ->orWhere(function ($subQ) use ($validUntil) {
+                    // Case 3: New period completely encompasses existing period
+                    $subQ->where('valid_from', '>=', $this->valid_from)
+                        ->where(function ($innerQ) use ($validUntil) {
+                            $innerQ->whereNull('valid_until')
+                                ->orWhere('valid_until', '<=', $validUntil);
+                        });
+                });
+        })->exists();
+
+        if ($overlapping) {
+            throw new \Exception(
+                "Period overlap detected for ImutData ID {$this->imut_data_id}. "
+                    . "Period {$this->valid_from} to {$validUntil} overlaps with existing profile periods. "
+                    . "Each ImutData can only have one active profile per time period."
+            );
+        }
+    }
+
+    /**
+     * Validate that only one profile is active at the same time for the same ImutData
+     */
+    protected function validateSingleActiveProfile(): void
+    {
+        if (!$this->valid_from || !$this->imut_data_id) {
+            return;
+        }
+
+        $query = static::where('imut_data_id', $this->imut_data_id);
+
+        // Exclude current record if updating
+        if ($this->exists) {
+            $query->where('id', '!=', $this->id);
+        }
+
+        // Check for overlapping validity periods
+        $validUntil = $this->valid_until ?: '9999-12-31'; // If no end date, consider it active indefinitely
+
+        $overlapping = $query->where(function ($q) use ($validUntil) {
+            $q->where(function ($subQ) use ($validUntil) {
+                // Check if any existing profile's validity period overlaps
+                $subQ->where('valid_from', '<=', $validUntil)
+                    ->where(function ($innerQ) {
+                        $innerQ->whereNull('valid_until')
+                            ->orWhere('valid_until', '>=', $this->valid_from);
+                    });
+            });
+        })->exists();
+
+        if ($overlapping) {
+            throw new \Exception(
+                "Multiple active profiles detected for ImutData ID {$this->imut_data_id}. "
+                    . "Only one profile can be active at any given time. Please set valid_until date on existing active profiles before creating a new one."
+            );
+        }
+    }
+
+    /**
+     * Get the currently active profile for a given ImutData on a specific date
+     */
+    public static function getActiveProfile(int $imutDataId, $date = null): ?static
+    {
+        $checkDate = $date ?: now()->toDateString();
+
+        return static::where('imut_data_id', $imutDataId)
+            ->validOnDate($checkDate)
+            ->orderBy('valid_from', 'desc')
+            ->first();
+    }
+
+    /**
+     * Scope to get only active profiles (no valid_until or future valid_until)
+     */
+    public function scopeActive($query, $date = null)
+    {
+        $checkDate = $date ?: now()->toDateString();
+        return $this->scopeValidOnDate($query, $checkDate);
     }
 
     /**
@@ -277,6 +394,59 @@ class ImutProfile extends Model
     {
         return [
             'slug' => ['nullable', 'string', 'max:255', $this->uniqueRule('slug', $ignoreId)],
+        ];
+    }
+    /**
+     * Find all overlapping profiles for cleanup purposes
+     */
+    public static function findOverlappingProfiles(): array
+    {
+        $overlapping = [];
+        $allProfiles = static::orderBy('imut_data_id', 'asc')->orderBy('valid_from', 'asc')->get();
+
+        foreach ($allProfiles as $profile) {
+            if (!$profile->valid_from) continue;
+
+            $validUntil = $profile->valid_until ?: '9999-12-31';
+
+            $conflicts = static::where('imut_data_id', $profile->imut_data_id)
+                ->where('id', '!=', $profile->id)
+                ->where(function ($q) use ($profile, $validUntil) {
+                    $q->where(function ($subQ) use ($profile) {
+                        $subQ->where('valid_from', '<=', $profile->valid_from)
+                            ->where(function ($innerQ) use ($profile) {
+                                $innerQ->whereNull('valid_until')
+                                    ->orWhere('valid_until', '>=', $profile->valid_from);
+                            });
+                    });
+                })->get();
+
+            if ($conflicts->isNotEmpty()) {
+                $overlapping[] = [
+                    'profile_id' => $profile->id,
+                    'imut_data_id' => $profile->imut_data_id,
+                    'conflicts_with' => $conflicts->pluck('id')->toArray()
+                ];
+            }
+        }
+
+        return $overlapping;
+    }
+
+    /**
+     * Get statistics about profile overlaps
+     */
+    public static function getOverlapStatistics(): array
+    {
+        $total = static::count();
+        $totalImutData = static::distinct('imut_data_id')->count('imut_data_id');
+        $overlapping = static::findOverlappingProfiles();
+
+        return [
+            'total_profiles' => $total,
+            'total_imut_data' => $totalImutData,
+            'avg_profiles_per_imut_data' => $totalImutData > 0 ? round($total / $totalImutData, 2) : 0,
+            'overlapping_profiles_count' => count($overlapping),
         ];
     }
 }
