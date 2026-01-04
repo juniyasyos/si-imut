@@ -38,6 +38,9 @@ class ImutDataOldSeeder extends Seeder
     {
         $this->init();
 
+        // Temporarily disable ImutProfile validation during seeding
+        putenv('DISABLE_IMUT_VALIDATION=true');
+
         $filesByCategoryShortName = [
             'INM' => 'inm.json',
             'IMP-UNIT' => 'imp-unit.json',
@@ -247,9 +250,9 @@ class ImutDataOldSeeder extends Seeder
                 $year = (int) $matches[1];
                 $quarter = (int) $matches[2];
 
-                // Calculate quarter start and end dates
+                // Calculate quarter start and end dates - FIXED: Non-overlapping quarters
                 $quarterStart = Carbon::create($year, ($quarter - 1) * 3 + 1, 1)->startOfMonth();
-                $quarterEnd = $quarterStart->copy()->addMonths(3)->endOfMonth();
+                $quarterEnd = $quarterStart->copy()->addMonths(3)->subDay()->endOfDay(); // End 1 day before next quarter starts
 
                 // For the last quarter (2026-Q4), extend end period to 2027
                 if ($index === count($versionList) - 1) {
@@ -446,5 +449,8 @@ class ImutDataOldSeeder extends Seeder
         }
 
         ImutPenilaian::insert($penilaians);
+
+        // Re-enable validation after seeding
+        putenv('DISABLE_IMUT_VALIDATION=false');
     }
 }

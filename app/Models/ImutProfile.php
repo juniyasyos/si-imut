@@ -78,14 +78,11 @@ class ImutProfile extends Model
                 $model->valid_from = now()->toDateString();
             }
 
-            // Skip validation during seeding to allow test data creation
-            if (!app()->runningInConsole() || !config('app.disable_imut_validation', false)) {
-                // Validasi period overlap
-                $model->validatePeriodOverlap();
+            // Validasi period overlap
+            $model->validatePeriodOverlap();
 
-                // Validasi multiple active profiles
-                $model->validateSingleActiveProfile();
-            }
+            // Validasi multiple active profiles
+            $model->validateSingleActiveProfile();
         });
     }
 
