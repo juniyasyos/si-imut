@@ -97,9 +97,9 @@ class ProsesPenilaianImut implements ShouldQueue
     {
         // Prioritas 1: Cek apakah sudah ada profil yang dipilih khusus untuk laporan ini
         $existingSelection = LaporanImutProfile::where('laporan_imut_id', $laporan->id)
-                                             ->where('imut_data_id', $imutData->id)
-                                             ->with('imutProfile')
-                                             ->first();
+            ->where('imut_data_id', $imutData->id)
+            ->with('imutProfile')
+            ->first();
 
         if ($existingSelection && $existingSelection->imutProfile) {
             return $existingSelection->imutProfile;
@@ -107,12 +107,12 @@ class ProsesPenilaianImut implements ShouldQueue
 
         // Prioritas 2: Cari profil yang valid untuk periode laporan
         $validProfile = $imutData->profiles()
-                                ->validForPeriod(
-                                    $laporan->assessment_period_start,
-                                    $laporan->assessment_period_end
-                                )
-                                ->latest('version')
-                                ->first();
+            ->validForPeriod(
+                $laporan->assessment_period_start,
+                $laporan->assessment_period_end
+            )
+            ->orderBy('valid_from', 'desc') // Pilih yang paling baru berlaku, bukan berdasarkan version string
+            ->first();
 
         return $validProfile;
     }

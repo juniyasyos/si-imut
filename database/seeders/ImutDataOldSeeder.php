@@ -222,90 +222,32 @@ class ImutDataOldSeeder extends Seeder
             // >> VERSI KUARTAL DINAMIS REALISTIS <<
             // ============================================
 
-            $initialTarget   = (float) $profile['target_value'];
-            $targetOperator  = $profile['target_operator'] ?? '>=';
-            $totalQuarters = $this->totalYears * 4; // 8 quarters (2025-2026)
+            // ============================================
+            // >> SINGLE PROFILE FOR FUTURE USE (2025-2026) <<
+            // ============================================
 
-            // Start from 2025 but ensure we have active quarters in 2026  
-            $startQuarter = Carbon::create(2025, 1, 1)->startOfQuarter();
-            $versionList = [];
+            $initialTarget = (float) $profile['target_value'];
 
-            // Generate quarters: 2025-Q1, Q2, Q3, Q4, 2026-Q1, Q2, Q3, Q4
-            for ($i = 0; $i < $totalQuarters; $i++) {
-                $currentQuarter = $startQuarter->copy()->addQuarters($i);
-                $q = ceil($currentQuarter->month / 3);
-                $versionList[] = 'verion-' . $currentQuarter->year . '-Q' . $q;
-            }
+            // Create single profile covering both 2025-2026
+            $profileVersion = 'version-2025-2026';
+            $profileValidFrom = Carbon::create(2025, 1, 1);
+            $profileValidUntil = Carbon::create(2026, 12, 31);
 
-            $currentTarget = $initialTarget;
-            $lastImutProfile = null;
+            // Siapkan attributes dengan periode yang benar
+            $attributes = $baseAttributes;
+            $attributes['target_value'] = $initialTarget;
+            $attributes['valid_from'] = $profileValidFrom->format('Y-m-d');
+            $attributes['valid_until'] = $profileValidUntil->format('Y-m-d');
 
-            // Fungsi bantu: hitung step acak, tapi tetap kecil (2–8%)
-            $getRandomStep = fn() => rand(2, 8);
+            $createdAt = now();
 
-            // Loop tiap kuartal dengan periode start/end yang tepat
-            foreach ($versionList as $index => $versionKey) {
-                // Extract year and quarter from version
-                preg_match('/verion-(\d{4})-Q(\d)/', $versionKey, $matches);
-                $year = (int) $matches[1];
-                $quarter = (int) $matches[2];
-
-                // Calculate quarter start and end dates - FIXED: Non-overlapping quarters
-                $quarterStart = Carbon::create($year, ($quarter - 1) * 3 + 1, 1)->startOfMonth();
-                $quarterEnd = $quarterStart->copy()->addMonths(3)->subDay()->endOfDay(); // End 1 day before next quarter starts
-
-                // For the last quarter (2026-Q4), extend end period to 2027
-                if ($index === count($versionList) - 1) {
-                    $quarterEnd = Carbon::create($year + 1, 12, 31); // End of next year
-                }
-
-                // Untuk kuartal pertama, jangan lompat jauh—beri variasi kecil
-                if ($index === 0) {
-                    $step = $getRandomStep();
-                } else {
-                    $step = $getRandomStep();
-                }
-
-                // Tentukan arah perubahan sesuai operator
-                if (in_array($targetOperator, ['>=', '>'])) {
-                    // kalau target awal < 100, naik perlahan
-                    if ($currentTarget < 100) {
-                        $currentTarget = min($currentTarget + $step, 100);
-                    }
-                    // kalau sudah >= 100, bisa turun sedikit (misal karena fluktuasi)
-                    elseif ($currentTarget > 100) {
-                        $currentTarget = max($currentTarget - $getRandomStep(), 100);
-                    }
-                } else {
-                    // operator <= atau < : target menurun ke rendah
-                    if ($currentTarget > 0) {
-                        $currentTarget = max($currentTarget - $step, 0);
-                    }
-                    // kalau sampai 0, naik sedikit fluktuasi
-                    elseif ($currentTarget < 0) {
-                        $currentTarget = min($currentTarget + $getRandomStep(), 0);
-                    }
-                }
-
-                // Bulatkan ke integer
-                $currentTarget = round($currentTarget);
-
-                // Siapkan attributes dengan periode yang benar
-                $attributes = $baseAttributes;
-                $attributes['target_value'] = $currentTarget;
-                $attributes['valid_from'] = $quarterStart->format('Y-m-d');
-                $attributes['valid_until'] = $quarterEnd->format('Y-m-d');
-
-                $createdAt = $quarterStart->copy()->addDays(rand(0, 30));
-
-                $lastImutProfile = ImutProfile::firstOrCreate([
-                    'imut_data_id' => $imutData->id,
-                    'version'      => $versionKey,
-                ], array_merge($attributes, [
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
-                ]));
-            }
+            $lastImutProfile = ImutProfile::firstOrCreate([
+                'imut_data_id' => $imutData->id,
+                'version'      => $profileVersion,
+            ], array_merge($attributes, [
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]));
 
             // Tambahkan ke unit kerja & penilaian bila perlu
             if (in_array($category->short_name, ['INM'])) {

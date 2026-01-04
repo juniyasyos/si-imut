@@ -160,8 +160,8 @@ class ListDailyReportEntries extends ListRecords
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
             // Temporarily disable end_period filter - all data expired (2025 vs 2026)
             // ->where(function($query) {
-            //     $query->whereNull('imut_profil.end_period') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.end_period', '>=', now()); // Atau belum berakhir
+            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
+            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
             // })
             ->distinct()
             ->get();
@@ -205,8 +205,8 @@ class ListDailyReportEntries extends ListRecords
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
             // Temporarily disable end_period filter - all data expired (2025 vs 2026)
             // ->where(function($query) {
-            //     $query->whereNull('imut_profil.end_period') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.end_period', '>=', now()); // Atau belum berakhir
+            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
+            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
             // })
             ->whereBetween('daily_report_responses.report_date', [$startDate, $endDate])
             ->groupBy('form_templates.id', DB::raw('DATE(daily_report_responses.report_date)'))
@@ -353,8 +353,8 @@ class ListDailyReportEntries extends ListRecords
             ->where('form_templates.id', $this->selectedIndicatorId)
             // Temporarily disable end_period filter - all data expired (2025 vs 2026)
             // ->where(function($query) {
-            //     $query->whereNull('imut_profil.end_period') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.end_period', '>=', now()); // Atau belum berakhir
+            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
+            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
             // })
             ->whereDate('daily_report_responses.report_date', $this->selectedDate)
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $userUnitIds)

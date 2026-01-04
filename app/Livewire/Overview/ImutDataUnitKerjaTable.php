@@ -138,28 +138,7 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                     ->placeholder('Semua Kategori'),
             ])
             ->actions([
-                Action::make('edit_penilaian')
-                    ->label('Edit Penilaian')
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('info')
-
-                    ->url(function ($record) {
-                        $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-
-                        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                            'laporanSlug' => $laporanSlug,
-                            'record' => $record->id,
-                        ]);
-                    }),
             ])
-            ->recordUrl(function ($record) {
-                $laporanSlug = \App\Models\LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-
-                return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-                    'laporanSlug' => $laporanSlug,
-                    'record' => $record->id,
-                ]);
-            })
             ->bulkActions([]);
     }
 
