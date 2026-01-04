@@ -41,6 +41,11 @@ class ImutDataOldSeeder extends Seeder
         // Temporarily disable ImutProfile validation during seeding
         putenv('DISABLE_IMUT_VALIDATION=true');
 
+        $this->command->info("🔄 MULAI SEEDING IMUT DATA & PROFILES...");
+        $this->command->line("📅 Target: Generate quarterly profiles untuk 2025-2026 (8 quarters)");
+        $this->command->line("🎯 Fokus: Monitoring profile 'Kepatuhan Kebersihan Tangan'");
+        $this->command->line("");
+
         $filesByCategoryShortName = [
             'INM' => 'inm.json',
             'IMP-UNIT' => 'imp-unit.json',
@@ -65,12 +70,17 @@ class ImutDataOldSeeder extends Seeder
                 continue;
             }
 
+            $this->command->comment("📂 Processing kategori: {$shortName} ({$filename})");
+
             collect($indicators)->chunk(50)->each(function ($chunkedIndicators) use ($category) {
                 foreach ($chunkedIndicators as $indicator) {
                     $this->processIndicator($indicator, $category);
                 }
             });
         }
+
+        // Show summary at the end
+        $this->showSeedingSummary();
     }
 
     private function init(): void
@@ -309,6 +319,30 @@ class ImutDataOldSeeder extends Seeder
                     'created_at' => $createdAt,
                     'updated_at' => $createdAt,
                 ]));
+
+                // 🔍 LOGGING FOR KEPATUHAN KEBERSIHAN TANGAN
+                if (str_contains(strtolower($indicator['title']), 'kepatuhan kebersihan tangan')) {
+                    $this->command->info("📋 PROFIL KEPATUHAN KEBERSIHAN TANGAN - {$versionKey}:");
+                    $this->command->line("   • ID Profile: {$lastImutProfile->id}");
+                    $this->command->line("   • Version: {$versionKey}");
+                    $this->command->line("   • Periode: {$quarterStart->format('Y-m-d')} → {$quarterEnd->format('Y-m-d')}");
+                    $this->command->line("   • Target Value: {$currentTarget}");
+                    $this->command->line("   • Valid From: {$attributes['valid_from']}");
+                    $this->command->line("   • Valid Until: {$attributes['valid_until']}");
+                    $this->command->line("   • ImutData ID: {$imutData->id}");
+
+                    // Check if this profile would be selected for Jan 2026 assessment
+                    $jan2026Start = Carbon::create(2026, 1, 27);
+                    $jan2026End = Carbon::create(2026, 1, 31);
+                    $isValidForJan2026 = $quarterStart <= $jan2026End && $quarterEnd >= $jan2026Start;
+
+                    if ($isValidForJan2026) {
+                        $this->command->comment("   ✅ VALID untuk assessment Jan 2026 (27-31 Jan)");
+                    } else {
+                        $this->command->comment("   ❌ TIDAK valid untuk assessment Jan 2026");
+                    }
+                    $this->command->line("");
+                }
             }
 
             // Tambahkan ke unit kerja & penilaian bila perlu
@@ -456,5 +490,72 @@ class ImutDataOldSeeder extends Seeder
 
         // Re-enable validation after seeding
         putenv('DISABLE_IMUT_VALIDATION=false');
+    }
+
+    /**
+     * Show comprehensive summary after seeding
+     */
+    private function showSeedingSummary(): void
+    {
+        $this->command->line("");
+        $this->command->info("✅ SEEDING COMPLETED - RINGKASAN HASIL:");
+        $this->command->line(str_repeat("=", 60));
+
+        // Count total profiles
+        $totalProfiles = ImutProfile::count();
+        $totalData = ImutData::count();
+
+        // Find Kepatuhan Kebersihan Tangan specifically
+        $kebersihanData = ImutData::where('title', 'like', '%kepatuhan kebersihan tangan%')->first();
+
+        if ($kebersihanData) {
+            $kebersihanProfiles = ImutProfile::where('imut_data_id', $kebersihanData->id)->get();
+
+            $this->command->comment("📊 RINGKASAN DATABASE:");
+            $this->command->line("   • Total ImutData: {$totalData}");
+            $this->command->line("   • Total ImutProfile: {$totalProfiles}");
+            $this->command->line("");
+
+            $this->command->comment("🎯 KEPATUHAN KEBERSIHAN TANGAN:");
+            $this->command->line("   • ImutData ID: {$kebersihanData->id}");
+            $this->command->line("   • Jumlah Profiles: " . $kebersihanProfiles->count());
+            $this->command->line("");
+
+            if ($kebersihanProfiles->isNotEmpty()) {
+                $this->command->comment("📋 DAFTAR PROFILES KEBERSIHAN TANGAN:");
+                foreach ($kebersihanProfiles as $profile) {
+                    $this->command->line("   • ID {$profile->id}: {$profile->version} | {$profile->valid_from} → {$profile->valid_until} | Target: {$profile->target_value}");
+                }
+                $this->command->line("");
+
+                // Show which profile would be selected for different assessment periods
+                $this->command->comment("🔍 SIMULASI PROFILE SELECTION:");
+                $testPeriods = [
+                    ['2026-01-27', '2026-01-31', 'Jan 2026 Assessment'],
+                    ['2026-04-27', '2026-04-30', 'Apr 2026 Assessment'],
+                    ['2026-07-27', '2026-07-31', 'Jul 2026 Assessment'],
+                    ['2026-10-27', '2026-10-31', 'Oct 2026 Assessment'],
+                ];
+
+                foreach ($testPeriods as [$start, $end, $label]) {
+                    $selectedProfile = $kebersihanProfiles
+                        ->filter(function ($profile) use ($start, $end) {
+                            return $profile->valid_from <= $end &&
+                                ($profile->valid_until === null || $profile->valid_until >= $start);
+                        })
+                        ->sortByDesc('valid_from')
+                        ->first();
+
+                    if ($selectedProfile) {
+                        $this->command->line("   • {$label}: {$selectedProfile->version} (Target: {$selectedProfile->target_value})");
+                    } else {
+                        $this->command->line("   • {$label}: ❌ Tidak ada profile valid");
+                    }
+                }
+            }
+        }
+
+        $this->command->line("");
+        $this->command->info("🚀 READY FOR TESTING! Jalankan Job ProsesPenilaianImut untuk test.");
     }
 }
