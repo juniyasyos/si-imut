@@ -207,8 +207,8 @@ class ImutDataOldSeeder extends Seeder
                 'analysis_plan' => $profile['analysis_plan'],
                 'analysis_period_type' => $analysisPeriodType,
                 'analysis_period_value' => $analysisPeriodValue,
-                'start_period' => $startPeriod->format('Y-m-d'),
-                'end_period' => $endPeriod->format('Y-m-d'),
+                'valid_from' => $startPeriod->format('Y-m-d'),
+                'valid_until' => $endPeriod->format('Y-m-d'),
                 'data_collection_method' => $profile['data_collection_method'],
                 'sampling_method' => $profile['sampling_method'],
                 'data_collection_tool' => $profile['data_collection_tool'],
@@ -290,8 +290,8 @@ class ImutDataOldSeeder extends Seeder
                 // Siapkan attributes dengan periode yang benar
                 $attributes = $baseAttributes;
                 $attributes['target_value'] = $currentTarget;
-                $attributes['start_period'] = $quarterStart->format('Y-m-d');
-                $attributes['end_period'] = $quarterEnd->format('Y-m-d');
+                $attributes['valid_from'] = $quarterStart->format('Y-m-d');
+                $attributes['valid_until'] = $quarterEnd->format('Y-m-d');
 
                 $createdAt = $quarterStart->copy()->addDays(rand(0, 30));
 
