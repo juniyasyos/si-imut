@@ -101,14 +101,20 @@ class ImutProfileForm
                             ->required()
                             ->default(now()->toDateString())
                             ->helperText('Tanggal profil ini mulai berlaku')
-                            ->reactive(),
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get, ?Model $record) {
+                                self::checkForOverlaps($state, $get('valid_until'), $get('imut_data_id'), $record);
+                            }),
 
                         DatePicker::make('valid_until')
                             ->label('Berlaku Sampai')
                             ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
                             ->helperText('Kosongkan jika profil berlaku selamanya. Isi jika ingin membatasi masa berlaku.')
                             ->reactive()
-                            ->afterOrEqual('valid_from'),
+                            ->afterOrEqual('valid_from')
+                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get, ?Model $record) {
+                                self::checkForOverlaps($get('valid_from'), $state, $get('imut_data_id'), $record);
+                            }),
 
                         TextInput::make('responsible_person')
                             ->label('Penanggung Jawab')
@@ -338,5 +344,54 @@ class ImutProfileForm
                         ]),
                 ]),
         ];
+    }
+
+    /**
+     * Check for overlapping profiles and show warning notification
+     */
+    protected static function checkForOverlaps($validFrom, $validUntil, $imutDataId, ?Model $record): void
+    {
+        if (!$validFrom || !$imutDataId) {
+            return;
+        }
+
+        try {
+            $query = \App\Models\ImutProfile::where('imut_data_id', $imutDataId);
+
+            // Exclude current record if editing
+            if ($record && $record->exists) {
+                $query->where('id', '!=', $record->id);
+            }
+
+            $validUntilCheck = $validUntil ?: '9999-12-31';
+
+            $overlapping = $query->where(function ($q) use ($validFrom, $validUntilCheck) {
+                $q->where(function ($subQ) use ($validFrom, $validUntilCheck) {
+                    // Check if new period overlaps with existing periods
+                    $subQ->where('valid_from', '<=', $validUntilCheck)
+                        ->where(function ($innerQ) use ($validFrom) {
+                            $innerQ->whereNull('valid_until')
+                                ->orWhere('valid_until', '>=', $validFrom);
+                        });
+                });
+            })->get();
+
+            if ($overlapping->isNotEmpty()) {
+                $conflictDetails = $overlapping->map(function ($profile) {
+                    $until = $profile->valid_until ? $profile->valid_until->format('d/m/Y') : 'selamanya';
+                    return "• {$profile->version} ({$profile->valid_from->format('d/m/Y')} s/d {$until})";
+                })->join("\n");
+
+                \Filament\Notifications\Notification::make()
+                    ->title('⚠️ Peringatan: Periode Bertumpang Tindih!')
+                    ->body("Periode yang Anda masukkan bertumpang tindih dengan profil lain:\n\n{$conflictDetails}\n\nHarap sesuaikan tanggal untuk menghindari konflik.")
+                    ->warning()
+                    ->persistent()
+                    ->send();
+            }
+        } catch (\Exception $e) {
+            // Silently fail to avoid blocking form interaction
+            logger()->error('Error checking overlaps in form: ' . $e->getMessage());
+        }
     }
 }
