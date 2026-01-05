@@ -128,12 +128,12 @@ class HandwashingSimulationSeeder extends Seeder
                 // Create field response record
                 FieldResponse::create([
                     'daily_report_response_id' => $dailyReport->id,
-                    'enhanced_form_field_id' => $field->id,
-                    'response_value' => is_array($response) ? json_encode($response) : $response,
-                    'field_score' => $field->calculateFieldScore($response),
+                    'form_field_id' => $field->id,
+                    'field_value' => is_array($response) ? $response : [$response],
+                    'compliance_score' => $field->calculateFieldScore($response) ?? 0,
                 ]);
 
-                $this->command->info("✏️ {$field->field_name}: {$response}");
+                $this->command->info("✏️ {$field->field_label}: " . (is_array($response) ? implode(', ', $response) : $response));
                 if ($field->compliance_weight > 0) {
                     $score = $field->calculateFieldScore($response);
                     $this->command->info("   Score: {$score} (Weight: {$field->compliance_weight})");
@@ -179,6 +179,67 @@ class HandwashingSimulationSeeder extends Seeder
 
         // Generate response berdasarkan field key dan compliance level
         return match ($field->field_key) {
+            // Form Kepatuhan Kebersihan Tangan
+            'hand_hygiene_method' => match ($complianceLevel) {
+                'excellent' => 'Hand Rub (Antiseptik berbasis alkohol)',
+                'good' => 'Air + Sabun',
+                'poor' => 'Tidak melakukan cuci tangan',
+                default => 'Hand Rub (Antiseptik berbasis alkohol)'
+            },
+
+            'hand_hygiene_indication' => match ($complianceLevel) {
+                'excellent' => [
+                    '1. Sebelum kontak dengan pasien',
+                    '2. Sebelum prosedur bersih/aseptik',
+                    '3. Setelah prosedur/risiko terpapar cairan tubuh',
+                    '4. Setelah kontak dengan pasien',
+                    '5. Setelah kontak dengan area sekitar pasien'
+                ],
+                'good' => [
+                    '1. Sebelum kontak dengan pasien',
+                    '2. Sebelum prosedur bersih/aseptik',
+                    '3. Setelah prosedur/risiko terpapar cairan tubuh',
+                    '4. Setelah kontak dengan pasien'
+                ],
+                'poor' => [
+                    '1. Sebelum kontak dengan pasien'
+                ],
+                default => [
+                    '1. Sebelum kontak dengan pasien',
+                    '2. Sebelum prosedur bersih/aseptik',
+                    '3. Setelah prosedur/risiko terpapar cairan tubuh'
+                ]
+            },
+
+            'six_steps_compliance' => match ($complianceLevel) {
+                'excellent' => [
+                    '1. Gosok kedua telapak tangan',
+                    '2. Gosok punggung-sela jari kanan-kiri',
+                    '3. Gosok kedua telapak dan sela jari',
+                    '4. Jari sisi dalam kedua tangan mengunci',
+                    '5. Gosok ibu jari berputar dlm genggaman',
+                    '6. Ujung jari berputar ke telapak kanan-kiri'
+                ],
+                'good' => [
+                    '1. Gosok kedua telapak tangan',
+                    '2. Gosok punggung-sela jari kanan-kiri',
+                    '3. Gosok kedua telapak dan sela jari',
+                    '4. Jari sisi dalam kedua tangan mengunci',
+                    '5. Gosok ibu jari berputar dlm genggaman'
+                ],
+                'poor' => [
+                    '1. Gosok kedua telapak tangan',
+                    '2. Gosok punggung-sela jari kanan-kiri'
+                ],
+                default => [
+                    '1. Gosok kedua telapak tangan',
+                    '2. Gosok punggung-sela jari kanan-kiri',
+                    '3. Gosok kedua telapak dan sela jari',
+                    '4. Jari sisi dalam kedua tangan mengunci'
+                ]
+            },
+
+            // Legacy fields untuk form lain
             'data_collector' => 'Dr. Siti Nurhaliza, SpKJ',
 
             'handwashing_compliance' => $complianceLevel,
