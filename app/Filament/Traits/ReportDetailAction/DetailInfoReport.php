@@ -72,7 +72,7 @@ trait DetailInfoReport
         // Fill all profile fields
         $fill = [
             'imut_data_id' => $profile->imut_data_id,
-            'imut_profil' => $profile->id,
+            'imut_profil' => $profile->version,
             'responsible_person' => $profile->responsible_person,
             'indicator_type' => $profile->indicator_type,
             'rationale' => $profile->rationale,
@@ -144,20 +144,10 @@ trait DetailInfoReport
                 ->description('Pilih profil dan standar IMUT yang sesuai.')
                 ->schema([
                     Hidden::make('imut_data_id'),
-                    Select::make('imut_profil')
+                    TextInput::make('imut_profil')
                         ->label('Versi Profil IMUT')
-                        ->options(fn($get) => self::profileOptions($get('imut_data')))
                         ->disabled()
-                        ->searchable()
-                        ->preload()
-                        ->reactive()
-                        ->required()
-                        ->placeholder('Pilih versi profil')
-                        ->afterStateUpdated(function ($state, callable $set) {
-                            $profile = ImutProfile::find($state);
-
-                            self::populateProfileFields($set, $profile);
-                        }),
+                        ->required(),
 
                     Select::make('target_operator')
                         ->label('🎯 Target Nilai')

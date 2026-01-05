@@ -16,6 +16,11 @@ class ListDailyReportEntries extends ListRecords
 
     protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
 
+    // Add listeners for Alpine.js events
+    protected $listeners = [
+        'dateSelected' => 'handleDateSelected',
+    ];
+
     // Matrix properties
     public string $selectedMonth;
     public array $indicators = [];
@@ -33,6 +38,16 @@ class ListDailyReportEntries extends ListRecords
     public array $selectedIndicatorData = [];
     public $dailyReports = []; // Cache for slide-over data
     public string $filterPeriod = 'today';
+
+    /**
+     * Handle date selection from frontend
+     */
+    public function handleDateSelected(string $date): void
+    {
+        $this->selectedDate = $date;
+        // Optionally, you can reload data or trigger other actions
+        // based on the selected date if needed
+    }
 
     /**
      * Filter logic methods
@@ -97,6 +112,7 @@ class ListDailyReportEntries extends ListRecords
     {
         parent::mount();
         $this->selectedMonth = now()->format('Y-m');
+        $this->selectedDate = now()->format('Y-m-d'); // Initialize selected date
         $this->loadMatrixData();
     }
 
@@ -160,8 +176,8 @@ class ListDailyReportEntries extends ListRecords
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
             // Temporarily disable end_period filter - all data expired (2025 vs 2026)
             // ->where(function($query) {
-            //     $query->whereNull('imut_profil.end_period') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.end_period', '>=', now()); // Atau belum berakhir
+            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
+            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
             // })
             ->distinct()
             ->get();
@@ -205,8 +221,8 @@ class ListDailyReportEntries extends ListRecords
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
             // Temporarily disable end_period filter - all data expired (2025 vs 2026)
             // ->where(function($query) {
-            //     $query->whereNull('imut_profil.end_period') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.end_period', '>=', now()); // Atau belum berakhir
+            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
+            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
             // })
             ->whereBetween('daily_report_responses.report_date', [$startDate, $endDate])
             ->groupBy('form_templates.id', DB::raw('DATE(daily_report_responses.report_date)'))
@@ -353,8 +369,8 @@ class ListDailyReportEntries extends ListRecords
             ->where('form_templates.id', $this->selectedIndicatorId)
             // Temporarily disable end_period filter - all data expired (2025 vs 2026)
             // ->where(function($query) {
-            //     $query->whereNull('imut_profil.end_period') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.end_period', '>=', now()); // Atau belum berakhir
+            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
+            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
             // })
             ->whereDate('daily_report_responses.report_date', $this->selectedDate)
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $userUnitIds)

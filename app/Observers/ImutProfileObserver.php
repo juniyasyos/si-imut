@@ -16,8 +16,44 @@ class ImutProfileObserver
      */
     public function created(ImutProfile $imutProfile): void
     {
-        $this->createFormTemplate($imutProfile);
-        Log::info("✅ ImutProfile created: ID {$imutProfile->id} - FormTemplate auto-created");
+        // Only create FormTemplate if this is the active profile
+        // This prevents creating multiple FormTemplates for overlapping periods
+        if ($this->shouldCreateFormTemplate($imutProfile)) {
+            $this->createFormTemplate($imutProfile);
+            Log::info("✅ ImutProfile created: ID {$imutProfile->id} - FormTemplate auto-created");
+        } else {
+            Log::info("ℹ️  ImutProfile created: ID {$imutProfile->id} - FormTemplate NOT created (not active profile)");
+        }
+    }
+
+    /**
+     * Check if we should create FormTemplate for this profile
+     */
+    private function shouldCreateFormTemplate(ImutProfile $imutProfile): bool
+    {
+        // Only create FormTemplate if this profile is currently active
+        // (no valid_until date or valid_until is in the future)
+        
+        $now = now()->toDateString();
+        
+        // Profile must be active now
+        if (!$imutProfile->isValidOnDate($now)) {
+            return false;
+        }
+        
+        // Check if there are other active profiles for the same ImutData
+        $otherActiveProfiles = ImutProfile::where('imut_data_id', $imutProfile->imut_data_id)
+            ->where('id', '!=', $imutProfile->id)
+            ->validOnDate($now)
+            ->exists();
+        
+        // Don't create FormTemplate if there are other active profiles
+        if ($otherActiveProfiles) {
+            Log::warning("Multiple active profiles detected for ImutData {$imutProfile->imut_data_id}. FormTemplate creation skipped.");
+            return false;
+        }
+        
+        return true;
     }
 
     /**

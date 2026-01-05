@@ -56,25 +56,6 @@ trait BuildIsiPenilaian
             ->after(fn() => $this->dispatch('$refresh'));
     }
 
-    protected function buildLihatDetailAction(): Action
-    {
-        return Action::make('lihat')
-            ->label('Lihat Detail')
-            ->icon('heroicon-o-eye')
-            ->color('info')
-            ->url(fn($record) => $this->getPenilaianUrl($record));
-    }
-
-    protected function getPenilaianUrl($record): string
-    {
-        $laporanSlug = LaporanImut::findOrFail($record->laporan_imut_id)->slug;
-
-        return \App\Filament\Resources\LaporanImutResource::getUrl('edit-penilaian', [
-            'laporanSlug' => $laporanSlug,
-            'record' => $record->id,
-        ]);
-    }
-
     protected function buildPerhitunganSchemaForAction($livewireComponent): array
     {
         $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');

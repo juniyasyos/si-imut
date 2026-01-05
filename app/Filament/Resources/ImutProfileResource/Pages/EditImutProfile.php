@@ -55,10 +55,23 @@ class EditImutProfile extends EditRecord
         ];
     }
 
-    // protected function handleRecordUpdate(Model $record, array $data): Model
-    // {
-    //     return parent::handleRecordUpdate($record, $data);
-    // }
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        try {
+            return parent::handleRecordUpdate($record, $data);
+        } catch (\Exception $e) {
+            // Handle validation errors from the model
+            \Filament\Notifications\Notification::make()
+                ->title('Gagal memperbarui profil')
+                ->body($e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
+
+            // Re-throw to prevent record update
+            throw $e;
+        }
+    }
 
     protected function getHeaderActions(): array
     {

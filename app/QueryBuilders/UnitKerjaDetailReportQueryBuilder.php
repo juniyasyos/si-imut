@@ -40,8 +40,8 @@ class UnitKerjaDetailReportQueryBuilder
                 'imut_profil.version as imut_profil',
                 'imut_profil.target_value as imut_standard',
                 'imut_profil.target_operator as imut_standard_type_operator',
-                'imut_profil.start_period',
-                'imut_profil.end_period',
+                'imut_profil.valid_from',
+                'imut_profil.valid_until',
                 DB::raw(ImutCalculationService::percentageExpression(
                     'imut_penilaians.numerator_value',
                     'imut_penilaians.denominator_value'

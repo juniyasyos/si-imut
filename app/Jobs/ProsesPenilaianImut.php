@@ -8,6 +8,7 @@ use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\LaporanImutProfile;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
@@ -97,22 +98,26 @@ class ProsesPenilaianImut implements ShouldQueue
     {
         // Prioritas 1: Cek apakah sudah ada profil yang dipilih khusus untuk laporan ini
         $existingSelection = LaporanImutProfile::where('laporan_imut_id', $laporan->id)
-                                             ->where('imut_data_id', $imutData->id)
-                                             ->with('imutProfile')
-                                             ->first();
+            ->where('imut_data_id', $imutData->id)
+            ->with('imutProfile')
+            ->first();
 
         if ($existingSelection && $existingSelection->imutProfile) {
             return $existingSelection->imutProfile;
         }
 
-        // Prioritas 2: Cari profil yang valid untuk periode laporan
+        // Prioritas 2: Cari profil yang valid untuk periode laporan (berdasarkan report_month/year)
+        // Gunakan report_month dan report_year, bukan assessment_period
+        $reportPeriodStart = Carbon::create($laporan->report_year, $laporan->report_month, 1);
+        $reportPeriodEnd = $reportPeriodStart->copy()->endOfMonth();
+
         $validProfile = $imutData->profiles()
-                                ->validForPeriod(
-                                    $laporan->assessment_period_start,
-                                    $laporan->assessment_period_end
-                                )
-                                ->latest('version')
-                                ->first();
+            ->validForPeriod(
+                $reportPeriodStart,
+                $reportPeriodEnd
+            )
+            ->orderBy('valid_from', 'desc') // Pilih yang paling baru berlaku, bukan berdasarkan version string
+            ->first();
 
         return $validProfile;
     }
