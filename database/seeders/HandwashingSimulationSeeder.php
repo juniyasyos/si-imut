@@ -16,8 +16,8 @@ class HandwashingSimulationSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('🧪 SIMULASI FORM Kepatuhan Kebersihan Tangan');
-        $this->command->info('============================');
+        $this->command->info('🧪 SIMULASI FORM Kepatuhan Kebersihan Tangan - Unit IGD');
+        $this->command->info('========================================================');
 
         // Ambil template Kepatuhan Kebersihan Tangan
         $template = FormTemplate::where('title', 'LIKE', '%Kepatuhan Kebersihan Tangan%')->latest()->first();
@@ -33,21 +33,28 @@ class HandwashingSimulationSeeder extends Seeder
         // Tampilkan struktur form
         $this->showFormStructure($template);
 
-        // Simulasi 3 scenario berbeda
+        // 10 Skenario berbeda untuk unit IGD
         $scenarios = [
-            ['name' => 'Compliance Sangat Baik', 'compliance' => 'excellent'],
-            ['name' => 'Compliance Baik', 'compliance' => 'good'],
-            ['name' => 'Compliance Kurang', 'compliance' => 'poor']
+            ['name' => 'Perawat IGD Shift Pagi - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-05'],
+            ['name' => 'Dokter Jaga IGD - Patuh', 'compliance' => 'good', 'date' => '2026-01-05'],
+            ['name' => 'Perawat IGD Shift Malam - Kurang Patuh', 'compliance' => 'poor', 'date' => '2026-01-05'],
+            ['name' => 'Tim Resusitasi IGD - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-04'],
+            ['name' => 'Perawat Triase IGD - Cukup Patuh', 'compliance' => 'good', 'date' => '2026-01-04'],
+            ['name' => 'Cleaning Service IGD - Kurang Patuh', 'compliance' => 'poor', 'date' => '2026-01-04'],
+            ['name' => 'Dokter Spesialis IGD - Patuh', 'compliance' => 'good', 'date' => '2026-01-03'],
+            ['name' => 'Perawat IGD Ruang Observasi - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-03'],
+            ['name' => 'Mahasiswa Praktek IGD - Tidak Patuh', 'compliance' => 'very_poor', 'date' => '2026-01-03'],
+            ['name' => 'Supervisor IGD - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-02']
         ];
 
         foreach ($scenarios as $index => $scenario) {
-            $this->command->info("🎯 SKENARIO " . ($index + 1) . ": " . $scenario['name']);
+            $this->command->info("🎯 DATA " . ($index + 1) . ": " . $scenario['name']);
             $this->command->info('----------------------------------------');
-            $this->simulateFormSubmission($template, $scenario['compliance']);
+            $this->simulateFormSubmission($template, $scenario['compliance'], $scenario['date']);
             $this->command->info('');
         }
 
-        $this->command->info('✅ Simulasi selesai!');
+        $this->command->info('✅ Simulasi 10 data IGD selesai!');
     }
 
     private function showFormStructure(FormTemplate $template): void
@@ -82,10 +89,19 @@ class HandwashingSimulationSeeder extends Seeder
         $this->command->info('');
     }
 
-    private function simulateFormSubmission(FormTemplate $template, string $complianceLevel): void
+    private function simulateFormSubmission(FormTemplate $template, string $complianceLevel, string $date = null): void
     {
-        // Get atau buat unit kerja dan user untuk simulasi
-        $unitKerja = UnitKerja::first();
+        // Pastikan unit kerja adalah IGD
+        $unitKerja = UnitKerja::where('unit_name', 'LIKE', '%IGD%')
+            ->orWhere('unit_name', 'LIKE', '%Emergency%')
+            ->orWhere('unit_name', 'LIKE', '%Gawat Darurat%')
+            ->first();
+
+        if (!$unitKerja) {
+            // Jika tidak ada unit IGD, ambil unit kerja pertama
+            $unitKerja = UnitKerja::first();
+        }
+
         $user = User::first();
 
         if (!$unitKerja || !$user) {
@@ -93,15 +109,12 @@ class HandwashingSimulationSeeder extends Seeder
             return;
         }
 
-        $formTemplate = \App\Models\FormTemplate::first();
-        $formTemplateId = $formTemplate->id ?? null;
-
-        // Create daily report response; always include form_template_id and optionally 
+        // Create daily report response
         $dailyReport = DailyReportResponse::create([
             'form_template_id' => $template->id,
             'unit_kerja_id' => $unitKerja->id,
             'submitted_by' => $user->id,
-            'report_date' => Carbon::today(),
+            'report_date' => $date ? Carbon::parse($date) : Carbon::today(),
             'total_score' => 0,
             'compliance_status' => 'pending',
             'auto_calculated' => true,
@@ -133,7 +146,8 @@ class HandwashingSimulationSeeder extends Seeder
                     'compliance_score' => $field->calculateFieldScore($response) ?? 0,
                 ]);
 
-                $this->command->info("✏️ {$field->field_label}: " . (is_array($response) ? implode(', ', $response) : $response));
+                $displayValue = $this->getDisplayValue($field, $response);
+                $this->command->info("✏️ {$field->field_label}: {$displayValue}");
                 if ($field->compliance_weight > 0) {
                     $score = $field->calculateFieldScore($response);
                     $this->command->info("   Score: {$score} (Weight: {$field->compliance_weight})");
@@ -181,61 +195,72 @@ class HandwashingSimulationSeeder extends Seeder
         return match ($field->field_key) {
             // Form Kepatuhan Kebersihan Tangan
             'hand_hygiene_method' => match ($complianceLevel) {
-                'excellent' => 'Hand Rub (Antiseptik berbasis alkohol)',
-                'good' => 'Air + Sabun',
-                'poor' => 'Tidak melakukan cuci tangan',
-                default => 'Hand Rub (Antiseptik berbasis alkohol)'
+                'excellent' => 'hand_rub',
+                'good' => rand(0, 1) ? 'hand_rub' : 'air_sabun',
+                'poor' => rand(0, 2) ? 'air_sabun' : 'hand_rub',
+                'very_poor' => 'tidak_cuci_tangan',
+                default => 'hand_rub'
             },
 
             'hand_hygiene_indication' => match ($complianceLevel) {
                 'excellent' => [
-                    '1. Sebelum kontak dengan pasien',
-                    '2. Sebelum prosedur bersih/aseptik',
-                    '3. Setelah prosedur/risiko terpapar cairan tubuh',
-                    '4. Setelah kontak dengan pasien',
-                    '5. Setelah kontak dengan area sekitar pasien'
+                    'sebelum_kontak_pasien',
+                    'sebelum_prosedur_aseptik',
+                    'setelah_risiko_cairan',
+                    'setelah_kontak_pasien',
+                    'setelah_kontak_area_sekitar'
                 ],
-                'good' => [
-                    '1. Sebelum kontak dengan pasien',
-                    '2. Sebelum prosedur bersih/aseptik',
-                    '3. Setelah prosedur/risiko terpapar cairan tubuh',
-                    '4. Setelah kontak dengan pasien'
-                ],
-                'poor' => [
-                    '1. Sebelum kontak dengan pasien'
+                'good' => array_slice([
+                    'sebelum_kontak_pasien',
+                    'sebelum_prosedur_aseptik',
+                    'setelah_risiko_cairan',
+                    'setelah_kontak_pasien',
+                    'setelah_kontak_area_sekitar'
+                ], 0, rand(3, 4)),
+                'poor' => array_slice([
+                    'sebelum_kontak_pasien',
+                    'sebelum_prosedur_aseptik',
+                    'setelah_risiko_cairan'
+                ], 0, rand(1, 2)),
+                'very_poor' => [
+                    'sebelum_kontak_pasien'
                 ],
                 default => [
-                    '1. Sebelum kontak dengan pasien',
-                    '2. Sebelum prosedur bersih/aseptik',
-                    '3. Setelah prosedur/risiko terpapar cairan tubuh'
+                    'sebelum_kontak_pasien',
+                    'sebelum_prosedur_aseptik'
                 ]
             },
 
             'six_steps_compliance' => match ($complianceLevel) {
                 'excellent' => [
-                    '1. Gosok kedua telapak tangan',
-                    '2. Gosok punggung-sela jari kanan-kiri',
-                    '3. Gosok kedua telapak dan sela jari',
-                    '4. Jari sisi dalam kedua tangan mengunci',
-                    '5. Gosok ibu jari berputar dlm genggaman',
-                    '6. Ujung jari berputar ke telapak kanan-kiri'
+                    'gosok_telapak_tangan',
+                    'gosok_punggung_sela_jari',
+                    'gosok_telapak_sela_jari',
+                    'jari_sisi_dalam_mengunci',
+                    'gosok_ibu_jari_berputar',
+                    'ujung_jari_berputar'
                 ],
-                'good' => [
-                    '1. Gosok kedua telapak tangan',
-                    '2. Gosok punggung-sela jari kanan-kiri',
-                    '3. Gosok kedua telapak dan sela jari',
-                    '4. Jari sisi dalam kedua tangan mengunci',
-                    '5. Gosok ibu jari berputar dlm genggaman'
-                ],
-                'poor' => [
-                    '1. Gosok kedua telapak tangan',
-                    '2. Gosok punggung-sela jari kanan-kiri'
+                'good' => array_slice([
+                    'gosok_telapak_tangan',
+                    'gosok_punggung_sela_jari',
+                    'gosok_telapak_sela_jari',
+                    'jari_sisi_dalam_mengunci',
+                    'gosok_ibu_jari_berputar',
+                    'ujung_jari_berputar'
+                ], 0, rand(4, 5)),
+                'poor' => array_slice([
+                    'gosok_telapak_tangan',
+                    'gosok_punggung_sela_jari',
+                    'gosok_telapak_sela_jari',
+                    'jari_sisi_dalam_mengunci'
+                ], 0, rand(2, 3)),
+                'very_poor' => [
+                    'gosok_telapak_tangan'
                 ],
                 default => [
-                    '1. Gosok kedua telapak tangan',
-                    '2. Gosok punggung-sela jari kanan-kiri',
-                    '3. Gosok kedua telapak dan sela jari',
-                    '4. Jari sisi dalam kedua tangan mengunci'
+                    'gosok_telapak_tangan',
+                    'gosok_punggung_sela_jari',
+                    'gosok_telapak_sela_jari'
                 ]
             },
 
@@ -319,6 +344,21 @@ class HandwashingSimulationSeeder extends Seeder
         };
     }
 
+    private function getDisplayValue(EnhancedFormField $field, $response): string
+    {
+        if (is_array($response)) {
+            $displayValues = [];
+            foreach ($response as $value) {
+                $option = $field->options()->where('option_value', $value)->first();
+                $displayValues[] = $option ? $option->option_text : $value;
+            }
+            return implode(', ', $displayValues);
+        } else {
+            $option = $field->options()->where('option_value', $response)->first();
+            return $option ? $option->option_text : $response;
+        }
+    }
+
     private function getRandomOptionFromField(EnhancedFormField $field): string
     {
         $options = $field->options()->pluck('option_text')->toArray();
@@ -343,7 +383,7 @@ class HandwashingSimulationSeeder extends Seeder
         $this->command->info('');
         $this->command->info("💾 Data tersimpan dengan ID: {$dailyReport->id}");
         $this->command->info("📅 Report Date: {$dailyReport->report_date}");
-        $unitName = $dailyReport->unitKerja->name ?? 'N/A';
+        $unitName = $dailyReport->unitKerja->unit_name ?? 'N/A';
         $this->command->info("🏥 Unit Kerja: {$unitName}");
     }
 }
