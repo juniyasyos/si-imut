@@ -117,7 +117,7 @@
             "Composer\\Config::disableProcessTimeout",
             "git clean -f && git reset --hard && git pull",
             "rm -rf ./storage/debugbar/*.json",
-            "timeout 800 @php artisan migrate:fresh --seed",
+            "@php artisan migrate:fresh --seed",
             "@php artisan shield:generate --all --panel=admin",
             "@php artisan shield:super-admin --user=1",
             "git clean -f && git reset --hard"
