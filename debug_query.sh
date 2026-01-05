@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /home/juni/projects/SIIMUT
 php artisan tinker --execute="
-\$profileId = App\Models\ImutProfile::where('slug', 'verion-2024-q1-f4d7ce60-f584-4d33-bbb4-14fae4428c56')->value('id');
+\$profileId = App\Models\ImutProfile::where('slug', '/version-2024-q1-f4d7ce60-f584-4d33-bbb4-14fae4428c56')->value('id');
 echo 'Profile ID: ' . \$profileId . PHP_EOL;
 
 \$responses = App\Models\DailyReportResponse::whereHas('formTemplate', function(\$query) use (\$profileId) {
