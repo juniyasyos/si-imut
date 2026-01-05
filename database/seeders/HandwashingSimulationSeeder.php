@@ -16,13 +16,13 @@ class HandwashingSimulationSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('🧪 SIMULASI FORM CUCI TANGAN');
+        $this->command->info('🧪 SIMULASI FORM Kepatuhan Kebersihan Tangan');
         $this->command->info('============================');
 
-        // Ambil template cuci tangan
-        $template = FormTemplate::where('title', 'LIKE', '%Cuci Tangan%')->latest()->first();
+        // Ambil template Kepatuhan Kebersihan Tangan
+        $template = FormTemplate::where('title', 'LIKE', '%Kepatuhan Kebersihan Tangan%')->latest()->first();
         if (!$template) {
-            $this->command->error('Template cuci tangan tidak ditemukan!');
+            $this->command->error('Template Kepatuhan Kebersihan Tangan tidak ditemukan!');
             return;
         }
 
@@ -162,17 +162,17 @@ class HandwashingSimulationSeeder extends Seeder
         // Cek conditional logic jika field ini punya parent
         if ($field->parent_field_id) {
             $parentField = EnhancedFormField::find($field->parent_field_id);
-            
+
             if ($parentField) {
                 // Cek nilai response dari parent field
                 $parentResponse = $existingResponses[$parentField->field_key] ?? null;
-                
+
                 // Jika parent belum diisi atau nilai tidak sesuai condition, skip field ini
                 if (!$parentResponse || $parentResponse !== $field->condition_value) {
                     $this->command->info("   [Conditional] Parent '{$parentField->field_name}' = '{$parentResponse}', expected '{$field->condition_value}'");
                     return null;
                 }
-                
+
                 $this->command->info("   [Conditional] ✓ Condition met, parent '{$parentField->field_name}' = '{$parentResponse}'");
             }
         }
@@ -180,17 +180,17 @@ class HandwashingSimulationSeeder extends Seeder
         // Generate response berdasarkan field key dan compliance level
         return match ($field->field_key) {
             'data_collector' => 'Dr. Siti Nurhaliza, SpKJ',
-            
+
             'handwashing_compliance' => $complianceLevel,
-            
+
             'total_observations' => match ($complianceLevel) {
                 'excellent' => rand(95, 100),
                 'good' => rand(70, 85),
                 'poor' => rand(30, 50),
                 default => rand(50, 75)
             },
-            
-            'compliant_observations' => function() use ($complianceLevel, $existingResponses) {
+
+            'compliant_observations' => function () use ($complianceLevel, $existingResponses) {
                 $total = $existingResponses['total_observations'] ?? 100;
                 return match ($complianceLevel) {
                     'excellent' => (int)($total * 0.95), // 95%
@@ -199,14 +199,14 @@ class HandwashingSimulationSeeder extends Seeder
                     default => (int)($total * 0.65)     // 65%
                 };
             },
-            
+
             'validation_status' => match ($complianceLevel) {
                 'excellent', 'good' => 'validated',
                 'poor' => 'needs_review',
                 default => 'pending'
             },
-            
-            'validation_notes' => function() use ($complianceLevel) {
+
+            'validation_notes' => function () use ($complianceLevel) {
                 if (in_array($complianceLevel, ['excellent', 'good'])) {
                     return match ($complianceLevel) {
                         'excellent' => 'Data telah tervalidasi. Compliance sangat baik, pertahankan standar ini.',
@@ -216,17 +216,17 @@ class HandwashingSimulationSeeder extends Seeder
                 }
                 return null; // Tidak diisi jika compliance poor
             },
-            
+
             'improvement_needed' => $complianceLevel === 'poor' ? 'yes' : 'no',
-            
-            'improvement_plan' => function() use ($complianceLevel) {
+
+            'improvement_plan' => function () use ($complianceLevel) {
                 if ($complianceLevel === 'poor') {
                     return 'Rencana improvement: 1) Pelatihan ulang hand hygiene, 2) Monitoring ketat selama 2 minggu, 3) Evaluasi ulang prosedur';
                 }
                 return null;
             },
-            
-            'additional_notes' => function() use ($complianceLevel) {
+
+            'additional_notes' => function () use ($complianceLevel) {
                 return match ($complianceLevel) {
                     'excellent' => 'Tim menunjukkan compliance sangat baik. Berikan apresiasi dan jadikan best practice.',
                     'good' => 'Compliance baik secara keseluruhan. Focus pada area-area yang masih perlu improvement.',
@@ -234,31 +234,34 @@ class HandwashingSimulationSeeder extends Seeder
                     default => 'Catatan standar untuk compliance level ini.'
                 };
             },
-            
+
             // Field boolean
             'quality_assurance_check' => match ($complianceLevel) {
                 'excellent', 'good' => 'true',
                 'poor' => 'false',
                 default => 'true'
             },
-            
+
             // Field numerik lainnya
             'observation_duration_minutes' => rand(15, 60),
             'number_of_staff_observed' => rand(5, 20),
-            
+
             // Default berdasarkan tipe field
             default => match ($field->field_type) {
                 'short_text' => 'Sample response for ' . $field->field_name,
                 'long_text' => 'Detailed response for ' . $field->field_name . ' based on compliance level: ' . $complianceLevel,
                 'boolean' => rand(0, 1) ? 'true' : 'false',
                 'number' => rand(1, 100),
-                'select' => function() use ($field) {
-                    $options = $field->options()->pluck('option_text')->toArray();
-                    return !empty($options) ? $options[array_rand($options)] : 'default_option';
-                }(),
+                'select' => $this->getRandomOptionFromField($field),
                 default => 'Generated value for ' . $field->field_key
             }
         };
+    }
+
+    private function getRandomOptionFromField(EnhancedFormField $field): string
+    {
+        $options = $field->options()->pluck('option_text')->toArray();
+        return !empty($options) ? $options[array_rand($options)] : 'default_option';
     }
 
     private function showResults(array $complianceResult, DailyReportResponse $dailyReport): void
