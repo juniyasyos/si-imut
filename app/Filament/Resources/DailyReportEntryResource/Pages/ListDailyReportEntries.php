@@ -16,6 +16,11 @@ class ListDailyReportEntries extends ListRecords
 
     protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
 
+    // Add listeners for Alpine.js events
+    protected $listeners = [
+        'dateSelected' => 'handleDateSelected',
+    ];
+
     // Matrix properties
     public string $selectedMonth;
     public array $indicators = [];
@@ -33,6 +38,16 @@ class ListDailyReportEntries extends ListRecords
     public array $selectedIndicatorData = [];
     public $dailyReports = []; // Cache for slide-over data
     public string $filterPeriod = 'today';
+
+    /**
+     * Handle date selection from frontend
+     */
+    public function handleDateSelected(string $date): void
+    {
+        $this->selectedDate = $date;
+        // Optionally, you can reload data or trigger other actions
+        // based on the selected date if needed
+    }
 
     /**
      * Filter logic methods
@@ -97,6 +112,7 @@ class ListDailyReportEntries extends ListRecords
     {
         parent::mount();
         $this->selectedMonth = now()->format('Y-m');
+        $this->selectedDate = now()->format('Y-m-d'); // Initialize selected date
         $this->loadMatrixData();
     }
 
