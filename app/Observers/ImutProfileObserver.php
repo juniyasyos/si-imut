@@ -22,8 +22,35 @@ class ImutProfileObserver
             $this->createFormTemplate($imutProfile);
             Log::info("✅ ImutProfile created: ID {$imutProfile->id} - FormTemplate auto-created");
         } else {
-            Log::info("ℹ️  ImutProfile created: ID {$imutProfile->id} - FormTemplate NOT created (not active profile)");
+            Log::info("ℹ️  ImutProfile created: ID {$imutProfile->id} - FormTemplate NOT created (conditions not met)");
         }
+    }
+
+    /**
+     * Handle the ImutProfile "updated" event.
+     */
+    public function updated(ImutProfile $imutProfile): void
+    {
+        // Check if validity dates changed and affect FormTemplate requirement
+        if ($imutProfile->wasChanged(['valid_from', 'valid_until'])) {
+            Log::info("ImutProfile {$imutProfile->id} validity dates changed, checking FormTemplate requirement");
+
+            // If profile became active and doesn't have FormTemplate, create one
+            if ($this->shouldCreateFormTemplate($imutProfile)) {
+                $this->createFormTemplate($imutProfile);
+                Log::info("✅ ImutProfile updated: ID {$imutProfile->id} - FormTemplate auto-created due to validity change");
+            }
+        }
+    }
+
+    /**
+     * Handle the ImutProfile "deleted" event.
+     */
+    public function deleted(ImutProfile $imutProfile): void
+    {
+        // Note: FormTemplates will be cascade deleted by database constraints
+        // This is just for logging purposes
+        Log::info("ImutProfile {$imutProfile->id} deleted - associated FormTemplates will be cascade deleted");
     }
 
     /**
@@ -33,26 +60,35 @@ class ImutProfileObserver
     {
         // Only create FormTemplate if this profile is currently active
         // (no valid_until date or valid_until is in the future)
-        
+
         $now = now()->toDateString();
-        
+
         // Profile must be active now
         if (!$imutProfile->isValidOnDate($now)) {
+            Log::info("Profile {$imutProfile->id} not active on {$now}, skipping FormTemplate creation");
             return false;
         }
-        
-        // Check if there are other active profiles for the same ImutData
-        $otherActiveProfiles = ImutProfile::where('imut_data_id', $imutProfile->imut_data_id)
+
+        // Check if FormTemplate already exists for this profile
+        $existingTemplate = FormTemplate::where('imut_profile_id', $imutProfile->id)->exists();
+        if ($existingTemplate) {
+            Log::info("FormTemplate already exists for profile {$imutProfile->id}, skipping creation");
+            return false;
+        }
+
+        // Check if there are other active profiles for the same ImutData with existing FormTemplates
+        $otherActiveProfilesWithTemplates = ImutProfile::where('imut_data_id', $imutProfile->imut_data_id)
             ->where('id', '!=', $imutProfile->id)
             ->validOnDate($now)
+            ->whereHas('formTemplates')
             ->exists();
-        
-        // Don't create FormTemplate if there are other active profiles
-        if ($otherActiveProfiles) {
-            Log::warning("Multiple active profiles detected for ImutData {$imutProfile->imut_data_id}. FormTemplate creation skipped.");
+
+        // Don't create FormTemplate if there are other active profiles with templates
+        if ($otherActiveProfilesWithTemplates) {
+            Log::warning("Multiple active profiles with FormTemplates detected for ImutData {$imutProfile->imut_data_id}. FormTemplate creation skipped.");
             return false;
         }
-        
+
         return true;
     }
 
@@ -61,13 +97,29 @@ class ImutProfileObserver
      */
     private function createFormTemplate(ImutProfile $imutProfile): void
     {
-        // First try to find JSON configuration based on ImutData title
-        $jsonConfig = $this->findJsonConfigByTitle($imutProfile->imutData->title);
+        try {
+            // Load ImutData relation to avoid N+1 queries
+            $imutProfile->load('imutData');
 
-        if ($jsonConfig) {
-            $this->createTemplateFromJson($imutProfile, $jsonConfig);
-        } else {
-            $this->createDefaultYesNoTemplate($imutProfile);
+            Log::info("Creating FormTemplate for ImutProfile {$imutProfile->id}: {$imutProfile->imutData->title}");
+
+            // First try to find JSON configuration based on ImutData title
+            $jsonConfig = $this->findJsonConfigByTitle($imutProfile->imutData->title);
+
+            if ($jsonConfig) {
+                $this->createTemplateFromJson($imutProfile, $jsonConfig);
+                Log::info("FormTemplate created from JSON for ImutProfile {$imutProfile->id}");
+            } else {
+                $this->createDefaultYesNoTemplate($imutProfile);
+                Log::info("Default FormTemplate created for ImutProfile {$imutProfile->id}");
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to create FormTemplate for ImutProfile {$imutProfile->id}", [
+                'error' => $e->getMessage(),
+                'imut_data_title' => $imutProfile->imutData->title ?? 'Unknown',
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
     }
 

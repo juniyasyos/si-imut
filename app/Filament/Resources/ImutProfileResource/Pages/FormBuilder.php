@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
 use App\Filament\Resources\ImutProfileResource;
-use App\Filament\Resources\ImutDataResource\Pages\Helper\FormFields;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\ImutProfile;
 use App\Models\FormTemplate;
 use App\Services\FormBuilder\FormDataService;
-use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Concerns\InteractsWithForms; 
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
@@ -48,8 +48,8 @@ class FormBuilder extends Page implements HasForms
 
         if (!$this->formTemplate) {
             Notification::make()
-                ->title('Form belum dikonfigurasi')
-                ->body('Silakan konfigurasi form terlebih dahulu sebelum melihat preview.')
+                ->title('Form Template Tidak Ditemukan')
+                ->body('Silakan buat form template terlebih dahulu di Form Builder.')
                 ->warning()
                 ->send();
 
@@ -57,104 +57,289 @@ class FormBuilder extends Page implements HasForms
             return;
         }
 
-        // Fill form with empty data to show the structure
-        $this->form->fill([]);
+        // Initialize empty form data
+        $this->initializePreviewData();
+        $this->form->fill($this->previewData);
     }
 
     public function form(Form $form): Form
     {
         if (!$this->formTemplate) {
             return $form->schema([
-                Placeholder::make('no_form')
-                    ->label('Form Tidak Tersedia')
-                    ->content('Form belum dikonfigurasi untuk profil ini.')
+                Placeholder::make('no_template')
+                    ->content('Form template tidak ditemukan.')
             ]);
         }
 
-        $schema = [];
-
-        // Add form title and description
-        $schema[] = Section::make($this->formTemplate->title)
-            ->description($this->formTemplate->description)
-            ->schema($this->buildFormFields());
-
-        return $form->schema($schema);
+        return $form
+            ->schema($this->buildPreviewFormSchema())
+            ->statePath('previewData')
+            ->live();
     }
 
-    private function buildFormFields(): array
+    protected function buildPreviewFormSchema(): array
     {
         $fields = [];
 
-        foreach ($this->formTemplate->formFields()->orderBy('order_index')->get() as $field) {
-            $component = $this->createFieldComponent($field);
+        // Form Header Section
+        $fields[] = Section::make('Informasi Form')
+            ->schema([
+                Placeholder::make('form_title')
+                    ->content(fn() => new HtmlString('<h2 class="text-xl font-semibold text-gray-900 dark:text-white">' . $this->formTemplate->title . '</h2>')),
+
+                Placeholder::make('form_description')
+                    ->content($this->formTemplate->description ?? '')
+                    ->visible(fn() => !empty($this->formTemplate->description)),
+
+                Grid::make(3)
+                    ->schema([
+                        Placeholder::make('compliance_method')
+                            ->content('Metode: ' . ucfirst(str_replace('_', ' ', $this->formTemplate->compliance_method))),
+
+                        Placeholder::make('total_fields')
+                            ->content('Fields: ' . $this->formTemplate->formFields->count()),
+
+                        Placeholder::make('critical_fields')
+                            ->content('Critical: ' . $this->formTemplate->formFields->where('is_critical_field', true)->count()),
+                    ])
+            ])
+            ->collapsible();
+
+        // Dynamic Form Fields Section
+        $formFieldsSchema = [];
+        $sortedFields = $this->formTemplate->formFields->sortBy('order_index');
+
+        foreach ($sortedFields as $field) {
+            $component = FormFields::createFormComponent($field);
             if ($component) {
-                $fields[] = $component;
+                // Wrap each field in its own Section to improve visual separation
+                $formFieldsSchema[] = Section::make($field->field_label)
+                    ->schema([
+                        $component->label(''),
+                    ])
+                    ->columns(1);
             }
         }
+
+        $fields[] = Section::make('Preview Form Fields')
+            ->description('Preview form sesuai konfigurasi yang telah dibuat. Data yang diisi akan digunakan untuk menghitung compliance score.')
+            ->schema($formFieldsSchema)
+            ->columns(1);
+
+        // Compliance Calculation Section
+        $fields[] = Section::make('Compliance Calculation')
+            ->schema([
+                Placeholder::make('compliance_calculation')
+                    ->content(fn() => $this->generateCompliancePreview())
+                    ->columnSpanFull(),
+            ]);
 
         return $fields;
     }
 
-    private function createFieldComponent($field)
+    protected function generateCompliancePreview(): HtmlString
     {
-        switch ($field->field_type) {
-            case 'text':
-                return TextInput::make($field->field_key)
-                    ->label($field->field_label)
-                    ->placeholder($field->field_description)
-                    ->disabled();
+        if (!$this->formTemplate) {
+            return new HtmlString('<p class="text-gray-500">Form template tidak tersedia</p>');
+        }
 
-            case 'textarea':
-                return Textarea::make($field->field_key)
-                    ->label($field->field_label)
-                    ->placeholder($field->field_description)
-                    ->rows(3)
-                    ->disabled();
+        try {
+            $currentData = $this->form->getState();
+        } catch (\Exception $e) {
+            // Handle validation errors by using current preview data
+            $currentData = $this->previewData ?? [];
+        }
 
-            case 'select':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
+        $compliance = $this->calculateCompliance($currentData);
+
+        $html = '<div class="space-y-4">';
+
+        // Overall Score
+        $scoreColor = $compliance['score'] >= 80 ? 'green' : ($compliance['score'] >= 60 ? 'yellow' : 'red');
+        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/80">';
+        $html .= '<h3 class="text-lg font-semibold mb-2">Overall Compliance Score</h3>';
+        $html .= '<div class="text-2xl font-bold text-' . $scoreColor . '-600">' . number_format($compliance['score'], 1) . '%</div>';
+        $html .= '<p class="text-sm text-gray-600">' . $compliance['status'] . '</p>';
+        $html .= '</div>';
+
+        // Field Breakdown
+        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/80">';
+        $html .= '<h4 class="font-semibold mb-3">Field Breakdown</h4>';
+        $html .= '<div class="space-y-2 text-sm">';
+
+        foreach ($compliance['fields'] as $fieldKey => $fieldData) {
+            $field = $this->formTemplate->formFields->where('field_key', $fieldKey)->first();
+            if ($field) {
+                $weight = $field->compliance_weight;
+                $score = $fieldData['score'];
+                $maxScore = $weight;
+                $percentage = $maxScore > 0 ? ($score / $maxScore) * 100 : 0;
+
+                $html .= '<div class="flex justify-between">';
+                $html .= '<span>' . $field->field_label . ($field->is_critical_field ? ' ⚠️' : '') . '</span>';
+                $html .= '<span>' . number_format($score, 1) . '/' . $weight . ' (' . number_format($percentage, 1) . '%)</span>';
+                $html .= '</div>';
+            }
+        }
+
+        $html .= '</div></div>';
+
+        // Auto-fail warnings
+        if (!empty($compliance['warnings'])) {
+            $html .= '<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200">';
+            $html .= '<h4 class="font-semibold text-red-800 mb-2">Warnings</h4>';
+            $html .= '<ul class="text-sm text-red-700 space-y-1">';
+            foreach ($compliance['warnings'] as $warning) {
+                $html .= '<li>• ' . $warning . '</li>';
+            }
+            $html .= '</ul></div>';
+        }
+
+        $html .= '</div>';
+
+        return new HtmlString($html);
+    }
+
+    protected function calculateCompliance(array $data): array
+    {
+        $totalWeight = 0;
+        $totalScore = 0;
+        $fieldBreakdown = [];
+        $warnings = [];
+        $autoFail = false;
+
+        foreach ($this->formTemplate->formFields as $field) {
+            $fieldValue = $data[$field->field_key] ?? null;
+            $fieldScore = 0;
+
+            // Skip if field is not visible due to conditional logic
+            if ($field->conditional_logic && !FormFields::isFieldVisible($field, $data)) {
+                continue;
+            }
+
+            if ($field->compliance_weight > 0) {
+                $totalWeight += $field->compliance_weight;
+
+                // Calculate field score based on field type and options
+                if (!empty($fieldValue)) {
+                    switch ($field->field_type) {
+                        case 'single_select':
+                            $option = $field->options->where('option_value', $fieldValue)->first();
+                            if ($option) {
+                                // Simple boolean: is_correct = Pass (full weight), not correct = Fail (0)
+                                $fieldScore = ($option->is_correct ?? false) ? $field->compliance_weight : 0;
+                            }
+                            break;
+
+                        case 'multi_select':
+                            if (is_array($fieldValue)) {
+                                $correctSelected = 0;
+                                $wrongSelected = 0;
+
+                                foreach ($fieldValue as $value) {
+                                    $option = $field->options->where('option_value', $value)->first();
+                                    if ($option) {
+                                        if ($option->is_correct ?? false) {
+                                            $correctSelected++;
+                                        } else {
+                                            $wrongSelected++;
+                                        }
+                                    }
+                                }
+
+                                // Apply boolean rules
+                                $complianceRules = $field->compliance_rules ?? [];
+                                $minCorrect = $complianceRules['minimum_correct'] ?? 1;
+                                $allowWrong = $complianceRules['allow_wrong_selections'] ?? true;
+
+                                // Check if passes rules
+                                $passesMinimum = $correctSelected >= $minCorrect;
+                                $passesWrongRule = $allowWrong || $wrongSelected == 0;
+
+                                $fieldScore = ($passesMinimum && $passesWrongRule) ? $field->compliance_weight : 0;
+                            }
+                            break;
+
+                        case 'boolean':
+                            if ($field->options->count() > 0) {
+                                $option = $field->options->where('option_value', $fieldValue)->first();
+                                if ($option) {
+                                    $fieldScore = $option->compliance_value * $field->compliance_weight;
+                                }
+                            } else {
+                                $fieldScore = $fieldValue ? $field->compliance_weight : 0;
+                            }
+                            break;
+
+                        default:
+                            $fieldScore = $field->compliance_weight; // Default to full score if filled
+                    }
+                } else if ($field->is_critical_field && $field->validation_config['required'] ?? false) {
+                    $warnings[] = "Critical field '{$field->field_label}' is required but empty";
+                    if ($this->formTemplate->auto_fail_on_critical) {
+                        $autoFail = true;
+                    }
                 }
 
-                return Select::make($field->field_key)
-                    ->label($field->field_label)
-                    ->options($options)
-                    ->placeholder($field->field_description)
-                    ->disabled();
+                $totalScore += $fieldScore;
+                $fieldBreakdown[$field->field_key] = [
+                    'score' => $fieldScore,
+                    'weight' => $field->compliance_weight
+                ];
+            }
+        }
 
-            case 'radio':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
+        $percentage = $totalWeight > 0 ? ($totalScore / $totalWeight) * 100 : 0;
+
+        if ($autoFail) {
+            $percentage = 0;
+            $status = 'Auto-Failed (Critical field missing)';
+        } else {
+            $status = $percentage >= 80 ? 'Compliant' : ($percentage >= 60 ? 'Partially Compliant' : 'Non-Compliant');
+        }
+
+        return [
+            'score' => $percentage,
+            'total_score' => $totalScore,
+            'total_weight' => $totalWeight,
+            'status' => $status,
+            'fields' => $fieldBreakdown,
+            'warnings' => $warnings,
+            'auto_fail' => $autoFail
+        ];
+    }
+
+    protected function initializePreviewData(): void
+    {
+        $this->previewData = [];
+
+        foreach ($this->formTemplate->formFields as $field) {
+            // Set default values based on field type and validation
+            $defaultValue = null;
+
+            if (($field->validation_config['required'] ?? false)) {
+                // Set appropriate default for required fields to prevent validation errors
+                switch ($field->field_type) {
+                    case 'text':
+                        $defaultValue = '';
+                        break;
+                    case 'number':
+                        $defaultValue = 0;
+                        break;
+                    case 'single_select':
+                    case 'boolean':
+                        // Leave as null for selects to show placeholder
+                        $defaultValue = null;
+                        break;
+                    case 'multi_select':
+                        $defaultValue = [];
+                        break;
+                    default:
+                        $defaultValue = null;
                 }
+            }
 
-                return Radio::make($field->field_key)
-                    ->label($field->field_label)
-                    ->options($options)
-                    ->disabled();
-
-            case 'checkbox':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                return CheckboxList::make($field->field_key)
-                    ->label($field->field_label)
-                    ->options($options)
-                    ->disabled();
-
-            case 'toggle':
-                return Toggle::make($field->field_key)
-                    ->label($field->field_label)
-                    ->disabled();
-
-            default:
-                return TextInput::make($field->field_key)
-                    ->label($field->field_label)
-                    ->placeholder($field->field_description)
-                    ->disabled();
+            $this->previewData[$field->field_key] = $defaultValue;
         }
     }
 
@@ -162,47 +347,29 @@ class FormBuilder extends Page implements HasForms
     {
         return [
             Action::make('back_to_builder')
-                ->label('Kembali ke Builder')
+                ->label('Kembali ke Form Builder')
                 ->icon('heroicon-o-arrow-left')
                 ->url(fn() => static::getResource()::getUrl('manage-form-builder', ['record' => $this->record]))
                 ->color('gray'),
-
-            Action::make('test_form')
-                ->label('Test Form')
-                ->icon('heroicon-o-play')
-                ->color('success')
-                ->action('testForm'),
-        ];
-    }
-
-    public function testForm(): void
-    {
-        // Calculate compliance score based on current form data
-        $this->complianceScore = $this->formTemplate->calculateCompliance($this->data);
-
-        Notification::make()
-            ->title('Form Test Completed')
-            ->body("Compliance Score: " . round($this->complianceScore * 100, 2) . "%")
-            ->success()
-            ->send();
-    }
-
-    public function getBreadcrumbs(): array
-    {
-        return [
-            url()->previous() => 'Kembali',
-            ImutProfileResource::getUrl('manage-form-builder', ['record' => $this->record]) => 'Konfigurasi Form Laporan Harian',
-            '#' => 'Preview Form',
         ];
     }
 
     public function getTitle(): string
     {
-        return 'Preview Form Laporan Harian';
+        return 'Preview Form: ' . $this->record->version;
     }
 
-    public function getHeading(): string
+    public function getBreadcrumb(): string
     {
-        return 'Preview Form: ' . ($this->record->version ?? 'Profil IMUT');
+        return 'Preview Form';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            ImutProfileResource::getUrl('index') => 'Profil IMUT',
+            ImutProfileResource::getUrl('manage-form-builder', ['record' => $this->record]) => 'Konfigurasi Form Laporan Harian',
+            '#' => 'Preview Form',
+        ];
     }
 }
