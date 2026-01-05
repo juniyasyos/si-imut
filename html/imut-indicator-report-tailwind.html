@@ -9,6 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Roboto:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .report-header {
+            font-family: 'Roboto', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
         @page {
             size: A4;
             margin: 1cm;
@@ -40,6 +51,10 @@
                 page-break-inside: avoid;
             }
         }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -48,49 +63,56 @@
     <!-- Loading State -->
     <div x-show="loading" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div class="rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" style="animation: spin 1s linear infinite;"></div>
             <p class="mt-2 text-gray-600">Loading data...</p>
         </div>
     </div>
-
-
 
     <div class="max-w-6xl mx-auto bg-white p-8 shadow-xl border border-gray-200"
         style="min-height: calc(100vh - 100px);">
         
         <!-- Header dengan Logo -->
-        <div class="text-center border-b-4 border-blue-600 pb-6 mb-8">
-            <div class="flex items-center justify-center gap-8 mb-4">
+        <div class="report-header border-b-2 border-gray-800 pb-4 mb-8">
+            <div class="flex items-start justify-between gap-6 mb-3">
                 <!-- Logo Kiri -->
-                <div class="w-20 h-20 flex-shrink-0">
+                <div class="w-16 h-16 flex-shrink-0">
                     <svg viewBox="0 0 100 100" class="w-full h-full">
-                        <circle cx="50" cy="50" r="45" fill="#2563eb" />
+                        <circle cx="50" cy="50" r="45" fill="#1e40af" />
                         <path d="M50 20 L50 80 M20 50 L80 50" stroke="white" stroke-width="8" stroke-linecap="round" />
                         <circle cx="50" cy="50" r="12" fill="white" />
                     </svg>
                 </div>
 
                 <!-- Text Content -->
-                <div>
-                    <div class="text-blue-800 font-semibold text-base mb-2">SISTEM INFORMASI INDIKATOR MUTU</div>
-                    <h1 class="text-2xl font-bold text-gray-900 my-3">Laporan Triwulan Indikator Mutu</h1>
-                    <h2 class="text-xl font-semibold text-gray-700">RUMAH SAKIT CITRA HUSADA JEMBER</h2>
+                <div class="flex-1 text-center">
+                    <h1 class="text-xl font-bold text-gray-900 mb-1" style="letter-spacing: 1px;">RUMAH SAKIT CITRA HUSADA JEMBER</h1>
+                    <div class="text-xs text-gray-600 mb-2" style="letter-spacing: 0.5px;">Jl. Contoh No. 123, Jember, Jawa Timur 68100 | Telp: (0331) 123456</div>
+                    <div class="h-px bg-gray-400 my-2"></div>
+                    <h2 class="text-base font-bold text-gray-800 uppercase" style="letter-spacing: 1.5px;">Laporan Triwulan Indikator Mutu</h2>
+                    <div class="text-xs text-gray-600 mt-1" style="letter-spacing: 0.5px;">Sistem Informasi Indikator Mutu (SI-IMUT)</div>
                 </div>
 
                 <!-- Logo Kanan -->
-                <div class="w-20 h-20 flex-shrink-0">
+                <div class="w-16 h-16 flex-shrink-0">
                     <svg viewBox="0 0 100 100" class="w-full h-full">
-                        <rect width="100" height="100" rx="10" fill="#10b981" />
+                        <rect width="100" height="100" rx="10" fill="#059669" />
                         <path d="M30 50 L45 65 L70 35" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
                     </svg>
                 </div>
+            </div>
+            
+            <!-- Document Info Bar -->
+            <div class="bg-gray-100 border border-gray-300 rounded px-4 py-2 flex justify-between items-center text-xs">
+                <div><span class="font-semibold text-gray-700">Nomor Dokumen:</span> <span class="text-gray-600">IMUT/LAP/001/2024</span></div>
+                <div><span class="font-semibold text-gray-700">Tanggal Cetak:</span> <span class="text-gray-600" x-text="new Date().toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'})"></span></div>
+                <div><span class="font-semibold text-gray-700">Halaman:</span> <span class="text-gray-600">1 dari 1</span></div>
             </div>
         </div>
 
         <!-- Enhanced Dashboard -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Left Card -->
-            <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-lg shadow-md">
                 <h3 class="text-lg font-bold mb-4" x-text="imutData.title"></h3>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
@@ -105,7 +127,7 @@
             </div>
 
             <!-- Right Card -->
-            <div class="bg-gradient-to-br from-green-500 to-green-700 text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+            <div class="bg-gradient-to-br from-green-500 to-green-700 text-white p-6 rounded-lg shadow-md">
                 <h4 class="text-lg font-bold mb-4">Pencapaian Saat Ini</h4>
                 <div class="space-y-3">
                     <div class="text-center">
@@ -122,32 +144,32 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white border-l-4 border-blue-500 p-4 rounded-lg shadow-md">
+            <div class="bg-white border-l-4 border-blue-500 p-4 rounded shadow">
                 <div class="text-xs text-gray-500 mb-1">Total Unit Kerja</div>
                 <div class="text-2xl font-bold text-gray-800" x-text="summary.total_unit_kerja ? summary.total_unit_kerja.toLocaleString() : '...'"></div>
             </div>
-            <div class="bg-white border-l-4 border-green-500 p-4 rounded-lg shadow-md">
+            <div class="bg-white border-l-4 border-green-500 p-4 rounded shadow">
                 <div class="text-xs text-gray-500 mb-1">Total Numerator</div>
                 <div class="text-2xl font-bold text-gray-800" x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : '...'"></div>
             </div>
-            <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-lg shadow-md">
+            <div class="bg-white border-l-4 border-yellow-500 p-4 rounded shadow">
                 <div class="text-xs text-gray-500 mb-1">Total Denominator</div>
                 <div class="text-2xl font-bold text-gray-800" x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : '...'"></div>
             </div>
-            <div class="bg-white border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
+            <div class="bg-white border-l-4 border-purple-500 p-4 rounded shadow">
                 <div class="text-xs text-gray-500 mb-1">Rata-rata</div>
                 <div class="text-2xl font-bold text-gray-800" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '...'"></div>
             </div>
         </div>
 
         <!-- Definition Section -->
-        <div x-show="imutData.definition" class="bg-yellow-50 border border-yellow-300 rounded-lg p-5 mb-6 shadow-sm">
+        <div x-show="imutData.definition" class="bg-yellow-50 border border-yellow-300 rounded p-5 mb-6">
             <h4 class="text-sm font-semibold text-yellow-800 mb-2">📋 Definisi Operasional</h4>
             <p class="text-sm text-yellow-900 leading-relaxed" x-text="imutData.definition"></p>
         </div>
 
         <!-- Chart Section -->
-        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-lg">
+        <div class="bg-white border border-gray-200 rounded p-6 mb-6">
             <!-- Chart Header -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-gray-200">
                 <div class="mb-4 md:mb-0">
@@ -161,7 +183,7 @@
                 </div>
 
                 <!-- Filter Section (No Print) -->
-                <div class="no-print bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                <div class="no-print bg-gradient-to-r from-blue-50 to-indigo-50 rounded p-4 border border-blue-200">
                     <div class="flex items-center gap-3 mb-3">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -171,23 +193,23 @@
                     
                     <div class="flex flex-wrap gap-3">
                         <!-- Benchmark Filter -->
-                        <div class="flex items-center gap-3 bg-white rounded-md px-3 py-2 border border-gray-200 shadow-sm">
+                        <div class="flex items-center gap-3 bg-white rounded px-3 py-2 border border-gray-200">
                             <span class="text-xs font-medium text-gray-600 whitespace-nowrap">Tampilkan:</span>
-                            <label class="flex items-center gap-1.5 cursor-pointer group">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" x-model="showBenchmarkNasional" @change="updateChart()"
                                     class="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-2 focus:ring-yellow-400 cursor-pointer">
-                                <span class="text-xs font-medium text-gray-700 group-hover:text-yellow-600 transition-colors">Nasional</span>
+                                <span class="text-xs font-medium text-gray-700">Nasional</span>
                             </label>
-                            <label class="flex items-center gap-1.5 cursor-pointer group">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" x-model="showBenchmarkProvinsi" @change="updateChart()"
                                     class="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-2 focus:ring-green-400 cursor-pointer">
-                                <span class="text-xs font-medium text-gray-700 group-hover:text-green-600 transition-colors">Provinsi</span>
+                                <span class="text-xs font-medium text-gray-700">Provinsi</span>
                             </label>
                         </div>
 
                         <!-- Period Filter -->
                         <select x-model="periodFilter" @change="applyFilters()"
-                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer hover:border-blue-400 transition-colors">
+                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
                             <template x-for="(label, value) in periodLabels" :key="value">
                                 <option :value="value" x-text="label"></option>
                             </template>
@@ -195,7 +217,7 @@
 
                         <!-- Notes Filter -->
                         <select x-show="availableNotes.length > 0" x-model="selectedNoteId" @change="applyFilters()"
-                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer hover:border-blue-400 transition-colors">
+                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
                             <template x-for="note in availableNotes" :key="note.id">
                                 <option :value="note.id" x-text="note.title"></option>
                             </template>
@@ -212,7 +234,7 @@
         <div class="mb-6">
             <div class="text-lg font-bold mb-4 text-gray-900">Tabel Perbandingan Pencapaian</div>
 
-            <div class="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
+            <div class="overflow-x-auto border border-gray-200 rounded">
                 <table class="w-full border-collapse text-sm bg-white">
                     <thead>
                         <tr>
@@ -271,7 +293,7 @@
             </div>
 
             <!-- Detail info per bulan -->
-            <div class="mt-5 text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div class="mt-5 text-sm text-gray-700 bg-gray-50 p-4 rounded border border-gray-200">
                 <strong>Keterangan:</strong>
                 <ul class="ml-5 mt-1 space-y-1">
                     <li><strong>Standar</strong>: Target standar yang harus dicapai (<span x-text="imutData.standard"></span>%)</li>
@@ -281,28 +303,11 @@
                     <li><strong>Benchmark</strong>: Perbandingan dengan standar nasional/provinsi</li>
                     <li>Baris dengan tanda <span class="text-blue-600">●</span> adalah periode laporan aktif</li>
                 </ul>
-
-                <strong class="mt-4 block">Detail Capaian per Bulan:</strong>
-                <ul class="ml-5 mt-1 space-y-1">
-                    <template x-for="data in historicalData" :key="data.month">
-                        <li>
-                            <strong x-text="data.month + ':'"></strong>
-                            <span x-show="data.percentage !== null"
-                                :class="data.percentage >= imutData.standard ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'"
-                                x-text="data.percentage ? data.percentage.toFixed(2) + '%' : '-'">
-                            </span>
-                            <span x-show="data.percentage !== null" class="text-gray-500 text-xs"
-                                x-text="'(N=' + data.numerator.toLocaleString() + ', D=' + data.denominator.toLocaleString() + ')'">
-                            </span>
-                            <span x-show="data.percentage === null" class="text-gray-400">Data belum tersedia</span>
-                        </li>
-                    </template>
-                </ul>
             </div>
         </div>
 
         <!-- Analysis Box -->
-        <div class="bg-blue-50 border border-blue-300 rounded-lg p-6 mb-6 shadow-sm">
+        <div class="bg-blue-50 border border-blue-300 rounded p-6 mb-6">
             <h4 class="text-base font-semibold text-blue-900 mb-4">📊 Analisis dan Interpretasi Data</h4>
 
             <div x-show="selectedNote">
@@ -344,58 +349,6 @@
             </div>
         </div>
 
-        <!-- Data Section by Unit Kerja -->
-        <div class="mb-6">
-            <div class="text-lg font-bold mb-4 text-gray-900">Data Per Unit Kerja</div>
-
-            <div class="overflow-x-auto shadow-sm border border-gray-200 rounded-lg">
-                <table class="w-full border-collapse text-sm bg-white">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700">No</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700">Unit Kerja</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">N</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">D</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Persentase</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Standar</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700 text-center">Status</th>
-                            <th class="border border-gray-300 p-2 font-semibold text-gray-700">Profil</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(data, index) in unitKerjaData" :key="index">
-                            <tr class="hover:bg-gray-50">
-                                <td class="border border-gray-300 p-2 text-center" x-text="index + 1"></td>
-                                <td class="border border-gray-300 p-2" x-text="data.unit_kerja"></td>
-                                <td class="border border-gray-300 p-2 text-center" x-text="data.numerator_value ? data.numerator_value.toLocaleString() : '-'"></td>
-                                <td class="border border-gray-300 p-2 text-center" x-text="data.denominator_value ? data.denominator_value.toLocaleString() : '-'"></td>
-                                <td class="border border-gray-300 p-2 text-right font-semibold" x-text="data.percentage ? data.percentage.toFixed(2) + '%' : '-'"></td>
-                                <td class="border border-gray-300 p-2 text-center" x-text="data.imut_standard + '%'"></td>
-                                <td class="border border-gray-300 p-2 text-center">
-                                    <span x-show="data.percentage >= data.imut_standard" class="text-green-600 font-semibold">✓ Tercapai</span>
-                                    <span x-show="data.percentage < data.imut_standard" class="text-red-600 font-semibold">✗ Belum</span>
-                                </td>
-                                <td class="border border-gray-300 p-2 text-xs" x-text="data.imut_profil"></td>
-                            </tr>
-                        </template>
-
-                        <!-- Summary Row -->
-                        <tr class="bg-blue-50 font-bold">
-                            <td colspan="2" class="border border-gray-300 p-2 text-center">TOTAL / RATA-RATA</td>
-                            <td class="border border-gray-300 p-2 text-center" x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : '-'"></td>
-                            <td class="border border-gray-300 p-2 text-center" x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : '-'"></td>
-                            <td class="border border-gray-300 p-2 text-right text-blue-800" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '-'"></td>
-                            <td class="border border-gray-300 p-2 text-center" x-text="imutData.standard + '%'"></td>
-                            <td class="border border-gray-300 p-2 text-center">
-                                <span x-show="summary.average_percentage >= imutData.standard" class="text-green-600">✓ Tercapai</span>
-                                <span x-show="summary.average_percentage < imutData.standard" class="text-red-600">✗ Belum Tercapai</span>
-                            </td>
-                            <td class="border border-gray-300 p-2">-</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
         <!-- Footer & Signature -->
         <div class="mt-10 border-t-2 border-gray-300 pt-6">
@@ -418,10 +371,10 @@
 
     <!-- Preview Controls -->
     <div class="no-print fixed bottom-5 right-5 flex gap-3 z-50">
-        <button onclick="history.back()" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 shadow-lg">
+        <button onclick="history.back()" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded hover:bg-gray-700">
             ← Kembali
         </button>
-        <button onclick="window.print()" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 shadow-lg">
+        <button onclick="window.print()" class="px-4 py-2 bg-green-600 text-white font-semibold rounded hover:bg-green-700">
             🖨️ Cetak
         </button>
     </div>
