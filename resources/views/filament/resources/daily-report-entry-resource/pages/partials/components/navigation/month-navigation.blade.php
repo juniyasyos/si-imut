@@ -4,7 +4,6 @@
         <button wire:click="previousMonth"
             class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition">
             @svg("heroicon-o-chevron-left", "w-5 h-5 mr-1")
-            Prev
         </button>
 
         <div class="text-center">
@@ -19,7 +18,6 @@
         <button wire:click="nextMonth"
             @if(!$this->canGoNextMonth()) disabled @endif
             class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-700">
-            Next
             @svg("heroicon-o-chevron-right", "w-5 h-5 ml-1")
         </button>
     </div>

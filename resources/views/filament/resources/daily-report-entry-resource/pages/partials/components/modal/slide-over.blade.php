@@ -114,7 +114,7 @@
                                 style="background: linear-gradient(to right, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));"></div>
 
                             @svg("heroicon-o-plus-circle", "relative w-6 h-6 mr-2.5 transform group-hover:rotate-180 group-hover:scale-110 transition-all duration-500 drop-shadow-lg")
-                            <span class="relative text-base drop-shadow-md">Tambah Laporan Baru ini</span>
+                            <span class="relative text-base drop-shadow-md">Tambah Laporan Baru</span>
                         </button>
                     </div>
 
@@ -273,7 +273,7 @@
 
                     <!-- Debug toggle button (for development) -->
                     <div class="mt-4 text-center">
-                        <button @click="document.querySelector('[x-data]').__x.$data.debug = !document.querySelector('[x-data]').__x.$data.debug" 
+                        <button @click="document.querySelector('[x-data]').__x.$data.debug = !document.querySelector('[x-data]').__x.$data.debug"
                             class="text-xs text-gray-400 hover:text-gray-600 transition-colors duration-150">
                             Toggle Debug Info
                         </button>
@@ -306,9 +306,17 @@
     <div x-show="debug" class="fixed top-4 left-4 bg-black text-white p-4 z-50 rounded text-sm">
         <div>Modal show: <span x-text="show"></span></div>
         <div>formSlideOverOpen: {{ $formSlideOverOpen ?? 'null' }}</div>
-        <div>formTemplate: {{ $formTemplate ? 'exists' : 'null' }}</div>
-        <div>formFields count: {{ count($formFields ?? []) }}</div>
-    </div>>
+        <div>selectedIndicatorId: {{ $selectedIndicatorId ?? 'null' }}</div>
+        <div>formTemplate: {{ $this->formTemplate ? 'exists' : 'null' }}</div>
+        @if($this->formTemplate)
+        <div>Template ID: {{ $this->formTemplate->id }}</div>
+        <div>Template title: {{ $this->formTemplate->title }}</div>
+        <div>Template imut_profile_id: {{ $this->formTemplate->imut_profile_id }}</div>
+        <div>formFields count: {{ $this->formTemplate->formFields->count() }}</div>
+        @else
+        <div>formFields count: 0</div>
+        @endif
+    </div>
 
     <!-- Modal backdrop -->
     <div class="!fixed !inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
@@ -345,9 +353,9 @@
                 <div class="absolute inset-0 opacity-10">
                     <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
                         <pattern id="modal-grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <circle cx="10" cy="10" r="1" fill="currentColor"/>
+                            <circle cx="10" cy="10" r="1" fill="currentColor" />
                         </pattern>
-                        <rect width="100%" height="100%" fill="url(#modal-grid)"/>
+                        <rect width="100%" height="100%" fill="url(#modal-grid)" />
                     </svg>
                 </div>
 
@@ -369,68 +377,75 @@
                 </div>
             </div>
 
-            <!-- Modal Content -->
+            <!-- Modal Content - Google Form Style -->
             <div class="flex-1 overflow-y-auto">
-                @if($this->formTemplate && !empty($this->formFields))
-                
-                <!-- Form Content -->
-                <div class="p-6 space-y-6"
-                    x-data="{ formVisible: false }"
-                    x-init="setTimeout(() => formVisible = true, 200)"
-                    x-show="formVisible"
-                    x-transition:enter="transition ease-out duration-300 delay-200"
-                    x-transition:enter-start="opacity-0 translate-y-4"
-                    x-transition:enter-end="opacity-100 translate-y-0">
+                @if($this->formTemplate && $this->formTemplate->formFields->isNotEmpty())
 
-                    {{ $this->reportEntryForm }}
+                <!-- Simple Form Content -->
+                <div class="p-6">
+                    <div class="mb-6 text-center">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                            {{ $this->formTemplate->title ?? 'Form Laporan Harian' }}
+                        </h3>
+                        @if($this->formTemplate && $this->formTemplate->description)
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ $this->formTemplate->description }}
+                        </p>
+                        @endif
+                        <div class="mt-4 flex justify-center space-x-4 text-xs text-gray-500">
+                            <span>{{ $this->formTemplate->formFields->count() }} pertanyaan</span>
+                            <span>•</span>
+                            <span>{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}</span>
+                        </div>
+                    </div>
 
+                    <!-- Simple Form Rendering -->
+                    <div class="max-w-2xl mx-auto">
+                        {{ $this->reportEntryForm }}
+                    </div>
                 </div>
 
                 @else
                 <!-- No Form Template State -->
                 <div class="p-6 text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
-                        @svg("heroicon-o-exclamation-triangle", "w-8 h-8 text-red-600 dark:text-red-400")
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Form Template Tidak Tersedia</h3>
-                    <p class="text-gray-500 dark:text-gray-400">Form template untuk indikator ini belum dikonfigurasi.</p>
-                </div>
-                @endif
-            </div>
-
-            <!-- Modal Footer -->
-            @if($this->formTemplate && !empty($this->formFields))
-            <div class="px-6 py-4 bg-gray-50 dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700"
-                x-data="{ footerVisible: false }"
-                x-init="setTimeout(() => footerVisible = true, 300)"
-                x-show="footerVisible"
-                x-transition:enter="transition ease-out duration-300 delay-300"
-                x-transition:enter-start="opacity-0 translate-y-4"
-                x-transition:enter-end="opacity-100 translate-y-0">
-                
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        <span class="font-medium">{{ count($this->formFields) }}</span> field dalam form ini
-                    </div>
-                    
-                    <div class="flex gap-3">
-                        <button wire:click="closeFormSlideOver"
-                            type="button"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-150 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600">
-                            Batal
-                        </button>
-                        
-                        <button wire:click="saveReport"
-                            type="button"
-                            class="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-lg hover:from-emerald-700 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-150 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
-                            @svg("heroicon-m-check", "w-4 h-4 mr-2 inline")
-                            Simpan Laporan
-                        </button>
+                    <div class="max-w-sm mx-auto">
+                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                            @svg("heroicon-o-document-text", "w-8 h-8 text-gray-400")
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No template</h3>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">
+                            Form template tidak ditemukan.
+                        </p>
                     </div>
                 </div>
             </div>
-            @endif
+        </div>
+        @endif
+    </div>
 
+    <!-- Simple Footer -->
+    @if($this->formTemplate && $this->formTemplate->formFields->isNotEmpty())
+    <div class="px-6 py-4 bg-gray-50 dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700">
+        <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+                {{ $this->formTemplate->formFields->count() }} pertanyaan
+            </span>
+
+            <div class="flex space-x-3">
+                <button wire:click="closeFormSlideOver"
+                    type="button"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600">
+                    Batal
+                </button>
+
+                <button wire:click="saveReport"
+                    type="button"
+                    class="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                    Simpan Laporan
+                </button>
+            </div>
         </div>
     </div>
+    @endif
+
 </div>
