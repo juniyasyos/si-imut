@@ -54,6 +54,16 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             ->modifyQueryUsing(
                 fn(Builder $query) => $query
                     ->forUserUnits(Auth::user())
+                    ->whereHas('formTemplate', function (Builder $query) {
+                        $query->whereHas('imutProfile', function (Builder $query) {
+                            $query->where('valid_from', '<=', now())
+                                ->where(function (Builder $q) {
+                                    $q->whereNull('valid_until')
+                                        ->orWhere('valid_until', '>=', now());
+                                });
+                        })
+                            ->whereNotNull('scoring_config'); // Only FormTemplates with proper config
+                    })
                     ->with(['formTemplate.imutProfile.imutData.categories', 'formTemplate.formFields', 'unitKerja', 'submittedBy'])
                     ->latest('report_date')
             )
