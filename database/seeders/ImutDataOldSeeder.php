@@ -260,7 +260,7 @@ class ImutDataOldSeeder extends Seeder
             // Loop tiap kuartal dengan periode start/end yang tepat
             foreach ($versionList as $index => $versionKey) {
                 // Extract year and quarter from version
-                preg_match('//version-(\d{4})-Q(\d)/', $versionKey, $matches);
+                preg_match('/version-(\d{4})-Q(\d)/', $versionKey, $matches);
                 $year = (int) $matches[1];
                 $quarter = (int) $matches[2];
 
