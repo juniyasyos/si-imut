@@ -133,13 +133,26 @@
 
             <!-- Main Content -->
             <div x-show="currentView === 'input'" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Sidebar: Date Navigation -->
-                <div class="lg:col-span-3">
+                <!-- Sidebar: Date Navigation (Livewire Isolated) -->
+                <div class="lg:col-span-3" x-data="{}">
                     @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-navigation')
                 </div>
 
-                <!-- Main Content: Indicators for Selected Date -->
-                <div class="lg:col-span-9">
+                <!-- Main Content: Indicators for Selected Date (Alpine.js Isolated) -->
+                <div class="lg:col-span-9"
+                    x-data="{ 
+                         contentSelectedDate: @entangle('selectedDate'),
+                         
+                         init() {
+                             // Watch for Livewire selectedDate changes and sync to Alpine
+                             this.$watch('contentSelectedDate', (newDate) => {
+                                 this.selectedDate = newDate;
+                             });
+                             
+                             // Initialize with current selectedDate
+                             this.selectedDate = this.contentSelectedDate;
+                         }
+                     }">
                     <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
 
@@ -174,4 +187,4 @@
     </div>
 
     @include('filament.resources.daily-report-entry-resource.pages.partials.components.scripts.scripts-styles')
-</x-filament-panels::page>
+</x-filament-panels::page> \

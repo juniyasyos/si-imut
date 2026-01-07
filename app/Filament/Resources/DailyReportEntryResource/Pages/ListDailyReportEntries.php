@@ -831,6 +831,29 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     }
 
     /**
+     * Select date from navigation 
+     */
+    public function selectDate(string $date): void
+    {
+        $this->selectedDate = $date;
+
+        // Sync month with selected date
+        $selectedDateMonth = Carbon::parse($date)->format('Y-m');
+        if ($this->selectedMonth !== $selectedDateMonth) {
+            $this->selectedMonth = $selectedDateMonth;
+            $this->loadMatrixData();
+        }
+
+        // Close slide over if open
+        if ($this->slideOverOpen) {
+            $this->closeSlideOver();
+        }
+
+        // Emit date selected event for other components
+        $this->dispatch('dateSelected', date: $date);
+    }
+
+    /**
      * Navigate to previous month
      */
     public function previousMonth(): void
