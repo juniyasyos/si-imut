@@ -6,7 +6,7 @@
         <button wire:click="previousMonth"
             wire:loading.attr="disabled"
             wire:target="previousMonth"
-            class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 group">
+            class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 group">
             <svg wire:loading.remove wire:target="previousMonth" class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -34,7 +34,7 @@
             wire:loading.attr="disabled"
             wire:target="nextMonth"
             @if(!$this->canGoNextMonth()) disabled @endif
-            class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 group">
+            class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 group">
             <span wire:loading.remove wire:target="nextMonth"></span>
             <span wire:loading wire:target="nextMonth">Loading...</span>
             <svg wire:loading.remove wire:target="nextMonth" class="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

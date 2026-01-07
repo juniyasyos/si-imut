@@ -1,5 +1,5 @@
 <!-- Filters and Search Section -->
-<div x-show="currentView === 'input'" class="border-t border-gray-200 dark:border-gray-700 pt-4">
+<div x-show="currentView === 'input'" class="border-t border-slate-200 dark:border-slate-700 pt-4">
     <div class="flex flex-col lg:flex-row gap-4">
         <!-- Search -->
         <div class="flex-1">
@@ -11,7 +11,7 @@
                     x-model="searchQuery"
                     type="text"
                     placeholder="Cari indikator..."
-                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    class="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
             </div>
         </div>
 
@@ -19,25 +19,25 @@
         <div class="flex flex-wrap gap-2">
             <button
                 @click="statusFilter = 'all'"
-                :class="statusFilter === 'all' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                :class="statusFilter === 'all' ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
                 Semua
             </button>
             <button
                 @click="statusFilter = 'pending'"
-                :class="statusFilter === 'pending' ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                :class="statusFilter === 'pending' ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
                 Belum Diisi
             </button>
             <button
                 @click="statusFilter = 'done'"
-                :class="statusFilter === 'done' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                :class="statusFilter === 'done' ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
                 Selesai
             </button>
             <button
                 @click="statusFilter = 'overdue'"
-                :class="statusFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                :class="statusFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
                 Terlambat
             </button>

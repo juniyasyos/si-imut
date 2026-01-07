@@ -1,5 +1,5 @@
 <!-- Desktop Indicator Card -->
-<div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-sm transition-all duration-200 indicator-card">
+<div class="border border-slate-200 dark:border-slate-700 rounded-xl p-4 mt-2 hover:shadow-sm transition-all duration-200 indicator-card">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <!-- Indicator Info -->
         <div class="flex-1 min-w-0">

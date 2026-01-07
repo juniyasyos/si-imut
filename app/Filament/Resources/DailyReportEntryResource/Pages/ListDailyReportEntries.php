@@ -129,8 +129,44 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     {
         parent::mount();
         $this->selectedMonth = now()->format('Y-m');
-        $this->selectedDate = now()->format('Y-m-d'); // Initialize selected date
+        $this->selectedDate = now()->format('Y-m-d'); // Initialize selected date with current date
         $this->loadMatrixData();
+
+        // Check for URL query parameters to auto-open slide-over
+        $this->checkAndOpenSlideOverFromUrl();
+    }
+
+    /**
+     * Check URL parameters and auto-open slide-over if specified
+     */
+    protected function checkAndOpenSlideOverFromUrl(): void
+    {
+        $request = request();
+
+        $indicatorId = $request->query('indicator_id');
+        $date = $request->query('date');
+
+        if ($indicatorId && $date) {
+            // Validate date format
+            try {
+                $validDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('Y-m-d');
+
+                // Validate indicator exists in user's accessible indicators
+                $indicator = collect($this->indicators)->firstWhere('id', (int) $indicatorId);
+
+                if ($indicator) {
+                    // Set the month to match the date
+                    $this->selectedMonth = \Carbon\Carbon::createFromFormat('Y-m-d', $validDate)->format('Y-m');
+                    $this->loadMatrixData(); // Reload matrix for the new month
+
+                    // Auto-open slide-over with validated parameters
+                    $this->openSlideOver((int) $indicatorId, $validDate);
+                }
+            } catch (\Exception $e) {
+                // Invalid date format, do nothing
+                \Log::warning('Invalid date format in URL parameter', ['date' => $date]);
+            }
+        }
     }
 
     /**
@@ -334,10 +370,24 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     /**
      * Open slide over
      */
-    public function openSlideOver(int $indicatorId, string $date): void
+    public function openSlideOver(int $indicatorId, ?string $date = null): void
     {
+        // Validate and set default date if null
+        if (empty($date)) {
+            $date = now()->format('Y-m-d');
+        }
+
+        // Validate date format
+        try {
+            $validatedDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            $validatedDate = now()->format('Y-m-d');
+        }
+
+        \Log::info('OpenSlideOver called', ['indicator_id' => $indicatorId, 'date' => $validatedDate]);
+
         $this->selectedIndicatorId = $indicatorId;
-        $this->selectedDate = $date;
+        $this->selectedDate = $validatedDate;
 
         // Load indicator data
         $indicator = collect($this->indicators)->firstWhere('id', $indicatorId);
@@ -347,6 +397,41 @@ class ListDailyReportEntries extends ListRecords implements HasForms
         $this->loadDailyReports();
 
         $this->slideOverOpen = true;
+
+        // Update URL without page refresh (with delay to ensure slide-over is rendered)
+        $this->js("
+            setTimeout(() => {
+                const newUrl = window.location.pathname + '?indicator_id={$indicatorId}&date={$validatedDate}';
+                console.log('Updating URL to:', newUrl);
+                window.history.replaceState({}, '', newUrl);
+            }, 100);
+        ");
+    }
+
+    /**
+     * Update browser URL with slide-over parameters
+     */
+    protected function updateUrlWithParameters(int $indicatorId, string $date): void
+    {
+        $currentUrl = request()->url();
+        $newUrl = $currentUrl . '?indicator_id=' . $indicatorId . '&date=' . $date;
+
+        \Log::info('Updating URL', ['current_url' => $currentUrl, 'new_url' => $newUrl]);
+
+        // Dispatch browser event to update URL (multiple formats for compatibility)
+        $this->dispatch('url-updated', ['url' => $newUrl]);
+
+        // Also try JavaScript execution as backup
+        $this->js("console.log('JS: Updating URL to: {$newUrl}'); window.history.replaceState({}, '', '{$newUrl}')");
+    }
+
+    /**
+     * Generate URL for specific indicator and date
+     */
+    public static function getUrlForIndicator(int $indicatorId, string $date): string
+    {
+        $baseUrl = static::getUrl();
+        return $baseUrl . '?indicator_id=' . $indicatorId . '&date=' . $date;
     }
 
     /**
@@ -447,7 +532,7 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     }
 
     /**
-     * Close slide over
+     * Close slide over and clean URL
      */
     public function closeSlideOver(): void
     {
@@ -456,6 +541,13 @@ class ListDailyReportEntries extends ListRecords implements HasForms
         $this->selectedDate = null;
         $this->selectedIndicatorData = [];
         $this->dailyReports = []; // Clear cached data
+
+        // Clean URL parameters with direct JS execution
+        $this->js("
+            const cleanUrl = window.location.pathname;
+            console.log('Cleaning URL to:', cleanUrl);
+            window.history.replaceState({}, '', cleanUrl);
+        ");
     }
 
     /**

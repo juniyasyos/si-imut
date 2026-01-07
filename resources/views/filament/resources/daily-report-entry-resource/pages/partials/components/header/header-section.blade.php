@@ -13,7 +13,7 @@
             </div>
 
             <!-- Tab Navigation -->
-            <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <div class="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                 <button
                     @click="currentView = 'input'"
                     :class="currentView === 'input'

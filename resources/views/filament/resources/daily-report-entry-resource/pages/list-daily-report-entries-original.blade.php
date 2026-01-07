@@ -14,6 +14,7 @@
             init() {
                 this.initResize();
                 this.selectToday();
+                this.ensureValidSelectedDate();
             },
             
             initResize() {
@@ -23,16 +24,28 @@
                 });
             },
             
+            ensureValidSelectedDate() {
+                // Ensure selectedDate always has a valid value
+                if (!this.selectedDate) {
+                    this.selectedDate = '{{ now()->format('Y-m-d') }}';
+                }
+                console.log('Selected date initialized to:', this.selectedDate);
+            },
+            
             selectToday() {
                 const today = new Date();
                 const month = today.toISOString().slice(0, 7);
                 if (month === this.selectedMonth) {
                     this.selectedDate = today.toISOString().slice(0, 10);
+                } else {
+                    // If not viewing current month, ensure we have a valid date
+                    this.ensureValidSelectedDate();
                 }
             },
             
             selectDate(date) {
-                this.selectedDate = date;
+                this.selectedDate = date || '{{ now()->format('Y-m-d') }}';
+                console.log('Date selected:', this.selectedDate);
             },
             
             get filteredIndicators() {

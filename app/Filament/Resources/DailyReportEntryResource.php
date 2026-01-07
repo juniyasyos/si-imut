@@ -184,4 +184,13 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         return 'success';
     }
+
+    /**
+     * Generate URL for opening slide-over for specific indicator and date
+     * Usage: DailyReportEntryResource::getSlideOverUrl($indicatorId, $date)
+     */
+    public static function getSlideOverUrl(int $indicatorId, string $date): string
+    {
+        return static::getUrl('index') . '?indicator_id=' . $indicatorId . '&date=' . $date;
+    }
 }

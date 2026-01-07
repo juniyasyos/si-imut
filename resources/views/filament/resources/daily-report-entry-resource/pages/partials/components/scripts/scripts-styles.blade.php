@@ -77,6 +77,30 @@
             }
         }));
     });
+
+    // Listen for URL update events from Livewire
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('url-updated', (event) => {
+            console.log('URL update event received:', event);
+            if (event[0] && event[0].url) {
+                console.log('Updating URL to:', event[0].url);
+                // Update browser URL without page refresh
+                window.history.replaceState({}, '', event[0].url);
+            }
+        });
+    });
+
+    // Alternative event listener (fallback)
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Livewire !== 'undefined') {
+            Livewire.on('url-updated', function(data) {
+                console.log('Alternative listener - URL update:', data);
+                if (data && data.url) {
+                    window.history.replaceState({}, '', data.url);
+                }
+            });
+        }
+    });
 </script>
 
 <style>
