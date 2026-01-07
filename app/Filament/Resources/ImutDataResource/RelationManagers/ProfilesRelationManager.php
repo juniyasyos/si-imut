@@ -48,6 +48,17 @@ class ProfilesRelationManager extends RelationManager
                     ->label('Penanggung Jawab')
                     ->searchable()
                     ->limit(50),
+
+
+                TextColumn::make('form_template_status')
+                    ->label('Form Template')
+                    ->getStateUsing(fn($record) => $record->formTemplates()->exists() ? 'Ada' : 'Belum Ada')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Ada' => 'success',
+                        'Belum Ada' => 'warning',
+                        default => 'gray',
+                    }),
             ])
             ->headerActions([
                 CreateAction::make()

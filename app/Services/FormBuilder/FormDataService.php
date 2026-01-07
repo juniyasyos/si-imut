@@ -13,6 +13,11 @@ class FormDataService
     public function loadFormData(ImutProfile $record): array
     {
         $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+
+        if (!$formTemplate) {
+            return []; // Return empty array if no form template found
+        }
+
         return $this->loadFromFormTemplate($formTemplate);
     }
 

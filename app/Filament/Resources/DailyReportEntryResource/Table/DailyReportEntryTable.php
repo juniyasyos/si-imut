@@ -88,7 +88,18 @@ class DailyReportEntryTable extends DailyReportEntryResource
         return [
             SelectFilter::make('form_template_id')
                 ->label('Indikator Mutu')
-                ->relationship('formTemplate', 'title')
+                ->relationship(
+                    'formTemplate',
+                    'title',
+                    fn(Builder $query) => $query->whereHas('imutProfile', function (Builder $query) {
+                        $query->where('valid_from', '<=', now())
+                            ->where(function (Builder $q) {
+                                $q->whereNull('valid_until')
+                                    ->orWhere('valid_until', '>=', now());
+                            });
+                    })
+                        ->whereNotNull('scoring_config') // Only FormTemplates with proper config
+                )
                 ->searchable()
                 ->preload()
                 ->multiple()

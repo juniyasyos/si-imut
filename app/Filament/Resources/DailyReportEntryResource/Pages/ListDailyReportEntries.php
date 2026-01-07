@@ -7,11 +7,23 @@ use App\Models\DailyReportEntry;
 use App\Models\FormTemplate;
 use Carbon\Carbon;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ListDailyReportEntries extends ListRecords
+class ListDailyReportEntries extends ListRecords implements HasForms
 {
+    use InteractsWithForms;
     protected static string $resource = DailyReportEntryResource::class;
 
     protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
@@ -38,6 +50,11 @@ class ListDailyReportEntries extends ListRecords
     public array $selectedIndicatorData = [];
     public $dailyReports = []; // Cache for slide-over data
     public string $filterPeriod = 'today';
+
+    // Form slide over properties
+    public bool $formSlideOverOpen = false;
+    public ?FormTemplate $formTemplate = null;
+    public array $reportData = [];
 
     /**
      * Handle date selection from frontend
@@ -112,8 +129,44 @@ class ListDailyReportEntries extends ListRecords
     {
         parent::mount();
         $this->selectedMonth = now()->format('Y-m');
-        $this->selectedDate = now()->format('Y-m-d'); // Initialize selected date
+        $this->selectedDate = now()->format('Y-m-d'); // Initialize selected date with current date
         $this->loadMatrixData();
+
+        // Check for URL query parameters to auto-open slide-over
+        $this->checkAndOpenSlideOverFromUrl();
+    }
+
+    /**
+     * Check URL parameters and auto-open slide-over if specified
+     */
+    protected function checkAndOpenSlideOverFromUrl(): void
+    {
+        $request = request();
+
+        $indicatorId = $request->query('indicator_id');
+        $date = $request->query('date');
+
+        if ($indicatorId && $date) {
+            // Validate date format
+            try {
+                $validDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('Y-m-d');
+
+                // Validate indicator exists in user's accessible indicators
+                $indicator = collect($this->indicators)->firstWhere('id', (int) $indicatorId);
+
+                if ($indicator) {
+                    // Set the month to match the date
+                    $this->selectedMonth = \Carbon\Carbon::createFromFormat('Y-m-d', $validDate)->format('Y-m');
+                    $this->loadMatrixData(); // Reload matrix for the new month
+
+                    // Auto-open slide-over with validated parameters
+                    $this->openSlideOver((int) $indicatorId, $validDate);
+                }
+            } catch (\Exception $e) {
+                // Invalid date format, do nothing
+                \Log::warning('Invalid date format in URL parameter', ['date' => $date]);
+            }
+        }
     }
 
     /**
@@ -121,7 +174,7 @@ class ListDailyReportEntries extends ListRecords
      */
     public function getTitle(): string
     {
-        return 'Laporan Harian';
+        return '';
     }
 
     /**
@@ -129,17 +182,7 @@ class ListDailyReportEntries extends ListRecords
      */
     public function getSubheading(): ?string
     {
-        $user = Auth::user();
-
-        if (!$user) {
-            return null;
-        }
-
-        /** @var \App\Models\User $user */
-        $unitName = $user->unitKerjas()->first()->unit_name ?? 'Unit Kerja';
-        $monthName = Carbon::parse($this->selectedMonth . '-01')->translatedFormat('F Y');
-
-        return "{$unitName} - {$monthName}";
+        return "";
     }
 
     /**
@@ -167,26 +210,35 @@ class ListDailyReportEntries extends ListRecords
             'form_templates.id',
             'form_templates.title',
             'imut_data.title as imut_data_title',
-            'imut_kategori.category_name as category_title'
+            'imut_kategori.category_name as category_title',
+            'imut_profil.version as imut_profile_version',
+            'imut_profil.valid_from as imut_profile_valid_from',
+            'imut_profil.valid_until as imut_profile_valid_until'
         ])
             ->join('imut_profil', 'form_templates.imut_profile_id', '=', 'imut_profil.id')
             ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
             ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
             ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
-            // Temporarily disable end_period filter - all data expired (2025 vs 2026)
-            // ->where(function($query) {
-            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
-            // })
+            ->where(function ($query) {
+                $now = now();
+                $query->where(function ($q) use ($now) {
+                    // Check if already started and not yet expired
+                    $q->where('imut_profil.valid_from', '<=', $now)
+                        ->where(function ($subQ) use ($now) {
+                            $subQ->whereNull('imut_profil.valid_until')
+                                ->orWhere('imut_profil.valid_until', '>=', $now);
+                        });
+                });
+            })
             ->distinct()
             ->get();
-
         $this->indicators = $formTemplates->map(function ($formTemplate) {
             return [
                 'id' => $formTemplate->id,
                 'title' => $formTemplate->imut_data_title ?? $formTemplate->title,
                 'category' => $formTemplate->category_title,
+                'imut_profile_version' => $formTemplate->imut_profile_version,
             ];
         })
             ->toArray();
@@ -219,11 +271,17 @@ class ListDailyReportEntries extends ListRecords
             ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
             ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
-            // Temporarily disable end_period filter - all data expired (2025 vs 2026)
-            // ->where(function($query) {
-            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
-            // })
+            ->where(function ($query) {
+                $now = now();
+                $query->where(function ($q) use ($now) {
+                    // Check if already started and not yet expired
+                    $q->where('imut_profil.valid_from', '<=', $now)
+                        ->where(function ($subQ) use ($now) {
+                            $subQ->whereNull('imut_profil.valid_until')
+                                ->orWhere('imut_profil.valid_until', '>=', $now);
+                        });
+                });
+            })
             ->whereBetween('daily_report_responses.report_date', [$startDate, $endDate])
             ->groupBy('form_templates.id', DB::raw('DATE(daily_report_responses.report_date)'))
             ->get()
@@ -312,10 +370,24 @@ class ListDailyReportEntries extends ListRecords
     /**
      * Open slide over
      */
-    public function openSlideOver(int $indicatorId, string $date): void
+    public function openSlideOver(int $indicatorId, ?string $date = null): void
     {
+        // Validate and set default date if null
+        if (empty($date)) {
+            $date = now()->format('Y-m-d');
+        }
+
+        // Validate date format
+        try {
+            $validatedDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            $validatedDate = now()->format('Y-m-d');
+        }
+
+        \Log::info('OpenSlideOver called', ['indicator_id' => $indicatorId, 'date' => $validatedDate]);
+
         $this->selectedIndicatorId = $indicatorId;
-        $this->selectedDate = $date;
+        $this->selectedDate = $validatedDate;
 
         // Load indicator data
         $indicator = collect($this->indicators)->firstWhere('id', $indicatorId);
@@ -325,6 +397,41 @@ class ListDailyReportEntries extends ListRecords
         $this->loadDailyReports();
 
         $this->slideOverOpen = true;
+
+        // Update URL without page refresh (with delay to ensure slide-over is rendered)
+        $this->js("
+            setTimeout(() => {
+                const newUrl = window.location.pathname + '?indicator_id={$indicatorId}&date={$validatedDate}';
+                console.log('Updating URL to:', newUrl);
+                window.history.replaceState({}, '', newUrl);
+            }, 100);
+        ");
+    }
+
+    /**
+     * Update browser URL with slide-over parameters
+     */
+    protected function updateUrlWithParameters(int $indicatorId, string $date): void
+    {
+        $currentUrl = request()->url();
+        $newUrl = $currentUrl . '?indicator_id=' . $indicatorId . '&date=' . $date;
+
+        \Log::info('Updating URL', ['current_url' => $currentUrl, 'new_url' => $newUrl]);
+
+        // Dispatch browser event to update URL (multiple formats for compatibility)
+        $this->dispatch('url-updated', ['url' => $newUrl]);
+
+        // Also try JavaScript execution as backup
+        $this->js("console.log('JS: Updating URL to: {$newUrl}'); window.history.replaceState({}, '', '{$newUrl}')");
+    }
+
+    /**
+     * Generate URL for specific indicator and date
+     */
+    public static function getUrlForIndicator(int $indicatorId, string $date): string
+    {
+        $baseUrl = static::getUrl();
+        return $baseUrl . '?indicator_id=' . $indicatorId . '&date=' . $date;
     }
 
     /**
@@ -367,11 +474,17 @@ class ListDailyReportEntries extends ListRecords
             ->join('unit_kerja', 'daily_report_responses.unit_kerja_id', '=', 'unit_kerja.id')
             ->join('users', 'daily_report_responses.submitted_by', '=', 'users.id')
             ->where('form_templates.id', $this->selectedIndicatorId)
-            // Temporarily disable end_period filter - all data expired (2025 vs 2026)
-            // ->where(function($query) {
-            //     $query->whereNull('imut_profil.valid_until') // Tidak ada tanggal end_period
-            //           ->orWhere('imut_profil.valid_until', '>=', now()); // Atau belum berakhir
-            // })
+            ->where(function ($query) {
+                $now = now();
+                $query->where(function ($q) use ($now) {
+                    // Check if already started and not yet expired
+                    $q->where('imut_profil.valid_from', '<=', $now)
+                        ->where(function ($subQ) use ($now) {
+                            $subQ->whereNull('imut_profil.valid_until')
+                                ->orWhere('imut_profil.valid_until', '>=', $now);
+                        });
+                });
+            })
             ->whereDate('daily_report_responses.report_date', $this->selectedDate)
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $userUnitIds)
             ->latest('daily_report_responses.created_at')
@@ -419,7 +532,7 @@ class ListDailyReportEntries extends ListRecords
     }
 
     /**
-     * Close slide over
+     * Close slide over and clean URL
      */
     public function closeSlideOver(): void
     {
@@ -428,6 +541,13 @@ class ListDailyReportEntries extends ListRecords
         $this->selectedDate = null;
         $this->selectedIndicatorData = [];
         $this->dailyReports = []; // Clear cached data
+
+        // Clean URL parameters with direct JS execution
+        $this->js("
+            const cleanUrl = window.location.pathname;
+            console.log('Cleaning URL to:', cleanUrl);
+            window.history.replaceState({}, '', cleanUrl);
+        ");
     }
 
     /**
@@ -436,11 +556,37 @@ class ListDailyReportEntries extends ListRecords
     public function createNewReport(): void
     {
         if ($this->selectedIndicatorId && $this->selectedDate) {
-            $this->redirect(DailyReportEntryResource::getUrl('create', [
-                'indicator_id' => $this->selectedIndicatorId,
-                'date' => $this->selectedDate
-            ]));
+            // Debug logging
+            \Log::info('createNewReport: selectedIndicatorId = ' . $this->selectedIndicatorId);
+
+            // Load form template directly
+            $this->formTemplate = FormTemplate::where('imut_profile_id', $this->selectedIndicatorId)->first();
+
+            \Log::info('createNewReport: FormTemplate found = ' . ($this->formTemplate ? 'YES (id: ' . $this->formTemplate->id . ', title: ' . $this->formTemplate->title . ')' : 'NO'));
+
+            if ($this->formTemplate) {
+                $this->initializeReportData();
+                $this->formSlideOverOpen = true;
+            } else {
+                \Filament\Notifications\Notification::make()
+                    ->title('Form Template Tidak Ditemukan')
+                    ->body('Form template untuk indikator ini belum dikonfigurasi. Indicator ID: ' . $this->selectedIndicatorId)
+                    ->warning()
+                    ->send();
+            }
+        } else {
+            \Log::warning('createNewReport: Missing data - selectedIndicatorId: ' . $this->selectedIndicatorId . ', selectedDate: ' . $this->selectedDate);
         }
+    }
+
+    /**
+     * Close form slide over and reset data
+     */
+    public function closeFormSlideOver(): void
+    {
+        $this->formSlideOverOpen = false;
+        $this->formTemplate = null;
+        $this->reportData = [];
     }
 
     /**
@@ -457,6 +603,286 @@ class ListDailyReportEntries extends ListRecords
     public function editReport(int $reportId): void
     {
         $this->redirect(DailyReportEntryResource::getUrl('edit', ['record' => $reportId]));
+    }
+
+    /**
+     * Initialize empty report data
+     */
+    protected function initializeReportData(): void
+    {
+        $this->reportData = [
+            'field_responses' => [],
+            'notes' => '',
+        ];
+
+        // Initialize field responses using actual FormField models
+        if ($this->formTemplate) {
+            $formFields = $this->formTemplate->formFields;
+            foreach ($formFields as $field) {
+                // Set default values based on field type
+                $defaultValue = null;
+
+                switch ($field->field_type) {
+                    case 'text':
+                    case 'textarea':
+                        $defaultValue = '';
+                        break;
+                    case 'number':
+                        $defaultValue = null;
+                        break;
+                    case 'single_select':
+                    case 'boolean':
+                        $defaultValue = null;
+                        break;
+                    case 'multi_select':
+                        $defaultValue = [];
+                        break;
+                    default:
+                        $defaultValue = null;
+                }
+
+                $this->reportData['field_responses'][$field->field_key] = $defaultValue;
+            }
+        }
+
+        // Fill form with initialized data
+        $this->reportEntryForm->fill($this->reportData);
+    }
+
+    /**
+     * Save the report
+     */
+    public function saveReport(): void
+    {
+        try {
+            // Validate form data
+            $this->reportEntryForm->validate();
+
+            // Get form data
+            $formData = $this->reportEntryForm->getState();
+
+            // Calculate compliance score using the new method
+            $complianceData = $this->calculateCompliance($formData);
+
+            // Create the report
+            $report = DailyReportEntry::create([
+                'imut_profile_id' => $this->selectedIndicatorData['imut_profile_id'],
+                'form_template_id' => $this->formTemplate->id,
+                'report_date' => $this->selectedDate,
+                'submitted_by_id' => Auth::id(),
+                'unit_kerja_id' => Auth::user()->unitKerjas->first()?->id,
+                'field_responses' => $formData['field_responses'] ?? [],
+                'notes' => $formData['notes'] ?? '',
+                'total_score' => $complianceData['score'],
+                'compliance_status' => $complianceData['score'] >= 80,
+                'status' => 'submitted',
+            ]);
+
+            // Success notification
+            \Filament\Notifications\Notification::make()
+                ->title('Laporan Berhasil Disimpan')
+                ->body('Laporan harian telah berhasil dibuat dengan skor kepatuhan ' . number_format($complianceData['score'], 1) . '%')
+                ->success()
+                ->send();
+
+            // Close form and refresh data
+            $this->closeFormSlideOver();
+            $this->loadSlideOverData(); // Refresh slide over data
+            $this->loadMatrixData(); // Refresh matrix data
+
+        } catch (\Exception $e) {
+            \Filament\Notifications\Notification::make()
+                ->title('Gagal Menyimpan')
+                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
+    /**
+     * Get the form for report entry - Simple Google Form style
+     */
+    public function reportEntryForm(Form $form): Form
+    {
+        if (!$this->formTemplate) {
+            return $form->schema([
+                Placeholder::make('no_template')
+                    ->content('Form template tidak ditemukan.')
+            ]);
+        }
+
+        $schema = [];
+
+        // Simple form header
+        $schema[] = Section::make('Form Laporan Harian')
+            ->description($this->formTemplate->description ?? 'Isi form berikut dengan lengkap')
+            ->schema([
+                Placeholder::make('info')
+                    ->content("Template: {$this->formTemplate->title}")
+            ]);
+
+        // Add fields directly without complex processing
+        $formFields = $this->formTemplate->formFields()->orderBy('order_index')->get();
+
+        foreach ($formFields as $index => $field) {
+            $fieldKey = $field->field_key;
+
+            // Simple field creation based on type
+            switch ($field->field_type) {
+                case 'text':
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            TextInput::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->required($field->validation_config['required'] ?? false)
+                                ->placeholder('Masukkan jawaban Anda...')
+                        ]);
+                    break;
+
+                case 'number':
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            TextInput::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->numeric()
+                                ->required($field->validation_config['required'] ?? false)
+                                ->placeholder('Masukkan angka...')
+                        ]);
+                    break;
+
+                case 'single_select':
+                    $options = [];
+                    foreach ($field->options as $option) {
+                        $options[$option->option_value] = $option->option_text;
+                    }
+
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            Radio::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->options($options)
+                                ->required($field->validation_config['required'] ?? false)
+                        ]);
+                    break;
+
+                case 'boolean':
+                    $options = ['1' => 'Ya', '0' => 'Tidak'];
+                    if ($field->options->count() > 0) {
+                        $options = [];
+                        foreach ($field->options as $option) {
+                            $options[$option->option_value] = $option->option_text;
+                        }
+                    }
+
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            Radio::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->options($options)
+                                ->required($field->validation_config['required'] ?? false)
+                        ]);
+                    break;
+
+                case 'multi_select':
+                    $options = [];
+                    foreach ($field->options as $option) {
+                        $options[$option->option_value] = $option->option_text;
+                    }
+
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            CheckboxList::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->options($options)
+                                ->required($field->validation_config['required'] ?? false)
+                        ]);
+                    break;
+
+                case 'textarea':
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            Textarea::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->required($field->validation_config['required'] ?? false)
+                                ->rows(3)
+                                ->placeholder('Masukkan jawaban Anda...')
+                        ]);
+                    break;
+
+                default:
+                    $schema[] = Section::make($field->field_label)
+                        ->description($field->field_description)
+                        ->schema([
+                            TextInput::make("field_responses.{$fieldKey}")
+                                ->label('')
+                                ->required($field->validation_config['required'] ?? false)
+                                ->placeholder('Masukkan jawaban Anda...')
+                        ]);
+                    break;
+            }
+        }
+
+        // Simple notes section
+        $schema[] = Section::make('Catatan Tambahan (Opsional)')
+            ->schema([
+                Textarea::make('notes')
+                    ->label('')
+                    ->placeholder('Tambahkan catatan jika diperlukan...')
+                    ->rows(3)
+            ]);
+
+        return $form
+            ->schema($schema)
+            ->statePath('reportData')
+            ->live();
+    }
+
+    /**
+     * Get the forms for this component
+     */
+    public function getForms(): array
+    {
+        return [
+            'reportEntryForm',
+        ];
+    }
+
+    /**
+     * Calculate simple compliance score - Google Form style
+     */
+    protected function calculateCompliance(array $data): array
+    {
+        if (!$this->formTemplate) {
+            return ['score' => 0, 'status' => 'No Template'];
+        }
+
+        $totalFields = $this->formTemplate->formFields->count();
+        $filledFields = 0;
+
+        // Simple calculation: count filled fields
+        foreach ($this->formTemplate->formFields as $field) {
+            $fieldValue = $data['field_responses'][$field->field_key] ?? null;
+
+            if (!empty($fieldValue)) {
+                $filledFields++;
+            }
+        }
+
+        $percentage = $totalFields > 0 ? ($filledFields / $totalFields) * 100 : 0;
+        $status = $percentage >= 80 ? 'Completed' : 'Incomplete';
+
+        return [
+            'score' => $percentage,
+            'status' => $status,
+            'filled_fields' => $filledFields,
+            'total_fields' => $totalFields
+        ];
     }
 
     /**
@@ -494,6 +920,29 @@ class ListDailyReportEntries extends ListRecords
         } catch (\Exception $e) {
             $this->addError('delete', 'Gagal menghapus laporan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Select date from navigation 
+     */
+    public function selectDate(string $date): void
+    {
+        $this->selectedDate = $date;
+
+        // Sync month with selected date
+        $selectedDateMonth = Carbon::parse($date)->format('Y-m');
+        if ($this->selectedMonth !== $selectedDateMonth) {
+            $this->selectedMonth = $selectedDateMonth;
+            $this->loadMatrixData();
+        }
+
+        // Close slide over if open
+        if ($this->slideOverOpen) {
+            $this->closeSlideOver();
+        }
+
+        // Emit date selected event for other components
+        $this->dispatch('dateSelected', date: $date);
     }
 
     /**

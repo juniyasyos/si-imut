@@ -50,7 +50,18 @@ class DailyReportEntrySchema extends DailyReportEntryResource
         if ($indicatorId) {
             $fields[] = Select::make('form_template_id')
                 ->label('Indikator Mutu')
-                ->relationship('formTemplate', 'title')
+                ->relationship(
+                    'formTemplate',
+                    'title',
+                    fn($query) => $query->whereHas('imutProfile', function ($q) {
+                        $q->where('valid_from', '<=', now())
+                            ->where(function ($subQ) {
+                                $subQ->whereNull('valid_until')
+                                    ->orWhere('valid_until', '>=', now());
+                            });
+                    })
+                        ->whereNotNull('scoring_config')
+                )
                 ->required()
                 ->default($indicatorId)
                 ->disabled()

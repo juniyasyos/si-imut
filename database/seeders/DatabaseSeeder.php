@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
                 RegionTypeSeeder::class,
                 ImutDataOldSeeder::class,
                 HandwashingSimulationSeeder::class,
+                EnsureFormTemplateSeeder::class, // Ensure all ImutProfile have FormTemplate
                 // ImutDataOldSeederOptimized::class, // Using optimized version
                 // HandHygieneFormSeeder::class,
                 // EnhancedFormBuilderSeeder::class,

@@ -52,7 +52,7 @@ class SimpleImutDataSeeder extends Seeder
                     $quarterEnd = $quarterStart->copy()->addMonths(3)->subDay()->endOfDay();
                 }
 
-                $quarterName = "verion-{$year}-Q{$quarter}";
+                $quarterName = "/version-{$year}-Q{$quarter}";
 
                 $this->command->info("  🗓️ Quarter: {$quarterName} ({$quarterStart->format('Y-m-d')} to {$quarterEnd->format('Y-m-d')})");
 
