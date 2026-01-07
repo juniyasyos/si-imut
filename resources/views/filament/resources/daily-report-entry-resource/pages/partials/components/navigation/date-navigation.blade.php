@@ -4,7 +4,7 @@
     @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.month-navigation')
 
     <!-- Date Legend -->
-    <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+    <div class="mb-4 p-3 mt-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
             @svg("heroicon-m-calendar", "w-4 h-4")
             <span>{{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->locale('id')->translatedFormat('F Y') }}</span>
