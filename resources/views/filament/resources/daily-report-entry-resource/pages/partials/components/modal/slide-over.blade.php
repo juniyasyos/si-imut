@@ -183,15 +183,25 @@
 
                                 <!-- Field Responses Summary -->
                                 <div class="mb-4">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="space-y-3">
                                         @foreach(array_slice($report['field_responses'], 0, 4) as $response)
-                                        <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50">
-                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
-                                                {{ $response['field_label'] }}
-                                            </span>
-                                            <span class="text-xs px-2 py-1 rounded-full {{ $response['compliance_score'] >= 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ number_format($response['compliance_score'] * 100, 0) }}%
-                                            </span>
+                                        <div class="p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    {{ $response['field_label'] }}
+                                                </span>
+                                                <span class="text-xs px-2 py-1 rounded-full {{ $response['compliance_score'] >= 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ number_format($response['compliance_score'] * 100, 0) }}%
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-gray-600 dark:text-gray-400">
+                                                <span class="font-medium">Jawaban:</span>
+                                                @if(is_array($response['field_value']))
+                                                {{ implode(', ', $response['field_value']) }}
+                                                @else
+                                                {{ $response['field_value'] ?? 'Tidak ada jawaban' }}
+                                                @endif
+                                            </div>
                                         </div>
                                         @endforeach
                                     </div>

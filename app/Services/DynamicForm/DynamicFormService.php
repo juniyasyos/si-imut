@@ -17,33 +17,7 @@ class DynamicFormService
     public static function buildFormSchema(FormTemplate $formTemplate, bool $includeHeader = true, bool $includeCompliance = false): array
     {
         $fields = [];
-
-        // Form Header Section
-        if ($includeHeader) {
-            $fields[] = Section::make('Informasi Form')
-                ->schema([
-                    Placeholder::make('form_title')
-                        ->content(fn() => new HtmlString('<h2 class="text-xl font-semibold text-gray-900 dark:text-white">' . $formTemplate->title . '</h2>')),
-
-                    Placeholder::make('form_description')
-                        ->content($formTemplate->description ?? '')
-                        ->visible(fn() => !empty($formTemplate->description)),
-
-                    Grid::make(3)
-                        ->schema([
-                            Placeholder::make('compliance_method')
-                                ->content('Metode: ' . ucfirst(str_replace('_', ' ', $formTemplate->compliance_method))),
-
-                            Placeholder::make('total_fields')
-                                ->content('Fields: ' . $formTemplate->formFields->count()),
-
-                            Placeholder::make('critical_fields')
-                                ->content('Critical: ' . $formTemplate->formFields->where('is_critical_field', true)->count()),
-                        ])
-                ])
-                ->collapsible();
-        }
-
+        
         // Dynamic Form Fields Section
         $formFieldsSchema = [];
         $sortedFields = $formTemplate->formFields->sortBy('order_index');
@@ -60,8 +34,8 @@ class DynamicFormService
             }
         }
 
-        $fields[] = Section::make('Preview Form Fields')
-            ->description('Preview form sesuai konfigurasi yang telah dibuat. Data yang diisi akan digunakan untuk menghitung compliance score.')
+        $fields[] = Section::make('Data Laporan')
+            ->description('Silakan lengkapi semua field yang diperlukan untuk laporan harian Anda.')
             ->schema($formFieldsSchema)
             ->columns(1);
 

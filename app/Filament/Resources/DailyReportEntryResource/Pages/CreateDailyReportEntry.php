@@ -22,6 +22,8 @@ class CreateDailyReportEntry extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
+    protected static string $view = 'filament.pages.create-daily-report-entry';
+
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
     public ?string $originalDate = null;
@@ -64,6 +66,84 @@ class CreateDailyReportEntry extends CreateRecord
     }
 
     /**
+     * Get the page title
+     */
+    public function getTitle(): string
+    {
+        return '';
+    }
+
+    /**
+     * Get the page heading
+     */
+    public function getHeading(): string
+    {
+        return '';
+    }
+
+    /**
+     * Get form title for display
+     */
+    public function getFormTitle(): string
+    {
+        $indicatorId = request()->query('indicator');
+
+        if ($indicatorId) {
+            $formTemplate = FormTemplate::with('imutProfile')->find($indicatorId);
+            if ($formTemplate && $formTemplate->imutProfile && $formTemplate->imutProfile->title) {
+                return $formTemplate->imutProfile->title;
+            }
+        }
+
+        return 'Laporan Harian';
+    }
+
+    /**
+     * Get form description
+     */
+    public function getFormDescription(): ?string
+    {
+        if ($this->formTemplate) {
+            return $this->formTemplate->description;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get formatted date
+     */
+    public function getFormattedDate(): string
+    {
+        $date = request()->query('date');
+
+        if ($date) {
+            try {
+                return \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('d F Y');
+            } catch (\Exception $e) {
+                return now()->format('d F Y');
+            }
+        }
+
+        return now()->format('d F Y');
+    }
+
+    /**
+     * Get category badge color based on template
+     */
+    public function getCategoryBadgeColor(): string
+    {
+        if ($this->formTemplate && $this->formTemplate->imutProfile) {
+            // Generate consistent color based on title
+            $colors = ['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'pink'];
+            $index = abs(crc32($this->formTemplate->imutProfile->title)) % count($colors);
+            return $colors[$index];
+        }
+
+        return 'gray';
+    }
+
+    /**
      * Configure the form
      */
     public function form(Form $form): Form
@@ -76,60 +156,6 @@ class CreateDailyReportEntry extends CreateRecord
             ->schema(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
             ->statePath('data')
             ->live();
-    }
-
-    /**
-     * Get the page title
-     */
-    public function getTitle(): string
-    {
-        $indicatorId = request()->query('indicator');
-
-        if ($indicatorId) {
-            $formTemplate = FormTemplate::with('imutProfile')->find($indicatorId);
-            if ($formTemplate && $formTemplate->imutProfile) {
-                return 'Input Laporan: ' . $formTemplate->imutProfile->title;
-            }
-        }
-
-        return 'Buat Laporan Harian';
-    }
-
-    /**
-     * Get page subheading
-     */
-    public function getSubheading(): ?string
-    {
-        $indicatorId = request()->query('indicator');
-        $date = request()->query('date');
-
-        if ($indicatorId) {
-            $formTemplate = FormTemplate::with('imutProfile')->find($indicatorId);
-            if ($formTemplate) {
-                $category = $formTemplate->imutProfile->title ?? null;
-                $desc = $formTemplate->description;
-
-                $parts = [];
-                if ($category) {
-                    $parts[] = "Kategori: {$category}";
-                }
-                if ($desc) {
-                    $parts[] = $desc;
-                }
-                if ($date) {
-                    try {
-                        $formattedDate = \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('d F Y');
-                        $parts[] = "Tanggal: {$formattedDate}";
-                    } catch (\Exception $e) {
-                        // Invalid date format, ignore
-                    }
-                }
-
-                return implode(' — ', $parts);
-            }
-        }
-
-        return null;
     }
 
     /**
