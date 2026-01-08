@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\FormField;
+use App\Models\EnhancedFormField;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
@@ -16,81 +16,102 @@ trait BuildsDynamicForm
     /**
      * Generate form component from FormField model
      */
-    protected function buildFormComponent(FormField $field)
+    protected function buildFormComponent(EnhancedFormField $field)
     {
-        return match ($field->type) {
-            'text' => TextInput::make("responses.{$field->key}")
-                ->label($field->label)
-                ->required($field->is_required)
-                ->placeholder('Masukkan ' . strtolower($field->label))
+        return match ($field->field_type) {
+            'text' => TextInput::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->required($field->is_critical_field)
+                ->placeholder('Masukkan ' . strtolower($field->field_label))
                 ->helperText($field->description)
                 ->maxLength(255),
 
-            'textarea' => Textarea::make("responses.{$field->key}")
-                ->label($field->label)
-                ->required($field->is_required)
-                ->placeholder('Masukkan ' . strtolower($field->label))
-                ->helperText($field->description)
+            'textarea' => Textarea::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->required($field->is_critical_field)
+                ->placeholder('Masukkan ' . strtolower($field->field_label))
+                ->helperText($field->field_description)
                 ->rows(4)
                 ->maxLength(1000)
                 ->columnSpanFull(),
 
-            'number' => TextInput::make("responses.{$field->key}")
-                ->label($field->label)
+            'number' => TextInput::make("responses.{$field->field_key}")
+                ->label($field->field_label)
                 ->numeric()
-                ->required($field->is_required)
+                ->required($field->is_critical_field)
                 ->placeholder('0')
-                ->helperText($field->description)
+                ->helperText($field->field_description)
                 ->minValue(0)
                 ->step(1)
                 ->prefix('📊'),
 
-            'date' => DatePicker::make("responses.{$field->key}")
-                ->label($field->label)
+            'date' => DatePicker::make("responses.{$field->field_key}")
+                ->label($field->field_label)
                 ->native(false)
                 ->displayFormat('d/m/Y')
-                ->required($field->is_required)
-                ->helperText($field->description)
+                ->required($field->is_critical_field)
+                ->helperText($field->field_description)
                 ->maxDate(now())
                 ->prefix('📅'),
 
-            'bool' => Checkbox::make("responses.{$field->key}")
-                ->label($field->label)
-                ->required($field->is_required)
-                ->helperText($field->description)
+            'bool' => Checkbox::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->required($field->is_critical_field)
+                ->helperText($field->field_description)
                 ->inline(false)
                 ->columnSpanFull(),
 
-            'select' => Select::make("responses.{$field->key}")
-                ->label($field->label)
-                ->options(is_array($field->options) ? array_combine($field->options, $field->options) : [])
-                ->required($field->is_required)
-                ->helperText($field->description)
+            'select' => Select::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->options($this->getFieldOptions($field))
+                ->required($field->is_critical_field)
+                ->helperText($field->field_description)
                 ->searchable()
-                ->placeholder('Pilih ' . strtolower($field->label)),
+                ->placeholder('Pilih ' . strtolower($field->field_label)),
 
-            'radio' => Radio::make("responses.{$field->key}")
-                ->label($field->label)
-                ->options(is_array($field->options) ? array_combine($field->options, $field->options) : [])
-                ->required($field->is_required)
-                ->helperText($field->description)
+            'radio' => Radio::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->options($this->getFieldOptions($field))
+                ->required($field->is_critical_field)
+                ->helperText($field->field_description)
                 ->inline()
                 ->columnSpanFull(),
 
-            'checkbox' => CheckboxList::make("responses.{$field->key}")
-                ->label($field->label)
-                ->options(is_array($field->options) ? array_combine($field->options, $field->options) : [])
-                ->required($field->is_required)
-                ->helperText($field->description)
+            'checkbox' => CheckboxList::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->options($this->getFieldOptions($field))
+                ->required($field->is_critical_field)
+                ->helperText($field->field_description)
                 ->columns(2)
                 ->columnSpanFull(),
 
-            default => TextInput::make("responses.{$field->key}")
-                ->label($field->label)
-                ->required($field->is_required)
-                ->helperText($field->description)
-                ->placeholder('Masukkan ' . strtolower($field->label)),
+            default => TextInput::make("responses.{$field->field_key}")
+                ->label($field->field_label)
+                ->required($field->is_critical_field)
+                ->helperText($field->field_description)
+                ->placeholder('Masukkan ' . strtolower($field->field_label)),
         };
+    }
+
+    /**
+     * Get field options for select/radio/checkbox components
+     */
+    protected function getFieldOptions(EnhancedFormField $field): array
+    {
+        // Check if field has options relation
+        if ($field->relationLoaded('options') && $field->options->isNotEmpty()) {
+            return $field->options->pluck('option_label', 'option_value')->toArray();
+        }
+
+        // Fallback to validation_config if no options relation
+        $validationConfig = $field->validation_config ?? [];
+        $options = $validationConfig['options'] ?? [];
+
+        if (is_array($options) && !empty($options)) {
+            return array_combine($options, $options);
+        }
+
+        return [];
     }
 
     /**

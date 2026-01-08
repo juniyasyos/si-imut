@@ -186,6 +186,18 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     }
 
     /**
+     * Generate URL for creating report entry for specific indicator and date
+     * Usage: DailyReportEntryResource::getCreateUrl($indicatorId, $date)
+     */
+    public static function getCreateUrl(int $indicatorId, string $date): string
+    {
+        return static::getUrl('create') . '?' . http_build_query([
+            'indicator' => $indicatorId,
+            'date' => $date
+        ]);
+    }
+
+    /**
      * Generate URL for opening slide-over for specific indicator and date
      * Usage: DailyReportEntryResource::getSlideOverUrl($indicatorId, $date)
      */

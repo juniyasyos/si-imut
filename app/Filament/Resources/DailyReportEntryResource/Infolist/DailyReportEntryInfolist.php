@@ -129,19 +129,19 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
 
                 $fields = [];
                 $formFields = $record->formTemplate->formFields()
-                    ->orderBy('order')
+                    ->orderBy('order_index')
                     ->get();
 
                 foreach ($formFields as $field) {
-                    $fields[] = TextEntry::make("responses.{$field->key}")
-                        ->label($field->label)
+                    $fields[] = TextEntry::make("responses.{$field->field_key}")
+                        ->label($field->field_label)
                         ->formatStateUsing(function ($state) use ($field) {
                             $instance = new static();
-                            return $instance->formatFieldValue($state, $field->type);
+                            return $instance->formatFieldValue($state, $field->field_type);
                         })
                         ->placeholder('-')
-                        ->badge(fn() => in_array($field->type, ['bool', 'select', 'radio']))
-                        ->color(fn($state) => match ($field->type) {
+                        ->badge(fn() => in_array($field->field_type, ['bool', 'select', 'radio']))
+                        ->color(fn($state) => match ($field->field_type) {
                             'bool' => $state ? 'success' : 'danger',
                             default => 'gray',
                         })

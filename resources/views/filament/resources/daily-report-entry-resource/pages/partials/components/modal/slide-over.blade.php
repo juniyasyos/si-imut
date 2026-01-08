@@ -89,7 +89,7 @@
                 <!-- Content with enhanced staggered animations and glass effect -->
                 <div class="flex-1 overflow-y-auto px-6 py-6 backdrop-blur-sm bg-gray-50/60 dark:bg-slate-800/60">
 
-                    <!-- Enhanced Add New Button with advanced animations - Moved to top for better UX -->
+                    <!-- Enhanced Add New Button - Redirects to create page -->
                     <div x-data="{ buttonVisible: false }"
                         x-init="setTimeout(() => buttonVisible = true, 200)"
                         x-show="buttonVisible"
@@ -102,7 +102,7 @@
                             class="group relative w-full flex items-center justify-center px-6 py-5 font-bold rounded-2xl shadow-2xl transform hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 overflow-hidden backdrop-blur-sm bg-gradient-to-r from-green-600 via-green-700 to-green-800 text-white"
                             onmouseover="this.classList.add('shadow-[0_0_50px_rgba(34,197,94,0.7)]')"
                             onmouseout="this.classList.remove('shadow-[0_0_50px_rgba(34,197,94,0.7)]')"
-                            @click="console.log('Button clicked, selectedIndicatorId:', {{ $selectedIndicatorId ?? 'null' }}, 'selectedDate:', '{{ $selectedDate ?? 'null' }}')">
+                            @click="console.log('Redirecting to create page for indicator:', {{ $selectedIndicatorId ?? 'null' }}, 'date:', '{{ $selectedDate ?? 'null' }}')">
                             <!-- Multiple shine effects on hover -->
                             <div class="absolute inset-0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"
                                 style="background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);"></div>
@@ -113,8 +113,8 @@
                             <div class="absolute inset-0 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"
                                 style="background: linear-gradient(to right, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));"></div>
 
-                            @svg("heroicon-o-plus-circle", "relative w-6 h-6 mr-2.5 transform group-hover:rotate-180 group-hover:scale-110 transition-all duration-500 drop-shadow-lg")
-                            <span class="relative text-base drop-shadow-md">Tambah Laporan Baru</span>
+                            @svg("heroicon-o-arrow-top-right-on-square", "relative w-6 h-6 mr-2.5 transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 drop-shadow-lg")
+                            <span class="relative text-base drop-shadow-md">Buat Laporan Baru</span>
                         </button>
                     </div>
 

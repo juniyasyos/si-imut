@@ -538,7 +538,8 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     {
         $this->slideOverOpen = false;
         $this->selectedIndicatorId = null;
-        $this->selectedDate = null;
+        // Don't reset selectedDate to null - keep the current selected date
+        // $this->selectedDate = null;
         $this->selectedIndicatorData = [];
         $this->dailyReports = []; // Clear cached data
 
@@ -551,31 +552,35 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     }
 
     /**
-     * Create new report
+     * Create new report - redirect to create page
      */
     public function createNewReport(): void
     {
         if ($this->selectedIndicatorId && $this->selectedDate) {
             // Debug logging
-            \Log::info('createNewReport: selectedIndicatorId = ' . $this->selectedIndicatorId);
+            \Log::info('createNewReport: Redirecting to create page', [
+                'indicator_id' => $this->selectedIndicatorId,
+                'date' => $this->selectedDate
+            ]);
 
-            // Load form template directly
-            $this->formTemplate = FormTemplate::where('imut_profile_id', $this->selectedIndicatorId)->first();
+            // Redirect to create page with parameters
+            $createUrl = DailyReportEntryResource::getUrl('create') . '?' . http_build_query([
+                'indicator' => $this->selectedIndicatorId,
+                'date' => $this->selectedDate
+            ]);
 
-            \Log::info('createNewReport: FormTemplate found = ' . ($this->formTemplate ? 'YES (id: ' . $this->formTemplate->id . ', title: ' . $this->formTemplate->title . ')' : 'NO'));
-
-            if ($this->formTemplate) {
-                $this->initializeReportData();
-                $this->formSlideOverOpen = true;
-            } else {
-                \Filament\Notifications\Notification::make()
-                    ->title('Form Template Tidak Ditemukan')
-                    ->body('Form template untuk indikator ini belum dikonfigurasi. Indicator ID: ' . $this->selectedIndicatorId)
-                    ->warning()
-                    ->send();
-            }
+            $this->redirect($createUrl);
         } else {
-            \Log::warning('createNewReport: Missing data - selectedIndicatorId: ' . $this->selectedIndicatorId . ', selectedDate: ' . $this->selectedDate);
+            \Log::warning('createNewReport: Missing data', [
+                'indicator_id' => $this->selectedIndicatorId,
+                'date' => $this->selectedDate
+            ]);
+
+            \Filament\Notifications\Notification::make()
+                ->title('Data Tidak Lengkap')
+                ->body('Silakan pilih indikator dan tanggal terlebih dahulu')
+                ->warning()
+                ->send();
         }
     }
 

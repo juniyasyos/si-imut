@@ -77,7 +77,17 @@ class DailyReportEntrySchema extends DailyReportEntryResource
             ->maxDate(now())
             ->minDate(now()->subDays(6))
             ->helperText('💡 Data dapat diinput maksimal 6 hari yang lalu')
-            ->default(now())
+            ->default(function () {
+                $dateParam = request()->query('date');
+                if ($dateParam) {
+                    try {
+                        return \Carbon\Carbon::createFromFormat('Y-m-d', $dateParam);
+                    } catch (\Exception $e) {
+                        return now();
+                    }
+                }
+                return now();
+            })
             ->columnSpanFull();
 
         return Section::make('📋 Informasi Laporan')
