@@ -1,32 +1,29 @@
 <x-filament-panels::page>
     <div class="space-y-6">
         {{-- Modern Header Section --}}
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg overflow-hidden">
-            <div class="px-6 py-8 text-white">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-xl shadow-lg overflow-hidden">
+            <div class="px-6 py-8 text-white dark:text-gray-100">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
-                            <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <div class="p-2 bg-white/20 dark:bg-white/30 rounded-lg backdrop-blur-sm">
                                 <x-heroicon-s-document-text class="w-6 h-6" />
                             </div>
                             <div>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm">
-                                    {{ $this->getCategoryBadgeColor() == 'blue' ? 'Laporan' : ucfirst($this->getCategoryBadgeColor()) }}
-                                </span>
+                                <h1 class="text-2xl font-bold mb-2">{{ $this->getFormTitle() }}</h1>
                             </div>
                         </div>
-                        <h1 class="text-2xl font-bold mb-2">{{ $this->getFormTitle() }}</h1>
                         @if($this->getFormDescription())
-                        <p class="text-blue-100 opacity-90">{{ $this->getFormDescription() }}</p>
+                        <p class="text-blue-100 dark:text-blue-200 opacity-90">{{ $this->getFormDescription() }}</p>
                         @endif
                     </div>
 
                     <div class="flex flex-col sm:items-end gap-2">
-                        <div class="flex items-center gap-2 text-blue-100">
+                        <div class="flex items-center gap-2 text-blue-100 dark:text-blue-200">
                             <x-heroicon-s-calendar class="w-4 h-4" />
                             <span class="text-sm font-medium">{{ $this->getFormattedDate() }}</span>
                         </div>
-                        <div class="flex items-center gap-2 text-blue-100">
+                        <div class="flex items-center gap-2 text-blue-100 dark:text-blue-200">
                             <x-heroicon-s-user class="w-4 h-4" />
                             <span class="text-sm">{{ auth()->user()->name }}</span>
                         </div>
@@ -41,13 +38,13 @@
             <div class="lg:col-span-3 space-y-6">
 
                 {{-- Form Card --}}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 border-b border-gray-200">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-900">Form Laporan</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Form Laporan</h3>
                             <div class="flex items-center gap-2">
-                                <x-heroicon-s-shield-check class="w-5 h-5 text-green-500" />
-                                <span class="text-sm text-gray-600">Auto-save aktif</span>
+                                <x-heroicon-s-shield-check class="w-5 h-5 text-green-500 dark:text-green-400" />
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Auto-save aktif</span>
                             </div>
                         </div>
                     </div>
@@ -66,18 +63,18 @@
 
 
                 {{-- Action Button --}}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
                     <div class="p-6">
                         <button type="button"
                             wire:click="create"
-                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800">
                             <x-heroicon-s-paper-airplane class="w-5 h-5" />
                             Simpan Laporan
                         </button>
 
                         <div class="mt-4 text-center">
                             <a href="{{ $this->getResource()::getUrl('index') }}"
-                                class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                                class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                                 Kembali ke daftar laporan
                             </a>
                         </div>
@@ -85,15 +82,15 @@
                 </div>
 
                 {{-- Help Card --}}
-                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-sm border border-yellow-200">
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl shadow-sm border border-yellow-200 dark:border-yellow-700/30">
                     <div class="p-6">
                         <div class="flex items-start gap-3">
-                            <div class="p-2 bg-yellow-100 rounded-lg">
-                                <x-heroicon-s-light-bulb class="w-5 h-5 text-yellow-600" />
+                            <div class="p-2 bg-yellow-100 dark:bg-yellow-800/30 rounded-lg">
+                                <x-heroicon-s-light-bulb class="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                             </div>
                             <div>
-                                <h4 class="font-semibold text-yellow-800 mb-2">Tips Pengisian</h4>
-                                <ul class="text-sm text-yellow-700 space-y-1">
+                                <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Tips Pengisian</h4>
+                                <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
                                     <li>• Isi semua field yang wajib</li>
                                     <li>• Periksa data sebelum submit</li>
                                     <li>• Form akan tersimpan otomatis</li>
@@ -134,7 +131,10 @@
 
         .overflow-auto::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border-radius: 3px;
+        }
+
+        .dark .overflow-auto::-webkit-scrollbar-track {
+            background: #1e293b;
         }
 
         .overflow-auto::-webkit-scrollbar-thumb {
@@ -142,8 +142,16 @@
             border-radius: 3px;
         }
 
+        .dark .overflow-auto::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
         .overflow-auto::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
+        }
+
+        .dark .overflow-auto::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
 
         /* Form field enhancements */
@@ -162,6 +170,14 @@
 
         .bg-white:hover {
             @apply shadow-md;
+        }
+
+        .dark .bg-white {
+            @apply dark:bg-slate-800;
+        }
+
+        .dark .bg-white:hover {
+            @apply dark:shadow-lg dark:shadow-slate-900/20;
         }
     </style>
 </x-filament-panels::page>

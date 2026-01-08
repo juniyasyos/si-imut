@@ -221,20 +221,22 @@
 
                                 <!-- Actions -->
                                 <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-600">
-                                    <span class="text-xs text-gray-500">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
                                         ID: {{ $report['id'] }}
                                     </span>
-                                    <div class="flex gap-2">
+                                    <div class="flex gap-2 flex-wrap">
                                         <button
                                             wire:click="viewReport({{ $report['id'] }})"
+                                            title="Lihat detail lengkap laporan"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50">
                                             @svg("heroicon-m-eye", "w-3 h-3 mr-1")
-                                            Lihat Detail
+                                            Detail
                                         </button>
 
                                         @if(\Carbon\Carbon::parse($report['created_at'])->diffInHours(now()) <= 24)
                                             <button
                                             wire:click="editReport({{ $report['id'] }})"
+                                            title="Edit laporan (tersedia 24 jam setelah dibuat)"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors duration-100 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50">
                                             @svg("heroicon-m-pencil", "w-3 h-3 mr-1")
                                             Edit
@@ -242,11 +244,17 @@
 
                                             <button
                                                 wire:click="deleteReport({{ $report['id'] }})"
-                                                wire:confirm="Apakah Anda yakin ingin menghapus laporan ini?"
+                                                wire:confirm="Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan."
+                                                title="Hapus laporan (tersedia 24 jam setelah dibuat)"
                                                 class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 transition-colors duration-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
                                                 @svg("heroicon-m-trash", "w-3 h-3 mr-1")
                                                 Hapus
                                             </button>
+                                            @else
+                                            <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400" title="Edit dan hapus hanya tersedia 24 jam setelah laporan dibuat">
+                                                @svg("heroicon-m-lock-closed", "w-3 h-3 mr-1")
+                                                Terkunci
+                                            </span>
                                             @endif
                                     </div>
                                 </div>
