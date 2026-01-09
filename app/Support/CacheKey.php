@@ -38,10 +38,11 @@ final class CacheKey
         return 'dashboard:siimut:chart_data_dashboard';
     }
 
-    public static function imutPenilaian(int $imutDataId, int $year, ?int $endMonth = null): string
+    public static function imutPenilaian(int $imutDataId, int $year, ?int $startMonth = null, ?int $endMonth = null): string
     {
-        $monthPart = $endMonth ? ":{$endMonth}" : '';
-        return "imut:penilaian:{$imutDataId}:{$year}{$monthPart}";
+        $startPart = $startMonth ? ":{$startMonth}" : '';
+        $endPart = $endMonth ? ":{$endMonth}" : '';
+        return "imut:penilaian:{$imutDataId}:{$year}{$startPart}{$endPart}";
     }
 
     /**

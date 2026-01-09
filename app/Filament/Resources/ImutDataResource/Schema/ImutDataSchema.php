@@ -97,7 +97,7 @@ class ImutDataSchema extends ImutDataResource
                                             $query->where('is_use_global', true);
                                         }
 
-                                        return $query->pluck('category_name', 'id');
+                                        return $query->pluck('category_name');
                                     })
                                     ->searchable()
                                     ->required()

@@ -26,20 +26,11 @@ class EditImutData extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ActionGroup::make([
-                Action::make('lihat_grafik')
-                    ->label('Lihat Grafik IMUT')
-                    ->color('primary')
-                    ->icon('heroicon-s-chart-bar')
-                    ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
-
-                // Removed: manage_form_builder moved to ImutProfile
-            ])
-                ->button()
-                ->label('Laporan & Grafik')
-                ->icon('heroicon-s-chart-bar')
+            Action::make('lihat_grafik')
+                ->label('Lihat Grafik IMUT')
                 ->color('primary')
-                ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
+                ->icon('heroicon-s-chart-bar')
+                ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
             ActionGroup::make([
                 RelationManagerAction::make('profiles')
@@ -56,7 +47,8 @@ class EditImutData extends EditRecord
                     ->icon('heroicon-s-building-office')
                     ->record($this->getRecord())
                     ->color('gray')
-                    ->relationManager(UnitKerjaRelationManager::make()),
+                    ->relationManager(UnitKerjaRelationManager::make())
+                    ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
             ])
                 ->button()
                 ->label('🔧 Kelola Data')

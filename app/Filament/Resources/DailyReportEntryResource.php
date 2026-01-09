@@ -33,6 +33,14 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
 
     protected static bool $shouldRegisterNavigation = true;
 
+    /**
+     * Check if navigation should be registered for current user
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::canViewAny();
+    }
+
     protected static ?string $recordTitleAttribute = 'report_date';
 
     protected static ?string $slug = 'daily-report-entries';
@@ -114,20 +122,113 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    // /**
-    //  * Check if user can view any records
-    //  */
-    // public static function canViewAny(): bool
-    // {
-    //     $user = Auth::user();
+    /**
+     * Check if user can view any records
+     */
+    public static function canViewAny(): bool
+    {
+        $user = Auth::user();
 
-    //     if (!$user) {
-    //         return false;
-    //     }
+        if (!$user) {
+            return false;
+        }
 
-    //     /** @var \App\Models\User $user */
-    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
-    // }
+        /** @var \App\Models\User $user */
+        return $user->unitKerjas()->exists();
+    }
+
+    /**
+     * Check if user can create records
+     */
+    public static function canCreate(): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    }
+
+    /**
+     * Check if user can view specific record
+     */
+    public static function canView($record): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        if (!$user->hasRole('Unit Kerja') || !$user->unitKerjas()->exists()) {
+            return false;
+        }
+
+        // Check if the record belongs to user's unit kerja
+        $userUnitIds = $user->unitKerjas()->pluck('id');
+        return $userUnitIds->contains($record->unit_kerja_id);
+    }
+
+    /**
+     * Check if user can edit specific record
+     */
+    public static function canEdit($record): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        if (!$user->hasRole('Unit Kerja') || !$user->unitKerjas()->exists()) {
+            return false;
+        }
+
+        // Check if the record belongs to user's unit kerja
+        $userUnitIds = $user->unitKerjas()->pluck('id');
+        return $userUnitIds->contains($record->unit_kerja_id);
+    }
+
+    /**
+     * Check if user can delete specific record
+     */
+    public static function canDelete($record): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        if (!$user->hasRole('Unit Kerja') || !$user->unitKerjas()->exists()) {
+            return false;
+        }
+
+        // Check if the record belongs to user's unit kerja
+        $userUnitIds = $user->unitKerjas()->pluck('id');
+        return $userUnitIds->contains($record->unit_kerja_id);
+    }
+
+    /**
+     * Check if user can delete any records
+     */
+    public static function canDeleteAny(): bool
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    }
 
     /**
      * Modify query to show only user's unit data
