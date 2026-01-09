@@ -56,26 +56,22 @@ class ImutBenchmarkingSeeder extends Seeder
                 $periodEnd = Carbon::create($y, $m, 1)->endOfMonth();
 
                 foreach ($regions as $region) {
-                    $nm = $this->generateRegionName($region->type);
-
                     // Check if already exists to avoid duplicates
                     $exists = ImutBenchmarking::where('imut_data_id', $indicator->id)
                         ->where('region_type_id', $region->id)
-                        ->where('year', $y)
-                        ->where('month', $m)
+                        ->whereYear('period_start', $y)
+                        ->whereMonth('period_start', $m)
                         ->exists();
 
                     if (!$exists) {
-                        ImutBenchmarking::factory()->create([
+                        ImutBenchmarking::create([
                             'imut_data_id' => $indicator->id,
                             'region_type_id' => $region->id,
-                            'region_name' => $nm,
-                            'year' => $y,
-                            'month' => $m,
+                            'benchmark_value' => fake()->randomFloat(2, 70, 95),
                             'period_start' => $periodStart,
                             'period_end' => $periodEnd,
                             'is_active' => true,
-                            'notes' => "Benchmarking untuk {$indicator->title} - {$nm}",
+                            'notes' => "Benchmarking untuk {$indicator->title} - {$region->type}",
                             'created_by' => $users->random()->id ?? null,
                             'updated_by' => $users->random()->id ?? null,
                         ]);

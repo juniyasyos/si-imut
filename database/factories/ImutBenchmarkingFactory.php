@@ -37,9 +37,6 @@ class ImutBenchmarkingFactory extends Factory
         return [
             'imut_data_id' => ImutData::factory(),
             'region_type_id' => $regionType->id,
-            'region_name' => $this->generateRegionName($regionType->type),
-            'year' => $year,
-            'month' => $month,
             'benchmark_value' => $this->faker->randomFloat(2, 70, 100),
             'period_start' => $periodStart,
             'period_end' => $periodEnd,
@@ -51,63 +48,11 @@ class ImutBenchmarkingFactory extends Factory
     }
 
     /**
-     * Generate region name based on type
-     */
-    protected function generateRegionName(string $type): string
-    {
-        return match (strtolower(str_replace(['🌐', '🏛️', '🏥', ' '], '', $type))) {
-            'nasional' => 'Indonesia',
-            'provinsi' => $this->faker->randomElement([
-                'Jawa Timur',
-                'Jawa Barat',
-                'Jawa Tengah',
-                'DKI Jakarta',
-                'Bali',
-                'Sumatera Utara',
-            ]),
-            'rumahsakit' => $this->faker->company() . ' Hospital',
-            default => 'Unknown Region',
-        };
-    }
-
-    /**
-     * State for active benchmarking
-     */
-    public function active(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'is_active' => true,
-        ]);
-    }
-
-    /**
-     * State for inactive benchmarking
-     */
-    public function inactive(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'is_active' => false,
-        ]);
-    }
-
-    /**
-     * State for permanent benchmarking (no end date)
-     */
-    public function permanent(): static
-    {
-        return $this->state(fn(array $attributes) => [
-            'period_end' => null,
-        ]);
-    }
-
-    /**
      * State for specific year/month
      */
     public function forYearMonth(int $year, int $month): static
     {
         return $this->state(fn(array $attributes) => [
-            'year' => $year,
-            'month' => $month,
             'period_start' => \Carbon\Carbon::create($year, $month, 1)->startOfMonth(),
             'period_end' => \Carbon\Carbon::create($year, $month, 1)->endOfMonth(),
         ]);
@@ -126,11 +71,10 @@ class ImutBenchmarkingFactory extends Factory
     /**
      * State for specific region
      */
-    public function forRegion(int $regionTypeId, ?string $regionName = null): static
+    public function forRegion(int $regionTypeId): static
     {
         return $this->state(fn(array $attributes) => [
             'region_type_id' => $regionTypeId,
-            'region_name' => $regionName ?? $attributes['region_name'],
         ]);
     }
 }

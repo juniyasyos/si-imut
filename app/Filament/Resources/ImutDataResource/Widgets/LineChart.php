@@ -6,6 +6,7 @@ use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
 use App\Models\RegionType;
+use App\Services\ImutBenchmarkingService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Toggle;
@@ -29,6 +30,13 @@ class LineChart extends ApexChartWidget
     protected static bool $isLazy = false;
 
     public ImutData $imutData;
+
+    protected ImutBenchmarkingService $benchmarkingService;
+
+    public function mount(): void
+    {
+        $this->benchmarkingService = app(ImutBenchmarkingService::class);
+    }
 
     protected function hasFilterForm(): bool
     {
@@ -410,8 +418,8 @@ class LineChart extends ApexChartWidget
             'color' => '#f59e0b', // Amber
         ];
 
-        // Add benchmarking data - always show for testing
-        if ($this->imutData->categories->is_benchmark_category) {
+        // Add benchmarking data if enabled and has benchmark data
+        if ($showBenchmark && $this->imutData->categories->is_benchmark_category) {
             $this->addBenchmarkingData($series, $labelKeys, $year, $startMonth, $endMonth, $regionTypeId);
         }
 
@@ -422,44 +430,37 @@ class LineChart extends ApexChartWidget
     }
 
     /**
-     * Add benchmarking data to series
+     * Add benchmarking data to series using professional service
      */
     protected function addBenchmarkingData(&$series, $labelKeys, int $year, int $startMonth, int $endMonth, $regionTypeId): void
     {
-        // Simplified version - get all benchmark data without complex filters
-        $benchmarking = ImutBenchmarking::query()
-            ->with('regionType:id,type,display_color,chart_type')
-            ->forIndicator($this->imutData->id)
-            ->where('is_active', true)
-            ->get();
+        // Get benchmark chart data using the professional service
+        $benchmarkChartData = $this->benchmarkingService->getBenchmarkChartData(
+            $this->imutData->id,
+            $year,
+            $regionTypeId ? (array) $regionTypeId : null
+        );
 
-        dd($benchmarking);
-        // Add each benchmark as a flat line across all months
-        $colorIndex = 0;
-        $defaultColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
-
-        foreach ($benchmarking as $item) {
-            $typeName = $item->regionType->type ?? 'Region Unknown';
-            $benchmarkValue = round($item->benchmark_value, 2);
-
-            // Create benchmark data array with same value for all months
-            $benchmarkData = array_fill(0, count($labelKeys), $benchmarkValue);
-
-            $color = $item->regionType->display_color ?? $defaultColors[$colorIndex % count($defaultColors)];
+        // Add each benchmark series to the chart
+        foreach ($benchmarkChartData['series'] as $benchmarkSeries) {
+            // Filter data to only show months in range
+            $filteredData = [];
+            for ($month = $startMonth; $month <= $endMonth; $month++) {
+                $filteredData[] = $benchmarkSeries['data'][$month - 1] ?? null;
+            }
 
             $series[] = [
-                'name' => "Benchmark $typeName",
-                'type' => 'line',
-                'data' => $benchmarkData,
-                'color' => $color,
+                'name' => "📊 Benchmark {$benchmarkSeries['name']}",
+                'type' => $benchmarkSeries['type'],
+                'data' => $filteredData,
+                'color' => $benchmarkSeries['color'],
+                'dashStyle' => 'Dash', // Make benchmark lines dashed for distinction
+                'lineWidth' => 2,
+                'marker' => [
+                    'enabled' => true,
+                    'symbol' => 'diamond'
+                ]
             ];
-
-            $colorIndex++;
-
-            // Only show first 3 benchmark types to avoid clutter
-            if ($colorIndex >= 3) {
-                break;
-            }
         }
     }
 }

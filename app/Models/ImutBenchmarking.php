@@ -16,7 +16,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $imut_data_id
  * @property int $region_type_id
- * @property string|null $region_name
  * @property float $benchmark_value
  * @property \Illuminate\Support\Carbon $period_start
  * @property \Illuminate\Support\Carbon|null $period_end
@@ -142,8 +141,8 @@ class ImutBenchmarking extends Model
                                 ->orWhere('period_end', '>=', $date);
                         });
                 })
-                // OR period_start is null (legacy data)
-                ->orWhereNull('period_start');
+                    // OR period_start is null (legacy data)
+                    ->orWhereNull('period_start');
             });
     }
 

@@ -11,6 +11,7 @@ use Awcodes\TableRepeater\Header;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Guava\FilamentModalRelationManagers\Actions\ModalRelationManagerAction;
@@ -160,102 +162,170 @@ class ImutDataSchema extends ImutDataResource
 
                     Tab::make('📍 Benchmarking')
                         ->schema([
-                            Tabs::make('Benchmark Tabs')
+                            Section::make('Manajemen Benchmark')
+                                ->description('Kelola data benchmark untuk indikator IMUT ini. Setiap region type dapat memiliki benchmark sendiri-sendiri.')
+                                ->schema([
+                                    Actions::make([
+                                        Action::make('manage_all_benchmarks')
+                                            ->label('Kelola Semua Benchmark')
+                                            ->icon('heroicon-m-cog-8-tooth')
+                                            ->color('primary')
+                                            ->url(
+                                                fn(?Model $record) => $record
+                                                    ? '/admin/imut-benchmarkings?tableFilters[imut_data_id][value]=' . $record->id
+                                                    : '/admin/imut-benchmarkings'
+                                            ),
+
+                                        Action::make('add_benchmark')
+                                            ->label('Tambah Benchmark Baru')
+                                            ->icon('heroicon-m-plus')
+                                            ->color('success')
+                                            ->url(
+                                                fn(?Model $record) => $record
+                                                    ? '/admin/imut-benchmarkings/create?imut_data_id=' . $record->id
+                                                    : '/admin/imut-benchmarkings/create'
+                                            ),
+                                    ])
+                                        ->alignCenter()
+                                        ->visible(fn(?Model $record) => $record !== null),
+                                ]),
+
+                            Tabs::make('Benchmark by Region Type')
                                 ->tabs(
                                     RegionType::all()->map(function ($regionType) {
-                                        return Tab::make(ucfirst($regionType->type))
+                                        return Tab::make($regionType->type)
+                                            ->icon('heroicon-m-map-pin')
                                             ->badge(fn(?Model $record) => $record?->benchmarkings()
                                                 ->where('region_type_id', $regionType->id)
+                                                ->where('is_active', true)
                                                 ->count() ?: null)
+                                            ->badgeColor(fn(?Model $record) => ($record?->benchmarkings()
+                                                ->where('region_type_id', $regionType->id)
+                                                ->where('is_active', true)
+                                                ->count() > 0) ? 'success' : 'gray')
                                             ->schema([
-                                                TableRepeater::make("{$regionType->type}_benchmarkings")
-                                                    ->label('')
-                                                    ->relationship(
-                                                        'benchmarkings',
-                                                        fn($query) => $query
-                                                            ->where('region_type_id', $regionType->id)
-                                                            ->orderBy('is_active', 'desc')
-                                                            ->orderByDesc('period_start')
-                                                    )
-                                                    ->headers([
-                                                        Header::make('benchmark_value')->label('Nilai (%)')->width('100px'),
-                                                        Header::make('period_start')->label('Berlaku Dari')->width('140px'),
-                                                        Header::make('period_end')->label('Sampai')->width('140px'),
-                                                        Header::make('is_active')->label('Aktif')->width('80px'),
-                                                    ])
+                                                Section::make("Benchmark untuk {$regionType->type}")
+                                                    ->description("Data benchmark yang berlaku untuk region type: {$regionType->type}")
                                                     ->schema([
-                                                        TextInput::make('benchmark_value')
-                                                            ->label(false)
-                                                            ->numeric()
-                                                            ->step(0.01)
-                                                            ->suffix('%')
-                                                            ->placeholder('85.5')
-                                                            ->required(),
+                                                        TableRepeater::make("{$regionType->type}_benchmarkings")
+                                                            ->label('')
+                                                            ->relationship(
+                                                                'benchmarkings',
+                                                                fn($query) => $query
+                                                                    ->where('region_type_id', $regionType->id)
+                                                                    ->orderBy('is_active', 'desc')
+                                                                    ->orderByDesc('period_start')
+                                                            )
+                                                            ->headers([
+                                                                Header::make('region_name')->label('Region')->width('150px'),
+                                                                Header::make('benchmark_value')->label('Nilai (%)')->width('100px'),
+                                                                Header::make('period_start')->label('Berlaku Dari')->width('130px'),
+                                                                Header::make('period_end')->label('Sampai')->width('130px'),
+                                                                Header::make('is_active')->label('Status')->width('80px'),
+                                                                Header::make('notes')->label('Catatan')->width('200px'),
+                                                            ])
+                                                            ->schema([
+                                                                TextInput::make('region_name')
+                                                                    ->label(false)
+                                                                    ->placeholder($regionType->getDefaultRegionName() ?? 'Nama region'),
 
-                                                        DatePicker::make('period_start')
-                                                            ->label(false)
-                                                            ->placeholder('Tanggal mulai')
-                                                            ->default(now()->startOfMonth())
-                                                            ->required(),
+                                                                TextInput::make('benchmark_value')
+                                                                    ->label(false)
+                                                                    ->numeric()
+                                                                    ->step(0.01)
+                                                                    ->suffix('%')
+                                                                    ->placeholder('85.5')
+                                                                    ->required(),
 
-                                                        DatePicker::make('period_end')
-                                                            ->label(false)
-                                                            ->placeholder('Permanent (kosongkan)')
-                                                            ->afterOrEqual('period_start'),
+                                                                DatePicker::make('period_start')
+                                                                    ->label(false)
+                                                                    ->placeholder('Tanggal mulai')
+                                                                    ->default(now()->startOfMonth())
+                                                                    ->required(),
 
-                                                        Toggle::make('is_active')
-                                                            ->label(false)
-                                                            ->default(true)
-                                                            ->inline(false),
+                                                                DatePicker::make('period_end')
+                                                                    ->label(false)
+                                                                    ->placeholder('Permanent')
+                                                                    ->afterOrEqual('period_start'),
 
-                                                        // Hidden fields
-                                                        Hidden::make('region_type_id')->default($regionType->id),
-                                                        Hidden::make('notes'),
-                                                        Hidden::make('created_by')->default(fn() => Auth::id()),
-                                                        Hidden::make('updated_by')->default(fn() => Auth::id()),
+                                                                Toggle::make('is_active')
+                                                                    ->label(false)
+                                                                    ->default(true)
+                                                                    ->inline(false),
+
+                                                                Textarea::make('notes')
+                                                                    ->label(false)
+                                                                    ->placeholder('Catatan...')
+                                                                    ->rows(2),
+
+                                                                // Hidden fields
+                                                                Hidden::make('region_type_id')->default($regionType->id),
+                                                                Hidden::make('created_by')->default(fn() => Auth::id()),
+                                                                Hidden::make('updated_by')->default(fn() => Auth::id()),
+                                                            ])
+                                                            ->visibleOn('edit')
+                                                            ->addable(fn() => Auth::user()->can('force_editable_imut::profile'))
+                                                            ->deletable(fn() => Auth::user()->can('force_editable_imut::profile'))
+                                                            ->reorderable(false)
+                                                            ->defaultItems(0)
+                                                            ->columnSpan('full')
+                                                            ->emptyLabel("Belum ada benchmark untuk region type: {$regionType->type}"),
                                                     ])
-                                                    ->visibleOn('edit')
-                                                    ->addable(fn() => Auth::user()->can('force_editable_imut::profile'))
-                                                    ->deletable(fn() => Auth::user()->can('force_editable_imut::profile'))
-                                                    ->reorderable(false)
-                                                    ->defaultItems(0)
-                                                    ->columnSpan('full')
-                                                    ->emptyLabel('Belum ada data benchmarking'),
+                                                    ->collapsible()
+                                                    ->collapsed(fn(?Model $record) => $record?->benchmarkings()
+                                                        ->where('region_type_id', $regionType->id)
+                                                        ->count() === 0),
                                             ]);
                                     })->push(
-                                        Tab::make('⚙️ Kelola Region')
+                                        Tab::make('⚙️ Kelola Region Type')
+                                            ->icon('heroicon-m-cog-6-tooth')
                                             ->visible(Auth::user()->can('create_region::type::bencmarking'))
                                             ->schema([
-                                                Actions::make([
-                                                    Action::make('create_region_type')
-                                                        ->label('Tambah Region Type')
-                                                        ->icon('heroicon-m-plus')
-                                                        ->color('primary')
-                                                        ->modalHeading('Tambah Region Type Baru')
-                                                        ->form([
-                                                            TextInput::make('type')
-                                                                ->label('Nama Region Type')
-                                                                ->placeholder('Contoh: provinsi, rumah sakit, nasional')
-                                                                ->required(),
+                                                Section::make('Pengaturan Region Type')
+                                                    ->description('Kelola region type yang tersedia untuk benchmarking')
+                                                    ->schema([
+                                                        Actions::make([
+                                                            Action::make('create_region_type')
+                                                                ->label('Tambah Region Type')
+                                                                ->icon('heroicon-m-plus')
+                                                                ->color('primary')
+                                                                ->modalHeading('Tambah Region Type Baru')
+                                                                ->form([
+                                                                    TextInput::make('type')
+                                                                        ->label('Nama Region Type')
+                                                                        ->placeholder('Contoh: 🌍 Nasional, 📍 Provinsi')
+                                                                        ->required(),
+                                                                    ColorPicker::make('display_color')
+                                                                        ->label('Warna Chart Default')
+                                                                        ->placeholder('#3b82f6'),
+                                                                    Select::make('chart_type')
+                                                                        ->label('Tipe Chart Default')
+                                                                        ->options([
+                                                                            'line' => '📈 Line',
+                                                                            'column' => '📊 Column',
+                                                                        ])
+                                                                        ->default('column'),
+                                                                ])
+                                                                ->action(function (array $data) {
+                                                                    RegionType::create($data);
+
+                                                                    Notification::make()
+                                                                        ->title('Berhasil')
+                                                                        ->body('Region Type berhasil ditambahkan.')
+                                                                        ->success()
+                                                                        ->send();
+
+                                                                    redirect(request()->header('Referer'));
+                                                                }),
+
+                                                            Action::make('goto_region_type_list')
+                                                                ->label('Kelola Semua Region Type')
+                                                                ->icon('heroicon-m-list-bullet')
+                                                                ->color('gray')
+                                                                ->url(fn() => '/admin/region-type-bencmarkings/bencmarkings'),
                                                         ])
-                                                        ->action(function (array $data) {
-                                                            RegionType::create(['type' => $data['type']]);
-
-                                                            Notification::make()
-                                                                ->title('Berhasil')
-                                                                ->body('Region Type berhasil ditambahkan.')
-                                                                ->success()
-                                                                ->send();
-
-                                                            redirect(request()->header('Referer'));
-                                                        }),
-
-                                                    Action::make('goto_region_type_list')
-                                                        ->label('Lihat Semua Region Type')
-                                                        ->icon('heroicon-m-list-bullet')
-                                                        ->color('gray')
-                                                        ->url(fn() => static::getUrl('bencmarking-region-type')),
-                                                ]),
+                                                            ->alignCenter(),
+                                                    ]),
                                             ])
                                     )->toArray()
                                 ),
