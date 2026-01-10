@@ -146,6 +146,14 @@ class ImutData extends Model
     }
 
     /**
+     * Get all region types that belong to this ImutData.
+     */
+    public function regionTypes(): HasMany
+    {
+        return $this->hasMany(RegionType::class);
+    }
+
+    /**
      * Get the related Imut Bencmarking.
      */
     public function benchmarkings(): HasMany

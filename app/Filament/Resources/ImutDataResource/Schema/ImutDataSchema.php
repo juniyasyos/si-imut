@@ -162,37 +162,29 @@ class ImutDataSchema extends ImutDataResource
 
                     Tab::make('📍 Benchmarking')
                         ->schema([
-                            Section::make('Manajemen Benchmark')
-                                ->description('Kelola data benchmark untuk indikator IMUT ini. Setiap region type dapat memiliki benchmark sendiri-sendiri.')
-                                ->schema([
-                                    Actions::make([
-                                        Action::make('manage_all_benchmarks')
-                                            ->label('Kelola Semua Benchmark')
-                                            ->icon('heroicon-m-cog-8-tooth')
-                                            ->color('primary')
-                                            ->url(
-                                                fn(?Model $record) => $record
-                                                    ? '/admin/imut-benchmarkings?tableFilters[imut_data_id][value]=' . $record->id
-                                                    : '/admin/imut-benchmarkings'
-                                            ),
-
-                                        Action::make('add_benchmark')
-                                            ->label('Tambah Benchmark Baru')
-                                            ->icon('heroicon-m-plus')
-                                            ->color('success')
-                                            ->url(
-                                                fn(?Model $record) => $record
-                                                    ? '/admin/imut-benchmarkings/create?imut_data_id=' . $record->id
-                                                    : '/admin/imut-benchmarkings/create'
-                                            ),
-                                    ])
-                                        ->alignCenter()
-                                        ->visible(fn(?Model $record) => $record !== null),
-                                ]),
-
                             Tabs::make('Benchmark by Region Type')
-                                ->tabs(
-                                    RegionType::all()->map(function ($regionType) {
+                                ->tabs(function (?Model $record) {
+                                    // Jika ini adalah record baru (create), tampilkan tab kosong dengan form untuk membuat region type
+                                    if (!$record) {
+                                        return [
+                                            Tab::make('⚙️ Setup Region Type')
+                                                ->icon('heroicon-m-cog-6-tooth')
+                                                ->schema([
+                                                    Section::make('Setup Region Type untuk ImutData Ini')
+                                                        ->description('Setelah ImutData disimpan, Anda dapat menambahkan Region Type dan Benchmark di tab ini.')
+                                                        ->schema([
+                                                            Placeholder::make('info')
+                                                                ->label('')
+                                                                ->content('Simpan ImutData terlebih dahulu untuk dapat menambahkan Region Type dan data Benchmark.'),
+                                                        ]),
+                                                ])
+                                        ];
+                                    }
+
+                                    // Untuk record yang sudah ada, ambil region types yang sudah terkait
+                                    $regionTypes = $record->regionTypes;
+
+                                    $tabs = $regionTypes->map(function ($regionType) {
                                         return Tab::make($regionType->type)
                                             ->icon('heroicon-m-map-pin')
                                             ->badge(fn(?Model $record) => $record?->benchmarkings()
@@ -217,18 +209,12 @@ class ImutDataSchema extends ImutDataResource
                                                                     ->orderByDesc('period_start')
                                                             )
                                                             ->headers([
-                                                                Header::make('region_name')->label('Region')->width('150px'),
                                                                 Header::make('benchmark_value')->label('Nilai (%)')->width('100px'),
                                                                 Header::make('period_start')->label('Berlaku Dari')->width('130px'),
                                                                 Header::make('period_end')->label('Sampai')->width('130px'),
                                                                 Header::make('is_active')->label('Status')->width('80px'),
-                                                                Header::make('notes')->label('Catatan')->width('200px'),
                                                             ])
                                                             ->schema([
-                                                                TextInput::make('region_name')
-                                                                    ->label(false)
-                                                                    ->placeholder($regionType->getDefaultRegionName() ?? 'Nama region'),
-
                                                                 TextInput::make('benchmark_value')
                                                                     ->label(false)
                                                                     ->numeric()
@@ -239,24 +225,23 @@ class ImutDataSchema extends ImutDataResource
 
                                                                 DatePicker::make('period_start')
                                                                     ->label(false)
-                                                                    ->placeholder('Tanggal mulai')
+                                                                    ->placeholder('Bulan/Tahun mulai')
                                                                     ->default(now()->startOfMonth())
+                                                                    ->displayFormat('M Y')
+                                                                    ->format('Y-m-01')
                                                                     ->required(),
 
                                                                 DatePicker::make('period_end')
                                                                     ->label(false)
-                                                                    ->placeholder('Permanent')
+                                                                    ->placeholder('Bulan/Tahun akhir')
+                                                                    ->displayFormat('M Y')
+                                                                    ->format('Y-m-t')
                                                                     ->afterOrEqual('period_start'),
 
                                                                 Toggle::make('is_active')
                                                                     ->label(false)
                                                                     ->default(true)
                                                                     ->inline(false),
-
-                                                                Textarea::make('notes')
-                                                                    ->label(false)
-                                                                    ->placeholder('Catatan...')
-                                                                    ->rows(2),
 
                                                                 // Hidden fields
                                                                 Hidden::make('region_type_id')->default($regionType->id),
@@ -276,63 +261,69 @@ class ImutDataSchema extends ImutDataResource
                                                         ->where('region_type_id', $regionType->id)
                                                         ->count() === 0),
                                             ]);
-                                    })->push(
-                                        Tab::make('⚙️ Kelola Region Type')
-                                            ->icon('heroicon-m-cog-6-tooth')
-                                            ->visible(Auth::user()->can('create_region::type::bencmarking'))
-                                            ->schema([
-                                                Section::make('Pengaturan Region Type')
-                                                    ->description('Kelola region type yang tersedia untuk benchmarking')
-                                                    ->schema([
-                                                        Actions::make([
-                                                            Action::make('create_region_type')
-                                                                ->label('Tambah Region Type')
-                                                                ->icon('heroicon-m-plus')
-                                                                ->color('primary')
-                                                                ->modalHeading('Tambah Region Type Baru')
-                                                                ->form([
-                                                                    TextInput::make('type')
-                                                                        ->label('Nama Region Type')
-                                                                        ->placeholder('Contoh: 🌍 Nasional, 📍 Provinsi')
-                                                                        ->required(),
-                                                                    ColorPicker::make('display_color')
-                                                                        ->label('Warna Chart Default')
-                                                                        ->placeholder('#3b82f6'),
-                                                                    Select::make('chart_type')
-                                                                        ->label('Tipe Chart Default')
-                                                                        ->options([
-                                                                            'line' => '📈 Line',
-                                                                            'column' => '📊 Column',
-                                                                        ])
-                                                                        ->default('column'),
-                                                                ])
-                                                                ->action(function (array $data) {
+                                    })->toArray();
+
+                                    // Tambahkan tab untuk kelola region type
+                                    $tabs[] = Tab::make('⚙️ Kelola Region Type')
+                                        ->icon('heroicon-m-cog-6-tooth')
+                                        ->visible(Auth::user()->can('create_region::type::bencmarking'))
+                                        ->schema([
+                                            Section::make('Kelola Region Type untuk ImutData Ini')
+                                                ->description('Kelola region type yang tersedia khusus untuk ImutData ini')
+                                                ->schema([
+                                                    Actions::make([
+                                                        Action::make('create_region_type')
+                                                            ->label('Tambah Region Type')
+                                                            ->icon('heroicon-m-plus')
+                                                            ->color('primary')
+                                                            ->modalHeading('Tambah Region Type Baru')
+                                                            ->form([
+                                                                TextInput::make('type')
+                                                                    ->label('Nama Region Type')
+                                                                    ->placeholder('Contoh: 🌍 Nasional, 📍 Provinsi')
+                                                                    ->required(),
+                                                                ColorPicker::make('display_color')
+                                                                    ->label('Warna Chart Default')
+                                                                    ->placeholder('#3b82f6'),
+                                                                Select::make('chart_type')
+                                                                    ->label('Tipe Chart Default')
+                                                                    ->options([
+                                                                        'line' => '📈 Line',
+                                                                        'column' => '📊 Column',
+                                                                    ])
+                                                                    ->default('column'),
+                                                            ])
+                                                            ->action(function (array $data, ?Model $record) {
+                                                                if ($record) {
+                                                                    $data['imut_data_id'] = $record->id;
                                                                     RegionType::create($data);
 
                                                                     Notification::make()
                                                                         ->title('Berhasil')
-                                                                        ->body('Region Type berhasil ditambahkan.')
+                                                                        ->body('Region Type berhasil ditambahkan untuk ImutData ini.')
                                                                         ->success()
                                                                         ->send();
 
                                                                     redirect(request()->header('Referer'));
-                                                                }),
+                                                                } else {
+                                                                    Notification::make()
+                                                                        ->title('Error')
+                                                                        ->body('ImutData harus disimpan terlebih dahulu.')
+                                                                        ->danger()
+                                                                        ->send();
+                                                                }
+                                                            }),
+                                                    ])
+                                                        ->alignCenter(),
+                                                ]),
+                                        ]);
 
-                                                            Action::make('goto_region_type_list')
-                                                                ->label('Kelola Semua Region Type')
-                                                                ->icon('heroicon-m-list-bullet')
-                                                                ->color('gray')
-                                                                ->url(fn() => '/admin/region-type-bencmarkings/bencmarkings'),
-                                                        ])
-                                                            ->alignCenter(),
-                                                    ]),
-                                            ])
-                                    )->toArray()
-                                ),
+                                    return $tabs;
+                                })
                         ])
                         ->visible(fn(?Model $record) => $record !== null
                             && $record->categories->is_benchmark_category === 1),
-                ]),
+                ])
         ];
     }
 }

@@ -50,7 +50,6 @@ class ImutBenchmarking extends Model
         'period_start',
         'period_end',
         'is_active',
-        'notes',
         'created_by',
         'updated_by',
     ];

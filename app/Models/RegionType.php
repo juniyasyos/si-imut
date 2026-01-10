@@ -3,18 +3,22 @@
 namespace App\Models;
 
 use App\Models\ImutBenchmarking;
+use App\Models\ImutData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property int $id
+ * @property int $imut_data_id
  * @property string $type
  * @property string|null $display_color
  * @property string $chart_type
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  *
+ * @property-read ImutData $imutData
  * @property-read \Illuminate\Database\Eloquent\Collection|ImutBenchmarking[] $benchmarkings
  */
 class RegionType extends Model
@@ -25,7 +29,12 @@ class RegionType extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['type', 'display_color', 'chart_type'];
+    protected $fillable = [
+        'imut_data_id',
+        'type',
+        'display_color',
+        'chart_type'
+    ];
 
     /**
      * The attributes that are hidden for serialization.
@@ -34,6 +43,15 @@ class RegionType extends Model
      */
     protected $hidden = ['created_at', 'updated_at'];
 
+    /**
+     * Get the imut data that owns this region type.
+     *
+     * @return BelongsTo
+     */
+    public function imutData(): BelongsTo
+    {
+        return $this->belongsTo(ImutData::class);
+    }
 
     /**
      * Get all benchmarking records that use this region type.
