@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Filament\Resources\ImutDataResource\RelationManagers;
+
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\RegionType;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Actions\{CreateAction, EditAction, DeleteAction, DeleteBulkAction, BulkActionGroup};
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
+use Illuminate\Support\Facades\Auth;
+
+class RegionTypeRelationManager extends RelationManager
+{
+    protected static string $relationship = 'regionTypes';
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                TextInput::make('type')
+                    ->label('Nama Region Type')
+                    ->placeholder('Contoh: 🌍 Nasional, 📍 Provinsi')
+                    ->required(),
+
+                ColorPicker::make('display_color')
+                    ->label('Warna Chart Default')
+                    ->placeholder('#3b82f6'),
+
+                Select::make('chart_type')
+                    ->label('Tipe Chart Default')
+                    ->options(RegionType::getChartTypes())
+                    ->default('column'),
+            ]);
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->recordTitleAttribute('type')
+            ->columns([
+                TextColumn::make('type')
+                    ->label('Region Type')
+                    ->searchable()
+                    ->sortable(),
+
+                ColorColumn::make('display_color')
+                    ->label('Warna')
+                    ->copyable()
+                    ->copyMessage('Warna berhasil disalin.')
+                    ->copyMessageDuration(1500),
+
+                TextColumn::make('chart_type')
+                    ->label('Tipe Chart')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'line' => 'info',
+                        'column' => 'success',
+                        default => 'gray',
+                    }),
+
+                TextColumn::make('benchmarkings_count')
+                    ->label('Jumlah Benchmark')
+                    ->counts('benchmarkings')
+                    ->badge()
+                    ->color('primary'),
+            ])
+            ->headerActions([
+                CreateAction::make()
+                    ->label('Tambah Region Type')
+                    ->icon('heroicon-m-plus')
+                    ->visible(Auth::user()->can('create_region::type::bencmarking')),
+            ])
+            ->actions([
+                EditAction::make()
+                    ->visible(Auth::user()->can('update_region::type::bencmarking')),
+                DeleteAction::make()
+                    ->visible(Auth::user()->can('delete_region::type::bencmarking')),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->visible(Auth::user()->can('delete_region::type::bencmarking')),
+                ]),
+            ])
+            ->paginated(false);
+    }
+}

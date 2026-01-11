@@ -4,8 +4,8 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
+use App\Filament\Resources\ImutDataResource\RelationManagers\RegionTypeRelationManager;
 use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
-use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\CanNotify;
@@ -49,6 +49,15 @@ class EditImutData extends EditRecord
                     ->color('gray')
                     ->relationManager(UnitKerjaRelationManager::make())
                     ->visible(fn() => Auth::user()?->can('view_all_data_imut::data')),
+
+                RelationManagerAction::make('region-types')
+                    ->slideOver()
+                    ->label('Kategori Pembanding')
+                    ->icon('heroicon-s-map-pin')
+                    ->record($this->getRecord())
+                    ->color('gray')
+                    ->relationManager(RegionTypeRelationManager::make())
+                    ->visible(fn($record) => $record->categories->is_benchmark_category === 1),
             ])
                 ->button()
                 ->label('🔧 Kelola Data')

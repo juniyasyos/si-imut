@@ -6,6 +6,8 @@ use App\Filament\Resources\ImutDataResource\Pages;
 use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
+use App\Filament\Resources\ImutDataResource\RelationManagers\RegionTypeRelationManager;
+use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
 use App\Filament\Resources\ImutDataResource\Schema\ImutDataSchema;
 use App\Filament\Resources\ImutDataResource\Table\TableSchema;
 use App\Models\ImutData;
@@ -65,6 +67,13 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             'delete_any',
             'force_delete',
             'force_delete_any',
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+
         ];
     }
 
