@@ -33,7 +33,7 @@ class EditImutData extends EditRecord
                 ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
             ActionGroup::make([
-                RelationManagerAction::make('profiles')
+                RelationManagerAction::make('profiles') 
                     ->slideOver()
                     ->label('Kelola Profiles')
                     ->icon('heroicon-s-user-group')

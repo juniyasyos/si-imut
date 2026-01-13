@@ -6,11 +6,10 @@ use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
 use App\Models\RegionType;
-use App\Services\ImutBenchmarkingService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Cache;
@@ -23,6 +22,8 @@ class LineChart extends ApexChartWidget
 
     protected static ?string $heading = 'Grafik Penilaian IMUT Data';
 
+    protected static ?string $description = 'Pilih filter yang diinginkan dan tekan tombol "Filter" untuk menerapkan perubahan';
+
     protected int|string|array $columnSpan = 'full';
 
     protected static MaxWidth|string $filterFormWidth = MaxWidth::Large;
@@ -31,16 +32,17 @@ class LineChart extends ApexChartWidget
 
     public ImutData $imutData;
 
-    protected ImutBenchmarkingService $benchmarkingService;
-
-    public function mount(): void
-    {
-        $this->benchmarkingService = app(ImutBenchmarkingService::class);
-    }
-
     protected function hasFilterForm(): bool
     {
         return true;
+    }
+
+    /**
+     * Determine if the filter form should be submitted automatically or manually.
+     */
+    protected function shouldSubmitFilterFormAutomatically(): bool
+    {
+        return false; // Require manual submit
     }
 
     protected function getFormSchema(): array
@@ -51,154 +53,164 @@ class LineChart extends ApexChartWidget
             ->pluck('year', 'year')
             ->toArray();
 
-        // Ensure 2025 is available if not in the list
-        if (!array_key_exists(2025, $years)) {
-            $years = [2025 => 2025] + $years;
-        }
-
         $months = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
             5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Agu',
+            9 => 'Sep',
+            10 => 'Okt',
+            11 => 'Nov',
+            12 => 'Des'
         ];
 
-        // Use dummy region types for testing
-        $regionTypes = [
-            1 => '🌍 Nasional',
-            2 => '📍 Provinsi',
+        $quarters = [
+            'Q1' => 'Q1 (Jan - Mar)',
+            'Q2' => 'Q2 (Apr - Jun)',
+            'Q3' => 'Q3 (Jul - Sep)',
+            'Q4' => 'Q4 (Okt - Des)'
         ];
 
-        // Original code (commented for debugging)
-        // $regionTypes = $this->imutData->regionTypes()->pluck('type', 'id')->toArray();
+        $semesters = [
+            'S1' => 'Semester 1 (Jan - Jun)',
+            'S2' => 'Semester 2 (Jul - Des)'
+        ];
 
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
 
+        // Enhanced region options with grouping
+        $regionOptions = $this->getEnhancedRegionOptions();
+
         return [
-            Select::make('period_type')
-                ->label('Jenis Periode')
-                ->options([
-                    'yearly' => 'Per Tahun',
-                    'custom' => 'Custom Range',
-                    'quarter' => 'Per Quartal',
-                    'semester' => 'Per Semester',
-                    'ytd' => 'Year to Date',
-                ])
-                ->default('yearly')
-                ->live()
-                ->columnSpan(2),
+            // Filter Mode Selector
+            Section::make('Mode Filter Periode')
+                ->description('Pilih mode filter periode yang ingin digunakan untuk menampilkan data pada grafik.')
+                ->columns(1)
+                ->collapsed(true)
+                ->schema([
+                    Radio::make('filter_mode')
+                        ->label('Mode Filter Periode')
+                        ->options([
+                            'custom' => '📅 Rentang Kustom',
+                            'quarter' => '📊 Quarter/Kuartal',
+                            'semester' => '📋 Semester',
+                            'yearly' => '📆 Tahunan'
+                        ])
+                        ->default('custom')
+                        ->live() // Only for conditional fields visibility
+                        ->columnSpan('full')
+                        ->helperText('Pilih mode filter periode yang ingin digunakan'),
+                ]),
 
-            Select::make('year')
-                ->label('Tahun')
-                ->options($years)
-                ->default(2025)
-                ->live()
-                ->required()
-                ->columnSpan(1),
+            Section::make('Pengaturan Periode')
+                ->description('Atur rentang waktu data yang ingin ditampilkan pada grafik.')
+                ->columns(2)
+                ->schema([
+                    // Custom Range Filters (conditional)                    
+                    Select::make('start_month')
+                        ->label('Bulan Mulai')
+                        ->options($months)
+                        ->default(1)
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'custom')
+                        ->columnSpan(1),
 
-            Select::make('quarter')
-                ->label('Quartal')
-                ->options([
-                    1 => 'Q1 (Jan-Mar)',
-                    2 => 'Q2 (Apr-Jun)',
-                    3 => 'Q3 (Jul-Sep)',
-                    4 => 'Q4 (Okt-Des)',
-                ])
-                ->default(ceil(now()->month / 3))
-                ->live()
-                ->required(fn($get) => $get('period_type') === 'quarter')
-                ->visible(fn($get) => $get('period_type') === 'quarter')
-                ->columnSpan(1),
+                    Select::make('start_year')
+                        ->label('Tahun Mulai')
+                        ->options($years)
+                        ->default(now()->year)
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'custom')
+                        ->columnSpan(1),
 
-            Select::make('semester')
-                ->label('Semester')
-                ->options([
-                    1 => 'Semester 1 (Jan-Jun)',
-                    2 => 'Semester 2 (Jul-Des)',
-                ])
-                ->default(now()->month <= 6 ? 1 : 2)
-                ->live()
-                ->required(fn($get) => $get('period_type') === 'semester')
-                ->visible(fn($get) => $get('period_type') === 'semester')
-                ->columnSpan(1),
+                    Select::make('end_month')
+                        ->label('Bulan Selesai')
+                        ->options($months)
+                        ->default(now()->month)
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'custom')
+                        ->columnSpan(1),
 
-            Select::make('start_month')
-                ->label('Dari Bulan')
-                ->options($months)
-                ->default(1)
-                ->live()
-                ->visible(fn($get) => $get('period_type') === 'custom')
-                ->required(fn($get) => $get('period_type') === 'custom')
-                ->columnSpan(2),
+                    Select::make('end_year')
+                        ->label('Tahun Selesai')
+                        ->options($years)
+                        ->default(now()->year)
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'custom')
+                        ->columnSpan(1),
 
-            Select::make('end_month')
-                ->label('Sampai Bulan')
-                ->options($months)
-                ->default(fn($get) => $get('period_type') === 'ytd' ? now()->month : 12)
-                ->live()
-                ->visible(fn($get) => in_array($get('period_type'), ['custom', 'ytd']))
-                ->required(fn($get) => in_array($get('period_type'), ['custom', 'ytd']))
-                ->helperText(fn($get) => $get('period_type') === 'ytd' ? 'Data dari Januari sampai bulan ini' : 'Pilih rentang bulan untuk analisis')
-                ->columnSpan(2),
+                    // Quarter Filters (conditional)
+                    Select::make('quarter_year')
+                        ->label('Tahun')
+                        ->options($years)
+                        ->default(now()->year)
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'quarter')
+                        ->columnSpan(1),
 
-            Toggle::make('show_benchmark')
-                ->label('Tampilkan Benchmark')
-                ->helperText('Aktifkan untuk menampilkan data benchmark regional')
-                ->default(false)
-                ->live()
-                ->visible(fn() => $is_benchmarking) // Always show for testing
-                ->columnSpan(2),
+                    Select::make('quarters')
+                        ->label('Pilih Quarter')
+                        ->options($quarters)
+                        ->default(['Q1'])
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'quarter')
+                        ->helperText('Pilih satu atau lebih quarter yang ingin ditampilkan')
+                        ->columnSpan(1),
 
+                    // Semester Filters (conditional)  
+                    Select::make('semester_year')
+                        ->label('Tahun')
+                        ->options($years)
+                        ->default(now()->year)
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'semester')
+                        ->columnSpan(1),
+
+                    Select::make('semesters')
+                        ->label('Pilih Semester')
+                        ->options($semesters)
+                        ->default(['S1'])
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'semester')
+                        ->helperText('Pilih satu atau lebih semester yang ingin ditampilkan')
+                        ->columnSpan(1),
+
+                    // Yearly Filter (conditional)
+                    Select::make('yearly_years')
+                        ->label('Pilih Tahun')
+                        ->options($years)
+                        ->multiple()
+                        ->default([now()->year])
+                        ->required()
+                        ->visible(fn($get) => $get('filter_mode') === 'yearly')
+                        ->helperText('Pilih satu atau lebih tahun untuk ditampilkan')
+                        ->columnSpan(1),
+                ]),
+
+            // Enhanced Regional Filter
             Select::make('region_type_id')
                 ->label('Filter Region Benchmarking')
-                ->options($regionTypes)
+                ->options($regionOptions)
                 ->multiple()
                 ->searchable()
-                ->live()
-                ->visible(fn($get) => $is_benchmarking && $get('show_benchmark') && !empty($regionTypes))
-                ->placeholder('Semua Region')
-                ->helperText('Filter region benchmarking yang ingin ditampilkan')
-                ->columnSpan(2),
-
-            Radio::make('chart_style')
-                ->label('Gaya Tampilan')
-                ->options([
-                    'standard' => 'Standard Line',
-                    'smooth' => 'Smooth Curve',
-                    'stepped' => 'Step Line',
-                ])
-                ->default('standard')
-                ->live()
-                ->inline()
-                ->columnSpan(2),
-
-            Radio::make('show_dataLabels')
-                ->label('Label Data')
-                ->options([
-                    true => 'Tampilkan',
-                    false => 'Sembunyikan',
-                ])
-                ->default(true)
-                ->live()
-                ->inline()
+                ->preload()
+                ->visible($is_benchmarking)
+                ->placeholder('Semua Region Benchmarking')
+                ->helperText('Filter region benchmarking yang ingin ditampilkan. Kosong = tampilkan semua')
                 ->columnSpan(1),
 
-            Radio::make('show_trend')
-                ->label('Garis Tren')
+            // Display Options
+            Radio::make('show_dataLabels')
+                ->label('Tampilan Nilai pada Chart')
                 ->options([
-                    true => 'Tampilkan',
-                    false => 'Sembunyikan',
+                    true => '📊 Tampilkan Nilai',
+                    false => '🔍 Sembunyikan Nilai',
                 ])
-                ->default(false)
-                ->live()
+                ->default(true)
                 ->inline()
                 ->columnSpan(1),
         ];
@@ -207,8 +219,6 @@ class LineChart extends ApexChartWidget
     protected function getOptions(): array
     {
         $showdataLabels = $this->filterFormData['show_dataLabels'] ?? true;
-        $chartStyle = $this->filterFormData['chart_style'] ?? 'standard';
-        $showTrend = $this->filterFormData['show_trend'] ?? false;
 
         // Get both series data and labels from the same source
         $chartData = $this->getChartSeriesAndLabels();
@@ -217,23 +227,6 @@ class LineChart extends ApexChartWidget
 
         if (empty($seriesData)) {
             return ApexChartConfig::noDataOptions();
-        }
-
-        // Apply chart style modifications
-        foreach ($seriesData as &$series) {
-            if ($series['type'] === 'line') {
-                switch ($chartStyle) {
-                    case 'smooth':
-                        $series['curve'] = 'smooth';
-                        break;
-                    case 'stepped':
-                        $series['curve'] = 'stepline';
-                        break;
-                    default:
-                        $series['curve'] = 'straight';
-                        break;
-                }
-            }
         }
 
         return ApexChartConfig::defaultOptions(
@@ -248,302 +241,438 @@ class LineChart extends ApexChartWidget
         );
     }
 
+    /**
+     * Generate chart series data dan labels untuk grafik
+     *
+     * Return format:
+     * [
+     *   'series' => [...],  // Data series untuk chart
+     *   'labels' => [...]   // Label bulan untuk X-axis
+     * ]
+     *
+     * Konfigurasi benchmarking (warna & tipe chart) diambil dari database:
+     * - Warna (color): dari field region_types.display_color
+     * - Tipe chart: dari field region_types.chart_type
+     * - Fallback otomatis jika data belum diset di database
+     *
+     * Admin dapat mengatur melalui menu: Region Type Benchmarking
+     *
+     * @return array Series data dan labels untuk ApexCharts
+     */
     protected function getChartSeriesAndLabels(): array
     {
-        // Get filter values
-        $year = (int) ($this->filterFormData['year'] ?? 2025);
-        $periodType = $this->filterFormData['period_type'] ?? 'yearly';
-        $showBenchmark = $this->filterFormData['show_benchmark'] ?? false;
+        // Get date range from new filter system
+        [$startYear, $startMonth, $endYear, $endMonth] = $this->getFilterDateRange();
         $regionTypeId = $this->filterFormData['region_type_id'] ?? null;
         $imutDataId = $this->imutData->id;
 
-        // Calculate date range based on period type
-        $dateRange = $this->calculateDateRange($periodType);
-        $startMonth = (int) $dateRange['start_month'];
-        $endMonth = (int) $dateRange['end_month'];
-
-        // Get main data
-        $penilaianData = $this->getPenilaianData($imutDataId, $year, $startMonth, $endMonth);
-
-        return $this->buildChartData($penilaianData, $showBenchmark, $regionTypeId, $year, $startMonth, $endMonth);
-    }
-
-    /**
-     * Calculate date range based on period type
-     */
-    protected function calculateDateRange(string $periodType): array
-    {
-        switch ($periodType) {
-            case 'quarter':
-                $quarter = $this->filterFormData['quarter'] ?? ceil(now()->month / 3);
-                $quarter = max(1, min(4, (int) $quarter)); // Ensure valid quarter
-                return [
-                    'start_month' => ($quarter - 1) * 3 + 1,
-                    'end_month' => $quarter * 3
-                ];
-
-            case 'semester':
-                $semester = $this->filterFormData['semester'] ?? (now()->month <= 6 ? 1 : 2);
-                $semester = max(1, min(2, (int) $semester)); // Ensure valid semester
-                return [
-                    'start_month' => $semester === 1 ? 1 : 7,
-                    'end_month' => $semester === 1 ? 6 : 12
-                ];
-
-            case 'yearly':
-                return [
-                    'start_month' => 1,
-                    'end_month' => 12
-                ];
-
-            case 'ytd':
-                $endMonth = $this->filterFormData['end_month'] ?? now()->month;
-                $endMonth = max(1, min(12, (int) $endMonth)); // Ensure valid month
-                return [
-                    'start_month' => 1,
-                    'end_month' => $endMonth
-                ];
-
-            case 'custom':
-            default:
-                $startMonth = $this->filterFormData['start_month'] ?? 1;
-                $endMonth = $this->filterFormData['end_month'] ?? 12; // Default to full year
-                $startMonth = max(1, min(12, (int) $startMonth));
-                $endMonth = max(1, min(12, (int) $endMonth));
-
-                // Ensure end month is not before start month
-                if ($endMonth < $startMonth) {
-                    $endMonth = 12; // Reset to full year if invalid
-                }
-
-                return [
-                    'start_month' => $startMonth,
-                    'end_month' => $endMonth
-                ];
-        }
-    }
-
-    /**
-     * Get penilaian data for specific year and month range
-     */
-    protected function getPenilaianData(int $imutDataId, int $year, int $startMonth, int $endMonth): \Illuminate\Support\Collection
-    {
-        // Generate dummy data for testing
-        $dummyData = collect();
-
-        for ($month = $startMonth; $month <= $endMonth; $month++) {
-            $periode = sprintf('%04d-%02d', $year, $month);
-
-            // Generate random values
-            $totalNum = rand(80, 95);
-            $totalDenum = 100;
-            $target = rand(85, 90);
-
-            $dummyData->push((object) [
-                'periode' => $periode,
-                'report_month' => $month,
-                'report_year' => $year,
-                'total_num' => $totalNum,
-                'total_denum' => $totalDenum,
-                'target' => $target,
-            ]);
-        }
-
-        return $dummyData;
-
-        // Original query (commented for debugging)
-        /*
-        $result = DB::table('imut_penilaians')
+        $penilaianData = DB::table('imut_penilaians')
             ->join('laporan_unit_kerjas', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
             ->join('laporan_imuts', 'laporan_imuts.id', '=', 'laporan_unit_kerjas.laporan_imut_id')
             ->join('imut_profil', 'imut_profil.id', '=', 'imut_penilaians.imut_profil_id')
             ->join('imut_data', 'imut_data.id', '=', 'imut_profil.imut_data_id')
             ->where('imut_data.id', $imutDataId)
-            ->where('laporan_imuts.report_year', $year)
-            ->where('laporan_imuts.report_month', '>=', $startMonth)
-            ->where('laporan_imuts.report_month', '<=', $endMonth)
+            ->where(function ($query) use ($startYear, $startMonth, $endYear, $endMonth) {
+                // Get specific months for quarter/semester filtering
+                $specificMonths = $this->getSpecificMonthsForFilter();
+
+                if (!empty($specificMonths)) {
+                    // Use specific months filtering for quarters/semesters
+                    $query->where('laporan_imuts.report_year', '=', $startYear)
+                        ->whereIn('laporan_imuts.report_month', $specificMonths);
+                } else {
+                    // Handle range-based filtering (custom and yearly)
+                    if ($startYear === $endYear) {
+                        // Single year range
+                        $query->where('laporan_imuts.report_year', '=', $startYear)
+                            ->where('laporan_imuts.report_month', '>=', $startMonth)
+                            ->where('laporan_imuts.report_month', '<=', $endMonth);
+                    } else {
+                        // Multi-year date ranges
+                        $query->where(function ($q) use ($startYear, $startMonth, $endYear, $endMonth) {
+                            $q->where('laporan_imuts.report_year', '>', $startYear)
+                                ->where('laporan_imuts.report_year', '<', $endYear);
+                        })
+                            ->orWhere(function ($q) use ($startYear, $startMonth) {
+                                $q->where('laporan_imuts.report_year', '=', $startYear)
+                                    ->where('laporan_imuts.report_month', '>=', $startMonth);
+                            })
+                            ->orWhere(function ($q) use ($endYear, $endMonth) {
+                                $q->where('laporan_imuts.report_year', '=', $endYear)
+                                    ->where('laporan_imuts.report_month', '<=', $endMonth);
+                            });
+                    }
+                }
+            })
             ->whereNull('laporan_imuts.deleted_at')
             ->selectRaw("
-            CONCAT(laporan_imuts.report_year, '-', LPAD(laporan_imuts.report_month, 2, '0')) as periode,
-            laporan_imuts.report_month,
-            laporan_imuts.report_year,
-            SUM(imut_penilaians.numerator_value) as total_num,
-            SUM(imut_penilaians.denominator_value) as total_denum,
-            AVG(imut_profil.target_value) as target")
+                CONCAT(laporan_imuts.report_year, '-', LPAD(laporan_imuts.report_month, 2, '0')) as periode,
+                laporan_imuts.report_month,
+                laporan_imuts.report_year,
+                SUM(imut_penilaians.numerator_value) as total_num,
+                SUM(imut_penilaians.denominator_value) as total_denum,
+                AVG(imut_profil.target_value) as target")
             ->groupBy('periode', 'laporan_imuts.report_month', 'laporan_imuts.report_year')
             ->orderBy('laporan_imuts.report_year')
             ->orderBy('laporan_imuts.report_month')
             ->get();
 
-        return $result;
-        */
-    }
-
-    /**
-     * Build chart data from penilaian data
-     */
-    protected function buildChartData($penilaianData, bool $showBenchmark, $regionTypeId, int $year, int $startMonth, int $endMonth): array
-    {
         $dataNilai = [];
         $dataTarget = [];
         $labels = [];
 
         $monthNames = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
             5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Agu',
+            9 => 'Sep',
+            10 => 'Okt',
+            11 => 'Nov',
+            12 => 'Des'
         ];
 
-        // Build main data
+        // Build data dan labels dari hasil query penilaian
         foreach ($penilaianData as $row) {
-            if (!$row || !isset($row->report_month) || !isset($row->report_year)) {
-                continue;
-            }
-
             $labelKey = sprintf('%04d-%02d', $row->report_year, $row->report_month);
             $labelDisplay = $monthNames[$row->report_month] . ' ' . $row->report_year;
 
             $nilai = $row->total_denum > 0 ? round(($row->total_num / $row->total_denum) * 100, 2) : 0;
-            $target = round((float) $row->target, 2);
+            $target = round($row->target, 2);
 
             $labels[$labelKey] = $labelDisplay;
             $dataNilai[$labelKey] = $nilai;
             $dataTarget[$labelKey] = $target;
         }
 
+        // Jika tidak ada data penilaian, return empty
+        if (empty($labels)) {
+            return ['series' => [], 'labels' => []];
+        }
+
         $labelKeys = array_keys($labels);
         $labelValues = array_values($labels);
 
-        // Build series
-        $series = [];
-
-        // Add main data series
-        $series[] = [
-            'name' => 'Nilai IMUT',
-            'type' => 'line',
-            'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labelKeys),
-            'color' => '#3b82f6', // Blue
+        // Default colors yang konsisten
+        $series = [
+            [
+                'name' => 'Nilai IMUT',
+                'type' => 'line',
+                'data' => array_map(fn($l) => $dataNilai[$l] ?? 0, $labelKeys),
+                'color' => '#3b82f6', // Blue
+            ],
+            [
+                'name' => 'Target Standar',
+                'type' => 'line',
+                'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labelKeys),
+                'color' => '#f59e0b', // Amber
+            ],
         ];
 
-        // Add target series
-        $series[] = [
-            'name' => 'Target Standar',
-            'type' => 'line',
-            'data' => array_map(fn($l) => $dataTarget[$l] ?? 0, $labelKeys),
-            'color' => '#f59e0b', // Amber
-        ];
+        // Tampilkan benchmarking otomatis jika kategori adalah benchmarking
+        $is_benchmarking = $this->imutData->categories->is_benchmark_category;
 
-        // Add benchmarking data if enabled and has benchmark data
-        if ($showBenchmark && $this->imutData->categories->is_benchmark_category) {
-            $this->addBenchmarkingData($series, $labelKeys, $year, $startMonth, $endMonth, $regionTypeId);
+        if ($is_benchmarking) {
+            // TIDAK menggunakan cache untuk benchmarking agar perubahan konfigurasi
+            // (display_color, chart_type) langsung terlihat tanpa perlu clear cache
+            $benchmarking = ImutBenchmarking::query()
+                ->with('regionType:id,type,display_color,chart_type')
+                ->forIndicator($imutDataId)
+                ->where(function ($query) use ($startYear, $startMonth, $endYear, $endMonth) {
+                    // Get specific months for quarter/semester filtering
+                    $specificMonths = $this->getSpecificMonthsForFilter();
+
+                    if (!empty($specificMonths)) {
+                        // Use specific months filtering for quarters/semesters
+                        $query->whereYear('period_start', '=', $startYear)
+                            ->whereIn(DB::raw('MONTH(period_start)'), $specificMonths);
+                    } else {
+                        // Handle range-based filtering (custom and yearly)
+                        if ($startYear === $endYear) {
+                            // Single year range
+                            $query->whereYear('period_start', '=', $startYear)
+                                ->whereMonth('period_start', '>=', $startMonth)
+                                ->whereMonth('period_start', '<=', $endMonth);
+                        } else {
+                            // Multi-year date ranges
+                            $query->where(function ($q) use ($startYear, $startMonth, $endYear, $endMonth) {
+                                $q->whereYear('period_start', '>=', $startYear)
+                                    ->whereYear('period_start', '<=', $endYear)
+                                    ->where(function ($q2) use ($startYear, $startMonth, $endYear, $endMonth) {
+                                        $q2->where(function ($q3) use ($startYear, $startMonth) {
+                                            $q3->whereYear('period_start', '=', $startYear)
+                                                ->whereMonth('period_start', '>=', $startMonth);
+                                        })
+                                            ->orWhere(function ($q3) use ($endYear, $endMonth) {
+                                                $q3->whereYear('period_start', '=', $endYear)
+                                                    ->whereMonth('period_start', '<=', $endMonth);
+                                            })
+                                            ->orWhere(function ($q3) use ($startYear, $endYear) {
+                                                $q3->whereYear('period_start', '>', $startYear)
+                                                    ->whereYear('period_start', '<', $endYear);
+                                            });
+                                    });
+                            });
+                        }
+                    }
+                })
+                ->when($regionTypeId, fn($q) => $q->forRegion($regionTypeId))
+                ->where('is_active', true)
+                ->orderBy('region_type_id')
+                ->orderBy('period_start')
+                ->get();
+
+            $regionSeries = [];
+
+            // Proses setiap benchmark untuk mengisi data berdasarkan periode yang valid
+            foreach ($benchmarking as $item) {
+                $typeName = $item->regionType->type ?? 'Unknown';
+                $benchmarkValue = round($item->benchmark_value, 2);
+
+                // Loop through semua labelKeys (periode) yang ada di chart
+                foreach ($labelKeys as $labelKey) {
+                    // Parse labelKey format: "YYYY-MM"
+                    [$labelYear, $labelMonth] = explode('-', $labelKey);
+                    $labelYear = (int) $labelYear;
+                    $labelMonth = (int) $labelMonth;
+
+                    // Buat tanggal untuk label ini (akhir bulan)
+                    $periodDate = \Carbon\Carbon::create($labelYear, $labelMonth, 1)->endOfMonth();
+
+                    // Cek apakah benchmark valid untuk periode ini
+                    if ($item->isValidForPeriod($periodDate)) {
+                        $regionSeries[$item->region_type_id][$typeName][$labelKey] = $benchmarkValue;
+                    }
+                }
+            }
+
+            $colorIndex = 0;
+
+            foreach ($regionSeries as $regionId => $seriesGroup) {
+                foreach ($seriesGroup as $name => $data) {
+                    if (collect($labelKeys)->contains(fn($l) => isset($data[$l]))) {
+                        // Ambil region type dari database untuk mendapatkan konfigurasi tampilan
+                        $regionType = $benchmarking->firstWhere('region_type_id', $regionId)?->regionType;
+
+                        // Ambil color dari database (field: display_color)
+                        // Fallback otomatis ke warna default berdasarkan nama type jika belum diset
+                        $color = $regionType?->getDisplayColorWithFallback() ?? $this->getFallbackColor($colorIndex);
+
+                        // Ambil chart type dari database (field: chart_type)
+                        // Default: 'column' jika belum diset di database
+                        $chartType = $regionType?->getChartTypeWithFallback() ?? 'column';
+
+                        $series[] = [
+                            'name' => $name,
+                            'type' => $chartType,  // Tipe chart dari database
+                            'data' => array_map(fn($l) => $data[$l] ?? null, $labelKeys),
+                            'color' => $color,     // Warna dari database
+                        ];
+
+                        $colorIndex++;
+                    }
+                }
+            }
         }
 
         return [
             'series' => $series,
-            'labels' => $labelValues
+            'labels' => $labelValues  // Gunakan label yang konsisten dengan data
         ];
     }
 
     /**
-     * Add benchmarking data to series using the new relationship structure
+     * Get enhanced region options with grouping and better UX
+     *
+     * @return array
      */
-    protected function addBenchmarkingData(&$series, $labelKeys, int $year, int $startMonth, int $endMonth, $regionTypeId): void
+    protected function getEnhancedRegionOptions(): array
     {
-        // Generate dummy benchmark data for testing
-        $dummyRegionTypes = [
-            (object) ['id' => 1, 'type' => '🌍 Nasional', 'display_color' => '#10b981'],
-            (object) ['id' => 2, 'type' => '📍 Provinsi', 'display_color' => '#8b5cf6'],
-        ];
-
-        foreach ($dummyRegionTypes as $regionType) {
-            // Skip if specific region type is selected and this isn't one of them
-            if ($regionTypeId && !in_array($regionType->id, (array) $regionTypeId)) {
-                continue;
-            }
-
-            // Generate dummy benchmark data
-            $benchmarkData = [];
-            $baseValue = $regionType->id == 1 ? 88 : 85; // Different base for different regions
-
-            for ($month = $startMonth; $month <= $endMonth; $month++) {
-                $variation = rand(-3, 3); // Random variation
-                $benchmarkData[] = $baseValue + $variation;
-            }
-
-            $series[] = [
-                'name' => "📊 Benchmark {$regionType->type}",
-                'type' => 'line',
-                'data' => $benchmarkData,
-                'color' => $regionType->display_color,
-                'strokeDashArray' => 5,
-                'strokeWidth' => 2
-            ];
+        if (!$this->imutData->categories->is_benchmark_category) {
+            return [];
         }
 
-        /* Original code (commented for debugging)
-        // Get region types for this imut data
-        $query = $this->imutData->regionTypes();
+        // Get all region types that have benchmarking data for this indicator
+        $regionTypes = RegionType::query()
+            ->whereHas('benchmarkings', function ($query) {
+                $query->where('imut_data_id', $this->imutData->id)
+                    ->where('is_active', true);
+            })
+            ->orderBy('type')
+            ->get()
+            ->mapWithKeys(function ($region) {
+                // Create better display text with emoji indicators
+                $displayText = $region->type;
 
-        if ($regionTypeId) {
-            $regionTypeIds = is_array($regionTypeId) ? $regionTypeId : [$regionTypeId];
-            $query->whereIn('id', $regionTypeIds);
-        }
-
-        $regionTypes = $query->get();
-
-        foreach ($regionTypes as $regionType) {
-            // Get benchmarking data for this region type and year
-            $benchmarks = $this->imutData->benchmarkings()
-                ->where('region_type_id', $regionType->id)
-                ->where('is_active', true)
-                ->get();
-
-            if ($benchmarks->isEmpty()) {
-                continue;
-            }
-
-            // Build benchmark data for each month in range
-            $benchmarkData = [];
-            for ($month = $startMonth; $month <= $endMonth; $month++) {
-                // Find benchmark value for this month
-                $benchmarkValue = null;
-                foreach ($benchmarks as $benchmark) {
-                    $periodStart = \Carbon\Carbon::parse($benchmark->period_start);
-                    $periodEnd = $benchmark->period_end ? \Carbon\Carbon::parse($benchmark->period_end) : \Carbon\Carbon::create($year, 12, 31);
-                    $currentMonth = \Carbon\Carbon::create($year, $month, 1);
-
-                    if ($currentMonth->between($periodStart, $periodEnd)) {
-                        $benchmarkValue = (float) $benchmark->benchmark_value;
-                        break;
-                    }
+                // Add visual indicators based on type
+                if (str_contains(strtolower($region->type), 'nasional')) {
+                    $displayText = "🇮🇩 " . $displayText;
+                } elseif (str_contains(strtolower($region->type), 'provinsi')) {
+                    $displayText = "🏛️ " . $displayText;
+                } elseif (str_contains(strtolower($region->type), 'rumah sakit')) {
+                    $displayText = "🏥 " . $displayText;
+                } else {
+                    $displayText = "📍 " . $displayText;
                 }
 
-                $benchmarkData[] = $benchmarkValue;
-            }
+                return [$region->id => $displayText];
+            })
+            ->toArray();
 
-            // Only add series if it has data
-            if (!empty(array_filter($benchmarkData, fn($v) => $v !== null))) {
-                $color = $regionType->display_color ?? '#10b981'; // Fallback to green
+        return $regionTypes;
+    }
 
-                $series[] = [
-                    'name' => "📊 Benchmark {$regionType->type}",
-                    'type' => 'line',
-                    'data' => $benchmarkData,
-                    'color' => $color,
-                    'strokeDashArray' => 5,
-                    'strokeWidth' => 2
+    /**
+     * Get specific months for quarter/semester filtering
+     * Returns empty array for custom/yearly (use range filtering instead)
+     *
+     * @return array
+     */
+    protected function getSpecificMonthsForFilter(): array
+    {
+        $mode = $this->filterFormData['filter_mode'] ?? 'custom';
+
+        switch ($mode) {
+            case 'quarter':
+                $quarters = $this->filterFormData['quarters'] ?? ['Q1'];
+                
+                // Ensure quarters is always an array
+                if (!is_array($quarters)) {
+                    $quarters = [$quarters];
+                }
+
+                $quarterMonths = [
+                    'Q1' => [1, 2, 3],
+                    'Q2' => [4, 5, 6],
+                    'Q3' => [7, 8, 9],
+                    'Q4' => [10, 11, 12]
                 ];
-            }
+
+                $allMonths = [];
+                foreach ($quarters as $quarter) {
+                    $allMonths = array_merge($allMonths, $quarterMonths[$quarter]);
+                }
+
+                return array_unique($allMonths);
+
+            case 'semester':
+                $semesters = $this->filterFormData['semesters'] ?? ['S1'];
+                
+                // Ensure semesters is always an array
+                if (!is_array($semesters)) {
+                    $semesters = [$semesters];
+                }
+
+                $semesterMonths = [
+                    'S1' => [1, 2, 3, 4, 5, 6],
+                    'S2' => [7, 8, 9, 10, 11, 12]
+                ];
+
+                $allMonths = [];
+                foreach ($semesters as $semester) {
+                    $allMonths = array_merge($allMonths, $semesterMonths[$semester]);
+                }
+
+                return array_unique($allMonths);
+
+            default:
+                // For custom and yearly, use range filtering
+                return [];
         }
-        */
+    }
+
+    /**
+     * Convert filter data to date ranges based on selected mode
+     *
+     * @return array [start_year, start_month, end_year, end_month]
+     */
+    protected function getFilterDateRange(): array
+    {
+        $mode = $this->filterFormData['filter_mode'] ?? 'custom';
+
+        switch ($mode) {
+            case 'quarter':
+                $year = $this->filterFormData['quarter_year'] ?? now()->year;
+                $quarters = $this->filterFormData['quarters'] ?? ['Q1'];
+                
+                // Ensure quarters is always an array
+                if (!is_array($quarters)) {
+                    $quarters = [$quarters];
+                }
+
+                // Get min and max months from selected quarters
+                $quarterMonths = [
+                    'Q1' => [1, 2, 3],
+                    'Q2' => [4, 5, 6],
+                    'Q3' => [7, 8, 9],
+                    'Q4' => [10, 11, 12]
+                ];
+
+                $allMonths = [];
+                foreach ($quarters as $quarter) {
+                    $allMonths = array_merge($allMonths, $quarterMonths[$quarter]);
+                }
+
+                // Sort months and get min/max
+                sort($allMonths);
+                return [$year, min($allMonths), $year, max($allMonths)];
+
+            case 'semester':
+                $year = $this->filterFormData['semester_year'] ?? now()->year;
+                $semesters = $this->filterFormData['semesters'] ?? ['S1'];
+                
+                // Ensure semesters is always an array
+                if (!is_array($semesters)) {
+                    $semesters = [$semesters];
+                }
+
+                $semesterMonths = [
+                    'S1' => [1, 2, 3, 4, 5, 6],
+                    'S2' => [7, 8, 9, 10, 11, 12]
+                ];
+
+                $allMonths = [];
+                foreach ($semesters as $semester) {
+                    $allMonths = array_merge($allMonths, $semesterMonths[$semester]);
+                }
+
+                // Sort months and get min/max
+                sort($allMonths);
+                return [$year, min($allMonths), $year, max($allMonths)];
+
+            case 'yearly':
+                $years = $this->filterFormData['yearly_years'] ?? [now()->year];
+                
+                // Ensure years is always an array
+                if (!is_array($years)) {
+                    $years = [$years];
+                }
+                
+                return [min($years), 1, max($years), 12];
+
+            default: // custom
+                return [
+                    $this->filterFormData['start_year'] ?? now()->year,
+                    $this->filterFormData['start_month'] ?? 1,
+                    $this->filterFormData['end_year'] ?? now()->year,
+                    $this->filterFormData['end_month'] ?? now()->month
+                ];
+        }
+    }
+
+    /**
+     * Get fallback color untuk backward compatibility
+     *
+     * @param int $colorIndex
+     * @return string
+     */
+    protected function getFallbackColor(int $colorIndex): string
+    {
+        $fallbackColors = ['#14b8a6', '#06b6d4', '#f97316', '#ec4899', '#6366f1'];
+        return $fallbackColors[$colorIndex % count($fallbackColors)];
     }
 }

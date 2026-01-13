@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GreetingController;
 use App\Http\Controllers\Api\ImutBenchmarkingController;
+use App\Http\Controllers\Api\ImutDataApiController;
+use App\Http\Controllers\Api\ImutIndicatorReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +32,15 @@ Route::prefix('benchmarks')->group(function () {
     Route::post('/bulk-create', [ImutBenchmarkingController::class, 'bulkCreate']);
 });
 
+// Imut Data API Routes
+Route::prefix('imut-data')->group(function () {
+    Route::get('/{imutDataId}/summary', [ImutDataApiController::class, 'summary']);
+    Route::get('/{imutDataId}/notes', [ImutDataApiController::class, 'notes']);
+    Route::get('/report/{indicator}/{periode}', [ImutDataApiController::class, 'reportData']);
+});
+
 // Route::post('/login', [AuthController::class, 'login']);
+
+// Imut Indicator Report Routes
+Route::get('/imut-indicator-report/{indicator}/{periode}', [ImutIndicatorReportController::class, 'show'])
+    ->name('api.imut-indicator-report.show');

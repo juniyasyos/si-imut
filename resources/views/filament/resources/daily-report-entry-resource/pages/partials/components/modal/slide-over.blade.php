@@ -184,7 +184,7 @@
                                 <!-- Field Responses Summary -->
                                 <div class="mb-4">
                                     <div class="space-y-3">
-                                        @foreach(array_slice($report['field_responses'], 0, 4) as $response)
+                                        @foreach(array_slice($report['field_responses'], 0) as $response)
                                         <div class="p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50">
                                             <div class="flex items-start justify-between mb-2">
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -205,9 +205,6 @@
                                         </div>
                                         @endforeach
                                     </div>
-                                    @if(count($report['field_responses']) > 4)
-                                    <p class="text-xs text-gray-500 mt-2">Dan {{ count($report['field_responses']) - 4 }} field lainnya...</p>
-                                    @endif
                                 </div>
 
                                 <!-- Notes -->

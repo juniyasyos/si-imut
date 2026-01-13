@@ -72,9 +72,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
 
     public static function getRelations(): array
     {
-        return [
-
-        ];
+        return [];
     }
 
     public static function getLabel(): ?string

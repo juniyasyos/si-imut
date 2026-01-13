@@ -8,6 +8,9 @@ use Juniyasyos\IamClient\Http\Controllers\LogoutController;
 use Juniyasyos\IamClient\Http\Controllers\SsoCallbackController;
 use Juniyasyos\IamClient\Http\Controllers\SsoLoginRedirectController;
 
+// Include Livewire report routes
+require_once __DIR__ . '/livewire-report.php';
+
 // Print Report Routes
 Route::prefix('print')->name('print.')->group(function () {
     // Preview dengan dummy data

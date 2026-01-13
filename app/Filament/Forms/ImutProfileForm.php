@@ -87,11 +87,13 @@ class ImutProfileForm
                             ->helperText('Contoh: v1, v2.1')
                             ->required()
                             ->reactive()
+                            ->columnSpanFull()
                             ->maxLength(50),
 
                         TextInput::make('slug')
                             ->label(__('filament-forms::imut-data.fields.slug'))
                             ->readOnly()
+                            ->hidden()
                             ->extraAttributes(['class' => 'bg-gray-100 text-gray-500'])
                             ->columnSpan(1),
 
@@ -144,7 +146,6 @@ class ImutProfileForm
                             ])
                             ->inline()
                             ->required()
-                            ->columnSpan(2)
                             ->helperText('Pilih jenis indikator yang sesuai.'),
                     ]),
                 ]),

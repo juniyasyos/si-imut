@@ -8,6 +8,7 @@ use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -340,79 +341,35 @@ class EditLaporanImut extends EditRecord
         $laporan = $this->record;
 
         return [
-            Action::make('imutDataSummary')
-                ->label('Summary IMUT Data')
-                ->icon('heroicon-o-clipboard-document-list')
-                ->color('primary')
-                ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForImutData($record->id))
-                ->disabled(fn($record) => is_null($record->imutPenilaians))
-                ->visible(fn() => Gate::any([
-                    'view_imut_data_report_laporan::imut',
-                    'view_imut_data_report_detail_laporan::imut',
-                ])),
+            ActionGroup::make([
+                Action::make('imutDataSummary')
+                    ->label('Berdasarkan IMUT Data')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color('primary')
+                    ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForImutData($record->id))
+                    ->disabled(fn($record) => is_null($record->imutPenilaians))
+                    ->visible(fn() => Gate::any([
+                        'view_imut_data_report_laporan::imut',
+                        'view_imut_data_report_detail_laporan::imut',
+                    ])),
 
-            Action::make('unitKerjaSummary')
-                ->label('Summary Unit Kerja')
-                ->icon('heroicon-o-clipboard-document-list')
-                ->color('success')
-                ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
-                ->visible(fn() => Gate::any([
-                    'view_unit_kerja_report_laporan::imut',
-                    'view_unit_kerja_report_detail_laporan::imut',
-                ])),
+                Action::make('unitKerjaSummary')
+                    ->label('Berdasarkan Unit Kerja')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color('success')
+                    ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
+                    ->visible(fn() => Gate::any([
+                        'view_unit_kerja_report_laporan::imut',
+                        'view_unit_kerja_report_detail_laporan::imut',
+                    ])),
+            ])
+                ->button()
+                ->label('Lihat Summary')
+                ->icon('heroicon-s-clipboard-document-check')
+                ->color('primary'),
         ];
     }
 
-    // protected function afterSave(): void
-    // {
-    //     $currentUnitKerjaIds = $this->record->unitKerjas()->pluck('unit_kerja_id')->toArray();
-
-    //     $removedUnitKerjaIds = array_diff($this->originalUnitKerjaIds, $currentUnitKerjaIds);
-    //     $addedUnitKerjaIds = array_diff($currentUnitKerjaIds, $this->originalUnitKerjaIds);
-
-    //     DB::transaction(function () use ($removedUnitKerjaIds, $addedUnitKerjaIds) {
-    //         // 🔴 1. Hapus data dari unit kerja yang di-uncheck
-    //         foreach ($removedUnitKerjaIds as $unitKerjaId) {
-    //             $laporanUnitKerja = LaporanUnitKerja::where('laporan_imut_id', $this->record->id)
-    //                 ->where('unit_kerja_id', $unitKerjaId)
-    //                 ->first();
-
-    //             if ($laporanUnitKerja) {
-    //                 ImutPenilaian::where('laporan_unit_kerja_id', $laporanUnitKerja->id)->delete();
-    //                 $laporanUnitKerja->delete();
-    //             }
-
-    //             $this->record->unitKerjas()->detach($unitKerjaId);
-    //         }
-
-    //         // ✅ 2. Tambah data penilaian dan laporan_unit_kerja untuk unit kerja baru
-    //         $laporan = $this->record->load('unitKerjas.imutData.latestProfile');
-
-    //         foreach ($laporan->unitKerjas as $unitKerja) {
-    //             if (! in_array($unitKerja->id, $addedUnitKerjaIds)) {
-    //                 continue; // Skip unit kerja yang tidak baru
-    //             }
-
-    //             $laporanUnitKerja = LaporanUnitKerja::firstOrCreate([
-    //                 'laporan_imut_id' => $laporan->id,
-    //                 'unit_kerja_id' => $unitKerja->id,
-    //             ]);
-
-    //             foreach ($unitKerja->imutData as $imutData) {
-    //                 $latestProfile = $imutData->latestProfile;
-
-    //                 if (! $latestProfile) {
-    //                     continue;
-    //                 }
-
-    //                 ImutPenilaian::firstOrCreate([
-    //                     'imut_profil_id' => $latestProfile->id,
-    //                     'laporan_unit_kerja_id' => $laporanUnitKerja->id,
-    //                 ]);
-    //             }
-    //         }
-    //     });
-    // }
 
     protected function afterSave(): void
     {

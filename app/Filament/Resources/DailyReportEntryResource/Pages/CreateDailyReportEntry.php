@@ -16,6 +16,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 
+use function PHPSTORM_META\type;
+
 class CreateDailyReportEntry extends CreateRecord
 {
     protected static string $resource = DailyReportEntryResource::class;
@@ -205,7 +207,8 @@ class CreateDailyReportEntry extends CreateRecord
         }
 
         // Get report date from URL parameter or use today
-        $date = request()->query('date');
+        $date = $this->originalDate;
+        
         if ($date) {
             try {
                 $data['report_date'] = \Carbon\Carbon::createFromFormat('Y-m-d', $date);

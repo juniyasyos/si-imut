@@ -15,7 +15,7 @@ class DailyReportEntryPolicy
     //  */
     // public function viewAny(User $user): bool
     // {
-    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    //     return $user->unitKerjas()->exists();
     // }
 
     /**
@@ -33,7 +33,7 @@ class DailyReportEntryPolicy
     //  */
     // public function create(User $user): bool
     // {
-    //     return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+    //     return $user->unitKerjas()->exists();
     // }
 
     /**

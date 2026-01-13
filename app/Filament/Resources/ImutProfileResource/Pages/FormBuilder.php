@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\ImutProfile;

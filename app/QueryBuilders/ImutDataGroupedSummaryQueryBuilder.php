@@ -34,6 +34,8 @@ class ImutDataGroupedSummaryQueryBuilder
             'laporan_imuts.id as laporan_imut_id',
             'laporan_imuts.name as laporan_name',
             'laporan_imuts.status as laporan_status',
+            'laporan_imuts.assessment_period_start',
+            'laporan_imuts.assessment_period_end',
             'imut_kategori.id as imut_kategori_id',
             DB::raw('MAX(imut_profil.target_value) as imut_standard'),
             DB::raw('MAX(imut_profil.target_operator) as imut_standard_type_operator'),

@@ -149,7 +149,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+        return $user->unitKerjas()->exists();
     }
 
     /**
@@ -227,7 +227,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        return $user->hasRole('Unit Kerja') && $user->unitKerjas()->exists();
+        return $user->unitKerjas()->exists();
     }
 
     /**

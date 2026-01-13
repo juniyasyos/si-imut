@@ -91,8 +91,8 @@ class SummaryDiagram extends Page
     {
         return [
             Action::make('printReport')
-                ->label('Print Laporan')
-                ->icon('heroicon-o-printer')
+                ->label('Cetak Laporan Indikator')
+                ->icon('heroicon-o-document-text')
                 ->color('primary')
                 ->url(function () {
                     // Ambil laporan terbaru yang sudah complete
@@ -106,13 +106,19 @@ class SummaryDiagram extends Page
                     }
 
                     if (!$latestLaporan) {
+                        Notification::make()
+                            ->title('Tidak ada laporan tersedia')
+                            ->body('Belum ada laporan yang tersedia untuk indikator ini.')
+                            ->warning()
+                            ->send();
                         return null;
                     }
 
-                    return route('print.preview.imut-indicator-report', [
-                        'imut_data_id' => $this->imutData->id,
-                        'laporan_id' => $latestLaporan->id,
-                        'period_filter' => 'year',
+                    // Gunakan route Livewire yang baru dengan URL yang clean
+                    return route('laporan.indikator-mutu.show', [
+                        'indicator' => $this->imutData->id,
+                        'periode' => $latestLaporan->id,
+                        'filter_periode' => 'year'
                     ]);
                 })
                 ->openUrlInNewTab()
