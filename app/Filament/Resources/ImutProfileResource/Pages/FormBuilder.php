@@ -56,7 +56,10 @@ class FormBuilder extends Page implements HasForms
                 ->warning()
                 ->send();
 
-            $this->redirect(static::getResource()::getUrl('manage-form-builder', ['record' => $record]));
+            $this->redirect(ImutDataResource::getUrl('manage-form-builder', [
+                'imutDataSlug' => $record->imutData->slug,
+                'record' => $record->slug,
+            ]));
             return;
         }
 
@@ -86,7 +89,10 @@ class FormBuilder extends Page implements HasForms
             Action::make('back_to_builder')
                 ->label('Kembali ke Form Builder')
                 ->icon('heroicon-o-arrow-left')
-                ->url(fn() => static::getResource()::getUrl('manage-form-builder', ['record' => $this->record]))
+                ->url(fn() => ImutDataResource::getUrl('manage-form-builder', [
+                    'imutDataSlug' => $this->record->imutData->slug,
+                    'record' => $this->record->slug,
+                ]))
                 ->color('gray'),
         ];
     }
@@ -104,9 +110,13 @@ class FormBuilder extends Page implements HasForms
     public function getBreadcrumbs(): array
     {
         return [
-            ImutProfileResource::getUrl('index') => 'Profil IMUT',
-            ImutProfileResource::getUrl('manage-form-builder', ['record' => $this->record]) => 'Konfigurasi Form Laporan Harian',
-            '#' => 'Preview Form',
+            ImutDataResource::getUrl('index') => 'Daftar Data IMUT',
+            ImutDataResource::getUrl('edit', ['record' => $this->record->imutData->slug]) => $this->record->imutData->title,
+            ImutDataResource::getUrl('manage-form-builder', [
+                'imutDataSlug' => $this->record->imutData->slug,
+                'record' => $this->record->slug,
+            ]) => 'Konfigurasi Form Laporan Harian',
+            'Preview Form: ' . $this->record->version,
         ];
     }
 }

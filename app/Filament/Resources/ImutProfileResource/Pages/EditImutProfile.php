@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutData;
 use App\Models\ImutProfile;
@@ -42,16 +43,14 @@ class EditImutProfile extends EditRecord
         $imutDataSlug = request()->route('imutDataSlug');
         $imutData = ImutData::where('slug', $imutDataSlug)->first();
 
-        $label = $imutData
-            ? "{$imutData->title}"
-            : 'Data Tidak Ditemukan';
+        $secondBreadcrumb = $imutData
+            ? [ImutDataResource::getUrl('edit', ['record' => $imutData->slug]) => $imutData->title]
+            : ['#' => 'Data Tidak Ditemukan'];
 
         return [
-            route('filament.siimut.resources.imut-datas.index') => 'Imut Datas',
-            $imutData
-                ? route('filament.siimut.resources.imut-datas.edit', ['record' => $imutData->slug])
-                : '#' => $label,
-            null => 'Edit Profile | ' . $this->record->version,
+            ImutDataResource::getUrl('index') => 'Daftar Data IMUT',
+            ...$secondBreadcrumb,
+            'Edit Profil: ' . $this->record->version,
         ];
     }
 
@@ -80,18 +79,24 @@ class EditImutProfile extends EditRecord
                 ->label('Form Laporan Harian')
                 ->color('info')
                 ->icon('heroicon-s-document-text')
-                ->url(fn($record) => ImutProfileResource::getUrl('manage-form-builder', ['record' => $record]))
+                ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', [
+                    'imutDataSlug' => $record->imutData->slug,
+                    'record' => $record->slug,
+                ]))
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
             Action::make('daily_reports')
                 ->label('Lihat Laporan Harian')
                 ->color('success')
                 ->icon('heroicon-s-document-chart-bar')
-                ->url(fn($record) => ImutProfileResource::getUrl('list-daily-reports', ['record' => $record]))
+                ->url(fn($record) => ImutDataResource::getUrl('list-daily-reports', [
+                    'imutDataSlug' => $record->imutData->slug,
+                    'record' => $record->slug,
+                ]))
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
-            DeleteAction::make()
-                ->visible(fn() => static::canEditProfilIndikator($this->record)),
+            // DeleteAction::make()
+            //     ->visible(fn() => static::canEditProfilIndikator($this->record)),
         ];
     }
 

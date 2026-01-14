@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutProfile;
 use App\Services\FormBuilder\FormDataService;
@@ -126,7 +127,10 @@ class ManageFormBuilder extends Page implements HasForms
         }
 
         // Redirect to preview page
-        $this->redirect(static::getResource()::getUrl('preview-form', ['record' => $this->record]));
+        $this->redirect(ImutDataResource::getUrl('preview-form', [
+            'imutDataSlug' => $this->record->imutData->slug,
+            'record' => $this->record->slug,
+        ]));
     }
 
     public function getAvailableFields(): array

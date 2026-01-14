@@ -77,9 +77,8 @@ class UnitKerjaOverview extends Page
     {
         return [
             ImutDataResource::getUrl('index') => 'Daftar Data IMUT',
-            'Summary Grafik',
             ImutDataResource::getUrl('edit', ['record' => $this->imutData?->slug]) => $this->imutData?->title ?? 'Detail',
-            'Ikhtisar',
+            'Ikhtisar Unit Kerja: ' . ($this->unitKerja?->unit_name ?? 'Tidak Ditemukan'),
         ];
     }
 

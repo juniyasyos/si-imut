@@ -32,7 +32,6 @@ class ImutDataNote extends Model
         'related_laporan_ids',
         'recommendation',
         'analysis',
-        'additional_notes',
         'priority',
         'is_active',
         'created_by',

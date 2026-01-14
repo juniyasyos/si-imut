@@ -135,8 +135,9 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             'bencmarking-region-type' => \App\Filament\Resources\RegionTypeBencmarkingResource\Pages\ListRegionTypeBencmarkings::route('/bencmarkings/region-type'),
             'overview-unit-kerja' => UnitKerjaOverview::route('/overview/unit-kerja'),
             'overview-imut-data' => SummaryDiagram::route('overview/summary-imut-data'),
-            'manage-form-builder' => Pages\ManageFormBuilder::route('/{record:slug}/form-builder'),
-            'preview-form' => Pages\FormBuilder::route('/{record:slug}/form-builder/preview'),
+            'manage-form-builder' => \App\Filament\Resources\ImutProfileResource\Pages\ManageFormBuilder::route('/{imutDataSlug}/{record:slug}/form-builder'),
+            'preview-form' => \App\Filament\Resources\ImutProfileResource\Pages\FormBuilder::route('/{imutDataSlug}/{record:slug}/form-builder/preview'),
+            'list-daily-reports' => \App\Filament\Resources\ImutProfileResource\Pages\ListDailyReports::route('/{imutDataSlug}/{record:slug}/daily-reports'),
         ];
     }
 }

@@ -112,55 +112,37 @@
         </div>
 
         <!-- Enhanced Dashboard -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Left Card -->
-            <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-lg shadow-md">
-                <h3 class="text-lg font-bold mb-4" x-text="imutData.title"></h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm opacity-90">Kategori</span>
-                        <span class="font-bold" x-text="imutData.categories"></span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm opacity-90">Standar Target</span>
-                        <span class="text-2xl font-bold" x-text="imutData.standard + '%'"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Card -->
-            <div class="bg-gradient-to-br from-green-500 to-green-700 text-white p-6 rounded-lg shadow-md">
-                <h4 class="text-lg font-bold mb-4">Pencapaian Saat Ini</h4>
-                <div class="space-y-3">
-                    <div class="text-center">
-                        <div class="text-5xl font-bold" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '...'"></div>
-                        <div class="mt-2">
-                            <span class="px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-semibold"
-                                x-text="summary.average_percentage >= imutData.standard ? '✓ Target Tercapai' : '✗ Belum Tercapai'">
-                            </span>
+        <div class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-300">
+                <!-- Left Section: Indikator -->
+                <div class="p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Indikator</div>
+                            <h3 class="text-base font-bold text-gray-900 leading-snug" x-text="imutData.title"></h3>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white border-l-4 border-blue-500 p-4 rounded shadow">
-                <div class="text-xs text-gray-500 mb-1">Total Unit Kerja</div>
-                <div class="text-2xl font-bold text-gray-800" x-text="summary.total_unit_kerja ? summary.total_unit_kerja.toLocaleString() : '...'"></div>
-            </div>
-            <div class="bg-white border-l-4 border-green-500 p-4 rounded shadow">
-                <div class="text-xs text-gray-500 mb-1">Total Numerator</div>
-                <div class="text-2xl font-bold text-gray-800" x-text="summary.total_numerator ? summary.total_numerator.toLocaleString() : '...'"></div>
-            </div>
-            <div class="bg-white border-l-4 border-yellow-500 p-4 rounded shadow">
-                <div class="text-xs text-gray-500 mb-1">Total Denominator</div>
-                <div class="text-2xl font-bold text-gray-800" x-text="summary.total_denominator ? summary.total_denominator.toLocaleString() : '...'"></div>
-            </div>
-            <div class="bg-white border-l-4 border-purple-500 p-4 rounded shadow">
-                <div class="text-xs text-gray-500 mb-1">Rata-rata</div>
-                <div class="text-2xl font-bold text-gray-800" x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : '...'"></div>
+                <!-- Right Section: Kategori -->
+                <div class="p-6 bg-gray-50">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kategori</div>
+                            <h3 class="text-base font-bold text-gray-900 leading-snug" x-text="imutData.categories || '-'"></h3>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -173,6 +155,214 @@
         <!-- Chart Section -->
         <div class="bg-white border border-gray-200 rounded p-6 mb-6">
             <!-- Chart Header -->
+            <!-- Filter Section (No Print) -->
+            <div class="no-print bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-200 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <span class="text-sm font-bold text-gray-800">Filter & Pengaturan Tampilan</span>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Filter Mode -->
+                    <div class="bg-white rounded-lg p-3 border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Mode Periode</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button @click="changeFilterMode('yearly')"
+                                :class="filterMode === 'yearly' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-3 py-2 text-xs font-medium rounded transition">
+                                📆 Tahunan
+                            </button>
+                            <button @click="changeFilterMode('semester')"
+                                :class="filterMode === 'semester' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-3 py-2 text-xs font-medium rounded transition">
+                                📋 Semester
+                            </button>
+                            <button @click="changeFilterMode('quarter')"
+                                :class="filterMode === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-3 py-2 text-xs font-medium rounded transition">
+                                📊 Quarter
+                            </button>
+                            <button @click="changeFilterMode('custom')"
+                                :class="filterMode === 'custom' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-3 py-2 text-xs font-medium rounded transition">
+                                📅 Kustom
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Yearly Filter -->
+                    <div x-show="filterMode === 'yearly'" class="bg-white rounded-lg p-3 border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Pilih Tahun</label>
+                        <select x-model="yearlyYears" @change="applyFilters()" multiple
+                            class="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            <template x-for="year in [2020, 2021, 2022, 2023, 2024, 2025, 2026]" :key="year">
+                                <option :value="year" x-text="year"></option>
+                            </template>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Tahan Ctrl/Cmd untuk memilih beberapa tahun</p>
+                    </div>
+
+                    <!-- Semester Filter -->
+                    <div x-show="filterMode === 'semester'" class="bg-white rounded-lg p-3 border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Tahun</label>
+                        <select x-model="semesterYear" @change="applyFilters()"
+                            class="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mb-2">
+                            <template x-for="year in [2020, 2021, 2022, 2023, 2024, 2025, 2026]" :key="year">
+                                <option :value="year" x-text="year"></option>
+                            </template>
+                        </select>
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Pilih Semester</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="S1" x-model="semesters" @change="applyFilters()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                                <span class="text-xs">Semester 1 (Jan-Jun)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="S2" x-model="semesters" @change="applyFilters()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                                <span class="text-xs">Semester 2 (Jul-Des)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Quarter Filter -->
+                    <div x-show="filterMode === 'quarter'" class="bg-white rounded-lg p-3 border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Tahun</label>
+                        <select x-model="quarterYear" @change="applyFilters()"
+                            class="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mb-2">
+                            <template x-for="year in [2020, 2021, 2022, 2023, 2024, 2025, 2026]" :key="year">
+                                <option :value="year" x-text="year"></option>
+                            </template>
+                        </select>
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Pilih Quarter</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="Q1" x-model="quarters" @change="applyFilters()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                                <span class="text-xs">Q1 (Jan-Mar)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="Q2" x-model="quarters" @change="applyFilters()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                                <span class="text-xs">Q2 (Apr-Jun)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="Q3" x-model="quarters" @change="applyFilters()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                                <span class="text-xs">Q3 (Jul-Sep)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" value="Q4" x-model="quarters" @change="applyFilters()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                                <span class="text-xs">Q4 (Okt-Des)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Custom Range Filter -->
+                    <div x-show="filterMode === 'custom'" class="bg-white rounded-lg p-3 border border-gray-200">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-700 mb-1 block">Dari</label>
+                                <select x-model="startMonth" @change="applyFilters()"
+                                    class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mb-1">
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <select x-model="startYear" @change="applyFilters()"
+                                    class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                                    <template x-for="year in [2020, 2021, 2022, 2023, 2024, 2025, 2026]" :key="year">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-700 mb-1 block">Sampai</label>
+                                <select x-model="endMonth" @change="applyFilters()"
+                                    class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mb-1">
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <select x-model="endYear" @change="applyFilters()"
+                                    class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                                    <template x-for="year in [2020, 2021, 2022, 2023, 2024, 2025, 2026]" :key="year">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Options -->
+                    <div class="bg-white rounded-lg p-3 border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Opsi Tampilan</label>
+                        <div class="space-y-2">
+                            <!-- Show Standard -->
+                            <label class="flex items-center justify-between cursor-pointer group">
+                                <span class="text-xs text-gray-700 group-hover:text-gray-900">Tampilkan Target Standar</span>
+                                <input type="checkbox" x-model="showStandard" @change="updateChart()"
+                                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                            </label>
+
+                            <!-- Benchmark Options -->
+                            <div x-show="availableBenchmarks.length > 0" class="pl-2 border-l-2 border-gray-200 space-y-2">
+                                <label class="text-xs font-medium text-gray-600 block">Tampilkan Benchmark:</label>
+                                <template x-for="regionType in availableBenchmarks" :key="regionType">
+                                    <label class="flex items-center justify-between cursor-pointer group">
+                                        <span class="text-xs text-gray-600 group-hover:text-gray-900" x-text="regionType"></span>
+                                        <input type="checkbox" x-model="showBenchmarks[regionType]" @change="updateChart()"
+                                            class="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-2 focus:ring-yellow-400">
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Selection -->
+                    <div x-show="availableNotes.length > 0" class="bg-white rounded-lg p-3 border border-gray-200">
+                        <label class="text-xs font-semibold text-gray-700 mb-2 block">Catatan Analisis</label>
+                        <select x-model="selectedNoteId" @change="applyFilters()"
+                            class="w-full px-3 py-2 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Pilih Catatan --</option>
+                            <template x-for="note in availableNotes" :key="note.id">
+                                <option :value="note.id" x-text="note.period_display"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Apply Button -->
+                    <button @click="applyFilters()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span class="text-xs">Terapkan Filter</span>
+                    </button>
+                </div>
+            </div>
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-gray-200">
                 <div class="mb-4 md:mb-0">
                     <div class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -182,46 +372,6 @@
                         Grafik Tren Pencapaian Indikator
                     </div>
                     <div class="text-xs text-gray-500 mt-1 ml-7">Perbandingan pencapaian periode yang dipilih</div>
-                </div>
-
-                <!-- Filter Section (No Print) -->
-                <div class="no-print bg-gradient-to-r from-blue-50 to-indigo-50 rounded p-4 border border-blue-200">
-                    <div class="flex items-center gap-3 mb-3">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                        </svg>
-                        <span class="text-sm font-semibold text-gray-700">Filter Tampilan</span>
-                    </div>
-
-                    <div class="flex flex-wrap gap-3">
-                        <!-- Benchmark Filter -->
-                        <div x-show="availableBenchmarks.length > 0" class="flex items-center gap-3 bg-white rounded px-3 py-2 border border-gray-200">
-                            <span class="text-xs font-medium text-gray-600 whitespace-nowrap">Tampilkan:</span>
-                            <template x-for="regionType in availableBenchmarks" :key="regionType">
-                                <label class="flex items-center gap-1.5 cursor-pointer">
-                                    <input type="checkbox" :x-model="showBenchmarks[regionType]" @change="updateChart()"
-                                        class="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-2 focus:ring-yellow-400 cursor-pointer">
-                                    <span class="text-xs font-medium text-gray-700" x-text="regionType"></span>
-                                </label>
-                            </template>
-                        </div>
-
-                        <!-- Period Filter -->
-                        <select x-model="periodFilter" @change="applyFilters()"
-                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
-                            <template x-for="(label, value) in periodLabels" :key="value">
-                                <option :value="value" x-text="label"></option>
-                            </template>
-                        </select>
-
-                        <!-- Notes Filter -->
-                        <select x-show="availableNotes.length > 0" x-model="selectedNoteId" @change="applyFilters()"
-                            class="px-3 py-2 text-xs font-medium border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
-                            <template x-for="note in availableNotes" :key="note.id">
-                                <option :value="note.id" x-text="note.period_display"></option>
-                            </template>
-                        </select>
-                    </div>
                 </div>
             </div>
 
@@ -286,30 +436,59 @@
         <div class="bg-blue-50 border border-blue-300 rounded p-6 mb-6">
             <h4 class="text-base font-semibold text-blue-900 mb-4">📊 Analisis dan Interpretasi Data</h4>
 
+            <!-- Display selected note data -->
             <div x-show="selectedNote">
-                <div class="mb-4">
-                    <strong x-text="'Analisis Periode ' + (selectedNote ? selectedNote.period_display : periode) + ':'" class="block mb-2"></strong>
-                    <p class="ml-4 text-sm leading-relaxed" x-text="selectedNote ? selectedNote.analysis : ''"></p>
+                <div class="bg-white rounded-lg p-4 mb-4 border border-blue-200">
+                    <div class="flex items-center gap-2 mb-3">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <strong class="text-sm font-semibold text-gray-800" x-text="'Catatan: ' + (selectedNote ? selectedNote.note_name : '')"></strong>
+                    </div>
+                    <div class="text-xs text-gray-600 mb-3">
+                        <span class="font-medium">Periode:</span> <span x-text="selectedNote ? selectedNote.period_display : ''"></span>
+                    </div>
                 </div>
 
                 <div class="mb-4">
-                    <strong class="block mb-2">Rekomendasi Tindak Lanjut:</strong>
-                    <div class="ml-4 text-sm whitespace-pre-line leading-relaxed" x-text="selectedNote ? selectedNote.recommendation : ''"></div>
+                    <div class="flex items-start gap-2 mb-2">
+                        <svg class="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <strong class="text-sm font-semibold text-blue-900">Analisis Data</strong>
+                    </div>
+                    <div class="ml-7 text-sm leading-relaxed text-gray-800 whitespace-pre-line" x-text="selectedNote ? selectedNote.analysis : ''"></div>
                 </div>
 
-                <div x-show="selectedNote && selectedNote.additional_notes">
-                    <strong class="block mb-2">Catatan Tambahan:</strong>
-                    <p class="ml-4 text-sm leading-relaxed" x-text="selectedNote ? selectedNote.additional_notes : ''"></p>
+                <div class="mb-4">
+                    <div class="flex items-start gap-2 mb-2">
+                        <svg class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <strong class="text-sm font-semibold text-green-900">Rekomendasi Tindak Lanjut</strong>
+                    </div>
+                    <div class="ml-7 text-sm leading-relaxed text-gray-800 whitespace-pre-line" x-text="selectedNote ? selectedNote.recommendation : ''"></div>
                 </div>
             </div>
 
-            <!-- Fallback: Auto-generated analysis -->
+            <!-- Fallback: Auto-generated analysis when no note selected -->
             <div x-show="!selectedNote" class="space-y-4">
+                <div class="bg-yellow-50 border border-yellow-300 rounded p-4 mb-4">
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <strong class="text-sm font-semibold text-yellow-800">Tidak Ada Catatan Analisis</strong>
+                            <p class="text-xs text-yellow-700 mt-1">Pilih catatan analisis dari filter untuk menampilkan analisis dan rekomendasi yang telah dibuat.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
-                    <strong class="block mb-2">1. Capaian Indikator:</strong>
+                    <strong class="block mb-2 text-sm">Capaian Indikator:</strong>
                     <p class="ml-4 text-sm leading-relaxed">
-                        Capaian indikator <strong x-text="imutData.title"></strong> pada periode
-                        <strong x-text="periode"></strong> adalah
+                        Capaian indikator <strong x-text="imutData.title"></strong> pada periode yang dipilih adalah
                         <strong x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'"></strong>.
                         Target standar yang ditetapkan adalah <strong x-text="'≥ ' + imutData.standard + '%'"></strong>.
 
@@ -357,13 +536,31 @@
 
     <script>
         function reportData(indicator, periode) {
+            // Calculate default date range (6 months ago to now)
+            const now = new Date();
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
             return {
                 loading: true,
-                periodFilter: 'q3',
+                periodFilter: 'year',
                 selectedNoteId: null,
                 selectedNote: null,
+                showStandard: true,
                 showBenchmarkNasional: true,
                 showBenchmarkProvinsi: true,
+
+                // Filter form data - Default to last 6 months
+                filterMode: 'custom',
+                startMonth: sixMonthsAgo.getMonth() + 1,
+                startYear: sixMonthsAgo.getFullYear(),
+                endMonth: now.getMonth() + 1,
+                endYear: now.getFullYear(),
+                quarterYear: new Date().getFullYear(),
+                quarters: ['Q1', 'Q2', 'Q3', 'Q4'],
+                semesterYear: new Date().getFullYear(),
+                semesters: ['S1', 'S2'],
+                yearlyYears: [new Date().getFullYear()],
 
                 periodLabels: {},
                 imutData: {},
@@ -375,10 +572,41 @@
                 chart: null,
 
                 async init() {
+                    await this.loadData();
+                },
+
+                async loadData() {
                     try {
                         this.loading = true;
 
-                        const response = await fetch(`/api/imut-data/report/${indicator}/${periode}`);
+                        // Build query parameters
+                        const params = new URLSearchParams({
+                            filter_mode: this.filterMode,
+                            selected_note_id: this.selectedNoteId || '',
+                        });
+
+                        // Add filter-specific parameters
+                        switch (this.filterMode) {
+                            case 'custom':
+                                params.append('start_month', this.startMonth);
+                                params.append('start_year', this.startYear);
+                                params.append('end_month', this.endMonth);
+                                params.append('end_year', this.endYear);
+                                break;
+                            case 'quarter':
+                                params.append('quarter_year', this.quarterYear);
+                                this.quarters.forEach(q => params.append('quarters[]', q));
+                                break;
+                            case 'semester':
+                                params.append('semester_year', this.semesterYear);
+                                this.semesters.forEach(s => params.append('semesters[]', s));
+                                break;
+                            case 'yearly':
+                                this.yearlyYears.forEach(y => params.append('yearly_years[]', y));
+                                break;
+                        }
+
+                        const response = await fetch(`/api/imut-data/report/${indicator}/${periode}?${params.toString()}`);
                         if (!response.ok) throw new Error('Failed to fetch data');
 
                         const data = await response.json();
@@ -409,7 +637,10 @@
                             this.showBenchmarks[regionType] = true;
                         });
 
-                        if (this.availableNotes.length > 0) {
+                        // Use selected note from API if available
+                        if (data.selectedNote) {
+                            this.selectedNote = data.selectedNote;
+                        } else if (this.availableNotes.length > 0) {
                             this.selectedNote = this.availableNotes[0];
                             this.selectedNoteId = this.availableNotes[0].id;
                         }
@@ -417,6 +648,9 @@
                         this.loading = false;
 
                         this.$nextTick(() => {
+                            if (this.chart) {
+                                this.chart.destroy();
+                            }
                             this.initChart();
                         });
 
@@ -427,11 +661,28 @@
                     }
                 },
 
-                applyFilters() {
-                    this.selectedNote = this.availableNotes.find(note => note.id == this.selectedNoteId) || null;
-                    this.$nextTick(() => {
-                        this.updateChart();
-                    });
+                async applyFilters() {
+                    await this.loadData();
+                },
+
+                async changeFilterMode(mode) {
+                    this.filterMode = mode;
+                    await this.loadData();
+                },
+
+                async changeQuarters(quarters) {
+                    this.quarters = quarters;
+                    await this.loadData();
+                },
+
+                async changeSemesters(semesters) {
+                    this.semesters = semesters;
+                    await this.loadData();
+                },
+
+                async changeYearlyYears(years) {
+                    this.yearlyYears = years;
+                    await this.loadData();
                 },
 
                 initChart() {
@@ -448,14 +699,17 @@
                     const benchmarkProvinsi = this.historicalData.map(d => d.benchmarks && d.benchmarks['Provinsi'] ? d.benchmarks['Provinsi'] : null);
 
                     const series = [{
-                            name: 'Pencapaian Aktual',
-                            data: chartData
-                        },
-                        {
+                        name: 'Pencapaian Aktual',
+                        data: chartData
+                    }];
+
+                    // Add standard line if enabled
+                    if (this.showStandard) {
+                        series.push({
                             name: 'Target Standar',
                             data: Array(chartData.length).fill(standard)
-                        }
-                    ];
+                        });
+                    }
 
                     // Add dynamic benchmark series
                     this.availableBenchmarks.forEach((regionType, index) => {
@@ -532,8 +786,8 @@
                                     return val.toFixed(0) + '%';
                                 }
                             },
-                            min: 75,
-                            max: 95
+                            min: 0,
+                            max: 100
                         },
                         legend: {
                             position: 'top',
@@ -576,28 +830,27 @@
                         const chartData = this.historicalData.map(d => d.percentage || 0);
 
                         const series = [{
-                                name: 'Pencapaian Aktual',
-                                data: chartData
-                            },
-                            {
+                            name: 'Pencapaian Aktual',
+                            data: chartData
+                        }];
+
+                        // Add standard line if enabled
+                        if (this.showStandard) {
+                            series.push({
                                 name: 'Target Standar',
                                 data: Array(chartData.length).fill(this.imutData.standard)
+                            });
+                        }
+
+                        // Add dynamic benchmark series based on showBenchmarks state
+                        this.availableBenchmarks.forEach((regionType) => {
+                            if (this.showBenchmarks[regionType]) {
+                                series.push({
+                                    name: 'Benchmark ' + regionType,
+                                    data: this.historicalData.map(d => d.benchmarks && d.benchmarks[regionType] ? d.benchmarks[regionType] : null)
+                                });
                             }
-                        ];
-
-                        if (this.showBenchmarkNasional) {
-                            series.push({
-                                name: 'Benchmark Nasional',
-                                data: this.historicalData.map(d => d.benchmarks && d.benchmarks['Nasional'] ? d.benchmarks['Nasional'] : null)
-                            });
-                        }
-
-                        if (this.showBenchmarkProvinsi) {
-                            series.push({
-                                name: 'Benchmark Provinsi',
-                                data: this.historicalData.map(d => d.benchmarks && d.benchmarks['Provinsi'] ? d.benchmarks['Provinsi'] : null)
-                            });
-                        }
+                        });
 
                         this.chart.updateOptions({
                             xaxis: {

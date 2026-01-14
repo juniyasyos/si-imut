@@ -170,7 +170,7 @@ class ImutProfileForm
 
                     TextInput::make('quality_dimension')
                         ->label('Dimensi Mutu')
-                        ->readOnly(fn(?Model $record) => ($record && $record->imutData->created_by !== Auth::id()) || Auth::user()->can('force_editable_imut::profile'))
+                        ->readOnly(fn(?Model $record) => self::shouldDisableProfileField($record))
                         ->hint('Contoh: Efektivitas, Efisiensi, Aksesibilitas.'),
                 ]),
         ];

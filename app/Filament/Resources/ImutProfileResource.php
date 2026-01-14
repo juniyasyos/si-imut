@@ -71,9 +71,9 @@ class ImutProfileResource extends Resource implements HasShieldPermissions
     {
         return [
             'index' => Pages\ListImutProfiles::route('/'),
-            'manage-form-builder' => Pages\ManageFormBuilder::route('/{record:slug}/form-builder'),
-            'preview-form' => Pages\FormBuilder::route('/{record:slug}/form-builder/preview'),
-            'list-daily-reports' => Pages\ListDailyReports::route('/{record:slug}/daily-reports'),
+            // 'manage-form-builder' => Pages\ManageFormBuilder::route('/{record:slug}/form-builder'),
+            // 'preview-form' => Pages\FormBuilder::route('/{record:slug}/form-builder/preview'),
+            // 'list-daily-reports' => Pages\ListDailyReports::route('/{record:slug}/daily-reports'),
         ];
     }
 }

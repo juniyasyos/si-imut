@@ -102,8 +102,21 @@ class ImutDataApiController extends Controller
         // Get region types for benchmark data
         $regionTypes = RegionType::all();
 
-        // Get historical data using the correct query
+        // Get filter parameters from request
+        $filterMode = $request->get('filter_mode', 'year');
+        $selectedNoteId = $request->get('selected_note_id');
+
+        // Build date range based on filter mode
+        [$startDate, $endDate] = $this->getFilterDateRange($request, $filterMode, $laporan);
+
+        // Get historical data using the correct query with date filter
         $historicalQuery = \App\Models\LaporanUnitKerja::getSummaryByImutDataGrouped($imutData->id);
+
+        // Apply date range filter
+        if ($startDate && $endDate) {
+            $historicalQuery->whereBetween('laporan_imuts.assessment_period_start', [$startDate, $endDate]);
+        }
+
         $historicalData = $historicalQuery->get()->map(function ($item) use ($laporan, $imutData, $regionTypes) {
             $start = $item->assessment_period_start ? \Carbon\Carbon::parse($item->assessment_period_start) : $laporan->assessment_period_start;
             $end = $item->assessment_period_end ? \Carbon\Carbon::parse($item->assessment_period_end) : $laporan->assessment_period_end;
@@ -162,6 +175,21 @@ class ImutDataApiController extends Controller
             'year' => 'Tahunan',
         ];
 
+        // Get selected note if provided
+        $selectedNote = null;
+        if ($selectedNoteId) {
+            $selectedNote = ImutDataNote::find($selectedNoteId);
+            if ($selectedNote) {
+                $selectedNote = [
+                    'id' => $selectedNote->id,
+                    'period_display' => $selectedNote->period_display,
+                    'analysis' => $selectedNote->analysis,
+                    'recommendation' => $selectedNote->recommendation,
+                    'additional_notes' => $selectedNote->additional_notes,
+                ];
+            }
+        }
+
         return response()->json([
             'periodLabels' => $periodLabels,
             'imutData' => [
@@ -182,6 +210,90 @@ class ImutDataApiController extends Controller
             'historicalData' => $historicalData,
             'unitKerjaData' => $unitKerjaData,
             'availableNotes' => $availableNotes,
+            'selectedNote' => $selectedNote,
         ]);
+    }
+
+    /**
+     * Get date range based on filter mode and parameters
+     */
+    private function getFilterDateRange(Request $request, string $filterMode, LaporanImut $laporan): array
+    {
+        switch ($filterMode) {
+            case 'quarter':
+                $year = $request->get('quarter_year', now()->year);
+                $quarters = $request->get('quarters', ['Q1']);
+
+                // Convert quarters to months
+                $quarterMonths = [
+                    'Q1' => [1, 2, 3],
+                    'Q2' => [4, 5, 6],
+                    'Q3' => [7, 8, 9],
+                    'Q4' => [10, 11, 12]
+                ];
+
+                $allMonths = [];
+                foreach ((array)$quarters as $quarter) {
+                    if (isset($quarterMonths[$quarter])) {
+                        $allMonths = array_merge($allMonths, $quarterMonths[$quarter]);
+                    }
+                }
+
+                if (empty($allMonths)) return [null, null];
+
+                sort($allMonths);
+                $startDate = \Carbon\Carbon::create($year, min($allMonths), 1)->startOfMonth();
+                $endDate = \Carbon\Carbon::create($year, max($allMonths), 1)->endOfMonth();
+
+                return [$startDate, $endDate];
+
+            case 'semester':
+                $year = $request->get('semester_year', now()->year);
+                $semesters = $request->get('semesters', ['S1']);
+
+                $semesterMonths = [
+                    'S1' => [1, 2, 3, 4, 5, 6],
+                    'S2' => [7, 8, 9, 10, 11, 12]
+                ];
+
+                $allMonths = [];
+                foreach ((array)$semesters as $semester) {
+                    if (isset($semesterMonths[$semester])) {
+                        $allMonths = array_merge($allMonths, $semesterMonths[$semester]);
+                    }
+                }
+
+                if (empty($allMonths)) return [null, null];
+
+                sort($allMonths);
+                $startDate = \Carbon\Carbon::create($year, min($allMonths), 1)->startOfMonth();
+                $endDate = \Carbon\Carbon::create($year, max($allMonths), 1)->endOfMonth();
+
+                return [$startDate, $endDate];
+
+            case 'yearly':
+                $years = $request->get('yearly_years', [now()->year]);
+                if (empty($years)) return [null, null];
+
+                $years = (array)$years;
+                sort($years);
+
+                $startDate = \Carbon\Carbon::create(min($years), 1, 1)->startOfYear();
+                $endDate = \Carbon\Carbon::create(max($years), 12, 31)->endOfYear();
+
+                return [$startDate, $endDate];
+
+            case 'custom':
+            default:
+                $startMonth = $request->get('start_month', 1);
+                $startYear = $request->get('start_year', now()->year);
+                $endMonth = $request->get('end_month', 12);
+                $endYear = $request->get('end_year', now()->year);
+
+                $startDate = \Carbon\Carbon::create($startYear, $startMonth, 1)->startOfMonth();
+                $endDate = \Carbon\Carbon::create($endYear, $endMonth, 1)->endOfMonth();
+
+                return [$startDate, $endDate];
+        }
     }
 }

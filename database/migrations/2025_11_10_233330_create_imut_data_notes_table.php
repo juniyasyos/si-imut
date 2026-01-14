@@ -22,7 +22,7 @@ return new class extends Migration
             // Untuk periode apa (Triwulan & Tahunan)
             $table->year('period_year')->nullable()->comment('Tahun periode');
             $table->enum('period_quarter', ['Q1', 'Q2', 'Q3', 'Q4'])->nullable()->comment('Q1: Jan-Mar, Q2: Apr-Jun, Q3: Jul-Sep, Q4: Oct-Des');
-            $table->enum('period_type', ['tahunan', 'triwulan'])->default('tahunan')->comment('Tipe periode: tahunan atau triwulan');
+            $table->enum('period_type', ['tahunan', 'semester', 'triwulan'])->default('tahunan')->comment('Tipe periode: tahunan, semester atau triwulan');
             $table->index(['period_year', 'period_quarter']);
 
             // Untuk laporan apa saja (multiple laporan)
@@ -31,9 +31,6 @@ return new class extends Migration
             // Rekomendasi dan analisis
             $table->text('recommendation')->nullable();
             $table->text('analysis')->nullable();
-
-            // Note tambahan lainnya
-            $table->text('additional_notes')->nullable();
 
             // Priority/importance level
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');

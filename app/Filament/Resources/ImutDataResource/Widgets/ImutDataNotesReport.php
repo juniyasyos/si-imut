@@ -34,6 +34,7 @@ class ImutDataNotesReport extends BaseWidget
     {
         $year = $get('period_year');
         $quarter = $get('period_quarter');
+        $semester = $get('period_semester');
         $periodType = $get('period_type');
 
         if (!$year) {
@@ -47,7 +48,30 @@ class ImutDataNotesReport extends BaseWidget
         if ($periodType === 'tahunan') {
             // Untuk tahunan, ambil laporan yang periode assessmentnya di tahun tersebut
             $query->whereYear('assessment_period_start', $year)
-                  ->orWhereYear('assessment_period_end', $year);
+                ->orWhereYear('assessment_period_end', $year);
+        } elseif ($periodType === 'semester' && $semester) {
+            // Mapping semester ke bulan
+            $semesterMonths = [
+                'S1' => [1, 2, 3, 4, 5, 6],     // Jan-Jun
+                'S2' => [7, 8, 9, 10, 11, 12],  // Jul-Des
+            ];
+
+            $months = $semesterMonths[$semester] ?? [];
+
+            if (!empty($months)) {
+                // Ambil laporan yang assessment period-nya overlap dengan semester
+                $query->where(function ($q) use ($year, $months) {
+                    foreach ($months as $month) {
+                        $q->orWhere(function ($subQuery) use ($year, $month) {
+                            $subQuery->whereYear('assessment_period_start', $year)
+                                ->whereMonth('assessment_period_start', $month);
+                        })->orWhere(function ($subQuery) use ($year, $month) {
+                            $subQuery->whereYear('assessment_period_end', $year)
+                                ->whereMonth('assessment_period_end', $month);
+                        });
+                    }
+                });
+            }
         } elseif ($periodType === 'triwulan' && $quarter) {
             // Mapping triwulan ke bulan
             $quarterMonths = [
@@ -65,10 +89,10 @@ class ImutDataNotesReport extends BaseWidget
                     foreach ($months as $month) {
                         $q->orWhere(function ($subQuery) use ($year, $month) {
                             $subQuery->whereYear('assessment_period_start', $year)
-                                     ->whereMonth('assessment_period_start', $month);
+                                ->whereMonth('assessment_period_start', $month);
                         })->orWhere(function ($subQuery) use ($year, $month) {
                             $subQuery->whereYear('assessment_period_end', $year)
-                                     ->whereMonth('assessment_period_end', $month);
+                                ->whereMonth('assessment_period_end', $month);
                         });
                     }
                 });
@@ -80,7 +104,7 @@ class ImutDataNotesReport extends BaseWidget
             ->toArray();
     }
 
-    protected function autoSelectLaporan($year, $quarter, $periodType, callable $set): void
+    protected function autoSelectLaporan($year, $quarter, $semester, $periodType, callable $set): void
     {
         if (!$year) {
             return;
@@ -91,7 +115,30 @@ class ImutDataNotesReport extends BaseWidget
         if ($periodType === 'tahunan') {
             // Untuk tahunan, ambil laporan yang periode assessmentnya di tahun tersebut
             $query->whereYear('assessment_period_start', $year)
-                  ->orWhereYear('assessment_period_end', $year);
+                ->orWhereYear('assessment_period_end', $year);
+        } elseif ($periodType === 'semester' && $semester) {
+            // Mapping semester ke bulan
+            $semesterMonths = [
+                'S1' => [1, 2, 3, 4, 5, 6],     // Jan-Jun
+                'S2' => [7, 8, 9, 10, 11, 12],  // Jul-Des
+            ];
+
+            $months = $semesterMonths[$semester] ?? [];
+
+            if (!empty($months)) {
+                // Ambil laporan yang assessment period-nya overlap dengan semester
+                $query->where(function ($q) use ($year, $months) {
+                    foreach ($months as $month) {
+                        $q->orWhere(function ($subQuery) use ($year, $month) {
+                            $subQuery->whereYear('assessment_period_start', $year)
+                                ->whereMonth('assessment_period_start', $month);
+                        })->orWhere(function ($subQuery) use ($year, $month) {
+                            $subQuery->whereYear('assessment_period_end', $year)
+                                ->whereMonth('assessment_period_end', $month);
+                        });
+                    }
+                });
+            }
         } elseif ($periodType === 'triwulan' && $quarter) {
             // Mapping triwulan ke bulan
             $quarterMonths = [
@@ -109,10 +156,10 @@ class ImutDataNotesReport extends BaseWidget
                     foreach ($months as $month) {
                         $q->orWhere(function ($subQuery) use ($year, $month) {
                             $subQuery->whereYear('assessment_period_start', $year)
-                                     ->whereMonth('assessment_period_start', $month);
+                                ->whereMonth('assessment_period_start', $month);
                         })->orWhere(function ($subQuery) use ($year, $month) {
                             $subQuery->whereYear('assessment_period_end', $year)
-                                     ->whereMonth('assessment_period_end', $month);
+                                ->whereMonth('assessment_period_end', $month);
                         });
                     }
                 });
@@ -142,6 +189,7 @@ class ImutDataNotesReport extends BaseWidget
                         ->label('Tipe Periode')
                         ->options([
                             'tahunan' => 'Tahunan',
+                            'semester' => 'Semester',
                             'triwulan' => 'Triwulan',
                         ])
                         ->default('tahunan')
@@ -150,8 +198,13 @@ class ImutDataNotesReport extends BaseWidget
                         ->afterStateUpdated(function ($state, callable $set, Get $get) {
                             if ($state === 'tahunan') {
                                 $set('period_quarter', null);
+                                $set('period_semester', null);
+                            } elseif ($state === 'semester') {
+                                $set('period_quarter', null);
+                            } elseif ($state === 'triwulan') {
+                                $set('period_semester', null);
                             }
-                            $this->autoSelectLaporan($get('period_year'), $get('period_quarter'), $state, $set);
+                            $this->autoSelectLaporan($get('period_year'), $get('period_quarter'), $get('period_semester'), $state, $set);
                         }),
 
                     Select::make('period_year')
@@ -169,7 +222,21 @@ class ImutDataNotesReport extends BaseWidget
                         ->reactive()
                         ->placeholder('Pilih tahun')
                         ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                            $this->autoSelectLaporan($state, $get('period_quarter'), $get('period_type'), $set);
+                            $this->autoSelectLaporan($state, $get('period_quarter'), $get('period_semester'), $get('period_type'), $set);
+                        }),
+
+                    Select::make('period_semester')
+                        ->label('Semester')
+                        ->options([
+                            'S1' => 'S1 (Jan-Jun)',
+                            'S2' => 'S2 (Jul-Des)',
+                        ])
+                        ->placeholder('Pilih semester')
+                        ->reactive()
+                        ->visible(fn(Get $get) => $get('period_type') === 'semester')
+                        ->required(fn(Get $get) => $get('period_type') === 'semester')
+                        ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                            $this->autoSelectLaporan($get('period_year'), null, $state, $get('period_type'), $set);
                         }),
 
                     Select::make('period_quarter')
@@ -182,10 +249,10 @@ class ImutDataNotesReport extends BaseWidget
                         ])
                         ->placeholder('Pilih triwulan')
                         ->reactive()
-                        ->visible(fn (Get $get) => $get('period_type') === 'triwulan')
-                        ->required(fn (Get $get) => $get('period_type') === 'triwulan')
+                        ->visible(fn(Get $get) => $get('period_type') === 'triwulan')
+                        ->required(fn(Get $get) => $get('period_type') === 'triwulan')
                         ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                            $this->autoSelectLaporan($get('period_year'), $state, $get('period_type'), $set);
+                            $this->autoSelectLaporan($get('period_year'), $state, null, $get('period_type'), $set);
                         }),
                 ]),
 
@@ -194,15 +261,20 @@ class ImutDataNotesReport extends BaseWidget
                 ->multiple()
                 ->searchable()
                 ->preload()
-                ->options(fn (Get $get) => $this->getLaporanOptions($get))
+                ->options(fn(Get $get) => $this->getLaporanOptions($get))
                 ->placeholder('Pilih laporan yang terkait')
                 ->helperText(function (Get $get) {
                     $year = $get('period_year');
                     $quarter = $get('period_quarter');
+                    $semester = $get('period_semester');
                     $periodType = $get('period_type');
 
                     if (!$year) {
                         return 'Pilih tahun untuk auto-select laporan terkait';
+                    }
+
+                    if ($periodType === 'semester' && !$semester) {
+                        return 'Pilih semester untuk auto-select laporan terkait';
                     }
 
                     if ($periodType === 'triwulan' && !$quarter) {
@@ -224,12 +296,6 @@ class ImutDataNotesReport extends BaseWidget
                 ->rows(3)
                 ->maxLength(65535)
                 ->placeholder('Masukkan analisis'),
-
-            Textarea::make('additional_notes')
-                ->label('Catatan Tambahan')
-                ->rows(3)
-                ->maxLength(65535)
-                ->placeholder('Masukkan catatan tambahan lainnya'),
 
             Select::make('priority')
                 ->label('Prioritas')
@@ -276,17 +342,17 @@ class ImutDataNotesReport extends BaseWidget
                     ->label('Laporan Terkait')
                     ->wrap()
                     ->grow()
-                    ->tooltip(fn (ImutDataNote $record): string => $record->laporan_names),
+                    ->tooltip(fn(ImutDataNote $record): string => $record->laporan_names),
 
                 TextColumn::make('priority')
                     ->label('Prioritas')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'high' => 'danger',
                         'medium' => 'warning',
                         'low' => 'success',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'high' => 'Tinggi',
                         'medium' => 'Sedang',
                         'low' => 'Rendah',
@@ -329,9 +395,18 @@ class ImutDataNotesReport extends BaseWidget
                     ->label('Tipe Periode')
                     ->options([
                         'tahunan' => 'Tahunan',
+                        'semester' => 'Semester',
                         'triwulan' => 'Triwulan',
                     ])
                     ->placeholder('Semua Tipe'),
+
+                SelectFilter::make('period_semester')
+                    ->label('Semester')
+                    ->options([
+                        'S1' => 'S1 (Jan-Jun)',
+                        'S2' => 'S2 (Jul-Des)',
+                    ])
+                    ->placeholder('Semua Semester'),
 
                 SelectFilter::make('period_quarter')
                     ->label('Triwulan')
@@ -375,7 +450,7 @@ class ImutDataNotesReport extends BaseWidget
                     ->label('Lihat')
                     ->icon('heroicon-o-eye')
                     ->modalHeading('Detail Catatan')
-                    ->modalContent(fn (ImutDataNote $record) => view(
+                    ->modalContent(fn(ImutDataNote $record) => view(
                         'filament.resources.imut-data-resource.widgets.note-detail',
                         ['note' => $record]
                     ))
