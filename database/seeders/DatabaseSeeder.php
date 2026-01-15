@@ -15,14 +15,14 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(
             [
-                KaidoSettingSeeder::class,
-                ShieldSeeder::class,
-                UserSeeder::class,
-                UnitKerjaSeeder::class,
+                // KaidoSettingSeeder::class,
+                // ShieldSeeder::class,
+                // UserSeeder::class,
+                // UnitKerjaSeeder::class,
                 RoleUpgradeSeeder::class,
-                ImutCategorySeeder::class,
-                RegionTypeSeeder::class,
-                ImutDataOldSeeder::class,
+                // ImutCategorySeeder::class,
+                // RegionTypeSeeder::class,
+                // ImutDataOldSeeder::class,
                 HandwashingSimulationSeeder::class,
                 EnsureFormTemplateSeeder::class, // Ensure all ImutProfile have FormTemplate
                 // ImutDataOldSeederOptimized::class, // Using optimized version

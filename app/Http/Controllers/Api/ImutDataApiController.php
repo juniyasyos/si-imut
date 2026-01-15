@@ -137,8 +137,9 @@ class ImutDataApiController extends Controller
                 'percentage' => round($item->percentage, 2),
                 'benchmarks' => $benchmarks,
                 'is_current' => $item->laporan_imut_id == $laporan->id,
+                'assessment_period_start' => $start ? $start->toDateString() : null,
             ];
-        });
+        })->sortBy('assessment_period_start')->values();
 
         // Summary
         $currentData = $historicalData->firstWhere('is_current', true);

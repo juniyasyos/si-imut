@@ -46,7 +46,7 @@ trait NavigationTrait
         return $cellDate->isSameMonth($today);
     }
 
-    public function shouldShowCell(int $day, string $filterPeriod = null): bool
+    public function shouldShowCell(int $day, string $filterPeriod): bool
     {
         $period = $filterPeriod ?? $this->filterPeriod;
         return match ($period) {

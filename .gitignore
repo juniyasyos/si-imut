@@ -7,6 +7,7 @@
 /storage/pail
 /vendor
 /database/prod/
+/database/schema/
 .env
 .env.ngrok
 .env.backup
