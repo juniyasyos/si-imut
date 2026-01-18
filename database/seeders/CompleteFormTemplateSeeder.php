@@ -221,197 +221,162 @@ class CompleteFormTemplateSeeder extends Seeder
     }
 
     /**
-     * Create field responses based on form type
+     * Create field responses based on form configuration from JSON
      */
     private function createFieldResponsesForFormType(string $formType, int $dailyReportId, FormTemplate $template): array
     {
         $responses = [];
+        $scoringConfig = json_decode($template->scoring_config, true);
 
-        if ($this->containsKeywords($formType, ['cuci tangan', 'hand hygiene', 'kebersihan tangan'])) {
-            $responses = $this->createHandHygieneResponses($dailyReportId, $template);
-        } elseif ($this->containsKeywords($formType, ['apd', 'alat pelindung'])) {
-            $responses = $this->createAPDResponses($dailyReportId, $template);
-        } elseif ($this->containsKeywords($formType, ['identifikasi pasien'])) {
-            $responses = $this->createPatientIdResponses($dailyReportId, $template);
-        } elseif ($this->containsKeywords($formType, ['jatuh', 'risiko jatuh'])) {
-            $responses = $this->createFallPreventionResponses($dailyReportId, $template);
+        if (!isset($scoringConfig['form_fields'])) {
+            return $responses;
         }
 
-        return $responses;
-    }
+        foreach ($scoringConfig['form_fields'] as $fieldConfig) {
+            $field = $template->fields()->where('field_key', $fieldConfig['field_key'])->first();
 
-    /**
-     * Create hand hygiene field responses
-     */
-    private function createHandHygieneResponses(int $dailyReportId, FormTemplate $template): array
-    {
-        $responses = [];
-        $complianceLevel = $this->getRandomComplianceLevel();
-
-        // Find fields by key
-        $methodField = $template->fields()->where('field_key', 'hand_hygiene_method')->first();
-        $indicationField = $template->fields()->where('field_key', 'hand_hygiene_indication')->first();
-        $stepsField = $template->fields()->where('field_key', 'six_steps_compliance')->first();
-
-        // Hand hygiene method
-        if ($methodField) {
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $methodField->id,
-                'field_value' => $complianceLevel['method']
-            ]);
-        }
-
-        // 5 WHO moments (if method is compliant)
-        if ($complianceLevel['method'] !== 'tidak_cuci_tangan' && $indicationField) {
-            $moments = ['sebelum_kontak_pasien', 'sebelum_prosedur_aseptik', 'setelah_risiko_cairan', 'setelah_kontak_pasien'];
-            $selectedMoments = array_slice($moments, 0, rand(2, 4));
-
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $indicationField->id,
-                'field_value' => implode(',', $selectedMoments)
-            ]);
-        }
-
-        // 6 steps compliance
-        if ($complianceLevel['method'] !== 'tidak_cuci_tangan' && $stepsField) {
-            $steps = ['gosok_telapak_tangan', 'gosok_punggung_sela_jari', 'gosok_telapak_sela_jari', 'jari_sisi_dalam_mengunci', 'gosok_ibu_jari_berputar', 'ujung_jari_berputar'];
-            $completedSteps = array_slice($steps, 0, $complianceLevel['steps_count']);
-
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $stepsField->id,
-                'field_value' => implode(',', $completedSteps)
-            ]);
-        }
-
-        return $responses;
-    }
-
-    /**
-     * Create APD field responses
-     */
-    private function createAPDResponses(int $dailyReportId, FormTemplate $template): array
-    {
-        $responses = [];
-
-        $apdLevels = ['lengkap', 'kurang_lengkap', 'tidak_lengkap'];
-        $usageLevels = ['benar', 'sedikit_salah', 'banyak_salah', 'salah'];
-        $disposalLevels = ['ya', 'tidak', 'na'];
-
-        // Get fields by order since we don't have specific keys for APD
-        $fields = $template->fields()->orderBy('order_index')->get();
-
-        if ($fields->count() >= 4) {
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[0]->id,
-                'field_value' => $apdLevels[array_rand($apdLevels)]
-            ]);
-
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[1]->id,
-                'field_value' => $usageLevels[array_rand($usageLevels)]
-            ]);
-
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[2]->id,
-                'field_value' => $disposalLevels[array_rand($disposalLevels)]
-            ]);
-
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[3]->id,
-                'field_value' => 'Observasi penggunaan APD sesuai SOP'
-            ]);
-        }
-
-        return $responses;
-    }
-
-    /**
-     * Create patient identification field responses
-     */
-    private function createPatientIdResponses(int $dailyReportId, FormTemplate $template): array
-    {
-        $responses = [];
-
-        $identificationMethods = ['dua_identitas', 'satu_identitas', 'tidak_identifikasi'];
-        $selectedMethod = $identificationMethods[array_rand($identificationMethods)];
-
-        $fields = $template->fields()->orderBy('order_index')->get();
-
-        if ($fields->count() >= 3) {
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[0]->id,
-                'field_value' => $selectedMethod
-            ]);
-
-            if ($selectedMethod !== 'tidak_identifikasi' && $fields->count() >= 2) {
-                $timings = ['sebelum_obat', 'sebelum_tindakan', 'sebelum_sampel', 'pergantian_shift'];
-                $selectedTimings = array_slice($timings, 0, rand(2, 3));
-
-                $responses[] = FieldResponse::create([
-                    'daily_report_response_id' => $dailyReportId,
-                    'form_field_id' => $fields[1]->id,
-                    'field_value' => implode(',', $selectedTimings)
-                ]);
+            if (!$field) {
+                continue;
             }
 
-            $braceletStatus = ['benar', 'data_salah', 'tidak_terpasang'];
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[2]->id,
-                'field_value' => $braceletStatus[array_rand($braceletStatus)]
-            ]);
+            $fieldValue = $this->generateSampleValueForField($fieldConfig, $field);
+            if ($fieldValue !== null) {
+                $responses[] = FieldResponse::create([
+                    'daily_report_response_id' => $dailyReportId,
+                    'form_field_id' => $field->id,
+                    'field_value' => $fieldValue
+                ]);
+            }
         }
 
         return $responses;
     }
 
     /**
-     * Create fall prevention field responses
+     * Generate sample value for a field based on its configuration
      */
-    private function createFallPreventionResponses(int $dailyReportId, FormTemplate $template): array
+    private function generateSampleValueForField(array $fieldConfig, $field): ?string
     {
-        $responses = [];
+        $fieldType = $fieldConfig['field_type'] ?? 'text';
 
-        $assessmentLevels = ['semua_dinilai', 'sebagian_dinilai', 'tidak_ada_asesmen'];
-        $selectedAssessment = $assessmentLevels[array_rand($assessmentLevels)];
+        switch ($fieldType) {
+            case 'single_select':
+                return $this->generateSingleSelectValue($fieldConfig);
 
-        $fields = $template->fields()->orderBy('order_index')->get();
+            case 'multi_select':
+                return $this->generateMultiSelectValue($fieldConfig);
 
-        if ($fields->count() >= 3) {
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[0]->id,
-                'field_value' => $selectedAssessment
-            ]);
+            case 'boolean':
+                return rand(0, 1) ? 'true' : 'false';
 
-            if ($selectedAssessment !== 'tidak_ada_asesmen' && $fields->count() >= 2) {
-                $interventions = ['bed_rail', 'gelang_risiko', 'edukasi', 'call_bell', 'lantai_aman', 'pencahayaan'];
-                $selectedInterventions = array_slice($interventions, 0, rand(3, 6));
+            case 'number':
+                $validation = $fieldConfig['validation_config'] ?? [];
+                $min = $validation['min'] ?? 0;
+                $max = $validation['max'] ?? 100;
+                return (string) rand($min, $max);
 
-                $responses[] = FieldResponse::create([
-                    'daily_report_response_id' => $dailyReportId,
-                    'form_field_id' => $fields[1]->id,
-                    'field_value' => implode(',', $selectedInterventions)
-                ]);
-            }
+            case 'rating_scale':
+                $scale = $fieldConfig['validation_config']['scale'] ?? '1-5';
+                if (preg_match('/(\d+)-(\d+)/', $scale, $matches)) {
+                    return (string) rand((int)$matches[1], (int)$matches[2]);
+                }
+                return '3';
 
-            $documentationLevels = ['lengkap', 'kurang_lengkap', 'tidak_ada'];
-            $responses[] = FieldResponse::create([
-                'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => $fields[2]->id,
-                'field_value' => $documentationLevels[array_rand($documentationLevels)]
-            ]);
+            case 'short_text':
+            case 'text':
+                return $this->generateTextValue($fieldConfig);
+
+            default:
+                return 'Sample data';
+        }
+    }
+
+    /**
+     * Generate value for single select field
+     */
+    private function generateSingleSelectValue(array $fieldConfig): ?string
+    {
+        if (!isset($fieldConfig['options']) || empty($fieldConfig['options'])) {
+            return null;
         }
 
-        return $responses;
+        // Prioritize correct options for compliance simulation
+        $correctOptions = array_filter($fieldConfig['options'], fn($opt) => $opt['is_correct'] ?? false);
+        $wrongOptions = array_filter($fieldConfig['options'], fn($opt) => !($opt['is_correct'] ?? false));
+
+        // 70% chance to pick correct option, 30% chance to pick wrong
+        if (!empty($correctOptions) && rand(1, 10) <= 7) {
+            $selectedOption = $correctOptions[array_rand($correctOptions)];
+        } elseif (!empty($wrongOptions)) {
+            $selectedOption = $wrongOptions[array_rand($wrongOptions)];
+        } else {
+            $selectedOption = $fieldConfig['options'][array_rand($fieldConfig['options'])];
+        }
+
+        return $selectedOption['option_value'];
+    }
+
+    /**
+     * Generate value for multi select field
+     */
+    private function generateMultiSelectValue(array $fieldConfig): ?string
+    {
+        if (!isset($fieldConfig['options']) || empty($fieldConfig['options'])) {
+            return null;
+        }
+
+        $options = $fieldConfig['options'];
+        $selectedValues = [];
+
+        // Always include some correct options if available
+        $correctOptions = array_filter($options, fn($opt) => $opt['is_correct'] ?? false);
+        if (!empty($correctOptions)) {
+            $numCorrect = rand(1, min(3, count($correctOptions)));
+            $selectedCorrect = array_rand($correctOptions, $numCorrect);
+            if (!is_array($selectedCorrect)) {
+                $selectedCorrect = [$selectedCorrect];
+            }
+            foreach ($selectedCorrect as $index) {
+                $selectedValues[] = $correctOptions[$index]['option_value'];
+            }
+        }
+
+        // Sometimes add wrong options too (simulating partial compliance)
+        if (rand(1, 10) <= 3) { // 30% chance
+            $wrongOptions = array_filter($options, fn($opt) => !($opt['is_correct'] ?? false));
+            if (!empty($wrongOptions)) {
+                $numWrong = rand(1, min(2, count($wrongOptions)));
+                $selectedWrong = array_rand($wrongOptions, $numWrong);
+                if (!is_array($selectedWrong)) {
+                    $selectedWrong = [$selectedWrong];
+                }
+                foreach ($selectedWrong as $index) {
+                    $selectedValues[] = $wrongOptions[$index]['option_value'];
+                }
+            }
+        }
+
+        return implode(',', array_unique($selectedValues));
+    }
+
+    /**
+     * Generate text value for text fields
+     */
+    private function generateTextValue(array $fieldConfig): string
+    {
+        $fieldKey = $fieldConfig['field_key'] ?? '';
+
+        // Generate context-aware sample text
+        switch ($fieldKey) {
+            case 'data_collector':
+                return 'Dr. ' . ['Ahmad', 'Siti', 'Budi', 'Maya', 'Rizki'][rand(0, 4)];
+
+            case 'additional_notes':
+                return 'Observasi dilakukan sesuai protokol. Temuan akan ditindaklanjuti.';
+
+            default:
+                return 'Data observasi telah dicatat dengan baik.';
+        }
     }
 
     /**
@@ -433,32 +398,5 @@ class CompleteFormTemplateSeeder extends Seeder
         }
 
         return 'good';
-    }
-
-    /**
-     * Get random compliance level for hand hygiene
-     */
-    private function getRandomComplianceLevel(): array
-    {
-        $levels = [
-            ['method' => 'hand_rub', 'steps_count' => 6],
-            ['method' => 'air_sabun', 'steps_count' => 5],
-            ['method' => 'hand_rub', 'steps_count' => 4],
-            ['method' => 'tidak_cuci_tangan', 'steps_count' => 0]
-        ];
-
-        $weights = [40, 30, 20, 10]; // Higher chance for good compliance
-
-        $rand = rand(1, 100);
-        $cumulative = 0;
-
-        for ($i = 0; $i < count($levels); $i++) {
-            $cumulative += $weights[$i];
-            if ($rand <= $cumulative) {
-                return $levels[$i];
-            }
-        }
-
-        return $levels[0];
     }
 }
