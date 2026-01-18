@@ -60,7 +60,7 @@ class DailyReportEntrySchema extends DailyReportEntryResource
                                     ->orWhere('valid_until', '>=', now());
                             });
                     })
-                        ->whereNotNull('scoring_config')
+                    // scoring_config filter removed - it's optional
                 )
                 ->required()
                 ->default($indicatorId)

@@ -98,7 +98,7 @@ class DailyReportEntryTable extends DailyReportEntryResource
                                     ->orWhere('valid_until', '>=', now());
                             });
                     })
-                        ->whereNotNull('scoring_config') // Only FormTemplates with proper config
+                    // Removed scoring_config filter - it's optional
                 )
                 ->searchable()
                 ->preload()

@@ -69,8 +69,9 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
                                     $q->whereNull('valid_until')
                                         ->orWhere('valid_until', '>=', now());
                                 });
-                        })
-                            ->whereNotNull('scoring_config'); // Only FormTemplates with proper config
+                        });
+                        // Removed scoring_config filter to show all daily reports
+                        // scoring_config is optional and shouldn't prevent viewing reports
                     })
                     ->with(['formTemplate.imutProfile.imutData.categories', 'formTemplate.formFields', 'unitKerja', 'submittedBy'])
                     ->latest('report_date')

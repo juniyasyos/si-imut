@@ -15,13 +15,13 @@ class SimpleDailyReportEntrySeeder extends Seeder
     {
         $this->command->info('🚀 Creating sample DailyReportEntry data...');
 
-        // Get valid FormTemplates only (with scoring_config and valid ImutProfile)
-        $validFormTemplates = FormTemplate::whereNotNull('scoring_config')
-            ->whereHas('imutProfile', function ($q) {
-                $now = now();
-                $q->where('valid_from', '<=', $now)
-                    ->where('valid_until', '>=', $now);
-            })
+        // Get valid FormTemplates (with valid ImutProfile)
+        // Note: scoring_config is optional and not required for daily reports
+        $validFormTemplates = FormTemplate::whereHas('imutProfile', function ($q) {
+            $now = now();
+            $q->where('valid_from', '<=', $now)
+                ->where('valid_until', '>=', $now);
+        })
             ->with('imutProfile.imutData.unitKerja')
             ->take(5)
             ->get();

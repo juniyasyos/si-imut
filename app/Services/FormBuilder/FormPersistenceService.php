@@ -13,27 +13,40 @@ class FormPersistenceService
 {
     public function saveFormData(ImutProfile $record, array $data): void
     {
-        // Keep cleanup of legacy data, but persist only the enhanced format (FormTemplate)
-        $this->cleanupOldData($record);
-        $this->saveToEnhancedFormat($record, $data);
-    }
+        // Clean up any duplicate templates first (safety measure)
+        $this->cleanupDuplicateTemplates($record);
 
-    private function cleanupOldData(ImutProfile $record): void
-    {
-        // Hapus data lama jika ada
-        FormTemplate::where('imut_profile_id', $record->id)->delete();
+        // Update existing form template or create new one
+        $this->saveToEnhancedFormat($record, $data);
     }
 
     private function saveToEnhancedFormat(ImutProfile $record, array $data): void
     {
-        $formTemplate = FormTemplate::create([
-            'imut_profile_id' => $record->id,
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'compliance_method' => $data['compliance_method'],
-            'auto_fail_on_critical' => $data['auto_fail_on_critical'],
-            'status' => true,
-        ]);
+        // Ensure only one template per profile - find or create
+        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+
+        if ($formTemplate) {
+            // Update existing form template
+            $formTemplate->update([
+                'title' => $data['title'],
+                'description' => $data['description'],
+                'compliance_method' => $data['compliance_method'],
+                'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+            ]);
+
+            // Delete existing fields and options, then recreate
+            $formTemplate->formFields()->delete();
+        } else {
+            // Create new form template
+            $formTemplate = FormTemplate::create([
+                'imut_profile_id' => $record->id,
+                'title' => $data['title'],
+                'description' => $data['description'],
+                'compliance_method' => $data['compliance_method'],
+                'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+                'status' => true,
+            ]);
+        }
 
         $this->saveEnhancedFields($formTemplate, $data['fields'] ?? []);
     }
@@ -131,18 +144,57 @@ class FormPersistenceService
         return $formatted;
     }
 
+    public function hasExistingResponses(ImutProfile $record): bool
+    {
+        $existingTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        return $existingTemplate && $existingTemplate->dailyReportResponses()->exists();
+    }
+
+    public function getResponseCount(ImutProfile $record): int
+    {
+        $existingTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        return $existingTemplate ? $existingTemplate->dailyReportResponses()->count() : 0;
+    }
+
     public function calculateAndUpdateCompliance(ImutProfile $record): void
     {
         $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
 
         if ($formTemplate) {
+            // Calculate compliance based on form structure (without actual responses)
+            // This gives a baseline compliance score for the form template itself
             $complianceScore = $formTemplate->calculateCompliance([]);
 
             // Update record dengan compliance score
             $record->update([
-                'compliance_score' => $complianceScore,
-                'is_compliant' => $complianceScore >= 0.8, // 80% threshold
+                'compliance_score' => $complianceScore['total_score'] ?? 0,
+                'is_compliant' => $complianceScore['compliance_status'] ?? false,
             ]);
+        }
+    }
+
+    private function cleanupDuplicateTemplates(ImutProfile $record): void
+    {
+        // Find all templates for this profile
+        $templates = FormTemplate::where('imut_profile_id', $record->id)
+            ->orderBy('created_at')
+            ->get();
+
+        if ($templates->count() <= 1) {
+            return; // No duplicates
+        }
+
+        // Keep the latest template, delete others
+        $latestTemplate = $templates->last();
+        $templatesToDelete = $templates->where('id', '!=', $latestTemplate->id);
+
+        foreach ($templatesToDelete as $template) {
+            // Migrate any responses to the latest template
+            DB::table('daily_report_responses')
+                ->where('form_template_id', $template->id)
+                ->update(['form_template_id' => $latestTemplate->id]);
+
+            $template->delete();
         }
     }
 }

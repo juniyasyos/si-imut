@@ -8,7 +8,6 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Roboto:wght@300;400;500;700&display=swap');
 
@@ -511,11 +510,11 @@
             <div class="flex justify-between mt-10">
                 <div class="text-center w-56">
                     <div class="text-sm mb-20">Mengetahui,<br>Kepala Bagian Mutu</div>
-                    <div class="text-sm font-bold border-t-2 border-black pt-2">(...........................)</div>
+                    <div class="text-sm font-bold border-t-2 border-black pt-2" x-text="laporan.created_by || '(...........................)'"></div>
                 </div>
                 <div class="text-center w-56">
                     <div class="text-sm mb-20">3 Januari 2026,<br>Penanggung Jawab</div>
-                    <div class="text-sm font-bold border-t-2 border-black pt-2" x-text="laporan.created_by || '(...........................)'"></div>
+                    <div class="text-sm font-bold border-t-2 border-black pt-2">(...........................)</div>
                 </div>
             </div>
 
@@ -530,50 +529,14 @@
         <button onclick="history.back()" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded hover:bg-gray-700">
             ← Kembali
         </button>
-        <button onclick="generatePDF()" class="px-4 py-2 bg-green-600 text-white font-semibold rounded hover:bg-green-700">
-            📄 Generate PDF
+        <button onclick="printReport()" class="px-4 py-2 bg-green-600 text-white font-semibold rounded hover:bg-green-700">
+            🖨️ Print Report
         </button>
     </div>
 
     <script>
-        function generatePDF() {
-            const element = document.querySelector('.max-w-6xl');
-            const opt = {
-                margin: 1,
-                filename: 'laporan-indikator-mutu.pdf',
-                image: {
-                    type: 'jpeg',
-                    quality: 0.98
-                },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true
-                },
-                jsPDF: {
-                    unit: 'cm',
-                    format: 'a4',
-                    orientation: 'portrait'
-                }
-            };
-
-            // Show loading
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50';
-            loadingDiv.innerHTML = `
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <div class="rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" style="animation: spin 1s linear infinite;"></div>
-                    <p class="mt-2 text-gray-600">Generating PDF...</p>
-                </div>
-            `;
-            document.body.appendChild(loadingDiv);
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                document.body.removeChild(loadingDiv);
-            }).catch((error) => {
-                document.body.removeChild(loadingDiv);
-                console.error('Error generating PDF:', error);
-                alert('Error generating PDF. Please try again.');
-            });
+        function printReport() {
+            window.print();
         }
 
         function reportData(indicator, periode) {

@@ -11,6 +11,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\Str;
 
 class FormSchemaBuilder
@@ -61,6 +62,19 @@ class FormSchemaBuilder
                         ->addActionLabel('Tambah Field Baru')
                         ->reorderableWithButtons()
                         ->collapsible()
+                        ->deleteAction(
+                            fn(\Filament\Forms\Components\Actions\Action $action) => $action
+                                ->label('Hapus Field')
+                                ->icon('heroicon-o-trash')
+                                ->color('danger')
+                                ->requiresConfirmation()
+                                ->modalHeading('Konfirmasi Hapus Field')
+                                ->modalDescription(
+                                    'Apakah Anda yakin ingin menghapus field ini? ' .
+                                        'Semua data yang telah diinputkan untuk field ini akan dihapus secara permanen dan tidak dapat dikembalikan.'
+                                )
+                                ->modalSubmitActionLabel('Ya, Hapus Field')
+                        )
                         ->itemLabel(function (array $state): ?string {
                             $icon = FormFieldMapper::getFieldIcon($state['field_type'] ?? 'text_input');
                             $name = $state['field_label'] ?? 'Field Baru';
@@ -187,6 +201,52 @@ class FormSchemaBuilder
                 ->collapsed(false)
                 ->columnSpanFull(),
 
+            // Composite Field Preview (untuk Time Duration & Time Range)
+            Section::make('Preview Sub-Fields')
+                ->description('Field ini akan otomatis membuat beberapa sub-field terkait.')
+                ->schema([
+                    Placeholder::make('composite_preview')
+                        ->content(function ($get) {
+                            $fieldType = $get('field_type');
+                            if (!FormFieldMapper::isCompositeFieldType($fieldType)) {
+                                return '';
+                            }
+
+                            $structure = FormFieldMapper::getCompositeFieldStructure($fieldType);
+                            $fieldKey = $get('field_key') ?: 'field_key';
+
+                            $html = '<div class="space-y-2 text-sm">';
+                            $html .= '<p class="font-medium text-gray-700">Sub-fields yang akan dibuat:</p>';
+
+                            foreach ($structure as $subKey => $config) {
+                                $fullKey = $fieldKey . '_' . $subKey;
+                                $required = $config['required'] ? ' <span class="text-red-500">*</span>' : '';
+                                $readonly = $config['readonly'] ?? false ? ' (read-only)' : '';
+                                $type = $config['type'] ?? 'text';
+                                $typeDisplay = ucfirst(str_replace('_', ' ', $type));
+
+                                $html .= "<div class=\"flex items-center space-x-2\">";
+                                $html .= "<span class=\"inline-block w-2 h-2 bg-blue-500 rounded-full\"></span>";
+                                $html .= "<code class=\"text-xs bg-gray-100 px-2 py-1 rounded\">{$fullKey}</code>";
+                                $html .= "<span>{$config['label']}{$required}{$readonly} <em class=\"text-gray-500\">({$typeDisplay})</em></span>";
+
+                                if (isset($config['options']) && is_array($config['options'])) {
+                                    $optionsStr = implode(', ', array_map(fn($opt) => "'{$opt}'", $config['options']));
+                                    $html .= "<span class=\"text-xs text-gray-600\">Opsi: {$optionsStr}</span>";
+                                }
+
+                                $html .= "</div>";
+                            }
+
+                            $html .= '</div>';
+                            return new \Illuminate\Support\HtmlString($html);
+                        })
+                        ->columnSpanFull(),
+                ])
+                ->visible(fn($get) => FormFieldMapper::isCompositeFieldType($get('field_type')))
+                ->collapsed(false)
+                ->columnSpanFull(),
+
             // Conditional Logic Configuration  
             Section::make('Logika Kondisional')
                 ->schema([
@@ -224,7 +284,7 @@ class FormSchemaBuilder
                         ->columnSpanFull(),
                 ])
                 ->collapsed(false)
-                ->visible(fn($get) => in_array($get('field_type'), ['single_select', 'multi_select', 'text', 'number']))
+                ->visible(fn($get) => in_array($get('field_type'), ['single_select', 'multi_select', 'text', 'number', 'date', 'boolean']))
                 ->columnSpanFull(),
         ];
     }

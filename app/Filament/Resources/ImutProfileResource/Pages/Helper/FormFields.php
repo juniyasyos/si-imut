@@ -6,6 +6,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
 
 class FormFields
 {
@@ -101,6 +104,56 @@ class FormFields
                         ->live();
                 }
 
+            case 'time_duration':
+                return Section::make($baseConfig['label'])
+                    ->description($baseConfig['helperText'])
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TimePicker::make($field->field_key . '_start_time')
+                                    ->label('Waktu Mulai')
+                                    ->required($field->validation_config['required'] ?? false)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, $set, $get) use ($field) {
+                                        self::calculateDuration($get, $set, $field->field_key);
+                                    }),
+
+                                TimePicker::make($field->field_key . '_end_time')
+                                    ->label('Waktu Selesai')
+                                    ->required($field->validation_config['required'] ?? false)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, $set, $get) use ($field) {
+                                        self::calculateDuration($get, $set, $field->field_key);
+                                    }),
+
+                                TextInput::make($field->field_key . '_duration')
+                                    ->label('Durasi')
+                                    ->readonly()
+                                    ->placeholder('HH:MM')
+                                    ->helperText('Dihitung otomatis dari selisih waktu mulai dan selesai'),
+                            ]),
+                    ])
+                    ->visible($visibleCondition)
+                    ->columnSpanFull();
+
+            case 'time_range':
+                return Section::make($baseConfig['label'])
+                    ->description($baseConfig['helperText'])
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TimePicker::make($field->field_key . '_start_time')
+                                    ->label('Waktu Mulai')
+                                    ->required($field->validation_config['required'] ?? false),
+
+                                TimePicker::make($field->field_key . '_end_time')
+                                    ->label('Waktu Selesai')
+                                    ->required($field->validation_config['required'] ?? false),
+                            ]),
+                    ])
+                    ->visible($visibleCondition)
+                    ->columnSpanFull();
+
             default:
                 return TextInput::make($field->field_key)
                     ->label($baseConfig['label'])
@@ -124,5 +177,34 @@ class FormFields
         }
 
         return true;
+    }
+
+    private static function calculateDuration(callable $get, callable $set, string $fieldKey): void
+    {
+        $startTime = $get($fieldKey . '_start_time');
+        $endTime = $get($fieldKey . '_end_time');
+
+        if ($startTime && $endTime) {
+            try {
+                $start = \Carbon\Carbon::createFromFormat('H:i', $startTime);
+                $end = \Carbon\Carbon::createFromFormat('H:i', $endTime);
+
+                // Handle case where end time is next day
+                if ($end->lessThan($start)) {
+                    $end->addDay();
+                }
+
+                $duration = $start->diff($end);
+                $hours = $duration->h;
+                $minutes = $duration->i;
+
+                $durationString = sprintf('%02d:%02d', $hours, $minutes);
+                $set($fieldKey . '_duration', $durationString);
+            } catch (\Exception $e) {
+                $set($fieldKey . '_duration', '');
+            }
+        } else {
+            $set($fieldKey . '_duration', '');
+        }
     }
 }

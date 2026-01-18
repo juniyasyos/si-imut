@@ -25,13 +25,8 @@ class FormFieldMapper
         'boolean' => 'heroicon-o-check-circle',
         'single_select' => 'heroicon-o-chevron-down',
         'multi_select' => 'heroicon-o-queue-list',
-        'rating_scale' => 'heroicon-o-star',
-        'time_duration' => 'heroicon-o-clock',
         'time_range' => 'heroicon-o-calendar',
-        'datetime' => 'heroicon-o-calendar-days',
-        'conditional_trigger' => 'heroicon-o-adjustments-horizontal',
-        'compliance_checker' => 'heroicon-o-shield-check',
-        'weighted_score' => 'heroicon-o-scale',
+        'time_duration' => 'heroicon-o-clock',
 
         // Legacy field types untuk compatibility
         'short_text' => 'heroicon-o-pencil-square',
@@ -68,13 +63,8 @@ class FormFieldMapper
             'boolean' => '✅ Ya/Tidak (Boolean)',
             'single_select' => '📋 Pilihan Tunggal (Toggle Buttons)',
             'multi_select' => '📄 Pilihan Multi (Checkbox)',
-            'rating_scale' => '⭐ Skala Rating (1-5)',
-            'time_duration' => '⏱️ Durasi Waktu',
             'time_range' => '⏰ Rentang Waktu',
-            'datetime' => '📅 Tanggal & Waktu',
-            'conditional_trigger' => '🔀 Trigger Kondisional',
-            'compliance_checker' => '🛡️ Checker Compliance',
-            'weighted_score' => '⚖️ Skor Berbobot',
+            'time_duration' => '⏱️ Durasi Waktu (dengan kalkulasi otomatis)',
         ];
     }
     public static function getFieldTypeValidation(string $fieldType): array
@@ -96,8 +86,75 @@ class FormFieldMapper
             'single_select',
             'multi_select',
             'boolean',
-            'rating_scale',
-            'compliance_checker',
         ]);
+    }
+
+    public static function isCompositeFieldType(string $fieldType): bool
+    {
+        return in_array($fieldType, [
+            'time_duration',
+            'time_range',
+        ]);
+    }
+
+    public static function getCompositeFieldStructure(string $fieldType): array
+    {
+        return match ($fieldType) {
+            'time_duration' => [
+                'start_time' => [
+                    'label' => 'Waktu Mulai',
+                    'type' => 'time',
+                    'required' => true,
+                ],
+                'end_time' => [
+                    'label' => 'Waktu Selesai',
+                    'type' => 'time',
+                    'required' => true,
+                ],
+                'duration' => [
+                    'label' => 'Durasi',
+                    'type' => 'text',
+                    'required' => false,
+                    'readonly' => true,
+                ],
+                'valid_duration' => [
+                    'label' => 'Durasi yang valid',
+                    'type' => 'text',
+                    'required' => false,
+                    'readonly' => true,
+                ],
+                'comparison_operator' => [
+                    'label' => 'Lebih/Kurang/Sama Dengan',
+                    'type' => 'select',
+                    'options' => ['>', '<', '='],
+                    'required' => true,
+                ],
+            ],
+            'time_range' => [
+                'start_time' => [
+                    'label' => 'Waktu Mulai',
+                    'type' => 'time',
+                    'required' => true,
+                ],
+                'end_time' => [
+                    'label' => 'Waktu Selesai',
+                    'type' => 'time',
+                    'required' => true,
+                ],
+                'duration' => [
+                    'label' => 'Durasi',
+                    'type' => 'text',
+                    'required' => false,
+                    'readonly' => true,
+                ],
+                'valid_duration' => [
+                    'label' => 'Durasi yang valid',
+                    'type' => 'text',
+                    'required' => false,
+                    'readonly' => true,
+                ],
+            ],
+            default => [],
+        };
     }
 }

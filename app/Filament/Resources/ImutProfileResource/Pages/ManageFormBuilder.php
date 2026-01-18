@@ -27,7 +27,9 @@ class ManageFormBuilder extends Page implements HasForms
 
     public ?array $data = [];
     public ?ImutProfile $record = null;
-    public bool $autoSaveEnabled = true;
+    public bool $autoSaveEnabled = false;
+    public bool $hasExistingResponses = false;
+    public int $responseCount = 0;
 
     public function mount(ImutProfile $record): void
     {
@@ -35,6 +37,11 @@ class ManageFormBuilder extends Page implements HasForms
         $formDataService = new FormDataService();
         $this->data = $formDataService->loadFormData($record);
         $this->form->fill($this->data);
+
+        // Check if form has existing responses
+        $formPersistenceService = new FormPersistenceService();
+        $this->hasExistingResponses = $formPersistenceService->hasExistingResponses($record);
+        $this->responseCount = $formPersistenceService->getResponseCount($record);
     }
 
     public function form(Form $form): Form
@@ -47,12 +54,24 @@ class ManageFormBuilder extends Page implements HasForms
 
     protected function getHeaderActions(): array
     {
+        $saveAction = Action::make('save')
+            ->label('Simpan Form')
+            ->icon('heroicon-o-check')
+            ->color('success');
+
+        if ($this->hasExistingResponses) {
+            $saveAction->requiresConfirmation()
+                ->modalHeading('Konfirmasi Perubahan Form')
+                ->modalDescription("Form template ini sudah memiliki {$this->responseCount} data respons harian. Perubahan struktur field dapat membuat beberapa data respons yang sudah diinputkan menjadi tidak valid atau tidak lengkap. Data respons tidak akan dihapus, tetapi mungkin perlu diperbarui secara manual. Apakah Anda yakin ingin melanjutkan?")
+                ->modalSubmitActionLabel('Ya, Simpan Perubahan')
+                ->modalCancelActionLabel('Batal')
+                ->action('performSave');
+        } else {
+            $saveAction->action('performSave');
+        }
+
         return [
-            Action::make('save')
-                ->label('Simpan Form')
-                ->icon('heroicon-o-check')
-                ->action('save')
-                ->color('success'),
+            $saveAction,
 
             Action::make('preview')
                 ->label('Preview Form')
@@ -62,7 +81,7 @@ class ManageFormBuilder extends Page implements HasForms
         ];
     }
 
-    public function save(): void
+    public function performSave(): void
     {
         $data = $this->form->getState();
 
@@ -153,24 +172,7 @@ class ManageFormBuilder extends Page implements HasForms
     protected function getViewData(): array
     {
         return array_merge(parent::getViewData(), [
-            'autoSaveScript' => "
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Auto-save every 20 seconds
-                        setInterval(function() {
-                            if (window.Livewire) {
-                                try {
-                                    Livewire.find('" . $this->getId() . "').call('autoSave');
-                                } catch (e) {
-                                    console.log('Auto-save skipped:', e.message);
-                                }
-                            }
-                        }, 20000); // 20 seconds
-
-                        console.log('Auto-save initialized - saving every 20 seconds');
-                    });
-                </script>
-            "
+            // Auto-save disabled
         ]);
     }
 }

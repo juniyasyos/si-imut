@@ -26,7 +26,7 @@ class ManageFormBuilder extends Page implements HasForms
 
     public ?array $data = [];
     public ?ImutData $record = null;
-    public bool $autoSaveEnabled = true;
+    public bool $autoSaveEnabled = false;
 
     public function mount(ImutData $record): void
     {
@@ -149,24 +149,7 @@ class ManageFormBuilder extends Page implements HasForms
     protected function getViewData(): array
     {
         return array_merge(parent::getViewData(), [
-            'autoSaveScript' => "
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Auto-save every 20 seconds
-                        setInterval(function() {
-                            if (window.Livewire) {
-                                try {
-                                    Livewire.find('" . $this->getId() . "').call('autoSave');
-                                } catch (e) {
-                                    console.log('Auto-save skipped:', e.message);
-                                }
-                            }
-                        }, 20000); // 20 seconds
-                        
-                        console.log('Auto-save initialized - saving every 20 seconds');
-                    });
-                </script>
-            "
+            // Auto-save disabled
         ]);
     }
 }
