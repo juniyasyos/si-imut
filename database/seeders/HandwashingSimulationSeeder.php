@@ -19,6 +19,7 @@ class HandwashingSimulationSeeder extends Seeder
         $this->command->info('🧪 SIMULASI FORM Kepatuhan Kebersihan Tangan - Unit IGD');
         $this->command->info('========================================================');
 
+        // dd(FormTemplate::where('title', 'LIKE', '%Kepatuhan Kebersihan Tangan%')->latest()->first());
         // Ambil template Kepatuhan Kebersihan Tangan
         $template = FormTemplate::where('title', 'LIKE', '%Kepatuhan Kebersihan Tangan%')->latest()->first();
         if (!$template) {

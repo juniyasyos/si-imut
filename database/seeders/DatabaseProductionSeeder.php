@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\PositionSeeder;
 use Database\Seeders\ImutDataProdSeeder;
+use Database\Seeders\CompleteFormTemplateSeeder;
 
 class DatabaseProductionSeeder extends Seeder
 {
@@ -23,7 +24,7 @@ class DatabaseProductionSeeder extends Seeder
                 ImutCategorySeeder::class,
                 RegionTypeSeeder::class,
                 ImutDataProdSeeder::class,
-                EnhancedFormBuilderSeeder::class,
+                CompleteFormTemplateSeeder::class,
             ]
         );
     }

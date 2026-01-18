@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\FormTemplate;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
-use App\Models\ImutData;
+use App\Models\ImutProfile;
 use Illuminate\Database\Seeder;
 
 class EnhancedFormBuilderSeeder extends Seeder
@@ -14,29 +14,65 @@ class EnhancedFormBuilderSeeder extends Seeder
     {
         $this->command->info('🚀 Seeding Enhanced Form Builder Data...');
 
-        // Get existing IMUT Data
-        $imutData = ImutData::first();
-        if (!$imutData) {
-            $this->command->error('No IMUT Data found. Please run ImutDataSeeder first.');
+        // Get existing IMUT Profiles with their data
+        $profiles = ImutProfile::with('imutData')->get();
+        if ($profiles->isEmpty()) {
+            $this->command->error('No IMUT Profiles found. Please run ImutProfileSeeder first.');
             return;
         }
 
-        // Create Handwashing Compliance Form Template
-        $this->createHandwashingComplianceForm($imutData);
+        $created = 0;
+        foreach ($profiles as $profile) {
+            $imutDataTitle = strtolower($profile->imutData->title ?? '');
 
-        // Create Medication Safety Form Template
-        $this->createMedicationSafetyForm($imutData);
+            // Create appropriate form based on IMUT data title
+            if ($this->isHandwashingRelated($imutDataTitle)) {
+                $this->createHandwashingComplianceForm($profile);
+                $created++;
+            } elseif ($this->isMedicationSafetyRelated($imutDataTitle)) {
+                $this->createMedicationSafetyForm($profile);
+                $created++;
+            }
+        }
 
-        $this->command->info('✅ Enhanced Form Builder seeding completed!');
+        $this->command->info("✅ Enhanced Form Builder seeding completed! Created {$created} form templates.");
     }
 
-    private function createHandwashingComplianceForm(ImutData $imutData): void
+    /**
+     * Check if the IMUT data title is related to handwashing compliance
+     */
+    private function isHandwashingRelated(string $title): bool
+    {
+        $keywords = ['cuci tangan', 'hand hygiene', 'kebersihan tangan', 'handwashing'];
+        foreach ($keywords as $keyword) {
+            if (str_contains($title, $keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if the IMUT data title is related to medication safety
+     */
+    private function isMedicationSafetyRelated(string $title): bool
+    {
+        $keywords = ['penggunaan obat', 'medication safety', 'keselamatan obat', '6 benar'];
+        foreach ($keywords as $keyword) {
+            if (str_contains($title, $keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function createHandwashingComplianceForm(ImutProfile $profile): void
     {
         $this->command->info('📋 Creating Handwashing Compliance Form...');
 
         $template = FormTemplate::create([
-            'imut_data_id' => $imutData->id,
-            'title' => 'Monitoring Kepatuhan Cuci Tangan',
+            'imut_profile_id' => $profile->id,
+            'title' => 'Monitoring Kepatuhan Cuci Tangan - ' . $profile->version,
             'description' => 'Form untuk monitoring indikator mutu kepatuhan cuci tangan staff medis dengan sistem auto-compliance calculation',
             'compliance_method' => 'auto_calculate',
             'auto_fail_on_critical' => true,
@@ -152,13 +188,13 @@ class EnhancedFormBuilderSeeder extends Seeder
         $this->command->info("   ✅ Created: {$template->title} with {$template->fields()->count()} fields");
     }
 
-    private function createMedicationSafetyForm(ImutData $imutData): void
+    private function createMedicationSafetyForm(ImutProfile $profile): void
     {
         $this->command->info('📋 Creating Medication Safety Form...');
 
         $template = FormTemplate::create([
-            'imut_data_id' => $imutData->id,
-            'title' => 'Monitoring Keselamatan Penggunaan Obat',
+            'imut_profile_id' => $profile->id,
+            'title' => 'Monitoring Keselamatan Penggunaan Obat - ' . $profile->version,
             'description' => 'Form untuk monitoring indikator mutu keselamatan penggunaan obat dengan 6 benar',
             'compliance_method' => 'auto_calculate',
             'auto_fail_on_critical' => true,
