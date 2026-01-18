@@ -238,24 +238,77 @@ class CompleteFormTemplateSeeder extends Seeder
             return $responses;
         }
 
-        foreach ($scoringConfig['form_fields'] as $fieldConfig) {
-            $field = $template->fields()->where('field_key', $fieldConfig['field_key'])->first();
+        // Get existing responses for this daily report to check dependencies
+        $existingResponses = collect();
 
-            if (!$field) {
+        // Process fields in order
+        $fields = $template->fields()->orderBy('order_index')->get();
+
+        foreach ($fields as $field) {
+            // Find the field config
+            $fieldConfig = collect($scoringConfig['form_fields'])->firstWhere('field_key', $field->field_key);
+
+            if (!$fieldConfig) {
                 continue;
+            }
+
+            // Check conditional logic
+            if (!$this->shouldShowField($fieldConfig, $existingResponses)) {
+                continue; // Skip this field if conditions not met
             }
 
             $fieldValue = $this->generateSampleValueForField($fieldConfig, $field);
             if ($fieldValue !== null) {
-                $responses[] = FieldResponse::create([
+                $response = FieldResponse::create([
                     'daily_report_response_id' => $dailyReportId,
                     'form_field_id' => $field->id,
+                    'field_value' => $fieldValue
+                ]);
+                $responses[] = $response;
+
+                // Add to existing responses for dependency checks
+                $existingResponses->push([
+                    'field_key' => $field->field_key,
                     'field_value' => $fieldValue
                 ]);
             }
         }
 
         return $responses;
+    }
+
+    /**
+     * Check if a field should be shown based on conditional logic
+     */
+    private function shouldShowField(array $fieldConfig, $existingResponses): bool
+    {
+        if (!isset($fieldConfig['conditional_logic'])) {
+            return true; // No conditions, always show
+        }
+
+        $logic = $fieldConfig['conditional_logic'];
+
+        if (!isset($logic['depends_on_field']) || !isset($logic['trigger_values'])) {
+            return true; // Invalid logic, show anyway
+        }
+
+        $dependsOnField = $logic['depends_on_field'];
+        $triggerValues = $logic['trigger_values'];
+        $conditionType = $logic['condition_type'] ?? 'show_when';
+
+        // Find the dependent field value
+        $dependentResponse = $existingResponses->firstWhere('field_key', $dependsOnField);
+
+        if (!$dependentResponse) {
+            return false; // Dependent field not found, don't show
+        }
+
+        $dependentValue = $dependentResponse['field_value'];
+
+        // Check if dependent value is in trigger values
+        $isTriggered = in_array($dependentValue, $triggerValues);
+
+        return $conditionType === 'show_when' ? $isTriggered : !$isTriggered;
     }
 
     /**
