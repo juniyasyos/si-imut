@@ -9,6 +9,7 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Placeholder;
 
 class FormFields
 {
@@ -105,33 +106,43 @@ class FormFields
                 }
 
             case 'time_duration':
-                return Section::make($baseConfig['label'])
-                    ->description($baseConfig['helperText'])
+                return Grid::make(2)
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TimePicker::make($field->field_key . '_start_time')
-                                    ->label('Waktu Mulai')
-                                    ->required($field->validation_config['required'] ?? false)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, $set, $get) use ($field) {
-                                        self::calculateDuration($get, $set, $field->field_key);
-                                    }),
+                        TimePicker::make($field->field_key . '_start_time')
+                            ->label('Waktu Mulai')
+                            ->required($field->validation_config['required'] ?? false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set, $get) use ($field) {
+                                self::validateDurationAndSetIndicator($get, $set, $field->field_key);
+                            }),
 
-                                TimePicker::make($field->field_key . '_end_time')
-                                    ->label('Waktu Selesai')
-                                    ->required($field->validation_config['required'] ?? false)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, $set, $get) use ($field) {
-                                        self::calculateDuration($get, $set, $field->field_key);
-                                    }),
+                        TimePicker::make($field->field_key . '_end_time')
+                            ->label('Waktu Selesai')
+                            ->required($field->validation_config['required'] ?? false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set, $get) use ($field) {
+                                self::validateDurationAndSetIndicator($get, $set, $field->field_key);
+                            }),
 
-                                TextInput::make($field->field_key . '_duration')
-                                    ->label('Durasi')
-                                    ->readonly()
-                                    ->placeholder('HH:MM')
-                                    ->helperText('Dihitung otomatis dari selisih waktu mulai dan selesai'),
-                            ]),
+                        TimePicker::make($field->field_key . '_valid_duration_setting')
+                            ->label('Threshold Durasi Valid (jam:menit)')
+                            ->default(self::convertMinutesToTime($field->default_valid_duration ?? 480))
+                            ->helperText('Durasi maksimal yang dianggap valid dalam format jam:menit')
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set, $get) use ($field) {
+                                self::validateDurationAndSetIndicator($get, $set, $field->field_key);
+                            }),
+
+                        ToggleButtons::make($field->field_key . '_valid_indicator')
+                            ->label('Status Validasi')
+                            ->options([
+                                '1' => '✅ Valid',
+                                '0' => '❌ Tidak Valid',
+                            ])
+                            ->inline()
+                            ->disabled()
+                            ->extraAttributes(['readonly' => true])
+                            ->default('0'),
                     ])
                     ->visible($visibleCondition)
                     ->columnSpanFull();
@@ -179,32 +190,80 @@ class FormFields
         return true;
     }
 
-    private static function calculateDuration(callable $get, callable $set, string $fieldKey): void
+    private static function validateDurationAndSetIndicator(callable $get, callable $set, string $fieldKey): void
     {
         $startTime = $get($fieldKey . '_start_time');
         $endTime = $get($fieldKey . '_end_time');
+        $thresholdTime = $get($fieldKey . '_valid_duration_setting') ?? '08:00:00';
+        $threshold = self::convertTimeToMinutes($thresholdTime);
 
         if ($startTime && $endTime) {
             try {
-                $start = \Carbon\Carbon::createFromFormat('H:i', $startTime);
-                $end = \Carbon\Carbon::createFromFormat('H:i', $endTime);
+                $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
+                $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
 
                 // Handle case where end time is next day
                 if ($end->lessThan($start)) {
                     $end->addDay();
                 }
 
-                $duration = $start->diff($end);
-                $hours = $duration->h;
-                $minutes = $duration->i;
+                $durationInMinutes = $start->diffInMinutes($end);
 
-                $durationString = sprintf('%02d:%02d', $hours, $minutes);
-                $set($fieldKey . '_duration', $durationString);
+                // Validasi: durasi >= 0 dan <= threshold
+                $isValid = $durationInMinutes >= 0 && $durationInMinutes <= $threshold;
+
+                // Force update indicator by setting boolean value
+                $set($fieldKey . '_valid_indicator', $isValid ? '1' : '0');
             } catch (\Exception $e) {
-                $set($fieldKey . '_duration', '');
+                $set($fieldKey . '_valid_indicator', '0');
             }
         } else {
-            $set($fieldKey . '_duration', '');
+            $set($fieldKey . '_valid_indicator', '0');
         }
+    }
+
+    private static function isDurationValid(callable $get, string $fieldKey): bool
+    {
+        $startTime = $get($fieldKey . '_start_time');
+        $endTime = $get($fieldKey . '_end_time');
+        $thresholdTime = $get($fieldKey . '_valid_duration_setting') ?? '08:00:00';
+        $threshold = self::convertTimeToMinutes($thresholdTime);
+
+        if (!$startTime || !$endTime) {
+            return false;
+        }
+
+        try {
+            $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
+            $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
+
+            // Handle case where end time is next day
+            if ($end->lessThan($start)) {
+                $end->addDay();
+            }
+
+            $durationInMinutes = $start->diffInMinutes($end);
+
+            return $durationInMinutes >= 0 && $durationInMinutes <= $threshold;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    private static function convertTimeToMinutes(string $time): int
+    {
+        try {
+            $carbon = \Carbon\Carbon::createFromFormat('H:i:s', $time);
+            return ($carbon->hour * 60) + $carbon->minute;
+        } catch (\Exception $e) {
+            return 480; // fallback 8 hours
+        }
+    }
+
+    public static function convertMinutesToTime(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $mins = $minutes % 60;
+        return sprintf('%02d:%02d:%02d', $hours, $mins, 0);
     }
 }

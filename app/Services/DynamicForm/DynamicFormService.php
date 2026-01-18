@@ -17,7 +17,7 @@ class DynamicFormService
     public static function buildFormSchema(FormTemplate $formTemplate, bool $includeHeader = true, bool $includeCompliance = false): array
     {
         $fields = [];
-        
+
         // Dynamic Form Fields Section
         $formFieldsSchema = [];
         $sortedFields = $formTemplate->formFields->sortBy('order_index');
@@ -145,8 +145,13 @@ class DynamicFormService
                     case 'multi_select':
                         $defaultValue = [];
                         break;
-                    default:
-                        $defaultValue = null;
+                    case 'time_duration':
+                        // Set defaults for composite sub-fields
+                        $data[$field->field_key . '_start_time'] = null;
+                        $data[$field->field_key . '_end_time'] = null;
+                        $data[$field->field_key . '_valid_duration_setting'] = self::convertMinutesToTime($field->default_valid_duration ?? 480);
+                        $data[$field->field_key . '_valid_indicator'] = '0';
+                        break;
                 }
             }
 
@@ -154,5 +159,12 @@ class DynamicFormService
         }
 
         return $data;
+    }
+
+    private static function convertMinutesToTime(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $mins = $minutes % 60;
+        return sprintf('%02d:%02d', $hours, $mins);
     }
 }

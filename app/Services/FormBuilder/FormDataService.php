@@ -44,6 +44,8 @@ class FormDataService
                 'conditional_logic' => $field->conditional_logic,
                 'compliance_rules' => $field->compliance_rules, // Add compliance_rules
                 'has_conditional_logic' => !empty($field->conditional_logic), // Add toggle state based on data
+                'time_format' => $field->time_format ?? 'HM',
+                'default_valid_duration' => $field->default_valid_duration ?? 480,
                 'options' => $options,
                 'order_index' => $field->order_index,
             ];

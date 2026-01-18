@@ -43,6 +43,11 @@ class FormFieldMapper
         'file_upload' => 'heroicon-o-document-arrow-up',
     ];
 
+    const TIME_FORMAT_OPTIONS = [
+        'HM' => 'Jam:Menit (HH:MM)',
+        'HMS' => 'Jam:Menit:Detik (HH:MM:SS)',
+    ];
+
     public static function mapLegacyFieldType(string $legacyType): string
     {
         return self::FIELD_TYPE_MAPPING[$legacyType] ?? 'text_input';
@@ -66,6 +71,11 @@ class FormFieldMapper
             'time_range' => '⏰ Rentang Waktu',
             'time_duration' => '⏱️ Durasi Waktu (dengan kalkulasi otomatis)',
         ];
+    }
+
+    public static function getTimeFormatOptions(): array
+    {
+        return self::TIME_FORMAT_OPTIONS;
     }
     public static function getFieldTypeValidation(string $fieldType): array
     {
@@ -111,23 +121,17 @@ class FormFieldMapper
                     'type' => 'time',
                     'required' => true,
                 ],
-                'duration' => [
-                    'label' => 'Durasi',
-                    'type' => 'text',
+                'valid_indicator' => [
+                    'label' => 'Status Validasi',
+                    'type' => 'indicator',
                     'required' => false,
                     'readonly' => true,
                 ],
-                'valid_duration' => [
-                    'label' => 'Durasi yang valid',
-                    'type' => 'text',
+                'valid_duration_setting' => [
+                    'label' => 'Threshold Durasi Valid (menit)',
+                    'type' => 'number',
                     'required' => false,
-                    'readonly' => true,
-                ],
-                'comparison_operator' => [
-                    'label' => 'Lebih/Kurang/Sama Dengan',
-                    'type' => 'select',
-                    'options' => ['>', '<', '='],
-                    'required' => true,
+                    'default' => 480,
                 ],
             ],
             'time_range' => [

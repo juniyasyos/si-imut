@@ -23,6 +23,8 @@ class EnhancedFormField extends Model
         'conditional_logic',
         'compliance_rules',
         'order_index',
+        'time_format',
+        'default_valid_duration',
     ];
 
     protected $casts = [
@@ -30,6 +32,7 @@ class EnhancedFormField extends Model
         'is_critical_field' => 'boolean',
         'conditional_logic' => 'array',
         'compliance_rules' => 'array',
+        'default_valid_duration' => 'integer',
     ];
 
     public function formTemplate(): BelongsTo
@@ -135,17 +138,36 @@ class EnhancedFormField extends Model
 
     private function scoreTimeDuration($value): float
     {
-        $config = $this->validation_config;
-        $minMinutes = $config['duration_limits']['min_minutes'] ?? 0;
-        $maxMinutes = $config['duration_limits']['max_minutes'] ?? PHP_INT_MAX;
-
-        $duration = (int) $value;
-
-        if ($duration >= $minMinutes && $duration <= $maxMinutes) {
-            return 100;
+        // $value sekarang adalah array dengan keys: start_time, end_time, valid_indicator, valid_duration_setting
+        if (!is_array($value) || !isset($value['start_time']) || !isset($value['end_time'])) {
+            return 0;
         }
 
-        return 0;
+        $startTime = $value['start_time'];
+        $endTime = $value['end_time'];
+        $thresholdTime = $value['valid_duration_setting'] ?? '08:00:00';
+        $threshold = $this->convertTimeToMinutes($thresholdTime);
+
+        if (!$startTime || !$endTime) {
+            return 0;
+        }
+
+        try {
+            $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
+            $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
+
+            // Handle case where end time is next day
+            if ($end->lessThan($start)) {
+                $end->addDay();
+            }
+
+            $durationInMinutes = $start->diffInMinutes($end);
+
+            // Score 100 jika durasi <= threshold, 0 jika tidak
+            return ($durationInMinutes <= $threshold) ? 100 : 0;
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     private function scoreTimeRange($value): float
@@ -212,5 +234,15 @@ class EnhancedFormField extends Model
         }
 
         return true;
+    }
+
+    private function convertTimeToMinutes(string $time): int
+    {
+        try {
+            $carbon = \Carbon\Carbon::createFromFormat('H:i:s', $time);
+            return ($carbon->hour * 60) + $carbon->minute;
+        } catch (\Exception $e) {
+            return 480; // fallback 8 hours
+        }
     }
 }

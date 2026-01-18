@@ -72,6 +72,8 @@ class FormPersistenceService
                 'conditional_logic' => $conditionalLogic,
                 'compliance_rules' => $fieldData['compliance_rules'] ?? null,
                 'order_index' => $index + 1,
+                'time_format' => $fieldData['time_format'] ?? 'HM',
+                'default_valid_duration' => $fieldData['default_valid_duration'] ?? 480,
                 'status' => true,
             ]);
 

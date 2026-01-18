@@ -235,6 +235,12 @@ class FormSchemaBuilder
                                     $html .= "<span class=\"text-xs text-gray-600\">Opsi: {$optionsStr}</span>";
                                 }
 
+                                // Show default value for valid_duration_setting
+                                if ($subKey === 'valid_duration_setting' && $fieldType === 'time_duration') {
+                                    $defaultValue = $get('default_valid_duration') ?? 480;
+                                    $html .= "<span class=\"text-xs text-blue-600\">Default: {$defaultValue} menit</span>";
+                                }
+
                                 $html .= "</div>";
                             }
 
@@ -242,6 +248,25 @@ class FormSchemaBuilder
                             return new \Illuminate\Support\HtmlString($html);
                         })
                         ->columnSpanFull(),
+                ])
+                ->visible(fn($get) => FormFieldMapper::isCompositeFieldType($get('field_type')))
+                ->collapsed(false)
+                ->columnSpanFull(),
+
+            // Time Duration Specific Settings
+            Section::make('Pengaturan Time Duration')
+                ->schema([
+                    Select::make('time_format')
+                        ->label('Format Waktu')
+                        ->options(FormFieldMapper::getTimeFormatOptions())
+                        ->default('HM')
+                        ->helperText('Pilih format waktu yang akan digunakan untuk input start dan end time'),
+                    TextInput::make('default_valid_duration')
+                        ->label('Durasi Valid Default (menit)')
+                        ->numeric()
+                        ->default(480)
+                        ->minValue(1)
+                        ->helperText('Nilai default untuk threshold durasi valid (dalam menit). Akan otomatis terisi di form pengisian.'),
                 ])
                 ->visible(fn($get) => FormFieldMapper::isCompositeFieldType($get('field_type')))
                 ->collapsed(false)
