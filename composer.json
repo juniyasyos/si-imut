@@ -126,6 +126,7 @@
             "git clean -f && git reset --hard && git pull",
             "rm -rf ./storage/debugbar/*.json",
             "@php artisan migrate:fresh",
+            "mysql -h \"${DB_HOST}\" -u \"${DB_USERNAME}\" -p\"${DB_PASSWORD}\" \"${DB_DATABASE}\" < ./database/schema/mysql-schema.sql",
             "@php artisan db:seed --class=DatabaseProductionSeeder",
             "@php artisan shield:generate --all --panel=admin",
             "@php artisan shield:super-admin --user=1",
