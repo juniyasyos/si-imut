@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\ImutProfile;
 use App\Models\FormTemplate;
+use App\Models\EnhancedFormField;
+use App\Models\FormFieldOption;
 use App\Models\DailyReportResponse;
 use App\Models\FieldResponse;
 use App\Models\User;
@@ -61,7 +63,7 @@ class CompleteFormTemplateSeeder extends Seeder
             } else {
                 // Create new FormTemplate
                 $template = $configData['form_template'];
-                FormTemplate::create([
+                $formTemplate = FormTemplate::create([
                     'imut_profile_id' => $profile->id,
                     'title' => $template['title'] . ' - ' . $profile->version,
                     'description' => $template['description'],
@@ -69,6 +71,9 @@ class CompleteFormTemplateSeeder extends Seeder
                     'auto_fail_on_critical' => $template['auto_fail_on_critical'],
                     'scoring_config' => json_encode(['form_fields' => $configData['form_fields']])
                 ]);
+
+                // Create form fields from JSON configuration
+                $this->createFormFieldsFromConfig($formTemplate, $configData['form_fields']);
                 $created++;
             }
         }
@@ -122,6 +127,44 @@ class CompleteFormTemplateSeeder extends Seeder
     }
 
     /**
+     * Create form fields from JSON configuration
+     */
+    private function createFormFieldsFromConfig(FormTemplate $formTemplate, array $formFields): void
+    {
+        foreach ($formFields as $fieldData) {
+            // Create EnhancedFormField
+            $formField = EnhancedFormField::create([
+                'form_template_id' => $formTemplate->id,
+                'field_key' => $fieldData['field_key'],
+                'field_label' => $fieldData['field_label'],
+                'field_description' => $fieldData['field_description'] ?? null,
+                'field_type' => $fieldData['field_type'],
+                'validation_config' => $fieldData['validation_config'] ?? [],
+                'compliance_weight' => $fieldData['compliance_weight'] ?? 1,
+                'is_critical_field' => $fieldData['is_critical_field'] ?? false,
+                'order_index' => $fieldData['order_index'] ?? 1,
+                'conditional_logic' => isset($fieldData['conditional_logic']) ? json_encode($fieldData['conditional_logic']) : null,
+                'compliance_rules' => isset($fieldData['compliance_rules']) ? json_encode($fieldData['compliance_rules']) : null,
+            ]);
+
+            // Create options if available
+            if (isset($fieldData['options']) && is_array($fieldData['options'])) {
+                foreach ($fieldData['options'] as $optionIndex => $optionData) {
+                    FormFieldOption::create([
+                        'enhanced_form_field_id' => $formField->id,
+                        'option_text' => $optionData['option_text'],
+                        'option_value' => $optionData['option_value'],
+                        'is_correct' => $optionData['is_correct'] ?? false,
+                        // Calculate compliance_value: 100 if correct, 0 if not
+                        'compliance_value' => ($optionData['is_correct'] ?? false) ? 100 : 0,
+                        'order_index' => $optionIndex + 1,
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
      * Populate comprehensive data for all FormTemplates
      */
     private function populateComprehensiveData(): void
@@ -165,7 +208,7 @@ class CompleteFormTemplateSeeder extends Seeder
                 ]);
 
                 // Create field responses based on form configuration
-                $fieldResponses = $this->createFieldResponsesForFormType($imutDataTitle, $dailyReport->id);
+                $fieldResponses = $this->createFieldResponsesForFormType($imutDataTitle, $dailyReport->id, $template);
                 $totalResponses += count($fieldResponses);
                 $totalReports++;
             }
@@ -180,18 +223,18 @@ class CompleteFormTemplateSeeder extends Seeder
     /**
      * Create field responses based on form type
      */
-    private function createFieldResponsesForFormType(string $formType, int $dailyReportId): array
+    private function createFieldResponsesForFormType(string $formType, int $dailyReportId, FormTemplate $template): array
     {
         $responses = [];
 
         if ($this->containsKeywords($formType, ['cuci tangan', 'hand hygiene', 'kebersihan tangan'])) {
-            $responses = $this->createHandHygieneResponses($dailyReportId);
+            $responses = $this->createHandHygieneResponses($dailyReportId, $template);
         } elseif ($this->containsKeywords($formType, ['apd', 'alat pelindung'])) {
-            $responses = $this->createAPDResponses($dailyReportId);
+            $responses = $this->createAPDResponses($dailyReportId, $template);
         } elseif ($this->containsKeywords($formType, ['identifikasi pasien'])) {
-            $responses = $this->createPatientIdResponses($dailyReportId);
+            $responses = $this->createPatientIdResponses($dailyReportId, $template);
         } elseif ($this->containsKeywords($formType, ['jatuh', 'risiko jatuh'])) {
-            $responses = $this->createFallPreventionResponses($dailyReportId);
+            $responses = $this->createFallPreventionResponses($dailyReportId, $template);
         }
 
         return $responses;
@@ -200,36 +243,45 @@ class CompleteFormTemplateSeeder extends Seeder
     /**
      * Create hand hygiene field responses
      */
-    private function createHandHygieneResponses(int $dailyReportId): array
+    private function createHandHygieneResponses(int $dailyReportId, FormTemplate $template): array
     {
         $responses = [];
         $complianceLevel = $this->getRandomComplianceLevel();
 
+        // Find fields by key
+        $methodField = $template->fields()->where('field_key', 'hand_hygiene_method')->first();
+        $indicationField = $template->fields()->where('field_key', 'hand_hygiene_indication')->first();
+        $stepsField = $template->fields()->where('field_key', 'six_steps_compliance')->first();
+
         // Hand hygiene method
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 1,
-            'field_value' => $complianceLevel['method']
-        ]);
+        if ($methodField) {
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $methodField->id,
+                'field_value' => $complianceLevel['method']
+            ]);
+        }
 
         // 5 WHO moments (if method is compliant)
-        if ($complianceLevel['method'] !== 'tidak_cuci_tangan') {
+        if ($complianceLevel['method'] !== 'tidak_cuci_tangan' && $indicationField) {
             $moments = ['sebelum_kontak_pasien', 'sebelum_prosedur_aseptik', 'setelah_risiko_cairan', 'setelah_kontak_pasien'];
             $selectedMoments = array_slice($moments, 0, rand(2, 4));
 
             $responses[] = FieldResponse::create([
                 'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => 2,
+                'form_field_id' => $indicationField->id,
                 'field_value' => implode(',', $selectedMoments)
             ]);
+        }
 
-            // 6 steps compliance
+        // 6 steps compliance
+        if ($complianceLevel['method'] !== 'tidak_cuci_tangan' && $stepsField) {
             $steps = ['gosok_telapak_tangan', 'gosok_punggung_sela_jari', 'gosok_telapak_sela_jari', 'jari_sisi_dalam_mengunci', 'gosok_ibu_jari_berputar', 'ujung_jari_berputar'];
             $completedSteps = array_slice($steps, 0, $complianceLevel['steps_count']);
 
             $responses[] = FieldResponse::create([
                 'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => 3,
+                'form_field_id' => $stepsField->id,
                 'field_value' => implode(',', $completedSteps)
             ]);
         }
@@ -240,38 +292,42 @@ class CompleteFormTemplateSeeder extends Seeder
     /**
      * Create APD field responses
      */
-    private function createAPDResponses(int $dailyReportId): array
+    private function createAPDResponses(int $dailyReportId, FormTemplate $template): array
     {
         $responses = [];
-        $complianceLevel = $this->getRandomComplianceStatus();
 
         $apdLevels = ['lengkap', 'kurang_lengkap', 'tidak_lengkap'];
         $usageLevels = ['benar', 'sedikit_salah', 'banyak_salah', 'salah'];
         $disposalLevels = ['ya', 'tidak', 'na'];
 
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 1,
-            'field_value' => $apdLevels[array_rand($apdLevels)]
-        ]);
+        // Get fields by order since we don't have specific keys for APD
+        $fields = $template->fields()->orderBy('order_index')->get();
 
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 2,
-            'field_value' => $usageLevels[array_rand($usageLevels)]
-        ]);
+        if ($fields->count() >= 4) {
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $fields[0]->id,
+                'field_value' => $apdLevels[array_rand($apdLevels)]
+            ]);
 
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 3,
-            'field_value' => $disposalLevels[array_rand($disposalLevels)]
-        ]);
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $fields[1]->id,
+                'field_value' => $usageLevels[array_rand($usageLevels)]
+            ]);
 
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 4,
-            'field_value' => 'Observasi penggunaan APD sesuai SOP'
-        ]);
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $fields[2]->id,
+                'field_value' => $disposalLevels[array_rand($disposalLevels)]
+            ]);
+
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $fields[3]->id,
+                'field_value' => 'Observasi penggunaan APD sesuai SOP'
+            ]);
+        }
 
         return $responses;
     }
@@ -279,36 +335,40 @@ class CompleteFormTemplateSeeder extends Seeder
     /**
      * Create patient identification field responses
      */
-    private function createPatientIdResponses(int $dailyReportId): array
+    private function createPatientIdResponses(int $dailyReportId, FormTemplate $template): array
     {
         $responses = [];
 
         $identificationMethods = ['dua_identitas', 'satu_identitas', 'tidak_identifikasi'];
         $selectedMethod = $identificationMethods[array_rand($identificationMethods)];
 
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 1,
-            'field_value' => $selectedMethod
-        ]);
+        $fields = $template->fields()->orderBy('order_index')->get();
 
-        if ($selectedMethod !== 'tidak_identifikasi') {
-            $timings = ['sebelum_obat', 'sebelum_tindakan', 'sebelum_sampel', 'pergantian_shift'];
-            $selectedTimings = array_slice($timings, 0, rand(2, 3));
-
+        if ($fields->count() >= 3) {
             $responses[] = FieldResponse::create([
                 'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => 2,
-                'field_value' => implode(',', $selectedTimings)
+                'form_field_id' => $fields[0]->id,
+                'field_value' => $selectedMethod
+            ]);
+
+            if ($selectedMethod !== 'tidak_identifikasi' && $fields->count() >= 2) {
+                $timings = ['sebelum_obat', 'sebelum_tindakan', 'sebelum_sampel', 'pergantian_shift'];
+                $selectedTimings = array_slice($timings, 0, rand(2, 3));
+
+                $responses[] = FieldResponse::create([
+                    'daily_report_response_id' => $dailyReportId,
+                    'form_field_id' => $fields[1]->id,
+                    'field_value' => implode(',', $selectedTimings)
+                ]);
+            }
+
+            $braceletStatus = ['benar', 'data_salah', 'tidak_terpasang'];
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $fields[2]->id,
+                'field_value' => $braceletStatus[array_rand($braceletStatus)]
             ]);
         }
-
-        $braceletStatus = ['benar', 'data_salah', 'tidak_terpasang'];
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 3,
-            'field_value' => $braceletStatus[array_rand($braceletStatus)]
-        ]);
 
         return $responses;
     }
@@ -316,36 +376,40 @@ class CompleteFormTemplateSeeder extends Seeder
     /**
      * Create fall prevention field responses
      */
-    private function createFallPreventionResponses(int $dailyReportId): array
+    private function createFallPreventionResponses(int $dailyReportId, FormTemplate $template): array
     {
         $responses = [];
 
         $assessmentLevels = ['semua_dinilai', 'sebagian_dinilai', 'tidak_ada_asesmen'];
         $selectedAssessment = $assessmentLevels[array_rand($assessmentLevels)];
 
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 1,
-            'field_value' => $selectedAssessment
-        ]);
+        $fields = $template->fields()->orderBy('order_index')->get();
 
-        if ($selectedAssessment !== 'tidak_ada_asesmen') {
-            $interventions = ['bed_rail', 'gelang_risiko', 'edukasi', 'call_bell', 'lantai_aman', 'pencahayaan'];
-            $selectedInterventions = array_slice($interventions, 0, rand(3, 6));
-
+        if ($fields->count() >= 3) {
             $responses[] = FieldResponse::create([
                 'daily_report_response_id' => $dailyReportId,
-                'form_field_id' => 2,
-                'field_value' => implode(',', $selectedInterventions)
+                'form_field_id' => $fields[0]->id,
+                'field_value' => $selectedAssessment
+            ]);
+
+            if ($selectedAssessment !== 'tidak_ada_asesmen' && $fields->count() >= 2) {
+                $interventions = ['bed_rail', 'gelang_risiko', 'edukasi', 'call_bell', 'lantai_aman', 'pencahayaan'];
+                $selectedInterventions = array_slice($interventions, 0, rand(3, 6));
+
+                $responses[] = FieldResponse::create([
+                    'daily_report_response_id' => $dailyReportId,
+                    'form_field_id' => $fields[1]->id,
+                    'field_value' => implode(',', $selectedInterventions)
+                ]);
+            }
+
+            $documentationLevels = ['lengkap', 'kurang_lengkap', 'tidak_ada'];
+            $responses[] = FieldResponse::create([
+                'daily_report_response_id' => $dailyReportId,
+                'form_field_id' => $fields[2]->id,
+                'field_value' => $documentationLevels[array_rand($documentationLevels)]
             ]);
         }
-
-        $documentationLevels = ['lengkap', 'kurang_lengkap', 'tidak_ada'];
-        $responses[] = FieldResponse::create([
-            'daily_report_response_id' => $dailyReportId,
-            'form_field_id' => 3,
-            'field_value' => $documentationLevels[array_rand($documentationLevels)]
-        ]);
 
         return $responses;
     }
