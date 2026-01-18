@@ -30,8 +30,20 @@ class ComplianceCalculatorService
             if ($field->compliance_weight > 0) {
                 $totalWeight += $field->compliance_weight;
 
+                // Check if field is filled (different logic for different field types)
+                $isFilled = false;
+
+                if ($field->field_type === 'time_duration') {
+                    // For time_duration, check sub-fields
+                    $startTime = $data[$field->field_key . '_start_time'] ?? null;
+                    $endTime = $data[$field->field_key . '_end_time'] ?? null;
+                    $isFilled = !empty($startTime) && !empty($endTime);
+                } else {
+                    $isFilled = !empty($fieldValue);
+                }
+
                 // Calculate field score based on field type and options
-                if (!empty($fieldValue)) {
+                if ($isFilled) {
                     switch ($field->field_type) {
                         case 'single_select':
                             $option = $field->options->where('option_value', $fieldValue)->first();
@@ -78,6 +90,20 @@ class ComplianceCalculatorService
                                 }
                             } else {
                                 $fieldScore = $fieldValue ? $field->compliance_weight : 0;
+                            }
+                            break;
+
+                        case 'time_duration':
+                            // Check the valid indicator for time_duration fields
+                            $validIndicator = $data[$field->field_key . '_valid_indicator'] ?? '0';
+                            $startTime = $data[$field->field_key . '_start_time'] ?? null;
+                            $endTime = $data[$field->field_key . '_end_time'] ?? null;
+
+                            // If both times are filled and indicator shows valid, give full score
+                            if ($startTime && $endTime && $validIndicator === '1') {
+                                $fieldScore = $field->compliance_weight;
+                            } else {
+                                $fieldScore = 0;
                             }
                             break;
 

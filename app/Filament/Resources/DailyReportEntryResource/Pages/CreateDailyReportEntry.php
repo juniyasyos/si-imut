@@ -208,7 +208,7 @@ class CreateDailyReportEntry extends CreateRecord
 
         // Get report date from URL parameter or use today
         $date = $this->originalDate;
-        
+
         if ($date) {
             try {
                 $data['report_date'] = \Carbon\Carbon::createFromFormat('Y-m-d', $date);
@@ -232,14 +232,45 @@ class CreateDailyReportEntry extends CreateRecord
 
         $responses = [];
 
+        // Extract responses from nested array structure
+        $responseData = $data['responses'] ?? [];
+
         // Create FieldResponse records for each form field like seeder
         if ($this->formTemplate) {
             $sortedFields = $this->formTemplate->formFields->sortBy('order_index');
 
             foreach ($sortedFields as $field) {
-                $fieldValue = $data[$field->field_key] ?? null;
+                $fieldValue = $responseData[$field->field_key] ?? null;
 
-                if ($fieldValue !== null) {
+                // Handle time_duration field type - collect sub-fields
+                if ($field->field_type === 'time_duration') {
+                    $startTime = $responseData[$field->field_key . '_start_time'] ?? null;
+                    $endTime = $responseData[$field->field_key . '_end_time'] ?? null;
+                    $validDuration = $responseData[$field->field_key . '_valid_duration_setting'] ?? null;
+                    $validIndicator = $responseData[$field->field_key . '_valid_indicator'] ?? '0';
+
+                    // Store all sub-fields in responses for compliance calculation
+                    $responses[$field->field_key] = $fieldValue;
+                    $responses[$field->field_key . '_start_time'] = $startTime;
+                    $responses[$field->field_key . '_end_time'] = $endTime;
+                    $responses[$field->field_key . '_valid_duration_setting'] = $validDuration;
+                    $responses[$field->field_key . '_valid_indicator'] = $validIndicator;
+
+                    // Create field response record with composite value
+                    if ($startTime && $endTime) {
+                        FieldResponse::create([
+                            'daily_report_response_id' => $dailyReport->id,
+                            'form_field_id' => $field->id,
+                            'field_value' => [
+                                'start_time' => $startTime,
+                                'end_time' => $endTime,
+                                'valid_duration_setting' => $validDuration,
+                                'valid_indicator' => $validIndicator,
+                            ],
+                            'compliance_score' => $field->calculateFieldScore($validIndicator) ?? 0,
+                        ]);
+                    }
+                } else if ($fieldValue !== null) {
                     $responses[$field->field_key] = $fieldValue;
 
                     // Create field response record

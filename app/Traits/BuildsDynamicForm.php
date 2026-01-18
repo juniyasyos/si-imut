@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\EnhancedFormField;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
@@ -18,6 +19,11 @@ trait BuildsDynamicForm
      */
     protected function buildFormComponent(EnhancedFormField $field)
     {
+        // Use FormFields helper for complex field types with 'responses.' prefix
+        if (in_array($field->field_type, ['time_duration', 'time_range', 'single_select', 'multi_select', 'boolean'])) {
+            return FormFields::createFormComponent($field, 'responses.');
+        }
+
         return match ($field->field_type) {
             'text' => TextInput::make("responses.{$field->field_key}")
                 ->label($field->field_label)

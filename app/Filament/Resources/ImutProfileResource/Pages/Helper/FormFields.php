@@ -13,7 +13,7 @@ use Filament\Forms\Components\Placeholder;
 
 class FormFields
 {
-    public static function createFormComponent($field)
+    public static function createFormComponent($field, $prefix = '')
     {
         $baseConfig = [
             'label' => $field->field_label,
@@ -25,16 +25,19 @@ class FormFields
         if ($field->conditional_logic) {
             $logic = $field->conditional_logic;
             if ($logic['condition_type'] === 'show_when') {
-                $visibleCondition = function ($get) use ($logic) {
-                    $dependentValue = $get($logic['depends_on_field']);
+                $visibleCondition = function ($get) use ($logic, $prefix) {
+                    $dependentValue = $get($prefix . $logic['depends_on_field']);
                     return in_array($dependentValue, $logic['trigger_values']);
                 };
             }
         }
 
+        // Build field key with prefix
+        $fieldKey = $prefix . $field->field_key;
+
         switch ($field->field_type) {
             case 'text':
-                return TextInput::make($field->field_key)
+                return TextInput::make($fieldKey)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->maxLength($field->validation_config['max_length'] ?? 255)
@@ -42,7 +45,7 @@ class FormFields
                     ->visible($visibleCondition);
 
             case 'number':
-                return TextInput::make($field->field_key)
+                return TextInput::make($fieldKey)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->numeric()
@@ -57,7 +60,7 @@ class FormFields
                     $options[$option->option_value] = $option->option_text;
                 }
 
-                return ToggleButtons::make($field->field_key)
+                return ToggleButtons::make($fieldKey)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->options($options)
@@ -72,7 +75,7 @@ class FormFields
                     $options[$option->option_value] = $option->option_text;
                 }
 
-                return CheckboxList::make($field->field_key)
+                return CheckboxList::make($fieldKey)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->options($options)
@@ -89,7 +92,7 @@ class FormFields
                 }
 
                 if (count($options) > 0) {
-                    return Radio::make($field->field_key)
+                    return Radio::make($fieldKey)
                         ->label($baseConfig['label'])
                         ->helperText($baseConfig['helperText'])
                         ->options($options)
@@ -97,7 +100,7 @@ class FormFields
                         ->visible($visibleCondition)
                         ->live();
                 } else {
-                    return ToggleButtons::make($field->field_key)
+                    return ToggleButtons::make($fieldKey)
                         ->label($baseConfig['label'])
                         ->helperText($baseConfig['helperText'])
                         ->required($field->validation_config['required'] ?? false)
@@ -108,32 +111,32 @@ class FormFields
             case 'time_duration':
                 return Grid::make(2)
                     ->schema([
-                        TimePicker::make($field->field_key . '_start_time')
+                        TimePicker::make($fieldKey . '_start_time')
                             ->label('Waktu Mulai')
                             ->required($field->validation_config['required'] ?? false)
                             ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) use ($field) {
-                                self::validateDurationAndSetIndicator($get, $set, $field->field_key);
+                            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                                self::validateDurationAndSetIndicator($get, $set, $fieldKey);
                             }),
 
-                        TimePicker::make($field->field_key . '_end_time')
+                        TimePicker::make($fieldKey . '_end_time')
                             ->label('Waktu Selesai')
                             ->required($field->validation_config['required'] ?? false)
                             ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) use ($field) {
-                                self::validateDurationAndSetIndicator($get, $set, $field->field_key);
+                            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                                self::validateDurationAndSetIndicator($get, $set, $fieldKey);
                             }),
 
-                        TimePicker::make($field->field_key . '_valid_duration_setting')
+                        TimePicker::make($fieldKey . '_valid_duration_setting')
                             ->label('Threshold Durasi Valid (jam:menit)')
                             ->default(self::convertMinutesToTime($field->default_valid_duration ?? 480))
                             ->helperText('Durasi maksimal yang dianggap valid dalam format jam:menit')
                             ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) use ($field) {
-                                self::validateDurationAndSetIndicator($get, $set, $field->field_key);
+                            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                                self::validateDurationAndSetIndicator($get, $set, $fieldKey);
                             }),
 
-                        ToggleButtons::make($field->field_key . '_valid_indicator')
+                        ToggleButtons::make($fieldKey . '_valid_indicator')
                             ->label('Status Validasi')
                             ->options([
                                 '1' => '✅ Valid',
@@ -148,25 +151,21 @@ class FormFields
                     ->columnSpanFull();
 
             case 'time_range':
-                return Section::make($baseConfig['label'])
-                    ->description($baseConfig['helperText'])
+                return Grid::make(2)
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TimePicker::make($field->field_key . '_start_time')
-                                    ->label('Waktu Mulai')
-                                    ->required($field->validation_config['required'] ?? false),
+                        TimePicker::make($field->field_key . '_start_time')
+                            ->label('Waktu Mulai')
+                            ->required($field->validation_config['required'] ?? false),
 
-                                TimePicker::make($field->field_key . '_end_time')
-                                    ->label('Waktu Selesai')
-                                    ->required($field->validation_config['required'] ?? false),
-                            ]),
+                        TimePicker::make($field->field_key . '_end_time')
+                            ->label('Waktu Selesai')
+                            ->required($field->validation_config['required'] ?? false),
                     ])
                     ->visible($visibleCondition)
                     ->columnSpanFull();
 
             default:
-                return TextInput::make($field->field_key)
+                return TextInput::make($fieldKey)
                     ->label($baseConfig['label'])
                     ->helperText($baseConfig['helperText'])
                     ->required($field->validation_config['required'] ?? false)
