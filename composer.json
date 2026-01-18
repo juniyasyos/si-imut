@@ -126,7 +126,7 @@
             "git clean -f && git reset --hard && git pull",
             "rm -rf ./storage/debugbar/*.json",
             "@php artisan db:wipe",
-            "mysql -h 127.0.0.1 -u juni -ppassword siimut_prod26 < ./database/schema/mysql-schema.sql",
+            "mysql -h 127.0.0.1 -u juni -ppassword siimut_prod26 < ./database/schema/siimut_prod26.sql",
             "@php artisan db:seed --class=DatabaseProductionSeeder",
             "@php artisan shield:generate --all --panel=admin",
             "@php artisan shield:super-admin --user=1",
