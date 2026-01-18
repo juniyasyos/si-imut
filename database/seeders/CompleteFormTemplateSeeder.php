@@ -173,9 +173,15 @@ class CompleteFormTemplateSeeder extends Seeder
 
         $formTemplates = FormTemplate::with(['imutProfile.imutData'])->get();
         $users = User::limit(10)->get();
+        $units = \App\Models\UnitKerja::limit(5)->get();
 
         if ($users->isEmpty()) {
             $this->command->error('❌ No users found. Please seed users first.');
+            return;
+        }
+
+        if ($units->isEmpty()) {
+            $this->command->error('❌ No units found. Please seed units first.');
             return;
         }
 
@@ -197,14 +203,14 @@ class CompleteFormTemplateSeeder extends Seeder
 
                 $dailyReport = DailyReportResponse::create([
                     'form_template_id' => $template->id,
+                    'unit_kerja_id' => $units->random()->id,
                     'submitted_by' => $user->id,
-                    'submission_date' => $reportDate,
+                    'report_date' => $reportDate,
                     'compliance_status' => $this->getRandomComplianceStatus(),
-                    'overall_score' => rand(75, 98),
-                    'additional_notes' => "Data sample untuk {$template->imutProfile->imutData->title}",
-                    'is_validated' => true,
-                    'validated_by' => $user->id,
-                    'validated_at' => $reportDate->addHours(2)
+                    'total_score' => rand(75, 98),
+                    'notes' => "Data sample untuk {$template->imutProfile->imutData->title}",
+                    'auto_calculated' => true,
+                    'calculation_details' => ['source' => 'seeder'],
                 ]);
 
                 // Create field responses based on form configuration

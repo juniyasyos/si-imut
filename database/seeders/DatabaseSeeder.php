@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\ImutDataSeeder;
+use Database\Seeders\CompleteFormTemplateSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,7 +24,8 @@ class DatabaseSeeder extends Seeder
                 // ImutCategorySeeder::class,
                 // RegionTypeSeeder::class,
                 // ImutDataOldSeeder::class,
-                EnhancedFormBuilderSeeder::class,
+                CompleteFormTemplateSeeder::class, // Create FormTemplates with JSON configs
+                // EnhancedFormBuilderSeeder::class,
                 HandwashingSimulationSeeder::class,
                 EnsureFormTemplateSeeder::class, // Ensure all ImutProfile have FormTemplate
                 // ImutDataOldSeederOptimized::class, // Using optimized version
