@@ -1,0 +1,282 @@
+{
+    "metadata": {
+        "judul": "Ketepatan Pemberian Obat High-Alert",
+        "bulan": "April",
+        "tahun": 2025
+    },
+    "columns": {
+        "no": "No",
+        "tanggal": "Tanggal",
+        "no_rm": "No. RM",
+        "kriteria_pemberian_obat_ha": {
+            "tanda_ha": "Tanda HA",
+            "dobel_cek": "Dobel Cek",
+            "identifikasi": "Identifikasi"
+        },
+        "pengumpul_data": "Pengumpul Data",
+        "validator": "Validator",
+        "match": "Match"
+    },
+    "data": [
+        {
+            "no": 1,
+            "tanggal": "2025-04-02",
+            "no_rm": 143846,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 2,
+            "tanggal": "2025-04-03",
+            "no_rm": 130830,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 1,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 3,
+            "tanggal": "2025-04-04",
+            "no_rm": 145678,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 4,
+            "tanggal": "2025-04-05",
+            "no_rm": 132456,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 5,
+            "tanggal": "2025-04-06",
+            "no_rm": 147890,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 6,
+            "tanggal": "2025-04-07",
+            "no_rm": 134567,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 7,
+            "tanggal": "2025-04-08",
+            "no_rm": 149012,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 8,
+            "tanggal": "2025-04-09",
+            "no_rm": 136789,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 9,
+            "tanggal": "2025-04-10",
+            "no_rm": 150234,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 10,
+            "tanggal": "2025-04-11",
+            "no_rm": 138901,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 11,
+            "tanggal": "2025-04-12",
+            "no_rm": 151345,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 12,
+            "tanggal": "2025-04-13",
+            "no_rm": 140567,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 13,
+            "tanggal": "2025-04-14",
+            "no_rm": 152678,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 14,
+            "tanggal": "2025-04-15",
+            "no_rm": 142789,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 15,
+            "tanggal": "2025-04-16",
+            "no_rm": 153890,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 16,
+            "tanggal": "2025-04-17",
+            "no_rm": 144901,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 17,
+            "tanggal": "2025-04-18",
+            "no_rm": 155012,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 18,
+            "tanggal": "2025-04-19",
+            "no_rm": 146123,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 0,
+                "dobel_cek": 1,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 19,
+            "tanggal": "2025-04-20",
+            "no_rm": 156234,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 0,
+                "identifikasi": 1
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        },
+        {
+            "no": 20,
+            "tanggal": "2025-04-21",
+            "no_rm": 148345,
+            "kriteria_pemberian_obat_ha": {
+                "tanda_ha": 1,
+                "dobel_cek": 1,
+                "identifikasi": 0
+            },
+            "pengumpul_data": 1,
+            "validator": null,
+            "match": null
+        }
+    ]
+}
