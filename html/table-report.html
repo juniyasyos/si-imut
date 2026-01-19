@@ -263,7 +263,7 @@
                     this.errorMessage = '';
 
                     try {
-                        const response = await fetch('./data.json');
+                        const response = await fetch('./harian.json');
                         
                         if (!response.ok) {
                             throw new Error(`File data.json tidak ditemukan (HTTP ${response.status})`);
