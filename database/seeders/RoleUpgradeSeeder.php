@@ -65,6 +65,6 @@ class RoleUpgradeSeeder extends Seeder
             }
         }
 
-        $this->command->info("   Migrated {$users->count()} users");
+        $this->command->info("Migrated {$users->count()} users");
     }
 }
