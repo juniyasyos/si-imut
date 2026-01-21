@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\User;
-use BezhanSalleh\FilamentShield\Support\Utils;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
 class RoleUpgradeSeeder extends Seeder
