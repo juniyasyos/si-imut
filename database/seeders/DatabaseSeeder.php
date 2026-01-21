@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
                 // ShieldSeeder::class,
                 // UserSeeder::class,
                 // UnitKerjaSeeder::class,
-                // RoleUpgradeSeeder::class,
+                RoleUpgradeSeeder::class,
                 // ImutCategorySeeder::class,
                 // RegionTypeSeeder::class,
                 // ImutDataOldSeeder::class,

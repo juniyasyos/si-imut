@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Support\Utils;
+use Spatie\Permission\Models\Permission;
 
 class RoleUpgradeSeeder extends Seeder
 {
@@ -28,13 +29,32 @@ class RoleUpgradeSeeder extends Seeder
             }
         }
 
-        // Ensure required roles exist to avoid RoleDoesNotExist errors
+        // Load roles with permissions from PHP files
+        $path = database_path('data/shield_roles');
+        $roleFiles = glob("$path/*.php");
+        $rolesWithPermissions = collect($roleFiles)
+            ->map(fn($file) => require $file)
+            ->toArray();
+
+        // Ensure required roles exist and assign permissions
         $requiredRoles = ['super_admin', 'tim_mutu', 'pengumpul_data', 'validator_pic'];
         foreach ($requiredRoles as $roleName) {
-            Role::firstOrCreate([
+            $role = Role::firstOrCreate([
                 'name' => $roleName,
                 'guard_name' => 'web',
             ]);
+
+            // Assign permissions if defined in loaded roles
+            $roleData = collect($rolesWithPermissions)->firstWhere('name', $roleName);
+            if ($roleData && !empty($roleData['permissions'])) {
+                $permissions = collect($roleData['permissions'])->map(
+                    fn($perm) => Permission::firstOrCreate([
+                        'name' => $perm,
+                        'guard_name' => 'web',
+                    ])
+                );
+                $role->permissions()->syncWithoutDetaching($permissions);
+            }
         }
 
         // Step: Migrate existing users to new roles

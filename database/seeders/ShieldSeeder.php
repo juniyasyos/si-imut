@@ -16,7 +16,7 @@ class ShieldSeeder extends Seeder
         $roleFiles = glob("$path/*.php");
 
         $rolesWithPermissions = collect($roleFiles)
-            ->map(fn ($file) => require $file)
+            ->map(fn($file) => require $file)
             ->toArray();
 
         $this->makeRolesWithPermissions($rolesWithPermissions);
@@ -40,10 +40,11 @@ class ShieldSeeder extends Seeder
             ]);
 
             if (! empty($roleData['permissions'])) {
-                $permissions = collect($roleData['permissions'])->map(fn ($perm) => $permissionModel::firstOrCreate([
-                    'name' => $perm,
-                    'guard_name' => $roleData['guard_name'],
-                ])
+                $permissions = collect($roleData['permissions'])->map(
+                    fn($perm) => $permissionModel::firstOrCreate([
+                        'name' => $perm,
+                        'guard_name' => $roleData['guard_name'],
+                    ])
                 );
                 $role->permissions()->syncWithoutDetaching($permissions);
             }
