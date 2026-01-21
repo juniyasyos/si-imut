@@ -13,11 +13,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\ImutDataResource;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables\Actions\{Action, CreateAction, EditAction, DeleteAction, DeleteBulkAction, BulkActionGroup};
+use Filament\Tables\Actions\{Action, ActionGroup as ActionsActionGroup, CreateAction, EditAction, DeleteAction, DeleteBulkAction, BulkActionGroup};
 use Illuminate\Support\Facades\Auth;
 
 class ProfilesRelationManager extends RelationManager
@@ -77,45 +78,61 @@ class ProfilesRelationManager extends RelationManager
                     ->default('with'),
             ])
             ->actions([
-                // ViewAction::make()
-                // ->slideOver()
-                // ->form([
-                //     TextInput::make('version')->disabled(),
-                //     TextInput::make('indicator_type')->disabled(),
-                //     TextInput::make('responsible_person')->disabled(),
-                // ]),
-                Action::make('edit')
-                    ->label(fn($record) => (
-                        $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
-                    ) ? 'Lihat' : 'Ubah')
-                    ->icon(fn($record) => (
-                        $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
-                    ) ? 'heroicon-o-eye' : 'heroicon-o-pencil-square')
-                    ->visible(fn($record) => !is_null($record))
-                    ->url(fn($record, $livewire) => ImutDataResource::getUrl('edit-profile', [
-                        'imutDataSlug' => $livewire->ownerRecord->slug,
-                        'record' => $record->slug,
-                    ])),
-                \Filament\Tables\Actions\ReplicateAction::make()
-                    ->using(function (Model $record) {
-                        $newRecord = $record->replicate();
-                        $originalVersion = $record->version;
+                ActionsActionGroup::make([
+                    Action::make('edit')
+                        ->label(fn($record) => (
+                            $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
+                        ) ? 'Lihat' : 'Ubah')
+                        ->icon(fn($record) => (
+                            $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
+                        ) ? 'heroicon-o-eye' : 'heroicon-o-pencil-square')
+                        ->visible(fn($record) => !is_null($record))
+                        ->url(fn($record, $livewire) => ImutDataResource::getUrl('edit-profile', [
+                            'imutDataSlug' => $livewire->ownerRecord->slug,
+                            'record' => $record->slug,
+                        ])),
+                    \Filament\Tables\Actions\ReplicateAction::make()
+                        ->using(function (Model $record) {
+                            $newRecord = $record->replicate();
+                            $originalVersion = $record->version;
 
-                        $newVersion = "Copy dari $originalVersion";
-                        $newRecord->version = $newVersion;
+                            $newVersion = "Copy dari $originalVersion";
+                            $newRecord->version = $newVersion;
 
-                        $slugBase = \Illuminate\Support\Str::slug($newVersion); // slugify version
-                        $uuid = \Illuminate\Support\Str::uuid()->toString();
+                            $slugBase = \Illuminate\Support\Str::slug($newVersion); // slugify version
+                            $uuid = \Illuminate\Support\Str::uuid()->toString();
 
-                        $newRecord->slug = "{$slugBase}-{$uuid}";
+                            $newRecord->slug = "{$slugBase}-{$uuid}";
 
-                        $newRecord->push();
+                            // Set new period to avoid overlap: start from today for 1 year
+                            $newRecord->valid_from = now();
+                            $newRecord->valid_until = now()->addYear();
 
-                        return $newRecord;
-                    })
-                    ->visible(! fn(?Model $record) => $record && $record->imutData->created_by !== Auth::id())
-                    ->successNotificationTitle('Imut Profile successfully replicated'),
+                            $newRecord->push();
 
+                            // Replicate form templates
+                            $record->formTemplates->each(function ($template) use ($newRecord) {
+                                $newTemplate = $template->replicate();
+                                $newTemplate->imut_profile_id = $newRecord->id;
+                                $newTemplate->save();
+                            });
+
+                            return $newRecord;
+                        })
+                        ->visible(fn(?Model $record) => $record->imutData->created_by === Auth::id())
+                        ->successNotificationTitle('Imut Profile successfully replicated'),
+
+                    Action::make('view_form_templates')
+                        ->label('Lihat Form Templates')
+                        ->icon('heroicon-o-document-text')
+                        ->url(fn($record, $livewire) => ImutDataResource::getUrl('manage-form-builder', [
+                            'imutDataSlug' => $livewire->ownerRecord->slug,
+                            'record' => $record->slug,
+                        ]))
+                        ->visible(fn($record) => $record->formTemplates()->exists()),
+                ])
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->tooltip('Lainnya'),
                 DeleteAction::make()
                     ->visible(! Auth::user()?->can('delete_imut::profile')),
                 RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
