@@ -15,6 +15,19 @@ class RoleUpgradeSeeder extends Seeder
     {
         $this->command->info('🔄 Starting Role System Upgrade...');
 
+        // Cek role yang ada di database
+        $existingRoles = Role::pluck('name')->toArray();
+        $this->command->info('Existing roles in database: ' . implode(', ', $existingRoles));
+
+        // Jika ada 'super_admin', 'tim_mutu', dan 'unit_kerja', rename 'unit_kerja' menjadi 'pengumpul_data'
+        if (in_array('super_admin', $existingRoles) && in_array('tim_mutu', $existingRoles) && in_array('unit_kerja', $existingRoles)) {
+            $unitKerjaRole = Role::where('name', 'unit_kerja')->first();
+            if ($unitKerjaRole) {
+                $unitKerjaRole->update(['name' => 'pengumpul_data']);
+                $this->command->info('✅ Renamed "unit_kerja" to "pengumpul_data"');
+            }
+        }
+
         // Ensure required roles exist to avoid RoleDoesNotExist errors
         $requiredRoles = ['super_admin', 'tim_mutu', 'pengumpul_data', 'validator_pic'];
         foreach ($requiredRoles as $roleName) {
