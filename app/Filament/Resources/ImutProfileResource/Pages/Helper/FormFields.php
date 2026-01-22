@@ -129,7 +129,6 @@ class FormFields
 
                         TimePicker::make($fieldKey . '_valid_duration_setting')
                             ->label('Threshold Durasi Valid (jam:menit)')
-                            ->default(self::convertMinutesToTime($field->default_valid_duration ?? 480))
                             ->helperText('Durasi maksimal yang dianggap valid dalam format jam:menit')
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
@@ -255,7 +254,7 @@ class FormFields
             $carbon = \Carbon\Carbon::createFromFormat('H:i:s', $time);
             return ($carbon->hour * 60) + $carbon->minute;
         } catch (\Exception $e) {
-            return 480; // fallback 8 hours
+            return 480; 
         }
     }
 

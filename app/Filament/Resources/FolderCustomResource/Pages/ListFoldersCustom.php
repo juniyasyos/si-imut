@@ -5,6 +5,7 @@ namespace App\Filament\Resources\FolderCustomResource\Pages;
 use App\Filament\Resources\FolderCustomResource;
 use Filament\Actions;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Redirect;
 use Juniyasyos\FilamentMediaManager\Resources\FolderResource\Pages\ListFolders;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
 
@@ -26,8 +27,10 @@ class ListFoldersCustom extends ListFolders
             $folders = Folder::whereNull('parent_id')->whereIn('collection', $unitKerjas)->get();
 
             if ($folders->count() === 1) {
-                // Redirect langsung ke view folder
-                redirect()->route('filament.resources.folder-custom.view', ['folder' => $folders->first()->id]);
+                // Redirect langsung ke view folder menggunakan UUID
+                throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                    new \Illuminate\Http\RedirectResponse(route('filament.siimut.resources.folders.view', ['folder' => $folders->first()->uuid]))
+                );
             }
         }
     }
@@ -48,19 +51,6 @@ class ListFoldersCustom extends ListFolders
                 ->visible(fn() => Gate::any(['create_folder::custom'])),
         ];
     }
-
-    // protected function getHeaderActions(): array
-    // {
-    //     dd([
-    //         'user_permissions' => \Illuminate\Support\Facades\Auth::user()?->getAllPermissions()->pluck('name'),
-    //         'all_permissions' => \Spatie\Permission\Models\Permission::all()->pluck('name'),
-    //     ]);
-
-    //     return [
-    //         Actions\CreateAction::make()
-    //             ->visible(fn () => Gate::any(['create_folder'])),
-    //     ];
-    // }
 
     public function getBreadcrumbs(): array
     {
