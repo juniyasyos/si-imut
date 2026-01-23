@@ -2,266 +2,232 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages\Helper;
 
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\ToggleButtons;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Placeholder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TextFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\NumberFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\BooleanFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeDurationFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 
+/**
+ * Main orchestrator for creating dynamic form components
+ */
 class FormFields
 {
+    /**
+     * Create form component based on field configuration
+     * 
+     * @param object $field Field configuration
+     * @param string $prefix Field prefix
+     * @return mixed Form component
+     */
     public static function createFormComponent($field, $prefix = '')
     {
-        $baseConfig = [
-            'label' => $field->field_label,
-            'helperText' => $field->field_description,
-        ];
-
-        // Add conditional logic: set visible condition
-        $visibleCondition = true;
-        if ($field->conditional_logic) {
-            $logic = $field->conditional_logic;
-            if ($logic['condition_type'] === 'show_when') {
-                $visibleCondition = function ($get) use ($logic, $prefix) {
-                    $dependentValue = $get($prefix . $logic['depends_on_field']);
-                    return in_array($dependentValue, $logic['trigger_values']);
-                };
-            }
-        }
-
-        // Build field key with prefix
         $fieldKey = $prefix . $field->field_key;
+        $label = $field->field_label;
+        $helperText = $field->field_description;
+        $required = $field->validation_config['required'] ?? false;
+        $visibleCondition = ConditionalLogicHandler::getVisibilityCondition($field->conditional_logic, $prefix);
 
         switch ($field->field_type) {
             case 'text':
-                return TextInput::make($fieldKey)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->maxLength($field->validation_config['max_length'] ?? 255)
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition);
+                return TextFieldBuilder::create(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    $field->validation_config['max_length'] ?? 255,
+                    $required,
+                    $visibleCondition
+                );
 
             case 'number':
-                return TextInput::make($fieldKey)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->numeric()
-                    ->minValue($field->validation_config['min'] ?? null)
-                    ->maxValue($field->validation_config['max'] ?? null)
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition);
+                return NumberFieldBuilder::create(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    $field->validation_config['min'] ?? null,
+                    $field->validation_config['max'] ?? null,
+                    $required,
+                    $visibleCondition
+                );
 
             case 'single_select':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                return ToggleButtons::make($fieldKey)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->options($options)
-                    ->inline()
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition)
-                    ->live();
+                $options = SelectFieldBuilder::extractOptions($field->options);
+                return SelectFieldBuilder::createSingleSelect(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    $options,
+                    $required,
+                    $visibleCondition
+                );
 
             case 'multi_select':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                return CheckboxList::make($fieldKey)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->options($options)
-                    ->required($field->validation_config['required'] ?? false)
-                    ->bulkToggleable()
-                    ->visible($visibleCondition)
-                    ->live()
-                    ->columns(1);
+                $options = SelectFieldBuilder::extractOptions($field->options);
+                return SelectFieldBuilder::createMultiSelect(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    $options,
+                    $required,
+                    $visibleCondition
+                );
 
             case 'boolean':
-                $options = [];
-                foreach ($field->options as $option) {
-                    $options[$option->option_value] = $option->option_text;
-                }
-
-                if (count($options) > 0) {
-                    return Radio::make($fieldKey)
-                        ->label($baseConfig['label'])
-                        ->helperText($baseConfig['helperText'])
-                        ->options($options)
-                        ->required($field->validation_config['required'] ?? false)
-                        ->visible($visibleCondition)
-                        ->live();
-                } else {
-                    return ToggleButtons::make($fieldKey)
-                        ->label($baseConfig['label'])
-                        ->helperText($baseConfig['helperText'])
-                        ->required($field->validation_config['required'] ?? false)
-                        ->visible($visibleCondition)
-                        ->live();
-                }
+                $options = SelectFieldBuilder::extractOptions($field->options);
+                return BooleanFieldBuilder::create(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    $options,
+                    $required,
+                    $visibleCondition
+                );
 
             case 'time_duration':
-                return Grid::make(2)
-                    ->schema([
-                        TimePicker::make($fieldKey . '_start_time')
-                            ->label('Waktu Mulai')
-                            ->required($field->validation_config['required'] ?? false)
-                            ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
-                                self::validateDurationAndSetIndicator($get, $set, $fieldKey);
-                            }),
-
-                        TimePicker::make($fieldKey . '_end_time')
-                            ->label('Waktu Selesai')
-                            ->required($field->validation_config['required'] ?? false)
-                            ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
-                                self::validateDurationAndSetIndicator($get, $set, $fieldKey);
-                            }),
-
-                        TimePicker::make($fieldKey . '_valid_duration_setting')
-                            ->label('Threshold Durasi Valid (jam:menit)')
-                            ->helperText('Durasi maksimal yang dianggap valid dalam format jam:menit')
-                            ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
-                                self::validateDurationAndSetIndicator($get, $set, $fieldKey);
-                            }),
-
-                        ToggleButtons::make($fieldKey . '_valid_indicator')
-                            ->label('Status Validasi')
-                            ->options([
-                                '1' => '✅ Valid',
-                                '0' => '❌ Tidak Valid',
-                            ])
-                            ->inline()
-                            ->disabled()
-                            ->extraAttributes(['readonly' => true])
-                            ->default('0'),
-                    ])
-                    ->visible($visibleCondition)
-                    ->columnSpanFull();
+                $threshold = $field->validation_config['threshold'] ?? '00:15';
+                $thresholdType = $field->validation_config['threshold_type'] ?? 'less_than';
+                // dd([
+                //     'field_key' => $fieldKey,
+                //     'field_validation_config' => $field->validation_config,
+                //     'threshold_from_config' => $threshold,
+                //     'threshold_type_from_config' => $thresholdType,
+                //     'field_object' => $field
+                // ]);
+                return TimeDurationFieldBuilder::create(
+                    $fieldKey,
+                    $required,
+                    $visibleCondition,
+                    $threshold,
+                    $thresholdType
+                );
 
             case 'time_range':
-                return Grid::make(2)
-                    ->schema([
-                        TimePicker::make($field->field_key . '_start_time')
-                            ->label('Waktu Mulai')
-                            ->required($field->validation_config['required'] ?? false),
-
-                        TimePicker::make($field->field_key . '_end_time')
-                            ->label('Waktu Selesai')
-                            ->required($field->validation_config['required'] ?? false),
-                    ])
-                    ->visible($visibleCondition)
-                    ->columnSpanFull();
+                return TimeRangeFieldBuilder::create(
+                    $fieldKey,
+                    $required,
+                    $visibleCondition
+                );
 
             default:
-                return TextInput::make($fieldKey)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition);
+                return TextFieldBuilder::create(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    255,
+                    $required,
+                    $visibleCondition
+                );
         }
     }
 
+    /**
+     * Check if field should be visible based on data
+     * 
+     * @param object $field Field configuration
+     * @param array $data Form data
+     * @return bool
+     */
     public static function isFieldVisible($field, $data): bool
     {
-        if (!$field->conditional_logic) {
-            return true;
-        }
-
-        $logic = $field->conditional_logic;
-        $dependentValue = $data[$logic['depends_on_field']] ?? null;
-
-        if ($logic['condition_type'] === 'show_when') {
-            return in_array($dependentValue, $logic['trigger_values']);
-        }
-
-        return true;
+        return ConditionalLogicHandler::isFieldVisible($field, $data);
     }
 
-    private static function validateDurationAndSetIndicator(callable $get, callable $set, string $fieldKey): void
+    // ========================================
+    // Legacy Support Methods (Deprecated)
+    // These methods are kept for backward compatibility
+    // Use TimeUtility and TimeDurationFieldBuilder classes directly instead
+    // ========================================
+
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::create() instead
+     */
+    public static function createTimeDurationField(
+        string $fieldKey,
+        bool $required = false,
+        $visibleCondition = true,
+        string $defaultThreshold = '08:00:00'
+    ) {
+        return TimeDurationFieldBuilder::create($fieldKey, $required, $visibleCondition, $defaultThreshold);
+    }
+
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::createStartTimePicker() instead
+     */
+    private static function createStartTimePicker(string $fieldKey, bool $required)
     {
-        $startTime = $get($fieldKey . '_start_time');
-        $endTime = $get($fieldKey . '_end_time');
-        $thresholdTime = $get($fieldKey . '_valid_duration_setting') ?? '08:00:00';
-        $threshold = self::convertTimeToMinutes($thresholdTime);
-
-        if ($startTime && $endTime) {
-            try {
-                $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
-                $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
-
-                // Handle case where end time is next day
-                if ($end->lessThan($start)) {
-                    $end->addDay();
-                }
-
-                $durationInMinutes = $start->diffInMinutes($end);
-
-                // Validasi: durasi >= 0 dan <= threshold
-                $isValid = $durationInMinutes >= 0 && $durationInMinutes <= $threshold;
-
-                // Force update indicator by setting boolean value
-                $set($fieldKey . '_valid_indicator', $isValid ? '1' : '0');
-            } catch (\Exception $e) {
-                $set($fieldKey . '_valid_indicator', '0');
-            }
-        } else {
-            $set($fieldKey . '_valid_indicator', '0');
-        }
+        return TimeDurationFieldBuilder::createStartTimePicker($fieldKey, $required);
     }
 
-    private static function isDurationValid(callable $get, string $fieldKey): bool
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::createEndTimePicker() instead
+     */
+    private static function createEndTimePicker(string $fieldKey, bool $required)
     {
-        $startTime = $get($fieldKey . '_start_time');
-        $endTime = $get($fieldKey . '_end_time');
-        $thresholdTime = $get($fieldKey . '_valid_duration_setting') ?? '08:00:00';
-        $threshold = self::convertTimeToMinutes($thresholdTime);
-
-        if (!$startTime || !$endTime) {
-            return false;
-        }
-
-        try {
-            $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
-            $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
-
-            // Handle case where end time is next day
-            if ($end->lessThan($start)) {
-                $end->addDay();
-            }
-
-            $durationInMinutes = $start->diffInMinutes($end);
-
-            return $durationInMinutes >= 0 && $durationInMinutes <= $threshold;
-        } catch (\Exception $e) {
-            return false;
-        }
+        return TimeDurationFieldBuilder::createEndTimePicker($fieldKey, $required);
     }
 
-    private static function convertTimeToMinutes(string $time): int
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::createThresholdPicker() instead
+     */
+    private static function createThresholdPicker(string $fieldKey, string $defaultValue)
     {
-        try {
-            $carbon = \Carbon\Carbon::createFromFormat('H:i:s', $time);
-            return ($carbon->hour * 60) + $carbon->minute;
-        } catch (\Exception $e) {
-            return 480; 
-        }
+        return TimeDurationFieldBuilder::createThresholdPicker($fieldKey, $defaultValue);
     }
 
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::createValidationIndicator() instead
+     */
+    private static function createValidationIndicator(string $fieldKey)
+    {
+        return TimeDurationFieldBuilder::createValidationIndicator($fieldKey);
+    }
+
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::validateDurationAndSetIndicator() instead
+     */
+    public static function validateDurationAndSetIndicator(callable $get, callable $set, string $fieldKey): void
+    {
+        TimeDurationFieldBuilder::validateDurationAndSetIndicator($get, $set, $fieldKey);
+    }
+
+    /**
+     * @deprecated Use TimeDurationFieldBuilder::isDurationValid() instead
+     */
+    public static function isDurationValid(callable $get, string $fieldKey): bool
+    {
+        return TimeDurationFieldBuilder::isDurationValid($get, $fieldKey);
+    }
+
+    /**
+     * @deprecated Use TimeUtility::checkDurationValidity() instead
+     */
+    public static function checkDurationValidity(?string $startTime, ?string $endTime, string $thresholdTime = '08:00:00', string $thresholdType = 'less_than'): bool
+    {
+        return TimeUtility::checkDurationValidity($startTime, $endTime, $thresholdTime, $thresholdType);
+    }
+
+    /**
+     * @deprecated Use TimeUtility::calculateDurationInMinutes() instead
+     */
+    public static function calculateDurationInMinutes(string $startTime, string $endTime): ?int
+    {
+        return TimeUtility::calculateDurationInMinutes($startTime, $endTime);
+    }
+
+    /**
+     * @deprecated Use TimeUtility::convertTimeToMinutes() instead
+     */
+    public static function convertTimeToMinutes(string $time): int
+    {
+        return TimeUtility::convertTimeToMinutes($time);
+    }
+
+    /**
+     * @deprecated Use TimeUtility::convertMinutesToTime() instead
+     */
     public static function convertMinutesToTime(int $minutes): string
     {
-        $hours = intdiv($minutes, 60);
-        $mins = $minutes % 60;
-        return sprintf('%02d:%02d:%02d', $hours, $mins, 0);
+        return TimeUtility::convertMinutesToTime($minutes);
     }
 }

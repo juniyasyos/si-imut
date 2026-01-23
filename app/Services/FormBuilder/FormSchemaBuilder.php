@@ -12,6 +12,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\TimePicker;
 use Illuminate\Support\Str;
 
 class FormSchemaBuilder
@@ -256,19 +257,29 @@ class FormSchemaBuilder
             // Time Duration Specific Settings
             Section::make('Pengaturan Time Duration')
                 ->schema([
-                    Select::make('time_format')
-                        ->label('Format Waktu')
-                        ->options(FormFieldMapper::getTimeFormatOptions())
-                        ->default('HM')
-                        ->helperText('Pilih format waktu yang akan digunakan untuk input start dan end time'),
-                    TextInput::make('default_valid_duration')
-                        ->label('Durasi Valid Default (menit)')
-                        ->numeric()
-                        ->default(480)
-                        ->minValue(1)
-                        ->helperText('Nilai default untuk threshold durasi valid (dalam menit). Akan otomatis terisi di form pengisian.'),
+                    Select::make('validation_config.threshold_type')
+                        ->label('Tipe Validasi Threshold')
+                        ->options([
+                            'less_than' => 'Durasi harus kurang dari threshold (≤)',
+                            'greater_than' => 'Durasi harus lebih dari threshold (≥)',
+                        ])
+                        ->default('less_than')
+                        ->helperText('Pilih apakah durasi yang valid adalah kurang dari atau lebih dari threshold yang ditentukan.')
+                        ->live()
+                        ->reactive(),
+
+                    TimePicker::make('validation_config.threshold')
+                        ->label('Threshold Durasi Valid')
+                        ->seconds(false)
+                        ->suffix('JamMenit')
+                        ->afterStateHydrated(function ($state, callable $set) {
+                            if (blank($state)) {
+                                $set('validation_config.threshold', '00:10');
+                            }
+                        })
+                        ->helperText('Durasi maksimal yang dianggap valid. Akan otomatis terisi di form pengisian.'),
                 ])
-                ->visible(fn($get) => FormFieldMapper::isCompositeFieldType($get('field_type')))
+                ->visible(fn($get) => $get('field_type') === 'time_duration')
                 ->collapsed(false)
                 ->columnSpanFull(),
 
