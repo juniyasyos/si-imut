@@ -135,13 +135,13 @@ $timeDuration = TimeDurationFieldBuilder::create(
     fieldKey: 'jam_kerja',
     required: true,
     visibleCondition: true,
-    defaultThreshold: '08:00:00'
+    defaultThreshold: '08:00'
 );
 
 // Individual components
 $startPicker = TimeDurationFieldBuilder::createStartTimePicker('jam_kerja', true);
 $endPicker = TimeDurationFieldBuilder::createEndTimePicker('jam_kerja', true);
-$thresholdPicker = TimeDurationFieldBuilder::createThresholdPicker('jam_kerja', '08:00:00');
+$thresholdPicker = TimeDurationFieldBuilder::createThresholdPicker('jam_kerja', '08:00');
 $indicator = TimeDurationFieldBuilder::createValidationIndicator('jam_kerja');
 
 // Validation
@@ -173,10 +173,10 @@ $minutes = TimeUtility::convertTimeToMinutes('08:30:00'); // Returns 510
 $time = TimeUtility::convertMinutesToTime(510); // Returns '08:30:00'
 
 // Calculate duration
-$duration = TimeUtility::calculateDurationInMinutes('08:00:00', '17:00:00'); // Returns 540
+$duration = TimeUtility::calculateDurationInMinutes('08:00', '17:00:00'); // Returns 540
 
 // Check validity
-$isValid = TimeUtility::checkDurationValidity('08:00:00', '16:00:00', '08:00:00'); // Returns true
+$isValid = TimeUtility::checkDurationValidity('08:00', '16:00:00', '08:00'); // Returns true
 
 // Format time
 $formatted = TimeUtility::formatTime('8:30'); // Returns '08:30:00'
@@ -274,11 +274,11 @@ Semua method lama masih didukung melalui FormFields dengan annotation `@deprecat
 ```php
 // Legacy (still works but deprecated)
 FormFields::validateDurationAndSetIndicator($get, $set, 'field_key');
-FormFields::convertTimeToMinutes('08:00:00');
+FormFields::convertTimeToMinutes('08:00');
 
 // New recommended way
 TimeDurationFieldBuilder::validateDurationAndSetIndicator($get, $set, 'field_key');
-TimeUtility::convertTimeToMinutes('08:00:00');
+TimeUtility::convertTimeToMinutes('08:00');
 ```
 
 ## 🚀 Best Practices
@@ -338,11 +338,11 @@ use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeDu
 TimeDurationFieldBuilder::validateDurationAndSetIndicator($get, $set, 'jam_kerja');
 
 // OLD
-$minutes = FormFields::convertTimeToMinutes('08:00:00');
+$minutes = FormFields::convertTimeToMinutes('08:00');
 
 // NEW
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
-$minutes = TimeUtility::convertTimeToMinutes('08:00:00');
+$minutes = TimeUtility::convertTimeToMinutes('08:00');
 ```
 
 ## 📞 Support

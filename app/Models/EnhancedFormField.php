@@ -145,7 +145,7 @@ class EnhancedFormField extends Model
 
         $startTime = $value['start_time'];
         $endTime = $value['end_time'];
-        $thresholdTime = $value['valid_duration_setting'] ?? '08:00:00';
+        $thresholdTime = $value['valid_duration_setting'] ?? '08:00';
         $threshold = $this->convertTimeToMinutes($thresholdTime);
 
         if (!$startTime || !$endTime) {

@@ -60,7 +60,19 @@ class DynamicFormService
         try {
             $currentData = [];
             foreach ($formTemplate->formFields as $field) {
-                $currentData[$field->field_key] = $get($field->field_key);
+                if ($field->field_type === 'time_duration') {
+                    $currentData[$field->field_key . '_start_time'] = $get($field->field_key . '_start_time');
+                    $currentData[$field->field_key . '_end_time'] = $get($field->field_key . '_end_time');
+                    $currentData[$field->field_key . '_valid_indicator'] = $get($field->field_key . '_valid_indicator');
+                    $currentData[$field->field_key . '_valid_duration_setting'] = $get($field->field_key . '_valid_duration_setting');
+                } elseif ($field->field_type === 'time_range') {
+                    $currentData[$field->field_key . '_start_time'] = $get($field->field_key . '_start_time');
+                    $currentData[$field->field_key . '_end_time'] = $get($field->field_key . '_end_time');
+                    $currentData[$field->field_key . '_input_value'] = $get($field->field_key . '_input_value');
+                    $currentData[$field->field_key . '_valid_indicator'] = $get($field->field_key . '_valid_indicator');
+                } else {
+                    $currentData[$field->field_key] = $get($field->field_key);
+                }
             }
         } catch (\Exception $e) {
             // Handle validation errors by using empty data
@@ -149,7 +161,7 @@ class DynamicFormService
                         // Set defaults for composite sub-fields
                         $data[$field->field_key . '_start_time'] = null;
                         $data[$field->field_key . '_end_time'] = null;
-                        $data[$field->field_key . '_valid_duration_setting'] = self::convertMinutesToTime($field->default_valid_duration ?? 480);
+                        // $data[$field->field_key . '_valid_duration_setting'] = self::convertMinutesToTime($field->default_valid_duration ?? 480);
                         $data[$field->field_key . '_valid_indicator'] = '0';
                         break;
                 }

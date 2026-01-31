@@ -202,7 +202,7 @@ class TimeDurationFieldBuilder
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 $thresholdTime = $get($fieldKey . '_valid_duration_setting');
                 $typeText = $thresholdType === 'greater_than' ? '≥' : '≤';
-                
+
                 return "Status Validasi (durasi {$typeText} {$thresholdTime})";
             })
             ->options([
@@ -232,7 +232,6 @@ class TimeDurationFieldBuilder
      */
     public static function validateDurationAndSetIndicator(callable $get, callable $set, string $fieldKey, string $thresholdType = 'less_than'): void
     {
-        // dd($thresholdType);
         $isValid = self::isDurationValid($get, $fieldKey, $thresholdType);
         $set($fieldKey . '_valid_indicator', $isValid ? '1' : '0');
     }

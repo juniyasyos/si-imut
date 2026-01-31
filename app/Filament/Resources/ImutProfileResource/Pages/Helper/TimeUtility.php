@@ -19,9 +19,13 @@ class TimeUtility
     public static function convertTimeToMinutes(string $time): int
     {
         try {
-            // Try H:i:s format first, then H:i format
-            $carbon = Carbon::createFromFormat('H:i:s', $time) ?: Carbon::createFromFormat('H:i', $time);
-            return ($carbon->hour * 60) + $carbon->minute;
+            $time = trim($time);
+            if (preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', $time, $matches)) {
+                $hours = (int)$matches[1];
+                $minutes = (int)$matches[2];
+                return ($hours * 60) + $minutes;
+            }
+            throw new \Exception('Invalid time format');
         } catch (\Exception $e) {
             return 480; // Default: 8 hours
         }
@@ -83,7 +87,7 @@ class TimeUtility
      * @param string $thresholdTime Threshold time (H:i or H:i:s format)
      * @return bool True if valid, false otherwise
      */
-    public static function checkDurationValidity(?string $startTime, ?string $endTime, string $thresholdTime = '08:00:00', string $thresholdType = 'less_than'): bool
+    public static function checkDurationValidity(?string $startTime, ?string $endTime, string $thresholdTime, string $thresholdType = 'less_than'): bool
     {
 
         if (!$startTime || !$endTime) {
@@ -106,22 +110,22 @@ class TimeUtility
                 $end = Carbon::createFromFormat('H:i', $endTime);
             }
 
-            // Handle case where end time is next day
+            // Handle case where end time is before start time (invalid)
             if ($end->lessThan($start)) {
-                $end->addDay();
+                return false;
             }
 
             $durationInMinutes = $start->diffInMinutes($end);
 
-            dd($startTime, $endTime, $thresholdTime, $thresholdType, $threshold, $durationInMinutes);
-
             // Validate based on threshold type
             if ($thresholdType === 'greater_than') {
-                return $durationInMinutes >= $threshold;
+                $result = $durationInMinutes >= $threshold;
             } else {
                 // Default to 'less_than'
-                return $durationInMinutes <= $threshold;
+                $result = $durationInMinutes <= $threshold;
             }
+
+            return $result;
         } catch (\Exception $e) {
             return false;
         }

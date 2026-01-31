@@ -115,12 +115,17 @@ class FormSchemaBuilder
                     Select::make('compliance_weight')
                         ->label('Bobot Compliance')
                         ->options([
-                            1 => 'Rendah (1)',
-                            2 => 'Normal (2)',
-                            3 => 'Tinggi (3)',
-                            5 => 'Sangat Tinggi (5)',
+                            '1' => 'Rendah (1)',
+                            '2' => 'Normal (2)',
+                            '3' => 'Tinggi (3)',
+                            '5' => 'Sangat Tinggi (5)',
                         ])
-                        ->default(2)
+                        ->default('2')
+                        ->afterStateHydrated(function ($state, callable $set) {
+                            if (blank($state)) {
+                                $set('compliance_weight', '2');
+                            }
+                        })
                         ->helperText('Bobot untuk kalkulasi compliance score'),
                 ]),
 
@@ -217,7 +222,7 @@ class FormSchemaBuilder
                             $fieldKey = $get('field_key') ?: 'field_key';
 
                             $html = '<div class="space-y-2 text-sm">';
-                            $html .= '<p class="font-medium text-gray-700">Sub-fields yang akan dibuat:</p>';
+                            $html .= '<p class="font-small text-gray-700 dark:text-gray-100">Sub-fields yang akan dibuat:</p>';
 
                             foreach ($structure as $subKey => $config) {
                                 $fullKey = $fieldKey . '_' . $subKey;
@@ -240,6 +245,17 @@ class FormSchemaBuilder
                                 if ($subKey === 'valid_duration_setting' && $fieldType === 'time_duration') {
                                     $defaultValue = $get('default_valid_duration') ?? 480;
                                     $html .= "<span class=\"text-xs text-blue-600\">Default: {$defaultValue} menit</span>";
+                                }
+
+                                // Show default values for time_range
+                                if ($fieldType === 'time_range') {
+                                    if ($subKey === 'start_time') {
+                                        $defaultStart = $get('validation_config.default_start_time') ?? '08:00';
+                                        $html .= "<span class=\"text-xs text-blue-600\">Default: {$defaultStart}</span>";
+                                    } elseif ($subKey === 'end_time') {
+                                        $defaultEnd = $get('validation_config.default_end_time') ?? '17:00';
+                                        $html .= "<span class=\"text-xs text-blue-600\">Default: {$defaultEnd}</span>";
+                                    }
                                 }
 
                                 $html .= "</div>";
@@ -280,6 +296,33 @@ class FormSchemaBuilder
                         ->helperText('Durasi maksimal yang dianggap valid. Akan otomatis terisi di form pengisian.'),
                 ])
                 ->visible(fn($get) => $get('field_type') === 'time_duration')
+                ->collapsed(false)
+                ->columnSpanFull(),
+
+            // Time Range Specific Settings
+            Section::make('Pengaturan Time Range')
+                ->schema([
+                    TimePicker::make('validation_config.default_start_time')
+                        ->label('Default Waktu Mulai Rentang')
+                        ->seconds(false)
+                        ->afterStateHydrated(function ($state, callable $set) {
+                            if (blank($state)) {
+                                $set('validation_config.default_start_time', '08:00');
+                            }
+                        })
+                        ->helperText('Waktu mulai default untuk rentang. Akan di-set otomatis di form.'),
+
+                    TimePicker::make('validation_config.default_end_time')
+                        ->label('Default Waktu Selesai Rentang')
+                        ->seconds(false)
+                        ->afterStateHydrated(function ($state, callable $set) {
+                            if (blank($state)) {
+                                $set('validation_config.default_end_time', '17:00');
+                            }
+                        })
+                        ->helperText('Waktu selesai default untuk rentang. Akan di-set otomatis di form.'),
+                ])
+                ->visible(fn($get) => $get('field_type') === 'time_range')
                 ->collapsed(false)
                 ->columnSpanFull(),
 

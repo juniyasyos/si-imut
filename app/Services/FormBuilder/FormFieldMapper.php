@@ -136,24 +136,25 @@ class FormFieldMapper
             ],
             'time_range' => [
                 'start_time' => [
-                    'label' => 'Waktu Mulai',
+                    'label' => 'Waktu Mulai Rentang',
                     'type' => 'time',
-                    'required' => true,
-                ],
-                'end_time' => [
-                    'label' => 'Waktu Selesai',
-                    'type' => 'time',
-                    'required' => true,
-                ],
-                'duration' => [
-                    'label' => 'Durasi',
-                    'type' => 'text',
                     'required' => false,
                     'readonly' => true,
                 ],
-                'valid_duration' => [
-                    'label' => 'Durasi yang valid',
-                    'type' => 'text',
+                'end_time' => [
+                    'label' => 'Waktu Selesai Rentang',
+                    'type' => 'time',
+                    'required' => false,
+                    'readonly' => true,
+                ],
+                'input_value' => [
+                    'label' => 'Nilai Waktu Input',
+                    'type' => 'time',
+                    'required' => true,
+                ],
+                'valid_indicator' => [
+                    'label' => 'Status Validasi',
+                    'type' => 'indicator',
                     'required' => false,
                     'readonly' => true,
                 ],

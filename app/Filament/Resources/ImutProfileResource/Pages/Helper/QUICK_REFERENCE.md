@@ -118,7 +118,7 @@ $select = SelectFieldBuilder::createSingleSelect(
 ```php
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
 
-$startTime = '08:00:00';
+$startTime = '08:00';
 $endTime = '17:00:00';
 
 // Hitung durasi dalam menit
@@ -128,7 +128,7 @@ $duration = TimeUtility::calculateDurationInMinutes($startTime, $endTime); // 54
 $formattedDuration = TimeUtility::convertMinutesToTime($duration); // '09:00:00'
 
 // Validasi apakah dalam threshold
-$isValid = TimeUtility::checkDurationValidity($startTime, $endTime, '08:00:00'); // false (lebih dari 8 jam)
+$isValid = TimeUtility::checkDurationValidity($startTime, $endTime, '08:00'); // false (lebih dari 8 jam)
 ```
 
 ### Use Case 5: Form dengan Multiple Field Types
@@ -153,7 +153,7 @@ return $form->schema([
         true
     ),
     
-    TimeDurationFieldBuilder::create('jam_kerja', true, true, '08:00:00'),
+    TimeDurationFieldBuilder::create('jam_kerja', true, true, '08:00'),
 ]);
 ```
 

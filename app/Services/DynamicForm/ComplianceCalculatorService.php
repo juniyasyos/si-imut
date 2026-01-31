@@ -33,11 +33,10 @@ class ComplianceCalculatorService
                 // Check if field is filled (different logic for different field types)
                 $isFilled = false;
 
-                if ($field->field_type === 'time_duration') {
-                    // For time_duration, check sub-fields
-                    $startTime = $data[$field->field_key . '_start_time'] ?? null;
-                    $endTime = $data[$field->field_key . '_end_time'] ?? null;
-                    $isFilled = !empty($startTime) && !empty($endTime);
+                if ($field->field_type === 'time_duration' || $field->field_type === 'time_range') {
+                    // For time_duration and time_range, consider filled if valid indicator is '1'
+                    $validIndicator = $data[$field->field_key . '_valid_indicator'] ?? '0';
+                    $isFilled = $validIndicator === '1';
                 } else {
                     $isFilled = !empty($fieldValue);
                 }
@@ -94,17 +93,9 @@ class ComplianceCalculatorService
                             break;
 
                         case 'time_duration':
-                            // Check the valid indicator for time_duration fields
-                            $validIndicator = $data[$field->field_key . '_valid_indicator'] ?? '0';
-                            $startTime = $data[$field->field_key . '_start_time'] ?? null;
-                            $endTime = $data[$field->field_key . '_end_time'] ?? null;
-
-                            // If both times are filled and indicator shows valid, give full score
-                            if ($startTime && $endTime && $validIndicator === '1') {
-                                $fieldScore = $field->compliance_weight;
-                            } else {
-                                $fieldScore = 0;
-                            }
+                        case 'time_range':
+                            // Score already set based on isFilled (valid indicator)
+                            $fieldScore = $field->compliance_weight;
                             break;
 
                         default:

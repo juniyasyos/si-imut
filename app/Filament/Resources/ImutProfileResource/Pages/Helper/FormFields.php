@@ -103,10 +103,14 @@ class FormFields
                 );
 
             case 'time_range':
+                $defaultStartTime = $field->validation_config['default_start_time'] ?? '08:00';
+                $defaultEndTime = $field->validation_config['default_end_time'] ?? '17:00';
                 return TimeRangeFieldBuilder::create(
                     $fieldKey,
                     $required,
-                    $visibleCondition
+                    $visibleCondition,
+                    $defaultStartTime,
+                    $defaultEndTime
                 );
 
             default:
@@ -146,7 +150,7 @@ class FormFields
         string $fieldKey,
         bool $required = false,
         $visibleCondition = true,
-        string $defaultThreshold = '08:00:00'
+        string $defaultThreshold = '08:00'
     ) {
         return TimeDurationFieldBuilder::create($fieldKey, $required, $visibleCondition, $defaultThreshold);
     }
@@ -202,7 +206,7 @@ class FormFields
     /**
      * @deprecated Use TimeUtility::checkDurationValidity() instead
      */
-    public static function checkDurationValidity(?string $startTime, ?string $endTime, string $thresholdTime = '08:00:00', string $thresholdType = 'less_than'): bool
+    public static function checkDurationValidity(?string $startTime, ?string $endTime, string $thresholdTime = '08:00', string $thresholdType = 'less_than'): bool
     {
         return TimeUtility::checkDurationValidity($startTime, $endTime, $thresholdTime, $thresholdType);
     }
