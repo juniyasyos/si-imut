@@ -95,8 +95,8 @@ class EditImutProfile extends EditRecord
                 ]))
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
-            // DeleteAction::make()
-            //     ->visible(fn() => static::canEditProfilIndikator($this->record)),
+            DeleteAction::make()
+                ->visible(fn() => static::canEditProfilIndikator($this->record)),
         ];
     }
 

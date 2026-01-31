@@ -74,8 +74,7 @@ class ProfilesRelationManager extends RelationManager
                     ])),
             ])
             ->filters([
-                TrashedFilter::make()
-                    ->default('with'),
+                TrashedFilter::make(),
             ])
             ->actions([
                 ActionsActionGroup::make([
@@ -93,6 +92,9 @@ class ProfilesRelationManager extends RelationManager
                         ])),
                     \Filament\Tables\Actions\ReplicateAction::make()
                         ->using(function (Model $record) {
+                            // Load relationships needed for replication
+                            $record->load('formTemplates.formFields.options');
+
                             $newRecord = $record->replicate();
                             $originalVersion = $record->version;
 
@@ -108,13 +110,31 @@ class ProfilesRelationManager extends RelationManager
                             $newRecord->valid_from = now();
                             $newRecord->valid_until = now()->addYear();
 
-                            $newRecord->push();
+                            // Ensure ID is null for new record
+                            $newRecord->id = null;
+                            $newRecord->save();
 
                             // Replicate form templates
                             $record->formTemplates->each(function ($template) use ($newRecord) {
                                 $newTemplate = $template->replicate();
                                 $newTemplate->imut_profile_id = $newRecord->id;
                                 $newTemplate->save();
+
+                                // Replicate form fields
+                                $template->formFields->each(function ($field) use ($newTemplate) {
+                                    $newField = $field->replicate();
+                                    $newField->form_template_id = $newTemplate->id;
+                                    $newField->save();
+
+                                    // Replicate field options if they exist
+                                    if ($field->relationLoaded('options')) {
+                                        $field->options->each(function ($option) use ($newField) {
+                                            $newOption = $option->replicate();
+                                            $newOption->enhanced_form_field_id = $newField->id;
+                                            $newOption->save();
+                                        });
+                                    }
+                                });
                             });
 
                             return $newRecord;
@@ -134,7 +154,9 @@ class ProfilesRelationManager extends RelationManager
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->tooltip('Lainnya'),
                 DeleteAction::make()
-                    ->visible(! Auth::user()?->can('delete_imut::profile')),
+                    ->visible(function (Model $record) {
+                        return Auth::user()?->can('delete_imut::profile') || $record->imutData->created_by === Auth::id();
+                    }),
                 RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
                 ForceDeleteAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
             ])

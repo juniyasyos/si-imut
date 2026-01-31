@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\EnhancedFormField;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;

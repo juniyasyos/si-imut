@@ -232,8 +232,11 @@ class CreateDailyReportEntry extends CreateRecord
 
         $responses = [];
 
-        // Extract responses from nested array structure
-        $responseData = $data['responses'] ?? [];
+        // Extract responses from form data (field responses are at the top level)
+        $responseData = $data;
+
+        // Remove system keys that are not field responses
+        unset($responseData['form_template_id'], $responseData['report_date']);
 
         // Create FieldResponse records for each form field like seeder
         if ($this->formTemplate) {
@@ -256,29 +259,27 @@ class CreateDailyReportEntry extends CreateRecord
                     $responses[$field->field_key . '_valid_duration_setting'] = $validDuration;
                     $responses[$field->field_key . '_valid_indicator'] = $validIndicator;
 
-                    // Create field response record with composite value
-                    if ($startTime && $endTime) {
-                        FieldResponse::create([
-                            'daily_report_response_id' => $dailyReport->id,
-                            'form_field_id' => $field->id,
-                            'field_value' => [
-                                'start_time' => $startTime,
-                                'end_time' => $endTime,
-                                'valid_duration_setting' => $validDuration,
-                                'valid_indicator' => $validIndicator,
-                            ],
-                            'compliance_score' => $field->calculateFieldScore($validIndicator) ?? 0,
-                        ]);
-                    }
-                } else if ($fieldValue !== null) {
-                    $responses[$field->field_key] = $fieldValue;
-
-                    // Create field response record
+                    // Create field response record with composite value (always create, even if empty)
                     FieldResponse::create([
                         'daily_report_response_id' => $dailyReport->id,
                         'form_field_id' => $field->id,
-                        'field_value' => is_array($fieldValue) ? $fieldValue : [$fieldValue],
-                        'compliance_score' => $field->calculateFieldScore($fieldValue) ?? 0,
+                        'field_value' => [
+                            'start_time' => $startTime,
+                            'end_time' => $endTime,
+                            'valid_duration_setting' => $validDuration,
+                            'valid_indicator' => $validIndicator,
+                        ],
+                        'compliance_score' => ($startTime && $endTime) ? ($field->calculateFieldScore($validIndicator) ?? 0) : 0,
+                    ]);
+                } else {
+                    $responses[$field->field_key] = $fieldValue;
+
+                    // Create field response record (always create, even if null)
+                    FieldResponse::create([
+                        'daily_report_response_id' => $dailyReport->id,
+                        'form_field_id' => $field->id,
+                        'field_value' => $fieldValue !== null ? (is_array($fieldValue) ? $fieldValue : [$fieldValue]) : null,
+                        'compliance_score' => $fieldValue !== null ? ($field->calculateFieldScore($fieldValue) ?? 0) : 0,
                     ]);
 
                     // Update history suggestions for text fields
