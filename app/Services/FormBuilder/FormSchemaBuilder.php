@@ -13,6 +13,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TimePicker;
+use Awcodes\TableRepeater\Components\TableRepeater;
+use Awcodes\TableRepeater\Header;
 use Illuminate\Support\Str;
 
 class FormSchemaBuilder
@@ -155,31 +157,67 @@ class FormSchemaBuilder
                         ->label('Nilai Maksimal')
                         ->numeric()
                         ->visible(fn($get) => $get('field_type') === 'number'),
+
+                    TextInput::make('validation_config.max_length')
+                        ->label('Panjang Maksimal')
+                        ->numeric()
+                        ->default(255)
+                        ->visible(fn($get) => $get('field_type') === 'text'),
                 ]),
 
-            // Options untuk field yang membutuhkan
-            Repeater::make('options')
-                ->label('Opsi Pilihan')
+            // Default Value & History untuk Text Fields
+            Section::make('Nilai Default & Riwayat')
                 ->schema([
-                    Grid::make(3)
+                    TextInput::make('validation_config.default_value')
+                        ->label('Nilai Default')
+                        ->helperText('Nilai yang akan diisi otomatis saat form dibuka')
+                        ->visible(fn($get) => $get('field_type') === 'text')
+                        ->columnSpanFull(),
+
+                    TableRepeater::make('history_suggestions')
+                        ->label('Saran Riwayat Input')
+                        ->headers([
+                            Header::make('value')->label('Saran Input')->width('100%'),
+                        ])
                         ->schema([
-                            TextInput::make('label')
-                                ->label('Label Opsi')
-                                ->required()
-                                ->afterStateUpdated(function ($state, $set) {
-                                    if (!empty($state)) {
-                                        $set('value', Str::slug($state));
-                                    }
-                                }),
+                            TextInput::make('value')
+                                ->label('')
+                                ->placeholder('Masukkan saran input...'),
+                        ])
+                        ->defaultItems(0)
+                        ->addActionLabel('Tambah Saran')
+                        ->helperText('Saran input akan muncul sebagai dropdown saat user mengetik. Maksimal 10 saran akan disimpan.')
+                        ->visible(fn($get) => $get('field_type') === 'text')
+                        ->columnSpanFull(),
+                ])
+                ->visible(fn($get) => $get('field_type') === 'text')
+                ->collapsed(false)
+                ->columnSpanFull(),
 
-                            Hidden::make('value')
-                                ->default(fn($get) => Str::slug($get('label') ?? '')),
+            // Options untuk field yang membutuhkan
+            TableRepeater::make('options')
+                ->label('Opsi Pilihan')
+                ->headers([
+                    Header::make('label')->label('Label Opsi')->width('70%'),
+                    Header::make('is_correct')->label('Benar/Pass')->width('30%'),
+                ])
+                ->schema([
+                    TextInput::make('label')
+                        ->label('')
+                        ->placeholder('Masukkan label opsi...')
+                        ->afterStateUpdated(function ($state, $set) {
+                            if (!empty($state)) {
+                                $set('value', Str::slug($state));
+                            }
+                        }),
 
-                            Toggle::make('is_correct')
-                                ->label('Opsi Benar/Pass')
-                                ->helperText('Centang jika opsi ini menandakan compliance/benar')
-                                ->default(true),
-                        ]),
+                    Toggle::make('is_correct')
+                        ->label('')
+                        ->helperText('Centang jika opsi ini menandakan compliance/benar')
+                        ->default(true),
+
+                    Hidden::make('value')
+                        ->default(fn($get) => Str::slug($get('label') ?? '')),
                 ])
                 ->defaultItems(0)
                 ->addActionLabel('Tambah Opsi')

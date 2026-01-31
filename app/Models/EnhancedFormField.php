@@ -18,6 +18,7 @@ class EnhancedFormField extends Model
         'field_description',
         'field_type',
         'validation_config',
+        'history_suggestions',
         'compliance_weight',
         'is_critical_field',
         'conditional_logic',
@@ -29,6 +30,7 @@ class EnhancedFormField extends Model
 
     protected $casts = [
         'validation_config' => 'array',
+        'history_suggestions' => 'array',
         'is_critical_field' => 'boolean',
         'conditional_logic' => 'array',
         'compliance_rules' => 'array',

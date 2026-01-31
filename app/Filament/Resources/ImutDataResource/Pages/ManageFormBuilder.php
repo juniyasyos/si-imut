@@ -31,8 +31,16 @@ class ManageFormBuilder extends Page implements HasForms
     public function mount(ImutData $record): void
     {
         $this->record = $record;
+        $profile = $record->latestProfile;
+
+        if (!$profile) {
+            // Handle case where no profile exists
+            $this->data = [];
+            return;
+        }
+
         $formDataService = new FormDataService();
-        $this->data = $formDataService->loadFormData($record);
+        $this->data = $formDataService->loadFormData($profile);
         $this->form->fill($this->data);
     }
 
@@ -64,13 +72,23 @@ class ManageFormBuilder extends Page implements HasForms
     public function save(): void
     {
         $data = $this->form->getState();
+        $profile = $this->record->latestProfile;
+
+        if (!$profile) {
+            Notification::make()
+                ->title('Tidak dapat menyimpan form')
+                ->body('Tidak ada profil IMUT yang aktif untuk data ini.')
+                ->danger()
+                ->send();
+            return;
+        }
 
         try {
             DB::beginTransaction();
 
             $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->saveFormData($this->record, $data);
-            $formPersistenceService->calculateAndUpdateCompliance($this->record);
+            $formPersistenceService->saveFormData($profile, $data);
+            $formPersistenceService->calculateAndUpdateCompliance($profile);
 
             DB::commit();
 
@@ -96,13 +114,18 @@ class ManageFormBuilder extends Page implements HasForms
         }
 
         $data = $this->form->getState();
+        $profile = $this->record->latestProfile;
+
+        if (!$profile) {
+            return; // Silent fail if no profile
+        }
 
         try {
             DB::beginTransaction();
 
             $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->saveFormData($this->record, $data);
-            $formPersistenceService->calculateAndUpdateCompliance($this->record);
+            $formPersistenceService->saveFormData($profile, $data);
+            $formPersistenceService->calculateAndUpdateCompliance($profile);
 
             DB::commit();
 
@@ -119,8 +142,12 @@ class ManageFormBuilder extends Page implements HasForms
         // Save current form data before redirecting to preview
         try {
             $data = $this->form->getState();
-            $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->saveFormData($this->record, $data);
+            $profile = $this->record->latestProfile;
+
+            if ($profile) {
+                $formPersistenceService = new FormPersistenceService();
+                $formPersistenceService->saveFormData($profile, $data);
+            }
         } catch (\Exception $e) {
             // Continue to preview even if save fails
         }

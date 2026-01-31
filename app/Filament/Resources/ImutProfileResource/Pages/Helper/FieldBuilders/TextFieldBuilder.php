@@ -18,6 +18,8 @@ class TextFieldBuilder
      * @param int $maxLength Maximum length
      * @param bool $required Is required
      * @param mixed $visibleCondition Visibility condition
+     * @param string|null $defaultValue Default value
+     * @param array $historySuggestions History suggestions for datalist
      * @return TextInput
      */
     public static function create(
@@ -26,13 +28,25 @@ class TextFieldBuilder
         ?string $helperText = null,
         int $maxLength = 255,
         bool $required = false,
-        $visibleCondition = true
+        $visibleCondition = true,
+        ?string $defaultValue = null,
+        array $historySuggestions = []
     ): TextInput {
-        return TextInput::make($fieldKey)
+        $input = TextInput::make($fieldKey)
             ->label($label)
             ->helperText($helperText)
             ->maxLength($maxLength)
             ->required($required)
             ->visible($visibleCondition);
+
+        if ($defaultValue) {
+            $input->default($defaultValue);
+        }
+
+        if (!empty($historySuggestions)) {
+            $input->datalist($historySuggestions);
+        }
+
+        return $input;
     }
 }

@@ -110,7 +110,7 @@ class FormBuilder extends Page implements HasForms
         $sortedFields = $this->formTemplate->formFields->sortBy('order_index');
 
         foreach ($sortedFields as $field) {
-            $component = FormFields::createFormComponent($field);
+            $component = FormFields::createFormComponent($field, '', true); // true = isPreview
             if ($component) {
                 // Wrap each field in its own Section to improve visual separation
                 $formFieldsSchema[] = Section::make($field->field_label)

@@ -280,6 +280,11 @@ class CreateDailyReportEntry extends CreateRecord
                         'field_value' => is_array($fieldValue) ? $fieldValue : [$fieldValue],
                         'compliance_score' => $field->calculateFieldScore($fieldValue) ?? 0,
                     ]);
+
+                    // Update history suggestions for text fields
+                    if ($field->field_type === 'text' && is_string($fieldValue) && !empty(trim($fieldValue))) {
+                        $this->updateHistorySuggestions($field, $fieldValue);
+                    }
                 }
             }
 
@@ -345,5 +350,24 @@ class CreateDailyReportEntry extends CreateRecord
             ->success()
             ->title('Laporan berhasil dibuat')
             ->body('Laporan harian telah berhasil disimpan');
+    }
+
+    /**
+     * Update history suggestions for text fields
+     */
+    private function updateHistorySuggestions($field, string $newValue): void
+    {
+        $currentSuggestions = $field->history_suggestions ?? [];
+
+        // Add new value to the beginning if not already present
+        if (!in_array($newValue, $currentSuggestions)) {
+            array_unshift($currentSuggestions, $newValue);
+
+            // Keep only the most recent 10 suggestions
+            $currentSuggestions = array_slice($currentSuggestions, 0, 10);
+
+            // Update the field
+            $field->update(['history_suggestions' => $currentSuggestions]);
+        }
     }
 }

@@ -20,9 +20,8 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Resources\Pages\Page;
 use Filament\Actions\Action;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Notifications\Notification;
-use Illuminate\Support\HtmlString;
 
 class FormFields
 {
@@ -47,12 +46,48 @@ class FormFields
 
         switch ($field->field_type) {
             case 'text':
-                return TextInput::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->maxLength($field->validation_config['max_length'] ?? 255)
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition);
+                $defaultValue = $field->validation_config['default_value'] ?? null;
+                $historySuggestions = $field->history_suggestions ?? [];
+
+                // Decode JSON if history_suggestions is stored as JSON string
+                if (is_string($historySuggestions)) {
+                    $historySuggestions = json_decode($historySuggestions, true) ?? [];
+                }
+
+                // Always use Select field for text inputs to enable history building
+                $options = array_combine($historySuggestions, $historySuggestions); // value => label
+
+                return SelectFieldBuilder::createSearchableSelect(
+                    $field->field_key,
+                    $baseConfig['label'],
+                    $baseConfig['helperText'],
+                    $options,
+                    $field->validation_config['required'] ?? false,
+                    $visibleCondition,
+                    $defaultValue,
+                    function ($newValue, $newLabel) use ($field) {
+                        // Auto-add to history suggestions when user enters new value
+                        $currentHistory = $field->history_suggestions ?? [];
+
+                        // Decode if it's a JSON string
+                        if (is_string($currentHistory)) {
+                            $currentHistory = json_decode($currentHistory, true) ?? [];
+                        }
+
+                        // Add new value if not already exists
+                        if (!in_array($newValue, $currentHistory)) {
+                            $currentHistory[] = $newValue;
+
+                            // Limit to 10 suggestions, keep most recent
+                            $currentHistory = array_slice($currentHistory, -10);
+
+                            // Update field in database
+                            $field->update([
+                                'history_suggestions' => $currentHistory
+                            ]);
+                        }
+                    }
+                );
 
             case 'number':
                 return TextInput::make($field->field_key)
@@ -70,14 +105,20 @@ class FormFields
                     $options[$option->option_value] = $option->option_text;
                 }
 
-                return ToggleButtons::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->options($options)
-                    ->inline()
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition)
-                    ->live();
+                return SelectFieldBuilder::createSearchableSelect(
+                    $field->field_key,
+                    $baseConfig['label'],
+                    $baseConfig['helperText'],
+                    $options,
+                    $field->validation_config['required'] ?? false,
+                    $visibleCondition,
+                    null, // default value
+                    function ($newValue, $newLabel) {
+                        // Callback untuk menambah opsi baru
+                        // Dalam preview, kita tidak menyimpan ke database
+                        // tapi opsi akan tersedia selama session
+                    }
+                );
 
             case 'multi_select':
                 $options = [];
@@ -85,15 +126,14 @@ class FormFields
                     $options[$option->option_value] = $option->option_text;
                 }
 
-                return CheckboxList::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->options($options)
-                    ->required($field->validation_config['required'] ?? false)
-                    ->bulkToggleable()
-                    ->visible($visibleCondition)
-                    ->live()
-                    ->columns(1);
+                return SelectFieldBuilder::createMultiSelect(
+                    $field->field_key,
+                    $baseConfig['label'],
+                    $baseConfig['helperText'],
+                    $options,
+                    $field->validation_config['required'] ?? false,
+                    $visibleCondition
+                );
 
             case 'boolean':
                 $options = [];

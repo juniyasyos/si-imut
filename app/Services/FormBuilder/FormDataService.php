@@ -39,6 +39,7 @@ class FormDataService
                 'field_description' => $field->field_description,
                 'field_type' => $field->field_type ?: 'text', // Fallback for empty field_type
                 'validation_config' => $field->validation_config,
+                'history_suggestions' => $this->formatHistorySuggestionsForUI($field->history_suggestions),
                 'compliance_weight' => $field->compliance_weight,
                 'is_critical_field' => $field->is_critical_field,
                 'conditional_logic' => $field->conditional_logic,
@@ -58,6 +59,29 @@ class FormDataService
             'auto_fail_on_critical' => $formTemplate->auto_fail_on_critical,
             'fields' => $fields,
         ];
+    }
+
+    private function formatHistorySuggestionsForUI(mixed $suggestions): array
+    {
+        // Handle null/empty cases
+        if (empty($suggestions)) {
+            return [];
+        }
+
+        // If it's a string (JSON), decode it
+        if (is_string($suggestions)) {
+            $suggestions = json_decode($suggestions, true) ?? [];
+        }
+
+        // Ensure it's an array
+        if (!is_array($suggestions)) {
+            return [];
+        }
+
+        // Convert array of strings to repeater format
+        return array_map(function ($suggestion) {
+            return ['value' => $suggestion];
+        }, $suggestions);
     }
 
     public function getAvailableFields(array $formData): array

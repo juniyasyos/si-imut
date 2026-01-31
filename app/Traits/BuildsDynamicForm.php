@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
 use App\Models\EnhancedFormField;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
@@ -25,12 +25,7 @@ trait BuildsDynamicForm
         }
 
         return match ($field->field_type) {
-            'text' => TextInput::make("responses.{$field->field_key}")
-                ->label($field->field_label)
-                ->required($field->is_critical_field)
-                ->placeholder('Masukkan ' . strtolower($field->field_label))
-                ->helperText($field->description)
-                ->maxLength(255),
+            'text' => $this->buildTextFieldWithHistory($field),
 
             'textarea' => Textarea::make("responses.{$field->field_key}")
                 ->label($field->field_label)
@@ -149,5 +144,54 @@ trait BuildsDynamicForm
             'checkbox' => is_array($value) ? implode(', ', $value) : $value,
             default => $value,
         };
+    }
+
+    /**
+     * Build text field with history suggestions capability
+     */
+    protected function buildTextFieldWithHistory(EnhancedFormField $field)
+    {
+        $historySuggestions = $field->history_suggestions ?? [];
+
+        // Decode JSON if history_suggestions is stored as JSON string
+        if (is_string($historySuggestions)) {
+            $historySuggestions = json_decode($historySuggestions, true) ?? [];
+        }
+
+        // Always use Select field for text inputs to enable history building
+        $options = array_combine($historySuggestions, $historySuggestions); // value => label
+
+        return SelectFieldBuilder::createSearchableSelect(
+            "responses.{$field->field_key}",
+            $field->field_label,
+            $field->field_description,
+            $options,
+            $field->is_critical_field,
+            true, // visible condition
+            null, // default value
+            true, // allow custom input
+            function ($newValue, $newLabel) use ($field) {
+                // Auto-add to history suggestions when user enters new value
+                $currentHistory = $field->history_suggestions ?? [];
+
+                // Decode if it's a JSON string
+                if (is_string($currentHistory)) {
+                    $currentHistory = json_decode($currentHistory, true) ?? [];
+                }
+
+                // Add new value if not already exists
+                if (!in_array($newValue, $currentHistory)) {
+                    $currentHistory[] = $newValue;
+
+                    // Limit to 10 suggestions, keep most recent
+                    $currentHistory = array_slice($currentHistory, -10);
+
+                    // Update field in database
+                    $field->update([
+                        'history_suggestions' => $currentHistory
+                    ]);
+                }
+            }
+        );
     }
 }

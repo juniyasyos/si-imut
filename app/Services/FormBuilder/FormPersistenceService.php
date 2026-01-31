@@ -67,6 +67,7 @@ class FormPersistenceService
                 'field_description' => $fieldData['field_description'] ?? null,
                 'field_type' => $fieldData['field_type'],
                 'validation_config' => $fieldData['validation_config'] ?? [],
+                'history_suggestions' => $this->processHistorySuggestions($fieldData['history_suggestions'] ?? []),
                 'compliance_weight' => $fieldData['compliance_weight'] ?? 2,
                 'is_critical_field' => $fieldData['is_critical_field'] ?? false,
                 'conditional_logic' => $conditionalLogic,
@@ -79,6 +80,25 @@ class FormPersistenceService
 
             $this->saveFieldOptions($field, $fieldData['options'] ?? []);
         }
+    }
+
+    private function processHistorySuggestions(array $suggestions): ?array
+    {
+        if (empty($suggestions)) {
+            return null;
+        }
+
+        // Extract values from repeater structure and filter out empty ones
+        $processed = array_filter(array_map(function ($item) {
+            return trim($item['value'] ?? '');
+        }, $suggestions));
+
+        // Remove duplicates and re-index
+        $processed = array_unique($processed);
+        $processed = array_values($processed);
+
+        // Limit to 10 suggestions
+        return array_slice($processed, 0, 10);
     }
 
     private function saveFieldOptions(EnhancedFormField $field, array $options): void

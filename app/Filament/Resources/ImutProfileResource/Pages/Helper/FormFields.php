@@ -19,9 +19,10 @@ class FormFields
      * 
      * @param object $field Field configuration
      * @param string $prefix Field prefix
+     * @param bool $isPreview Whether this is for preview mode
      * @return mixed Form component
      */
-    public static function createFormComponent($field, $prefix = '')
+    public static function createFormComponent($field, $prefix = '', $isPreview = false)
     {
         $fieldKey = $prefix . $field->field_key;
         $label = $field->field_label;
@@ -31,13 +32,47 @@ class FormFields
 
         switch ($field->field_type) {
             case 'text':
-                return TextFieldBuilder::create(
+                $defaultValue = $field->validation_config['default_value'] ?? null;
+                $historySuggestions = $field->history_suggestions ?? [];
+
+                // Decode JSON if history_suggestions is stored as JSON string
+                if (is_string($historySuggestions)) {
+                    $historySuggestions = json_decode($historySuggestions, true) ?? [];
+                }
+
+                // Always use Select field for text inputs to enable history building
+                $options = array_combine($historySuggestions, $historySuggestions); // value => label
+
+                return SelectFieldBuilder::createSearchableSelect(
                     $fieldKey,
                     $label,
                     $helperText,
-                    $field->validation_config['max_length'] ?? 255,
+                    $options,
                     $required,
-                    $visibleCondition
+                    $visibleCondition,
+                    $defaultValue,
+                    $isPreview ? null : function ($newValue, $newLabel) use ($field) {
+                        // Auto-add to history suggestions when user enters new value (only in non-preview mode)
+                        $currentHistory = $field->history_suggestions ?? [];
+
+                        // Decode if it's a JSON string
+                        if (is_string($currentHistory)) {
+                            $currentHistory = json_decode($currentHistory, true) ?? [];
+                        }
+
+                        // Add new value if not already exists
+                        if (!in_array($newValue, $currentHistory)) {
+                            $currentHistory[] = $newValue;
+
+                            // Limit to 10 suggestions, keep most recent
+                            $currentHistory = array_slice($currentHistory, -10);
+
+                            // Update field in database
+                            $field->update([
+                                'history_suggestions' => $currentHistory
+                            ]);
+                        }
+                    }
                 );
 
             case 'number':

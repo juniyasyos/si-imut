@@ -197,16 +197,16 @@
         },
         {
             "name": "awcodes/filament-table-repeater",
-            "version": "v3.1.4",
+            "version": "v3.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/awcodes/filament-table-repeater.git",
-                "reference": "275de32e2123a2f7e586404352ee4c794f019a09"
+                "reference": "2053ffe0981ff08df24c234540f65f5762f55d1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/awcodes/filament-table-repeater/zipball/275de32e2123a2f7e586404352ee4c794f019a09",
-                "reference": "275de32e2123a2f7e586404352ee4c794f019a09",
+                "url": "https://api.github.com/repos/awcodes/filament-table-repeater/zipball/2053ffe0981ff08df24c234540f65f5762f55d1b",
+                "reference": "2053ffe0981ff08df24c234540f65f5762f55d1b",
                 "shasum": ""
             },
             "require": {
@@ -260,7 +260,7 @@
             ],
             "support": {
                 "issues": "https://github.com/awcodes/filament-table-repeater/issues",
-                "source": "https://github.com/awcodes/filament-table-repeater/tree/v3.1.4"
+                "source": "https://github.com/awcodes/filament-table-repeater/tree/v3.1.5"
             },
             "funding": [
                 {
@@ -268,7 +268,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-15T15:46:52+00:00"
+            "time": "2026-01-06T23:41:22+00:00"
         },
         {
             "name": "aws/aws-crt-php",
