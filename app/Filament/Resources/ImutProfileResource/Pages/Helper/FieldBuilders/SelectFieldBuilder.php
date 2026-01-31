@@ -7,8 +7,9 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Actions\Action;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Support\Enums\ActionSize;
+use Illuminate\Support\Str;
 
 /**
  * Builder for select fields (single and multi)
@@ -112,45 +113,6 @@ class SelectFieldBuilder
         $select->options($options)
             ->placeholder('Pilih dari history atau ketik input custom')
             ->allowHtml()
-            ->createOptionForm([
-                TextInput::make('new_option_label')
-                    ->label('Label Opsi Baru')
-                    ->required()
-                    ->placeholder('Masukkan label untuk opsi baru')
-                    ->maxLength(255),
-                TextInput::make('new_option_value')
-                    ->label('Value Opsi Baru')
-                    ->required()
-                    ->placeholder('Masukkan value untuk opsi baru')
-                    ->maxLength(255)
-                    ->helperText('Value akan digunakan sebagai identifier unik')
-                    ->unique(ignoreRecord: true)
-                    ->validationMessages([
-                        'unique' => 'Opsi dengan value ini sudah ada.',
-                    ]),
-            ])
-            ->createOptionUsing(function (array $data) use ($onAddCallback) {
-                $newLabel = trim($data['new_option_label']);
-                $newValue = trim($data['new_option_value']);
-
-                // Call callback if provided
-                if ($onAddCallback) {
-                    $result = $onAddCallback($newValue, $newLabel);
-                    if ($result === false) {
-                        return null; // Cancel creation
-                    }
-                }
-
-                // Show success notification
-                \Filament\Notifications\Notification::make()
-                    ->title('Opsi berhasil ditambahkan')
-                    ->body("Opsi '{$newLabel}' telah ditambahkan ke daftar.")
-                    ->success()
-                    ->send();
-
-                return $newValue;
-            })
-            ->createOptionModalHeading('Tambah Opsi Baru')
             ->suffixAction(
                 Action::make('addNewOption')
                     ->label('Tambah Baru')
@@ -159,25 +121,20 @@ class SelectFieldBuilder
                     ->color('success')
                     ->form([
                         TextInput::make('new_option_label')
-                            ->label('Label Opsi Baru')
+                            ->label('Opsi Baru')
                             ->required()
-                            ->placeholder('Masukkan label untuk opsi baru')
-                            ->maxLength(255),
-                        TextInput::make('new_option_value')
-                            ->label('Value Opsi Baru')
-                            ->required()
-                            ->placeholder('Masukkan value untuk opsi baru')
+                            ->placeholder('Masukkan opsi baru')
                             ->maxLength(255)
-                            ->helperText('Value akan digunakan sebagai identifier unik'),
+                            ->helperText('Label akan digunakan sebagai tampilan dan value akan dijadikan slug'),
                     ])
                     ->modalHeading('Tambah Opsi Baru')
                     ->modalDescription('Tambahkan opsi baru ke dalam daftar pilihan.')
                     ->modalSubmitActionLabel('Tambah Opsi')
                     ->action(function (array $data, $set, $get, $livewire) use ($fieldKey, $onAddCallback) {
                         $newLabel = trim($data['new_option_label']);
-                        $newValue = trim($data['new_option_value']);
+                        $newValue = Str::slug($newLabel);
 
-                        if (empty($newLabel) || empty($newValue)) {
+                        if (empty($newLabel)) {
                             return;
                         }
 

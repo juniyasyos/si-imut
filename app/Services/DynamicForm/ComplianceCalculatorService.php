@@ -27,7 +27,7 @@ class ComplianceCalculatorService
                 continue;
             }
 
-            if ($field->compliance_weight > 0) {
+            if ($field->compliance_weight > 0 && $field->field_type !== 'text') {
                 $totalWeight += $field->compliance_weight;
 
                 // Check if field is filled (different logic for different field types)
@@ -98,6 +98,11 @@ class ComplianceCalculatorService
                             $fieldScore = $field->compliance_weight;
                             break;
 
+                        case 'text':
+                            // Text fields do not contribute to compliance score
+                            $fieldScore = 0;
+                            break;
+
                         default:
                             $fieldScore = $field->compliance_weight; // Default to full score if filled
                     }
@@ -111,7 +116,7 @@ class ComplianceCalculatorService
                 $totalScore += $fieldScore;
                 $fieldBreakdown[$field->field_key] = [
                     'score' => $fieldScore,
-                    'weight' => $field->compliance_weight
+                    'weight' => $field->field_type === 'text' ? 0 : $field->compliance_weight
                 ];
             }
         }
