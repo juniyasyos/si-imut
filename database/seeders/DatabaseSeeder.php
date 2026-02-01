@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
                 CompleteFormTemplateSeeder::class,
 
                 // Step 2: Replicate expired/future profiles to make them currently valid
-                ValidDailyReportProfileSeeder::class, // DISABLED: Creates duplicates, profiles already valid from CompleteFormTemplateSeeder
+                ValidDailyReportProfileSeeder::class,
 
                 // Step 3: Create simulation data for specific indicators
                 HandwashingSimulationSeeder::class,

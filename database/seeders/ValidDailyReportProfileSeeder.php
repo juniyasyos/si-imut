@@ -24,15 +24,6 @@ class ValidDailyReportProfileSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->warn('⚠️  NOTICE: This seeder is usually NOT needed if CompleteFormTemplateSeeder is used.');
-        $this->command->warn('⚠️  CompleteFormTemplateSeeder already creates valid profiles.');
-        $this->command->newLine();
-
-        if (!$this->command->confirm('Do you want to continue replicating profiles?', false)) {
-            $this->command->info('❌ Seeder cancelled by user.');
-            return;
-        }
-
         $this->command->info('🌱 Starting Valid Daily Report Profile Seeder...');
         $this->command->info('📋 Strategy: Duplicate expired/future profiles with valid dates');
         $this->command->newLine();
@@ -121,22 +112,40 @@ class ValidDailyReportProfileSeeder extends Seeder
             $newProfile->id = null;
             $newProfile->save();
 
+            // Check if FormTemplate already exists for new profile (should not happen, but safety check)
+            if (FormTemplate::where('imut_profile_id', $newProfile->id)->exists()) {
+                $this->command->warn("  ⚠️  FormTemplate already exists for new profile, skipping template replication...");
+                return true; // Profile created successfully, just skip template
+            }
+
             // Replicate form templates
             $oldProfile->formTemplates->each(function ($template) use ($newProfile) {
+                // Additional check before creating template
+                $existingTemplate = FormTemplate::where('imut_profile_id', $newProfile->id)
+                    ->where('title', $template->title)
+                    ->first();
+
+                if ($existingTemplate) {
+                    return; // Skip this template
+                }
+
                 $newTemplate = $template->replicate();
                 $newTemplate->imut_profile_id = $newProfile->id;
+                $newTemplate->id = null; // Force new ID
                 $newTemplate->save();
 
                 // Replicate form fields
                 $template->formFields->each(function ($field) use ($newTemplate) {
                     $newField = $field->replicate();
                     $newField->form_template_id = $newTemplate->id;
+                    $newField->id = null; // Force new ID
                     $newField->save();
 
                     // Replicate field options
                     $field->options->each(function ($option) use ($newField) {
                         $newOption = $option->replicate();
                         $newOption->enhanced_form_field_id = $newField->id;
+                        $newOption->id = null; // Force new ID
                         $newOption->save();
                     });
                 });
