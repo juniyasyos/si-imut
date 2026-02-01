@@ -30,6 +30,8 @@ class ImutPenilaian extends Model implements HasMedia
         'recommendations',
         'numerator_value',
         'denominator_value',
+        'is_auto_calculated',
+        'calculation_metadata',
     ];
 
     /**
@@ -45,6 +47,16 @@ class ImutPenilaian extends Model implements HasMedia
      * @var array<int, string>
      */
     protected $hidden = ['created_at', 'updated_at'];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'is_auto_calculated' => 'boolean',
+        'calculation_metadata' => 'array',
+    ];
 
     public function registerMediaCollections(): void
     {

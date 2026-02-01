@@ -24,10 +24,18 @@ class DatabaseSeeder extends Seeder
                 // ImutCategorySeeder::class,
                 // RegionTypeSeeder::class,
                 // ImutDataOldSeeder::class,
-                CompleteFormTemplateSeeder::class, // Create FormTemplates with JSON configs
-                // EnhancedFormBuilderSeeder::class,
+
+                // Step 1: Create FormTemplates with JSON configs for all profiles
+                CompleteFormTemplateSeeder::class,
+
+                // Step 2: Replicate expired/future profiles to make them currently valid
+                ValidDailyReportProfileSeeder::class, // DISABLED: Creates duplicates, profiles already valid from CompleteFormTemplateSeeder
+
+                // Step 3: Create simulation data for specific indicators
                 HandwashingSimulationSeeder::class,
-                EnsureFormTemplateSeeder::class, // Ensure all ImutProfile have FormTemplate
+
+                // Note: EnsureFormTemplateSeeder removed - redundant with CompleteFormTemplateSeeder
+
                 // ImutDataOldSeederOptimized::class, // Using optimized version
                 // HandHygieneFormSeeder::class,
                 // EnhancedFormBuilderSeeder::class,

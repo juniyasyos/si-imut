@@ -59,6 +59,7 @@ class LaporanImut extends Model
         'report_month',
         'report_year',
         'created_by',
+        'is_auto_generated',
     ];
 
     /**
@@ -90,6 +91,7 @@ class LaporanImut extends Model
         'assessment_period_end' => 'date',
         'report_month' => 'integer',
         'report_year' => 'integer',
+        'is_auto_generated' => 'boolean',
     ];
 
     /**
