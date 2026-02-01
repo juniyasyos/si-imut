@@ -1,5 +1,8 @@
 <x-filament-panels::page>
     <div>
+        <!-- Full Screen Loading Overlay -->
+        <div x-show="isDateLoading" x-transition.opacity.duration.500ms class="fixed inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md z-[9999]" style="display: none;"></div>
+
         <div class="space-y-6 relative" x-data="{
             selectedDate: '{{ now()->format('Y-m-d') }}',
             selectedMonth: '{{ $selectedMonth }}',
@@ -10,6 +13,7 @@
             statusFilter: 'all',
             indicators: @js($indicators),
             matrixData: @js($matrixData),
+            isDateLoading: false,
             
             init() {
                 this.initResize();
@@ -44,8 +48,10 @@
             },
             
             selectDate(date) {
+                this.isDateLoading = true;
                 this.selectedDate = date || '{{ now()->format('Y-m-d') }}';
                 console.log('Date selected:', this.selectedDate);
+                setTimeout(() => { this.isDateLoading = false; }, 1000);
             },
             
             get filteredIndicators() {

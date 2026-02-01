@@ -3,7 +3,8 @@
     wire:loading.class="opacity-75">
 
     <div class="flex items-center justify-between">
-        <button wire:click="previousMonth"
+        <button @click="isLoading = true; setTimeout(() => isLoading = false, 1500)"
+            wire:click="previousMonth"
             wire:loading.attr="disabled"
             wire:target="previousMonth"
             class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 group">
@@ -30,7 +31,8 @@
             </p>
         </div>
 
-        <button wire:click="nextMonth"
+        <button @click="isLoading = true; setTimeout(() => isLoading = false, 1500)"
+            wire:click="nextMonth"
             wire:loading.attr="disabled"
             wire:target="nextMonth"
             @if(!$this->canGoNextMonth()) disabled @endif
