@@ -31,6 +31,7 @@ abstract class BaseDailyReportMonitoring extends Page
     public array $indicators = [];
     public array $matrixData = [];
     public array $daysInMonth = [];
+    public array $monitoringTemplates = [];
 
     // Loading states
     public bool $loadingMatrix = false;

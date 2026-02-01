@@ -12,7 +12,6 @@ use Filament\Tables\Table;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Filters\SelectFilter;
@@ -68,8 +67,9 @@ class ListDailyReports extends Page implements HasTable
                     ->color(fn($state) => $this->getScoreColor($state))
                     ->sortable(),
 
-                BadgeColumn::make('compliance_status')
+                TextColumn::make('compliance_status')
                     ->label('Status Kepatuhan')
+                    ->badge()
                     ->formatStateUsing(fn($state) => $state ? 'Patuh' : 'Tidak Patuh')
                     ->color(fn($state) => $state ? 'success' : 'danger')
                     ->sortable(),

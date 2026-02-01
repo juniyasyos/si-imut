@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,6 +44,16 @@ class FormTemplate extends Model
     public function dailyReportResponses(): HasMany
     {
         return $this->hasMany(DailyReportResponse::class);
+    }
+
+    // Query Scopes
+    public function scopeForUserUnits(Builder $query, User $user): Builder
+    {
+        $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        
+        return $query->whereHas('imutProfile.imutData.unitKerja', function ($q) use ($unitKerjaIds) {
+            $q->whereIn('unit_kerja.id', $unitKerjaIds);
+        });
     }
 
     public function calculateCompliance(array $fieldResponses): array

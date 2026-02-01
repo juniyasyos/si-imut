@@ -30,6 +30,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     {
         $this->bootBase();
         $this->loadMatrixData();
+        $this->loadMonitoringTemplates();
         $this->checkAndOpenSlideOverFromUrl();
     }
 
@@ -161,5 +162,94 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     protected function getHeaderActions(): array
     {
         return [];
+    }
+
+    /**
+     * Load monitoring templates data for monthly period
+     */
+    protected function loadMonitoringTemplates(): void
+    {
+        try {
+            $user = Auth::user();
+
+            // Parse month (format: Y-m)
+            $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
+
+            // Calculate period from 5th to 5th next month
+            $startDate = $date->copy()->subMonth()->day(5)->startOfDay();
+            $endDate = $date->copy()->day(4)->endOfDay();
+
+            // Get user's unit kerja IDs
+            $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+
+            // Build query - use same scope as list daily report
+            $templates = FormTemplate::query()
+                ->forUserUnits($user)
+                ->with(['imutProfile.imutData.categories'])
+                ->whereHas('imutProfile', function ($query) {
+                    $query->where('valid_from', '<=', now())
+                        ->where(function ($q) {
+                            $q->whereNull('valid_until')
+                                ->orWhere('valid_until', '>=', now());
+                        });
+                })
+                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
+                    $query->whereBetween('report_date', [$startDate, $endDate])
+                        ->whereIn('unit_kerja_id', $unitKerjaIds);
+                }])
+                ->get();
+        
+
+            $mapped = $templates->map(function ($template) {
+                return [
+                    'id' => $template->id,
+                    'title' => $template->imutProfile->imutData->title,
+                    'description' => $template->description,
+                    'profile_name' => $template->imutProfile?->title ?? null,
+                    'imut_profile_version' => $template->imutProfile?->version ?? null,
+                    'category' => null,
+                    'response_count' => $template->response_count ?? 0,
+                ];
+            });
+
+            $this->monitoringTemplates = $mapped->toArray();
+        } catch (\Exception $e) {
+            Log::error('Error loading monitoring data', [
+                'month' => $this->selectedMonth,
+                'error' => $e->getMessage()
+            ]);
+            $this->monitoringTemplates = [];
+        }
+    }
+
+    /**
+     * View monitoring detail
+     */
+    public function viewMonitoringDetail(int $templateId): void
+    {
+        // Redirect to form template detail page
+        $this->redirect(route('filament.admin.resources.form-templates.view', ['record' => $templateId]));
+    }
+
+    /**
+     * View monitoring responses
+     */
+    public function viewMonitoringResponses(int $templateId): void
+    {
+        // Redirect to daily report entries filtered by template
+        $this->redirect(route('filament.admin.resources.daily-report-entries.index', [
+            'tableFilters' => [
+                'form_template_id' => ['value' => $templateId]
+            ]
+        ]));
+    }
+
+    /**
+     * Export monitoring data
+     */
+    public function exportMonitoring(int $templateId): void
+    {
+        // TODO: Implement export functionality
+        $this->notify('info', 'Export functionality will be available soon');
     }
 }

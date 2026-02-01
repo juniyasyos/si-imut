@@ -13,6 +13,8 @@
             statusFilter: 'all',
             indicators: @js($indicators),
             matrixData: @js($matrixData),
+            monitoringData: @js($monitoringTemplates),
+            monitoringSearchQuery: '',
             isDateLoading: false,
             
             init() {
@@ -145,6 +147,27 @@
             formatImutVersion(version) {
                 if (!version) return '';
                 return version.replace('/version-', 'v');
+            },
+            
+            // Monitoring functions
+            get filteredMonitoringData() {
+                let filtered = this.monitoringData;
+                
+                // Search filter
+                if (this.monitoringSearchQuery.trim()) {
+                    const query = this.monitoringSearchQuery.toLowerCase();
+                    filtered = filtered.filter(item => 
+                        item.title.toLowerCase().includes(query) ||
+                        (item.category && item.category.toLowerCase().includes(query)) ||
+                        (item.profile_name && item.profile_name.toLowerCase().includes(query))
+                    );
+                }
+                
+                return filtered;
+            },
+            
+            formatNumber(num) {
+                return new Intl.NumberFormat('id-ID').format(num || 0);
             }
         }" x-cloak>
 
