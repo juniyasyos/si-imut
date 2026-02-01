@@ -19,7 +19,6 @@ class HandwashingSimulationSeeder extends Seeder
         $this->command->info('🧪 SIMULASI FORM Kepatuhan Kebersihan Tangan - Unit IGD');
         $this->command->info('========================================================');
 
-        // dd(FormTemplate::where('title', 'LIKE', '%Kepatuhan Kebersihan Tangan%')->latest()->first());
         // Ambil template Kepatuhan Kebersihan Tangan
         $template = FormTemplate::where('title', 'LIKE', '%Kepatuhan Kebersihan Tangan%')->latest()->first();
         if (!$template) {
@@ -34,28 +33,81 @@ class HandwashingSimulationSeeder extends Seeder
         // Tampilkan struktur form
         $this->showFormStructure($template);
 
-        // 10 Skenario berbeda untuk unit IGD
-        $scenarios = [
-            ['name' => 'Perawat IGD Shift Pagi - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-05'],
-            ['name' => 'Dokter Jaga IGD - Patuh', 'compliance' => 'good', 'date' => '2026-01-05'],
-            ['name' => 'Perawat IGD Shift Malam - Kurang Patuh', 'compliance' => 'poor', 'date' => '2026-01-05'],
-            ['name' => 'Tim Resusitasi IGD - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-04'],
-            ['name' => 'Perawat Triase IGD - Cukup Patuh', 'compliance' => 'good', 'date' => '2026-01-04'],
-            ['name' => 'Cleaning Service IGD - Kurang Patuh', 'compliance' => 'poor', 'date' => '2026-01-04'],
-            ['name' => 'Dokter Spesialis IGD - Patuh', 'compliance' => 'good', 'date' => '2026-01-03'],
-            ['name' => 'Perawat IGD Ruang Observasi - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-03'],
-            ['name' => 'Mahasiswa Praktek IGD - Tidak Patuh', 'compliance' => 'very_poor', 'date' => '2026-01-03'],
-            ['name' => 'Supervisor IGD - Sangat Patuh', 'compliance' => 'excellent', 'date' => '2026-01-02']
-        ];
+        // Generate data untuk 20 hari ke belakang dari now()
+        $startDate = now()->subDays(20);
+        $endDate = now();
 
-        foreach ($scenarios as $index => $scenario) {
-            $this->command->info("🎯 DATA " . ($index + 1) . ": " . $scenario['name']);
-            $this->command->info('----------------------------------------');
-            $this->simulateFormSubmission($template, $scenario['compliance'], $scenario['date']);
-            $this->command->info('');
+        $this->command->info("📅 Generating data from {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}");
+        $this->command->info("📊 Target: ~8 entries per day");
+        $this->command->newLine();
+
+        $totalGenerated = 0;
+
+        // Loop untuk setiap hari
+        for ($date = $startDate->copy(); $date <= $endDate; $date->addDay()) {
+            // Generate 6-10 entries per day (rata-rata 8)
+            $entriesPerDay = rand(6, 10);
+
+            $this->command->info("📆 {$date->format('Y-m-d')} - Generating {$entriesPerDay} entries");
+
+            for ($i = 0; $i < $entriesPerDay; $i++) {
+                // Variasi compliance level
+                $complianceLevel = $this->getRandomComplianceLevel();
+                $staffName = $this->getRandomStaffName($i);
+
+                $this->command->info("  └─ Entry " . ($i + 1) . ": {$staffName} ({$complianceLevel})");
+                $this->simulateFormSubmission($template, $complianceLevel, $date->format('Y-m-d'));
+
+                $totalGenerated++;
+            }
+
+            $this->command->newLine();
         }
 
-        $this->command->info('✅ Simulasi 10 data IGD selesai!');
+        $this->command->info("✅ Simulasi selesai! Total {$totalGenerated} entries generated.");
+    }
+
+    private function getRandomComplianceLevel(): string
+    {
+        $levels = [
+            'excellent' => 40, // 40% excellent
+            'good' => 35,      // 35% good
+            'poor' => 20,      // 20% poor
+            'very_poor' => 5   // 5% very poor
+        ];
+
+        $rand = rand(1, 100);
+        $cumulative = 0;
+
+        foreach ($levels as $level => $percentage) {
+            $cumulative += $percentage;
+            if ($rand <= $cumulative) {
+                return $level;
+            }
+        }
+
+        return 'good';
+    }
+
+    private function getRandomStaffName(int $index): string
+    {
+        $staffTypes = [
+            'Perawat IGD Shift Pagi',
+            'Dokter Jaga IGD',
+            'Perawat IGD Shift Malam',
+            'Tim Resusitasi IGD',
+            'Perawat Triase IGD',
+            'Cleaning Service IGD',
+            'Dokter Spesialis IGD',
+            'Perawat IGD Ruang Observasi',
+            'Mahasiswa Praktek IGD',
+            'Supervisor IGD',
+            'Perawat Senior IGD',
+            'Administrasi IGD',
+            'Radiografer IGD'
+        ];
+
+        return $staffTypes[$index % count($staffTypes)];
     }
 
     private function showFormStructure(FormTemplate $template): void

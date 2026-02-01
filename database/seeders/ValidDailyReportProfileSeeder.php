@@ -112,23 +112,8 @@ class ValidDailyReportProfileSeeder extends Seeder
             $newProfile->id = null;
             $newProfile->save();
 
-            // Check if FormTemplate already exists for new profile (should not happen, but safety check)
-            if (FormTemplate::where('imut_profile_id', $newProfile->id)->exists()) {
-                $this->command->warn("  ⚠️  FormTemplate already exists for new profile, skipping template replication...");
-                return true; // Profile created successfully, just skip template
-            }
-
-            // Replicate form templates
+            // Replicate form templates - always duplicate
             $oldProfile->formTemplates->each(function ($template) use ($newProfile) {
-                // Additional check before creating template
-                $existingTemplate = FormTemplate::where('imut_profile_id', $newProfile->id)
-                    ->where('title', $template->title)
-                    ->first();
-
-                if ($existingTemplate) {
-                    return; // Skip this template
-                }
-
                 $newTemplate = $template->replicate();
                 $newTemplate->imut_profile_id = $newProfile->id;
                 $newTemplate->id = null; // Force new ID
