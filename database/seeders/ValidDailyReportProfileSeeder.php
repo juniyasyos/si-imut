@@ -109,28 +109,28 @@ class ValidDailyReportProfileSeeder extends Seeder
             // Set valid period to now
             $newProfile->valid_from = now();
             $newProfile->valid_until = now()->addYear();
-            $newProfile->id = null;
+            unset($newProfile->id);
             $newProfile->save();
+            
+            // Clean up any existing templates for this profile (from previous incomplete runs)
+            FormTemplate::where('imut_profile_id', $newProfile->id)->delete();
 
-            // Replicate form templates - always duplicate
+            // Replicate form templates - same logic as ProfilesRelationManager
             $oldProfile->formTemplates->each(function ($template) use ($newProfile) {
                 $newTemplate = $template->replicate();
                 $newTemplate->imut_profile_id = $newProfile->id;
-                unset($newTemplate->id); // Remove ID completely
                 $newTemplate->save();
 
                 // Replicate form fields
                 $template->formFields->each(function ($field) use ($newTemplate) {
                     $newField = $field->replicate();
                     $newField->form_template_id = $newTemplate->id;
-                    unset($newField->id); // Remove ID completely
                     $newField->save();
 
                     // Replicate field options
                     $field->options->each(function ($option) use ($newField) {
                         $newOption = $option->replicate();
                         $newOption->enhanced_form_field_id = $newField->id;
-                        unset($newOption->id); // Remove ID completely
                         $newOption->save();
                     });
                 });
