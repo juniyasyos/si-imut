@@ -111,7 +111,7 @@ class ValidDailyReportProfileSeeder extends Seeder
             $newProfile->valid_until = now()->addYear();
             unset($newProfile->id);
             $newProfile->save();
-            
+
             // Clean up any existing templates for this profile (from previous incomplete runs)
             FormTemplate::where('imut_profile_id', $newProfile->id)->delete();
 
