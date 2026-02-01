@@ -30,6 +30,26 @@ class DailyReportEntry extends Model
     ];
 
     /**
+     * Accessor to ensure responses is always an array
+     */
+    public function getResponsesAttribute($value)
+    {
+        if (is_null($value)) {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return json_decode($value, true) ?? [];
+        }
+
+        return [];
+    }
+
+    /**
      * Get the policy class for authorization.
      */
     public static function getPolicy(): string

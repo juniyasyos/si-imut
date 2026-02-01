@@ -7,6 +7,7 @@ use App\Jobs\ProsesPenilaianImut;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
+use App\Services\DailyReportAggregationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Actions\Action as FormAction;
@@ -341,6 +342,44 @@ class EditLaporanImut extends EditRecord
         $laporan = $this->record;
 
         return [
+            // Calculate from Daily Reports Action
+            Action::make('calculateFromDailyReports')
+                ->label('Hitung dari Daily Report')
+                ->icon('heroicon-o-calculator')
+                ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading('Hitung dari Daily Report')
+                ->modalDescription(function () use ($laporan) {
+                    return "Sistem akan menghitung Numerator dan Denominator dari data Daily Report bulan **{$this->getMonthName($laporan->report_month)} {$laporan->report_year}**.\n\n**Yang akan dihitung:**\n• Numerator = Jumlah laporan dengan compliance 100%\n• Denominator = Total jumlah laporan\n• Persentase = (N/D) × 100\n\n⚠️ **Peringatan:** Nilai yang sudah terisi akan **DITIMPA** dengan hasil perhitungan otomatis.";
+                })
+                ->modalSubmitActionLabel('Ya, Hitung Sekarang')
+                ->modalIcon('heroicon-o-calculator')
+                ->action(function () use ($laporan) {
+                    try {
+                        $service = app(DailyReportAggregationService::class);
+                        $results = $service->calculateForLaporan($laporan);
+
+                        $totalPenilaian = $results['total_penilaians'];
+                        $calculatedCount = $results['calculated'];
+                        $skippedCount = $results['skipped'];
+
+                        Notification::make()
+                            ->title('✅ Perhitungan Berhasil')
+                            ->body("Berhasil menghitung {$calculatedCount} dari {$totalPenilaian} penilaian.\n{$skippedCount} penilaian tidak memiliki data daily report.")
+                            ->success()
+                            ->duration(8000)
+                            ->send();
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('❌ Perhitungan Gagal')
+                            ->body('Terjadi kesalahan: ' . $e->getMessage())
+                            ->danger()
+                            ->persistent()
+                            ->send();
+                    }
+                })
+                ->visible(fn() => Gate::allows('update_laporan::imut')),
+
             ActionGroup::make([
                 Action::make('imutDataSummary')
                     ->label('Berdasarkan IMUT Data')
@@ -368,6 +407,28 @@ class EditLaporanImut extends EditRecord
                 ->icon('heroicon-s-clipboard-document-check')
                 ->color('primary'),
         ];
+    }
+
+    /**
+     * Get month name in Indonesian
+     */
+    protected function getMonthName(int $month): string
+    {
+        $monthNames = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+        return $monthNames[$month] ?? $month;
     }
 
 

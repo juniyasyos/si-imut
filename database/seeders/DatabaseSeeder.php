@@ -31,8 +31,14 @@ class DatabaseSeeder extends Seeder
                 // Step 2: Replicate expired/future profiles to make them currently valid
                 ValidDailyReportProfileSeeder::class,
 
-                // Step 3: Create simulation data for specific indicators
+                // Step 3: Create default FormTemplates for profiles without JSON configs
+                DefaultFormTemplateSeeder::class,
+
+                // Step 4: Create simulation data for specific indicators
                 HandwashingSimulationSeeder::class,
+
+                // Step 5: Create sample daily report entries for testing
+                SampleDailyReportSeeder::class,
 
                 // Note: EnsureFormTemplateSeeder removed - redundant with CompleteFormTemplateSeeder
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\GenerateMonthlyLaporanImut;
 use App\Console\Commands\NotifikasiDeadlineLaporan;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -9,4 +10,11 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
+// Daily notification H-2 and H-1 before deadline
 Schedule::command(NotifikasiDeadlineLaporan::class)->dailyAt('08:00');
+
+// Monthly report generation on 5th of each month at 01:00
+// Automatically calculates N/D from previous month's daily reports
+Schedule::command(GenerateMonthlyLaporanImut::class, ['--auto-calculate'])
+    ->monthlyOn(5, '01:00')
+    ->description('Auto-generate monthly IMUT report with daily report calculation');

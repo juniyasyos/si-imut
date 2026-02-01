@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\DailyReportEntry;
+use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
@@ -24,7 +24,8 @@ class DailyReportAggregationService
         $penilaian->loadMissing([
             'laporanUnitKerja.laporanImut',
             'laporanUnitKerja.unitKerja',
-            'profile.formTemplates'
+            'profile.formTemplates',
+            'profile.imutData'
         ]);
 
         // Get period dari laporan
@@ -34,6 +35,7 @@ class DailyReportAggregationService
 
         // Get unit kerja & form template (indicator)
         $unitKerjaId = $penilaian->laporanUnitKerja->unit_kerja_id;
+        $unitKerjaName = $penilaian->laporanUnitKerja->unitKerja->unit_name ?? 'Unknown';
 
         // Get form template for this profile
         // Profile sudah validated valid period, jadi ambil template pertama
@@ -44,31 +46,117 @@ class DailyReportAggregationService
             return $this->emptyResult($start, $end, 'No FormTemplate found');
         }
 
+        $imutDataTitle = $penilaian->profile->imutData->title ?? 'Unknown';
+
         // Query daily reports untuk indicator ini di unit kerja ini dalam periode ini
-        $reports = DailyReportEntry::query()
+        $reports = DailyReportResponse::query()
             ->where('unit_kerja_id', $unitKerjaId)
             ->where('form_template_id', $formTemplate->id)
             ->whereBetween('report_date', [$start, $end])
             ->orderBy('report_date')
             ->get();
 
+        // DD khusus untuk IGD dan Kepatuhan Kebersihan Tangan
+        // if (stripos($unitKerjaName, 'igd') !== false && stripos($imutDataTitle, 'kepatuhan kebersihan tangan') !== false) {
+        //     dd([
+        //         'unit_kerja' => [
+        //             'id' => $unitKerjaId,
+        //             'name' => $unitKerjaName,
+        //         ],
+        //         'imut_data' => [
+        //             'id' => $penilaian->profile->imutData->id ?? null,
+        //             'title' => $imutDataTitle,
+        //         ],
+        //         'form_template' => [
+        //             'id' => $formTemplate->id,
+        //             'title' => $formTemplate->title,
+        //         ],
+        //         'periode' => [
+        //             'start' => $start->format('Y-m-d'),
+        //             'end' => $end->format('Y-m-d'),
+        //         ],
+        //         'penilaian_id' => $penilaian->id,
+        //         'query_params' => [
+        //             'unit_kerja_id' => $unitKerjaId,
+        //             'form_template_id' => $formTemplate->id,
+        //             'date_range' => [$start->format('Y-m-d'), $end->format('Y-m-d')],
+        //         ],
+        //         'daily_reports' => [
+        //             'total_count' => $reports->count(),
+        //             'reports' => $reports->map(function ($report) {
+        //                 return [
+        //                     'id' => $report->id,
+        //                     'report_date' => $report->report_date->format('Y-m-d'),
+        //                     'total_score' => $report->total_score,
+        //                     'compliance_status' => $report->compliance_status,
+        //                     'responses' => $report->responses,
+        //                     'calculation_details' => $report->calculation_details,
+        //                     'created_at' => $report->created_at?->format('Y-m-d H:i:s'),
+        //                 ];
+        //             })->toArray(),
+        //         ]
+        //     ]);
+        // }
+
         // Calculate
         $denominator = $reports->count(); // Total laporan yang diinput
         $numerator = 0; // Yang compliance 100%
         $breakdown = [];
+        $calculationSteps = []; // Untuk debug
 
         foreach ($reports as $report) {
-            $compliance = $formTemplate->calculateCompliance($report->responses);
-            $score = $compliance['total_score'] ?? 0;
-            $isPerfect = $score >= 100;
+            // Ambil status dari calculation_details karena lebih akurat
+            $calculationDetails = $report->calculation_details ?? [];
+            $score = $calculationDetails['total_score'] ?? $report->total_score ?? 0;
+            $complianceStatus = $calculationDetails['compliance_status'] ?? $report->compliance_status ?? false;
+
+            // Perfect jika compliance_status true ATAU score >= 100
+            $isPerfect = $complianceStatus === true || $score >= 100;
+
+            $step = [
+                'report_id' => $report->id,
+                'date' => $report->report_date->format('Y-m-d'),
+                'raw_data' => [
+                    'total_score_field' => $report->total_score,
+                    'compliance_status_field' => $report->compliance_status,
+                    'calculation_details' => $calculationDetails,
+                ],
+                'used_values' => [
+                    'score' => $score,
+                    'compliance_status' => $complianceStatus,
+                ],
+                'logic' => [
+                    'compliance_status_is_true' => $complianceStatus === true,
+                    'score_gte_100' => $score >= 100,
+                    'formula' => sprintf(
+                        '(%s === true) || (%s >= 100)',
+                        var_export($complianceStatus, true),
+                        $score
+                    ),
+                ],
+                'result' => [
+                    'is_perfect' => $isPerfect,
+                    'numerator_before' => $numerator,
+                ],
+            ];
 
             if ($isPerfect) {
                 $numerator++;
+                $step['result']['numerator_after'] = $numerator;
+                $step['result']['action'] = '✅ MASUK NUMERATOR';
+            } else {
+                $step['result']['numerator_after'] = $numerator;
+                $step['result']['action'] = '❌ TIDAK DIHITUNG';
             }
+
+            $calculationSteps[] = $step;
 
             $breakdown[] = [
                 'date' => $report->report_date->format('Y-m-d'),
+                'report_id' => $report->id,
                 'compliance_score' => round($score, 2),
+                'compliance_status_field' => $report->compliance_status,
+                'compliance_status_calculated' => $complianceStatus,
                 'is_perfect' => $isPerfect,
             ];
         }
@@ -80,6 +168,48 @@ class DailyReportAggregationService
         // Find missing dates
         $missingDates = $this->findMissingDates($reports, $start, $end);
         $totalDays = $start->diffInDays($end) + 1;
+
+        // // DD hasil perhitungan untuk IGD dan Kepatuhan Kebersihan Tangan
+        // if (stripos($unitKerjaName, 'igd') !== false && stripos($imutDataTitle, 'kepatuhan kebersihan tangan') !== false) {
+        //     dd([
+        //         'IDENTITAS' => [
+        //             'unit_kerja' => $unitKerjaName,
+        //             'imut_data' => $imutDataTitle,
+        //             'penilaian_id' => $penilaian->id,
+        //         ],
+        //         'PERIODE' => [
+        //             'start' => $start->format('Y-m-d'),
+        //             'end' => $end->format('Y-m-d'),
+        //             'total_days' => $totalDays,
+        //         ],
+        //         'DATA_INPUT' => [
+        //             'total_reports' => $reports->count(),
+        //             'reports_by_date' => $reports->groupBy(fn($r) => $r->report_date->format('Y-m-d'))
+        //                 ->map(fn($group) => $group->count())
+        //                 ->toArray(),
+        //         ],
+        //         'PROSES_KALKULASI' => $calculationSteps,
+        //         'HASIL_AKHIR' => [
+        //             'numerator' => $numerator,
+        //             'denominator' => $denominator,
+        //             'percentage' => $percentage,
+        //             'formula' => sprintf('(%d / %d) × 100 = %s%%', $numerator, $denominator, $percentage),
+        //         ],
+        //         'BREAKDOWN' => $breakdown,
+        //         'MISSING_DATES' => $missingDates,
+        //         'PERHATIAN' => [
+        //             'duplicate_dates' => $reports->groupBy(fn($r) => $r->report_date->format('Y-m-d'))
+        //                 ->filter(fn($group) => $group->count() > 1)
+        //                 ->map(fn($group) => [
+        //                     'date' => $group->first()->report_date->format('Y-m-d'),
+        //                     'count' => $group->count(),
+        //                     'ids' => $group->pluck('id')->toArray(),
+        //                 ])
+        //                 ->values()
+        //                 ->toArray(),
+        //         ]
+        //     ]);
+        // }
 
         return [
             'numerator' => $numerator,

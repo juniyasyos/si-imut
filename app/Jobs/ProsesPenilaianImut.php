@@ -38,7 +38,13 @@ class ProsesPenilaianImut implements ShouldQueue
                 $indikatorKurangProfil = [];
                 $profilTerpilih = [];
 
+                // Log::info("ProsesPenilaianImut [{$laporan->id}]: Starting for {$laporan->name}");
+                // Log::info("ProsesPenilaianImut [{$laporan->id}]: Period {$laporan->report_month}/{$laporan->report_year}, Assessment: {$laporan->assessment_period_start} to {$laporan->assessment_period_end}");
+                // Log::info("ProsesPenilaianImut [{$laporan->id}]: Total unit kerjas: " . $laporan->unitKerjas->count());
+
                 foreach ($laporan->unitKerjas as $unitKerja) {
+                    Log::info("ProsesPenilaianImut [{$laporan->id}]: Processing unit '{$unitKerja->unit_name}', ImutData count: " . $unitKerja->imutData->count());
+
                     $laporanUnitKerja = LaporanUnitKerja::firstOrCreate([
                         'laporan_imut_id' => $laporan->id,
                         'unit_kerja_id'   => $unitKerja->id,
@@ -46,16 +52,33 @@ class ProsesPenilaianImut implements ShouldQueue
 
                     foreach ($unitKerja->imutData as $imutData) {
                         if (! $imutData->status) {
+                            Log::info("ProsesPenilaianImut [{$laporan->id}]: Skipped '{$imutData->title}' - status inactive");
                             continue;
                         }
 
                         // Cari profil yang tepat untuk periode laporan ini
                         $selectedProfile = $this->findValidProfileForReport($imutData, $laporan);
 
-                        if (! $selectedProfile) {
-                            $indikatorKurangProfil[] = $imutData->title;
-                            continue;
-                        }
+                        // if (! $selectedProfile) {
+                        //     $indikatorKurangProfil[] = $imutData->title;
+
+                        //     // Debug: Check why no profile found
+                        //     $profileCount = $imutData->profiles()->count();
+                        //     $validProfileCount = $imutData->profiles()
+                        //         ->validForPeriod($laporan->assessment_period_start, $laporan->assessment_period_end)
+                        //         ->count();
+
+                        //     Log::warning("ProsesPenilaianImut [{$laporan->id}]: No valid profile for '{$imutData->title}'", [
+                        //         'assessment_start' => $laporan->assessment_period_start?->toDateString(),
+                        //         'assessment_end' => $laporan->assessment_period_end?->toDateString(),
+                        //         'total_profiles' => $profileCount,
+                        //         'valid_profiles_for_period' => $validProfileCount,
+                        //         'imut_data_id' => $imutData->id
+                        //     ]);
+                        //     continue;
+                        // }
+
+                        // Log::info("ProsesPenilaianImut [{$laporan->id}]: ✓ Creating penilaian for '{$imutData->title}' with profile '{$selectedProfile->version}'");
 
                         // Track profil yang digunakan untuk laporan ini
                         $this->trackSelectedProfile($laporan, $imutData, $selectedProfile, $profilTerpilih);
@@ -106,17 +129,14 @@ class ProsesPenilaianImut implements ShouldQueue
             return $existingSelection->imutProfile;
         }
 
-        // Prioritas 2: Cari profil yang valid untuk periode laporan (berdasarkan report_month/year)
-        // Gunakan report_month dan report_year, bukan assessment_period
-        $reportPeriodStart = Carbon::create($laporan->report_year, $laporan->report_month, 1);
-        $reportPeriodEnd = $reportPeriodStart->copy()->endOfMonth();
-
+        // Prioritas 2: Cari profil yang valid untuk ASSESSMENT PERIOD (bukan report_month/year)
+        // Karena assessment period lebih fleksibel dan bisa overlap dengan valid_from/valid_until profile
         $validProfile = $imutData->profiles()
             ->validForPeriod(
-                $reportPeriodStart,
-                $reportPeriodEnd
+                $laporan->assessment_period_start,
+                $laporan->assessment_period_end
             )
-            ->orderBy('valid_from', 'desc') // Pilih yang paling baru berlaku, bukan berdasarkan version string
+            ->orderBy('valid_from', 'desc') // Pilih yang paling baru berlaku
             ->first();
 
         return $validProfile;
