@@ -1,4 +1,13 @@
-<!-- Action Buttons -->
+@if($isMonitoringMode ?? false)
+<!-- Monitoring Mode - Simple Lihat Button -->
+<button
+    @click="$wire.openSlideOver(indicator.id, selectedDate || '{{ now()->format('Y-m-d') }}')"
+    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+    @svg("heroicon-m-eye", "w-4 h-4")
+    Lihat
+</button>
+@else
+<!-- Regular Mode - Conditional Buttons -->
 <!-- Manage Data Button (When data exists) -->
 <template x-if="getActionButton(indicator.id, selectedDate).state === 'done'">
     <button
@@ -38,3 +47,4 @@
         Lihat
     </button>
 </template>
+@endif

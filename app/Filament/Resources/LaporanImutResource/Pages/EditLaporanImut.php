@@ -381,6 +381,12 @@ class EditLaporanImut extends EditRecord
                 ->visible(fn() => Gate::allows('update_laporan::imut')),
 
             ActionGroup::make([
+                Action::make('monitoringDailyReports')
+                    ->label('Monitoring Daily Reports')
+                    ->icon('heroicon-o-chart-bar-square')
+                    ->color('warning')
+                    ->url(fn($record) => route('filament.siimut.resources.laporan-imuts.monitoring-daily-reports', $record->slug)),
+
                 Action::make('imutDataSummary')
                     ->label('Berdasarkan IMUT Data')
                     ->icon('heroicon-o-clipboard-document-list')

@@ -5,93 +5,49 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\DailyReportEntry;
 use App\Models\FormTemplate;
-use App\Services\DailyReport\MatrixDataService;
-use App\Services\DailyReport\SlideOverService;
-use App\Traits\DailyReport\ReportManagementTrait;
-use App\Traits\DailyReport\NavigationTrait;
 use App\Traits\DailyReport\FormHandlerTrait;
 use App\Traits\DailyReport\DebugTrait;
 use Carbon\Carbon;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class ListDailyReportEntries extends ListRecords implements HasForms
+class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasForms
 {
     use InteractsWithForms;
-    use ReportManagementTrait;
-    use NavigationTrait;
     use FormHandlerTrait;
     use DebugTrait;
 
     protected static string $resource = DailyReportEntryResource::class;
-    protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
 
-    // Services
-    protected MatrixDataService $matrixService;
-    protected SlideOverService $slideOverService;
-
-    // Add listeners for Alpine.js events
-    protected $listeners = [
-        'dateSelected' => 'handleDateSelected',
-    ];
-
-    // Matrix properties
-    public string $selectedMonth;
-    public array $indicators = [];
-    public array $matrixData = [];
-    public array $daysInMonth = [];
-
-    // Loading states  
-    public bool $loadingMatrix = false;
-    public bool $loadingSlideOver = false;
-
-    // Slide over properties
-    public bool $slideOverOpen = false;
-    public ?int $selectedIndicatorId = null;
-    public ?string $selectedDate = null;
-    public array $selectedIndicatorData = [];
-    public $dailyReports = [];
-    public string $filterPeriod = 'today';
-
-    // Form slide over properties
-    public bool $formSlideOverOpen = false;
-    public ?FormTemplate $formTemplate = null;
-    public array $reportData = [];
-
-    /**
-     * Boot the page
-     */
     public function boot(): void
     {
-        $this->matrixService = new MatrixDataService();
-        $this->slideOverService = new SlideOverService();
+        parent::boot();
     }
 
-    /**
-     * Mount the component
-     */
     public function mount(): void
     {
-        parent::mount();
-        $this->selectedMonth = now()->format('Y-m');
-        $this->selectedDate = now()->format('Y-m-d');
+        $this->bootBase();
         $this->loadMatrixData();
         $this->checkAndOpenSlideOverFromUrl();
     }
 
-    /**
-     * Load matrix data for selected month
-     */
-    public function loadMatrixData(): void
+    // Use MatrixDataService (default behavior from base class)
+    protected function shouldUseMatrixService(): bool
     {
-        $result = $this->matrixService->loadMatrixData($this->selectedMonth);
+        return true;
+    }
 
-        $this->indicators = $result['indicators'];
-        $this->matrixData = $result['matrixData'];
-        $this->daysInMonth = $result['daysInMonth'];
+    // Dummy implementations - not used when shouldUseMatrixService() returns true
+    protected function getReportsQuery($startDate, $endDate)
+    {
+        return null;
+    }
+
+    protected function loadIndicators($startDate, $endDate): void
+    {
+        // Not used when using MatrixDataService
     }
 
     /**
@@ -135,23 +91,15 @@ class ListDailyReportEntries extends ListRecords implements HasForms
     }
 
     /**
-     * Open slide over
+     * Open slide over (with URL update for this page)
      */
     public function openSlideOver(int $indicatorId, ?string $date = null): void
     {
-        $validatedDate = $this->slideOverService->validateDate($date);
+        parent::openSlideOver($indicatorId, $date);
+
+        $validatedDate = $this->selectedDate;
 
         Log::info('OpenSlideOver called', ['indicator_id' => $indicatorId, 'date' => $validatedDate]);
-
-        $this->selectedIndicatorId = $indicatorId;
-        $this->selectedDate = $validatedDate;
-
-        // Load indicator data
-        $this->selectedIndicatorData = $this->slideOverService->getSelectedIndicatorData($indicatorId, $this->indicators);
-
-        // Load daily reports for this indicator and date
-        $this->loadDailyReports();
-        $this->slideOverOpen = true;
 
         // Update URL without page refresh
         $this->js("
@@ -168,10 +116,7 @@ class ListDailyReportEntries extends ListRecords implements HasForms
      */
     public function closeSlideOver(): void
     {
-        $this->slideOverOpen = false;
-        $this->selectedIndicatorId = null;
-        $this->selectedIndicatorData = [];
-        $this->dailyReports = [];
+        parent::closeSlideOver();
 
         // Clean URL parameters
         $this->js("
@@ -181,18 +126,7 @@ class ListDailyReportEntries extends ListRecords implements HasForms
         ");
     }
 
-    /**
-     * Load daily reports for selected indicator and date
-     */
-    public function loadDailyReports(): void
-    {
-        if (!$this->selectedIndicatorId || !$this->selectedDate) {
-            $this->dailyReports = [];
-            return;
-        }
 
-        $this->dailyReports = $this->slideOverService->loadDailyReports($this->selectedIndicatorId, $this->selectedDate);
-    }
 
     /**
      * Get real indicator status from database - used by status indicator

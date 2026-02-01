@@ -121,6 +121,8 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
             'index' => Pages\ListLaporanImuts::route('/'),
             'create' => Pages\CreateLaporanImut::route('/create'),
             'edit' => Pages\EditLaporanImut::route('/{record:slug}/edit'),
+            'monitoring-daily-reports' => Pages\MonitoringDailyReports::route('/{record:slug}/monitoring-daily-reports'),
+            'monitoring-unit-detail' => Pages\MonitoringUnitDetail::route('/{record:slug}/monitoring-unit-detail/{unit}'),
             'unit-kerja-report' => UnitKerjaReport::route('/unit-kerja-report'),
             'unit-kerja-imut-data-report-detail' => UnitKerjaImutDataReport::route('/unit-kerja-imut-data-report'),
             'imut-data-report' => ImutDataReport::route('/imut-data-report'),
