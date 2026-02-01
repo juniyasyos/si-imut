@@ -116,21 +116,21 @@ class ValidDailyReportProfileSeeder extends Seeder
             $oldProfile->formTemplates->each(function ($template) use ($newProfile) {
                 $newTemplate = $template->replicate();
                 $newTemplate->imut_profile_id = $newProfile->id;
-                $newTemplate->id = null; // Force new ID
+                unset($newTemplate->id); // Remove ID completely
                 $newTemplate->save();
 
                 // Replicate form fields
                 $template->formFields->each(function ($field) use ($newTemplate) {
                     $newField = $field->replicate();
                     $newField->form_template_id = $newTemplate->id;
-                    $newField->id = null; // Force new ID
+                    unset($newField->id); // Remove ID completely
                     $newField->save();
 
                     // Replicate field options
                     $field->options->each(function ($option) use ($newField) {
                         $newOption = $option->replicate();
                         $newOption->enhanced_form_field_id = $newField->id;
-                        $newOption->id = null; // Force new ID
+                        unset($newOption->id); // Remove ID completely
                         $newOption->save();
                     });
                 });
