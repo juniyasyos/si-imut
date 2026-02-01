@@ -181,11 +181,29 @@
                                     </div>
                                 </div>
 
-                                <!-- Field Responses Summary -->
-                                <div class="mb-4">
-                                    <div class="space-y-3">
-                                        @foreach(array_slice($report['field_responses'], 0) as $response)
-                                        <div class="p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50">
+                                <!-- Field Responses Dropdown -->
+                                <div class="mb-4" x-data="{ expanded: false }">
+                                    <button @click="expanded = !expanded"
+                                        type="button"
+                                        class="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-150">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                                            @svg("heroicon-m-document-text", "w-4 h-4 mr-2")
+                                            Detail Jawaban ({{ count($report['field_responses']) }} field)
+                                        </span>
+                                        <svg class="w-5 h-5 text-gray-500 transform transition-transform duration-200"
+                                            :class="{ 'rotate-180': expanded }"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <div x-show="expanded"
+                                        x-collapse
+                                        class="mt-3 space-y-3">
+                                        @foreach($report['field_responses'] as $response)
+                                        <div class="p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600">
                                             <div class="flex items-start justify-between mb-2">
                                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     {{ $response['field_label'] }}
@@ -206,15 +224,6 @@
                                         @endforeach
                                     </div>
                                 </div>
-
-                                <!-- Notes -->
-                                @if(!empty($report['notes']))
-                                <div class="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400">
-                                    <p class="text-sm text-blue-800 dark:text-blue-300">
-                                        <strong>Catatan:</strong> {{ $report['notes'] }}
-                                    </p>
-                                </div>
-                                @endif
 
                                 <!-- Actions -->
                                 <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-600">
