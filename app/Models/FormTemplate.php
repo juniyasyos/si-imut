@@ -50,7 +50,7 @@ class FormTemplate extends Model
     public function scopeForUserUnits(Builder $query, User $user): Builder
     {
         $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
-        
+
         return $query->whereHas('imutProfile.imutData.unitKerja', function ($q) use ($unitKerjaIds) {
             $q->whereIn('unit_kerja.id', $unitKerjaIds);
         });

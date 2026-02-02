@@ -175,9 +175,21 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             // Parse month (format: Y-m)
             $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
 
-            // Calculate period from 5th to 5th next month
-            $startDate = $date->copy()->subMonth()->day(5)->startOfDay();
-            $endDate = $date->copy()->day(4)->endOfDay();
+            // Get period settings
+            $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
+            $periodStart = $settings->period_start_day;
+            $periodEnd = $settings->period_end_day;
+
+            // Calculate period based on settings
+            if ($periodStart <= $periodEnd) {
+                // Same month period (e.g., 1-31)
+                $startDate = $date->copy()->day($periodStart)->startOfDay();
+                $endDate = $date->copy()->day($periodEnd)->endOfDay();
+            } else {
+                // Cross-month period (e.g., 5 this month - 4 next month)
+                $startDate = $date->copy()->day($periodStart)->startOfDay();
+                $endDate = $date->copy()->addMonth()->day($periodEnd)->endOfDay();
+            }
 
             // Get user's unit kerja IDs
             $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
@@ -194,11 +206,17 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                         });
                 })
                 ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
-                    $query->whereBetween('report_date', [$startDate, $endDate])
-                        ->whereIn('unit_kerja_id', $unitKerjaIds);
+                    $query->whereBetween('report_date', [$startDate, $endDate]);
+
+                    // Only filter by unit_kerja if user has units (not admin/tim mutu)
+                    if (!empty($unitKerjaIds)) {
+                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                    }
                 }])
                 ->get();
-        
+
+            // dd($startDate, $endDate, $templates);
+
 
             $mapped = $templates->map(function ($template) {
                 return [
@@ -251,5 +269,76 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     {
         // TODO: Implement export functionality
         $this->notify('info', 'Export functionality will be available soon');
+    }
+
+    /**
+     * Load monitoring data for specific period (called from Alpine.js)
+     */
+    public function loadMonitoringForPeriod(string $month): array
+    {
+        try {
+            $user = Auth::user();
+
+            // Parse month (format: Y-m)
+            $date = Carbon::createFromFormat('Y-m', $month);
+
+            // Get period settings
+            $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
+            $periodStart = $settings->period_start_day;
+            $periodEnd = $settings->period_end_day;
+
+            // Calculate period based on settings
+            if ($periodStart <= $periodEnd) {
+                // Same month period (e.g., 1-31)
+                $startDate = $date->copy()->day($periodStart)->startOfDay();
+                $endDate = $date->copy()->day($periodEnd)->endOfDay();
+            } else {
+                // Cross-month period (e.g., 5 this month - 4 next month)
+                $startDate = $date->copy()->day($periodStart)->startOfDay();
+                $endDate = $date->copy()->addMonth()->day($periodEnd)->endOfDay();
+            }
+
+            // Get user's unit kerja IDs
+            $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+
+            // Build query - use same scope as list daily report
+            $templates = FormTemplate::query()
+                ->forUserUnits($user)
+                ->with(['imutProfile.imutData.categories'])
+                ->whereHas('imutProfile', function ($query) {
+                    $query->where('valid_from', '<=', now())
+                        ->where(function ($q) {
+                            $q->whereNull('valid_until')
+                                ->orWhere('valid_until', '>=', now());
+                        });
+                })
+                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
+                    $query->whereBetween('report_date', [$startDate, $endDate]);
+
+                    // Only filter by unit_kerja if user has units (not admin/tim mutu)
+                    if (!empty($unitKerjaIds)) {
+                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                    }
+                }])
+                ->get();
+
+            return $templates->map(function ($template) {
+                return [
+                    'id' => $template->id,
+                    'title' => $template->imutProfile->imutData->title,
+                    'description' => $template->description,
+                    'profile_name' => $template->imutProfile?->title ?? null,
+                    'imut_profile_version' => $template->imutProfile?->version ?? null,
+                    'category' => null,
+                    'response_count' => $template->response_count ?? 0,
+                ];
+            })->toArray();
+        } catch (\Exception $e) {
+            Log::error('Error loading monitoring data for period', [
+                'month' => $month,
+                'error' => $e->getMessage()
+            ]);
+            return [];
+        }
     }
 }

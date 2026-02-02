@@ -15,12 +15,14 @@
             matrixData: @js($matrixData),
             monitoringData: @js($monitoringTemplates),
             monitoringSearchQuery: '',
+            monitoringMonth: '{{ $selectedMonth }}',
             isDateLoading: false,
             
             init() {
                 this.initResize();
                 this.selectToday();
                 this.ensureValidSelectedDate();
+                this.monitoringMonth = this.selectedMonth;
             },
             
             initResize() {
@@ -164,6 +166,40 @@
                 }
                 
                 return filtered;
+            },
+
+            getMonitoringPeriodText() {
+                const date = new Date(this.monitoringMonth + '-01');
+                const monthName = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                return `Periode: Monitoring ${monthName}`;
+            },
+
+            changeMonitoringPeriod(direction) {
+                const date = new Date(this.monitoringMonth + '-01');
+                
+                if (direction === 'prev') {
+                    date.setMonth(date.getMonth() - 1);
+                } else if (direction === 'next') {
+                    date.setMonth(date.getMonth() + 1);
+                } else if (direction === 'current') {
+                    this.monitoringMonth = '{{ now()->format('Y-m') }}';
+                    this.loadMonitoringData();
+                    return;
+                }
+                
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                this.monitoringMonth = `${year}-${month}`;
+                
+                this.loadMonitoringData();
+            },
+
+            loadMonitoringData() {
+                this.isDateLoading = true;
+                $wire.call('loadMonitoringForPeriod', this.monitoringMonth).then(data => {
+                    this.monitoringData = data;
+                    this.isDateLoading = false;
+                });
             },
             
             formatNumber(num) {
