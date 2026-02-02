@@ -218,9 +218,14 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             // dd($startDate, $endDate, $templates);
 
 
-            $mapped = $templates->map(function ($template) {
+            // Get first unit kerja ID for URL (or null for all units)
+            $firstUnitKerjaId = !empty($unitKerjaIds) ? $unitKerjaIds[0] : null;
+
+            $mapped = $templates->map(function ($template) use ($firstUnitKerjaId) {
                 return [
                     'id' => $template->id,
+                    'imut_profile_id' => $template->imutProfile?->id,
+                    'unit_kerja_id' => $firstUnitKerjaId,
                     'title' => $template->imutProfile->imutData->title,
                     'description' => $template->description,
                     'profile_name' => $template->imutProfile?->title ?? null,

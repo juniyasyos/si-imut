@@ -112,23 +112,39 @@ class FormSchemaBuilder
                         ->options(FormFieldMapper::getAllFieldTypes())
                         ->required()
                         ->default('short_text')
-                        ->live(),
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Reset compliance weight to 0 for text fields, allow editing for others
+                            if ($state === 'text') {
+                                $set('compliance_weight', '0');
+                            } elseif ($get('compliance_weight') === '0') {
+                                // If changing from text to other type and weight is 0, set to default
+                                $set('compliance_weight', '2');
+                            }
+                        }),
 
                     Select::make('compliance_weight')
                         ->label('Bobot Compliance')
                         ->options([
+                            '0' => 'Tidak Berkontribusi (0)',
                             '1' => 'Rendah (1)',
                             '2' => 'Normal (2)',
                             '3' => 'Tinggi (3)',
                             '5' => 'Sangat Tinggi (5)',
                         ])
                         ->default('2')
-                        ->afterStateHydrated(function ($state, callable $set) {
-                            if (blank($state)) {
+                        ->disabled(fn($get) => $get('field_type') === 'text')
+                        ->helperText(fn($get) => $get('field_type') === 'text'
+                            ? 'Field teks tidak berkontribusi pada compliance score (otomatis 0)'
+                            : 'Bobot untuk kalkulasi compliance score')
+                        ->afterStateHydrated(function ($state, callable $set, callable $get) {
+                            $fieldType = $get('field_type');
+                            if ($fieldType === 'text') {
+                                $set('compliance_weight', '0');
+                            } elseif (blank($state)) {
                                 $set('compliance_weight', '2');
                             }
-                        })
-                        ->helperText('Bobot untuk kalkulasi compliance score'),
+                        }),
                 ]),
 
             Textarea::make('field_description')

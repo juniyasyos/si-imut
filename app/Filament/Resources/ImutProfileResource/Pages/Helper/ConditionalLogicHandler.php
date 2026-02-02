@@ -10,7 +10,7 @@ class ConditionalLogicHandler
     /**
      * Get visibility condition for a field
      * 
-     * @param object|null $conditionalLogic Conditional logic configuration
+     * @param mixed $conditionalLogic Conditional logic configuration (array, object, or JSON string)
      * @param string $prefix Field prefix
      * @return bool|callable Visibility condition
      */
@@ -20,11 +20,26 @@ class ConditionalLogicHandler
             return true;
         }
 
+        // Handle if conditional_logic is stored as JSON string
+        if (is_string($conditionalLogic)) {
+            $conditionalLogic = json_decode($conditionalLogic, true);
+            if (!is_array($conditionalLogic)) {
+                return true; // Invalid JSON or not an array
+            }
+        }
+
+        // Ensure it's an array
+        if (!is_array($conditionalLogic)) {
+            return true;
+        }
+
         $logic = $conditionalLogic;
-        if ($logic['condition_type'] === 'show_when') {
+        if (isset($logic['condition_type']) && $logic['condition_type'] === 'show_when') {
             return function ($get) use ($logic, $prefix) {
                 $dependentValue = $get($prefix . $logic['depends_on_field']);
-                return in_array($dependentValue, $logic['trigger_values']);
+                return isset($logic['trigger_values']) && is_array($logic['trigger_values'])
+                    ? in_array($dependentValue, $logic['trigger_values'])
+                    : false;
             };
         }
 
@@ -44,11 +59,28 @@ class ConditionalLogicHandler
             return true;
         }
 
-        $logic = $field->conditional_logic;
+        $conditionalLogic = $field->conditional_logic;
+
+        // Handle if conditional_logic is stored as JSON string
+        if (is_string($conditionalLogic)) {
+            $conditionalLogic = json_decode($conditionalLogic, true);
+            if (!is_array($conditionalLogic)) {
+                return true; // Invalid JSON or not an array
+            }
+        }
+
+        // Ensure it's an array
+        if (!is_array($conditionalLogic)) {
+            return true;
+        }
+
+        $logic = $conditionalLogic;
         $dependentValue = $data[$logic['depends_on_field']] ?? null;
 
-        if ($logic['condition_type'] === 'show_when') {
-            return in_array($dependentValue, $logic['trigger_values']);
+        if (isset($logic['condition_type']) && $logic['condition_type'] === 'show_when') {
+            return isset($logic['trigger_values']) && is_array($logic['trigger_values'])
+                ? in_array($dependentValue, $logic['trigger_values'])
+                : false;
         }
 
         return true;

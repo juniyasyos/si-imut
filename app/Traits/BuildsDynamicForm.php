@@ -170,7 +170,6 @@ trait BuildsDynamicForm
             $field->is_critical_field,
             true, // visible condition
             null, // default value
-            true, // allow custom input
             function ($newValue, $newLabel) use ($field) {
                 // Auto-add to history suggestions when user enters new value
                 $currentHistory = $field->history_suggestions ?? [];

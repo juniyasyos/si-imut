@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class DailyReportResponse extends Model
 {
@@ -54,5 +55,12 @@ class DailyReportResponse extends Model
     public function fieldResponses(): HasMany
     {
         return $this->hasMany(FieldResponse::class);
+    }
+
+    // Query Scopes
+    public function scopeForUserUnits(Builder $query, User $user): Builder
+    {
+        $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        return $query->whereIn('unit_kerja_id', $unitKerjaIds);
     }
 }

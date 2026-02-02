@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PrintReportController;
+use App\Http\Controllers\TableViewController;
 use Illuminate\Support\Facades\Auth;
 use Juniyasyos\IamClient\Http\Controllers\LogoutController;
 use Juniyasyos\IamClient\Http\Controllers\SsoCallbackController;
@@ -10,6 +11,15 @@ use Juniyasyos\IamClient\Http\Controllers\SsoLoginRedirectController;
 
 // Include Livewire report routes
 require_once __DIR__ . '/livewire-report.php';
+
+// Table View Route
+Route::get('/table-view', [TableViewController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('table-view');
+
+Route::get('/api/table-data', [TableViewController::class, 'getData'])
+    ->middleware(['auth'])
+    ->name('api.table-data');
 
 // Print Report Routes
 Route::prefix('print')->name('print.')->group(function () {

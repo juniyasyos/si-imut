@@ -13,8 +13,19 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="getMonitoringPeriodText()"></p>
                 </div>
 
-                <!-- Period Navigation -->
+                <!-- Action Buttons -->
                 <div class="flex items-center gap-2">
+                    <!-- Table View Button -->
+                    <a href="{{ route('table-view') }}" target="_blank"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Lihat Tabel</span>
+                        <span class="sm:hidden">Tabel</span>
+                    </a>
+
+                    <!-- Period Navigation -->
                     <button
                         @click="changeMonitoringPeriod('prev')"
                         class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
@@ -123,28 +134,17 @@
                         <!-- Action Buttons -->
                         <div class="flex-shrink-0">
                             <div class="flex items-center gap-2">
-                                <!-- View Detail Button -->
-                                <button
-                                    @click="$wire.call('viewMonitoringDetail', item.id)"
+                                <!-- View Detail Button - Open Table View -->
+                                <a
+                                    :href="`{{ route('table-view') }}?form_template_id=${item.id}&imut_profile_id=${item.imut_profile_id}&unit_kerja_id=${item.unit_kerja_id || ''}&period=${monitoringMonth}`"
+                                    target="_blank"
                                     class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg border border-primary-200 dark:border-primary-800 transition-colors"
-                                    title="Lihat Detail">
+                                    title="Lihat Tabel Data">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                     </svg>
-                                    <span class="hidden sm:inline">Detail</span>
-                                </button>
-
-                                <!-- View Responses Button -->
-                                <button
-                                    @click="$wire.call('viewMonitoringResponses', item.id)"
-                                    class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors"
-                                    title="Lihat Response">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <span class="hidden sm:inline">Response</span>
-                                </button>
+                                    <span class="hidden sm:inline">Lihat Tabel</span>
+                                </a>
 
                                 <!-- Export Button -->
                                 <button
@@ -206,16 +206,16 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-col gap-2">
-                        <!-- View Detail Button -->
-                        <button
-                            @click="$wire.call('viewMonitoringDetail', item.id)"
+                        <!-- View Detail Button - Open Table View -->
+                        <a
+                            :href="`{{ route('table-view') }}?form_template_id=${item.id}&imut_profile_id=${item.imut_profile_id}&unit_kerja_id=${item.unit_kerja_id || ''}&period=${monitoringMonth}`"
+                            target="_blank"
                             class="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg border border-primary-200 dark:border-primary-800 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
-                            <span>Lihat Detail</span>
-                        </button>
+                            <span>Lihat Tabel</span>
+                        </a>
 
                         <!-- View Responses & Export Buttons -->
                         <div class="grid grid-cols-2 gap-2">

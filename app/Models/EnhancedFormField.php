@@ -80,6 +80,7 @@ class EnhancedFormField extends Model
 
             case 'short_text':
             case 'long_text':
+            case 'text':
             case 'number':
                 // Text and number fields are for supplementary data only
                 // They don't contribute to compliance scoring

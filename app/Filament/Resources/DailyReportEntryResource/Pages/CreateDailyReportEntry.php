@@ -259,7 +259,7 @@ class CreateDailyReportEntry extends CreateRecord
                     $responses[$field->field_key . '_valid_duration_setting'] = $validDuration;
                     $responses[$field->field_key . '_valid_indicator'] = $validIndicator;
 
-                    // Create field response record with composite value (always create, even if empty)
+                    // Create field response record with composite value
                     FieldResponse::create([
                         'daily_report_response_id' => $dailyReport->id,
                         'form_field_id' => $field->id,
@@ -271,14 +271,40 @@ class CreateDailyReportEntry extends CreateRecord
                         ],
                         'compliance_score' => ($startTime && $endTime) ? ($field->calculateFieldScore($validIndicator) ?? 0) : 0,
                     ]);
-                } else {
-                    $responses[$field->field_key] = $fieldValue;
+                } elseif ($field->field_type === 'time_range') {
+                    // Handle time_range field type - collect sub-fields
+                    $inputValue = $responseData[$field->field_key . '_input_value'] ?? null;
+                    $startTime = $responseData[$field->field_key . '_start_time'] ?? null;
+                    $endTime = $responseData[$field->field_key . '_end_time'] ?? null;
+                    $validIndicator = $responseData[$field->field_key . '_valid_indicator'] ?? '0';
 
-                    // Create field response record (always create, even if null)
+                    // Store all sub-fields in responses for compliance calculation
+                    $responses[$field->field_key] = $inputValue;
+                    $responses[$field->field_key . '_input_value'] = $inputValue;
+                    $responses[$field->field_key . '_start_time'] = $startTime;
+                    $responses[$field->field_key . '_end_time'] = $endTime;
+                    $responses[$field->field_key . '_valid_indicator'] = $validIndicator;
+
+                    // Create field response record with composite value
                     FieldResponse::create([
                         'daily_report_response_id' => $dailyReport->id,
                         'form_field_id' => $field->id,
-                        'field_value' => $fieldValue !== null ? (is_array($fieldValue) ? $fieldValue : [$fieldValue]) : null,
+                        'field_value' => [
+                            'input_value' => $inputValue,
+                            'start_time' => $startTime,
+                            'end_time' => $endTime,
+                            'valid_indicator' => $validIndicator,
+                        ],
+                        'compliance_score' => $inputValue ? ($field->calculateFieldScore($validIndicator) ?? 0) : 0,
+                    ]);
+                } else {
+                    $responses[$field->field_key] = $fieldValue;
+
+                    // Create field response record - use empty array instead of null to prevent database error
+                    FieldResponse::create([
+                        'daily_report_response_id' => $dailyReport->id,
+                        'form_field_id' => $field->id,
+                        'field_value' => $fieldValue !== null ? (is_array($fieldValue) ? $fieldValue : [$fieldValue]) : [],
                         'compliance_score' => $fieldValue !== null ? ($field->calculateFieldScore($fieldValue) ?? 0) : 0,
                     ]);
 
