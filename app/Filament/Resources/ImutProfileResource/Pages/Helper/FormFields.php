@@ -32,7 +32,6 @@ class FormFields
 
         switch ($field->field_type) {
             case 'text':
-                $defaultValue = $field->validation_config['default_value'] ?? null;
                 $historySuggestions = $field->history_suggestions ?? [];
 
                 // Decode JSON if history_suggestions is stored as JSON string
@@ -50,7 +49,6 @@ class FormFields
                     $options,
                     $required,
                     $visibleCondition,
-                    $defaultValue,
                     $isPreview ? null : function ($newValue, $newLabel) use ($field) {
                         // Auto-add to history suggestions when user enters new value (only in non-preview mode)
                         $currentHistory = $field->history_suggestions ?? [];
@@ -204,14 +202,6 @@ class FormFields
     private static function createEndTimePicker(string $fieldKey, bool $required)
     {
         return TimeDurationFieldBuilder::createEndTimePicker($fieldKey, $required);
-    }
-
-    /**
-     * @deprecated Use TimeDurationFieldBuilder::createThresholdPicker() instead
-     */
-    private static function createThresholdPicker(string $fieldKey, string $defaultValue)
-    {
-        return TimeDurationFieldBuilder::createThresholdPicker($fieldKey, $defaultValue);
     }
 
     /**

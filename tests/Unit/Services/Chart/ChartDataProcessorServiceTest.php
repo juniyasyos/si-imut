@@ -11,7 +11,7 @@ use Mockery;
 class ChartDataProcessorServiceTest extends TestCase
 {
     private ChartDataProcessorService $processor;
-    private ImutCalculatorService $mockCalculator;
+    private $mockCalculator;
 
     protected function setUp(): void
     {

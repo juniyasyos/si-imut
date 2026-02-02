@@ -184,12 +184,6 @@ class FormSchemaBuilder
             // Default Value & History untuk Text Fields
             Section::make('Nilai Default & Riwayat')
                 ->schema([
-                    TextInput::make('validation_config.default_value')
-                        ->label('Nilai Default')
-                        ->helperText('Nilai yang akan diisi otomatis saat form dibuka')
-                        ->visible(fn($get) => $get('field_type') === 'text')
-                        ->columnSpanFull(),
-
                     TableRepeater::make('history_suggestions')
                         ->label('Saran Riwayat Input')
                         ->headers([

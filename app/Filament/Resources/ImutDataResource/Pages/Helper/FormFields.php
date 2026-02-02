@@ -46,7 +46,6 @@ class FormFields
 
         switch ($field->field_type) {
             case 'text':
-                $defaultValue = $field->validation_config['default_value'] ?? null;
                 $historySuggestions = $field->history_suggestions ?? [];
 
                 // Decode JSON if history_suggestions is stored as JSON string
@@ -64,7 +63,6 @@ class FormFields
                     $options,
                     $field->validation_config['required'] ?? false,
                     $visibleCondition,
-                    $defaultValue,
                     function ($newValue, $newLabel) use ($field) {
                         // Auto-add to history suggestions when user enters new value
                         $currentHistory = $field->history_suggestions ?? [];

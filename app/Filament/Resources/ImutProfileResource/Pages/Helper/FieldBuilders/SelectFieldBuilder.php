@@ -95,7 +95,6 @@ class SelectFieldBuilder
         array $options = [],
         bool $required = false,
         $visibleCondition = true,
-        ?string $defaultValue = null,
         ?callable $onAddCallback = null
     ): Select {
         $select = Select::make($fieldKey)
@@ -104,10 +103,6 @@ class SelectFieldBuilder
             ->searchable()
             ->required($required)
             ->visible($visibleCondition);
-
-        if ($defaultValue) {
-            $select->default($defaultValue);
-        }
 
         // Always allow custom input and adding new options
         $select->options($options)
