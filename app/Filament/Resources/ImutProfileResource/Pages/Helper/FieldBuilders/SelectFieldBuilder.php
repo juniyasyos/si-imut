@@ -120,14 +120,14 @@ class SelectFieldBuilder
                             ->required()
                             ->placeholder('Masukkan opsi baru')
                             ->maxLength(255)
-                            ->helperText('Label akan digunakan sebagai tampilan dan value akan dijadikan slug'),
+                            ->helperText('Nilai yang dimasukkan akan digunakan sebagai label dan value'),
                     ])
                     ->modalHeading('Tambah Opsi Baru')
                     ->modalDescription('Tambahkan opsi baru ke dalam daftar pilihan.')
                     ->modalSubmitActionLabel('Tambah Opsi')
                     ->action(function (array $data, $set, $get, $livewire) use ($fieldKey, $onAddCallback) {
                         $newLabel = trim($data['new_option_label']);
-                        $newValue = Str::slug($newLabel);
+                        $newValue = $newLabel;
 
                         if (empty($newLabel)) {
                             return;

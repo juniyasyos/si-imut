@@ -129,74 +129,57 @@
                         x-transition:enter-end="opacity-100 translate-y-0 scale-100">
 
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Laporan Hari Ini</h3>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}
-                            </span>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Laporan Hari Ini</h3>
                         </div>
 
                         @if(!empty($this->dailyReports))
                         <div class="space-y-4">
                             @foreach($this->dailyReports as $report)
-                            <div class="backdrop-blur-xl rounded-xl p-6 border shadow-lg transition-all duration-150 hover:shadow-xl bg-white/90 border-gray-200 dark:bg-slate-800/70 dark:border-slate-600">
-                                <!-- Report Header -->
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <h4 class="font-semibold text-gray-900 dark:text-white">
-                                                {{ $report['form_title'] }}
-                                            </h4>
-                                            @if($report['total_score'] >= 100)
-                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                                Patuh
-                                            </span>
-                                            @else
-                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                                                Tidak Patuh
-                                            </span>
-                                            @endif
+                            <div class="backdrop-blur-xl rounded-xl p-5 border shadow-lg transition-all duration-150 hover:shadow-xl bg-white/90 border-gray-200 dark:bg-slate-800/70 dark:border-slate-600">
+                                <!-- Report Header - Compact Version -->
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        @if($report['total_score'] >= 80)
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-2xl">🟢</span>
+                                            <span class="text-lg font-bold text-green-700 dark:text-green-400">Patuh</span>
                                         </div>
-                                        <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                            <span class="flex items-center gap-1">
-                                                @svg("heroicon-m-building-office", "w-4 h-4")
-                                                {{ $report['unit_name'] }}
-                                            </span>
-                                            <span class="flex items-center gap-1">
-                                                @svg("heroicon-m-user", "w-4 h-4")
-                                                {{ $report['submitted_by_name'] }}
-                                            </span>
-                                            <span class="flex items-center gap-1">
-                                                @svg("heroicon-m-clock", "w-4 h-4")
-                                                {{ \Carbon\Carbon::parse($report['created_at'])->format('H:i') }}
-                                            </span>
+                                        @else
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-2xl">🔴</span>
+                                            <span class="text-lg font-bold text-red-700 dark:text-red-400">Tidak Patuh</span>
+                                        </div>
+                                        @endif
+                                        <div class="text-3xl font-bold {{ $report['total_score'] >= 80 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
+                                            {{ number_format($report['total_score'], 0) }}%
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!-- Score Display -->
-                                    <div class="text-right">
-                                        <div class="text-2xl font-bold {{ $report['total_score'] >= 90 ? 'text-green-600' : ($report['total_score'] >= 80 ? 'text-yellow-600' : 'text-red-600') }}">
-                                            {{ number_format($report['total_score'], 1) }}%
-                                        </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">Skor Kepatuhan</div>
-                                    </div>
+                                <!-- Meta Info - Single Line -->
+                                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    <span>{{ $report['unit_name'] }}</span>
+                                    <span>·</span>
+                                    <span>{{ $report['submitted_by_name'] }}</span>
+                                    <span>·</span>
+                                    <span>{{ \Carbon\Carbon::parse($report['created_at'])->format('H:i') }}</span>
                                 </div>
 
                                 <!-- Field Responses Dropdown -->
                                 <div class="mb-4" x-data="{ expanded: false }">
                                     <button @click="expanded = !expanded"
                                         type="button"
-                                        class="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors duration-150">
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                                            @svg("heroicon-m-document-text", "w-4 h-4 mr-2")
+                                        class="w-full flex items-center justify-between p-2.5 rounded-lg text-sm font-medium transition-colors duration-150 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-2 transform transition-transform duration-200"
+                                                :class="{ 'rotate-90': expanded }"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
                                             Detail Jawaban ({{ count($report['field_responses']) }} field)
                                         </span>
-                                        <svg class="w-5 h-5 text-gray-500 transform transition-transform duration-200"
-                                            :class="{ 'rotate-180': expanded }"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
                                     </button>
 
                                     <div x-show="expanded"
@@ -226,43 +209,30 @@
                                 </div>
 
                                 <!-- Actions -->
-                                <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-600">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                                        ID: {{ $report['id'] }}
-                                    </span>
-                                    <div class="flex gap-2 flex-wrap">
+                                <div class="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-slate-600">
+                                    <button
+                                        wire:click="viewReport({{ $report['id'] }})"
+                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors duration-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
+                                        @svg("heroicon-m-eye", "w-4 h-4 mr-1.5")
+                                        Detail
+                                    </button>
+
+                                    @if(\Carbon\Carbon::parse($report['created_at'])->diffInHours(now()) <= 24)
                                         <button
-                                            wire:click="viewReport({{ $report['id'] }})"
-                                            title="Lihat detail lengkap laporan"
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50">
-                                            @svg("heroicon-m-eye", "w-3 h-3 mr-1")
-                                            Detail
+                                        wire:click="editReport({{ $report['id'] }})"
+                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg text-yellow-700 bg-yellow-50 hover:bg-yellow-100 transition-colors duration-100 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/40">
+                                        @svg("heroicon-m-pencil", "w-4 h-4 mr-1.5")
+                                        Edit
                                         </button>
 
-                                        @if(\Carbon\Carbon::parse($report['created_at'])->diffInHours(now()) <= 24)
-                                            <button
-                                            wire:click="editReport({{ $report['id'] }})"
-                                            title="Edit laporan (tersedia 24 jam setelah dibuat)"
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors duration-100 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/50">
-                                            @svg("heroicon-m-pencil", "w-3 h-3 mr-1")
-                                            Edit
-                                            </button>
-
-                                            <button
-                                                wire:click="deleteReport({{ $report['id'] }})"
-                                                wire:confirm="Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan."
-                                                title="Hapus laporan (tersedia 24 jam setelah dibuat)"
-                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 transition-colors duration-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
-                                                @svg("heroicon-m-trash", "w-3 h-3 mr-1")
-                                                Hapus
-                                            </button>
-                                            @else
-                                            <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400" title="Edit dan hapus hanya tersedia 24 jam setelah laporan dibuat">
-                                                @svg("heroicon-m-lock-closed", "w-3 h-3 mr-1")
-                                                Terkunci
-                                            </span>
-                                            @endif
-                                    </div>
+                                        <button
+                                            wire:click="deleteReport({{ $report['id'] }})"
+                                            wire:confirm="Apakah Anda yakin ingin menghapus laporan ini?"
+                                            class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40">
+                                            @svg("heroicon-m-trash", "w-4 h-4 mr-1.5")
+                                            Hapus
+                                        </button>
+                                        @endif
                                 </div>
                             </div>
                             @endforeach

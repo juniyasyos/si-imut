@@ -283,8 +283,12 @@ class CreateDailyReportEntry extends CreateRecord
                 } elseif ($field->field_type === 'time_range') {
                     // Handle time_range field type - collect sub-fields
                     $inputValue = $responseData[$field->field_key . '_input_value'] ?? null;
-                    $startTime = $responseData[$field->field_key . '_start_time'] ?? null;
-                    $endTime = $responseData[$field->field_key . '_end_time'] ?? null;
+
+                    // Get start_time and end_time from validation_config (range yang ditetapkan)
+                    $validationConfig = $field->validation_config ?? [];
+                    $startTime = $validationConfig['default_start_time'] ?? '00:00';
+                    $endTime = $validationConfig['default_end_time'] ?? '23:59';
+
                     $validIndicator = TimeRangeFieldBuilder::isInputValueValid($inputValue, $startTime, $endTime) ? '1' : '0';
 
                     // Store all sub-fields in responses for compliance calculation
@@ -299,18 +303,20 @@ class CreateDailyReportEntry extends CreateRecord
                     $responses[$field->field_key . '_end_time'] = $endTime;
                     $responses[$field->field_key . '_valid_indicator'] = $validIndicator;
 
-                    // Create field response record with composite value
-                    FieldResponse::create([
+                    $fieldResponseData = [
                         'daily_report_response_id' => $dailyReport->id,
                         'form_field_id' => $field->id,
                         'field_value' => [
                             'input_value' => $inputValue,
                             'start_time' => $startTime,
                             'end_time' => $endTime,
-                            'valid_indicator' => $validIndicator,
+                            'valid_indicator' => $validIndicator
                         ],
                         'compliance_score' => $inputValue ? (($validIndicator == '1') ? 100 : 0) : 0,
-                    ]);
+                    ];
+                    
+                    // Create field response record with composite value
+                    FieldResponse::create($fieldResponseData);
                 } else {
                     $responses[$field->field_key] = $fieldValue;
 
