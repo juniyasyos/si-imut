@@ -22,6 +22,7 @@ class TimeRangeFieldBuilder
      * @param mixed $visibleCondition Visibility condition
      * @param string $defaultStartTime Default start time
      * @param string $defaultEndTime Default end time
+     * @param array $customLabels Custom labels for start_time and end_time fields
      * @return Grid
      */
     public static function create(
@@ -29,7 +30,8 @@ class TimeRangeFieldBuilder
         bool $required = false,
         $visibleCondition = true,
         string $defaultStartTime = '08:00',
-        string $defaultEndTime = '17:00'
+        string $defaultEndTime = '17:00',
+        array $customLabels = []
     ): Grid {
         return Grid::make(2)
             ->schema([
@@ -46,7 +48,7 @@ class TimeRangeFieldBuilder
                         $set($fieldKey . '_end_time', $defaultEndTime);
                     }),
                 self::createInputValuePicker($fieldKey, $required),
-                self::createRangeDisplay($fieldKey),
+                self::createRangeDisplay($fieldKey, $customLabels),
                 self::createValidationIndicator($fieldKey),
             ])
             ->visible($visibleCondition)
@@ -81,13 +83,17 @@ class TimeRangeFieldBuilder
      * Create range display
      *
      * @param string $fieldKey Base field key
+     * @param array $customLabels Custom labels for start_time and end_time fields
      * @return Placeholder
      */
-    public static function createRangeDisplay(string $fieldKey): Placeholder
+    public static function createRangeDisplay(string $fieldKey, array $customLabels = []): Placeholder
     {
+        $startTimeLabel = $customLabels['start_time'] ?? 'Waktu Mulai';
+        $endTimeLabel = $customLabels['end_time'] ?? 'Waktu Selesai';
+
         return Placeholder::make($fieldKey . '_range_display')
             ->label('Rentang Waktu Valid')
-            ->content(function (callable $get) use ($fieldKey) {
+            ->content(function (callable $get) use ($fieldKey, $startTimeLabel, $endTimeLabel) {
                 $startTime = $get($fieldKey . '_start_time');
                 $endTime = $get($fieldKey . '_end_time');
 
@@ -95,7 +101,7 @@ class TimeRangeFieldBuilder
                     return '⚠️ Rentang waktu belum diatur';
                 }
 
-                return "⏰ Rentang valid: {$startTime} - {$endTime}";
+                return "⏰ Rentang valid: {$startTimeLabel} ({$startTime}) - {$endTimeLabel} ({$endTime})";
             })
             ->reactive()
             ->columnSpan(1);

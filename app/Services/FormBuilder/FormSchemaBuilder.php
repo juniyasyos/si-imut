@@ -121,6 +121,26 @@ class FormSchemaBuilder
                                 // If changing from text to other type and weight is 0, set to default
                                 $set('compliance_weight', '2');
                             }
+
+                            // Reset custom labels when changing field type
+                            if (in_array($state, ['time_duration', 'time_range'])) {
+                                // Keep existing custom labels if they exist, otherwise set defaults
+                                $validationConfig = $get('validation_config') ?? [];
+                                $customLabels = $validationConfig['custom_labels'] ?? [];
+                                if (empty($customLabels['start_time'])) {
+                                    $validationConfig['custom_labels']['start_time'] = 'Waktu Mulai';
+                                    $set('validation_config', $validationConfig);
+                                }
+                                if (empty($customLabels['end_time'])) {
+                                    $validationConfig['custom_labels']['end_time'] = 'Waktu Selesai';
+                                    $set('validation_config', $validationConfig);
+                                }
+                            } else {
+                                // Clear custom labels for non-composite fields
+                                $validationConfig = $get('validation_config') ?? [];
+                                unset($validationConfig['custom_labels']);
+                                $set('validation_config', $validationConfig);
+                            }
                         }),
 
                     Select::make('compliance_weight')
@@ -143,6 +163,20 @@ class FormSchemaBuilder
                                 $set('compliance_weight', '0');
                             } elseif (blank($state)) {
                                 $set('compliance_weight', '2');
+                            }
+
+                            // Set default custom labels for composite fields
+                            if (in_array($fieldType, ['time_duration', 'time_range'])) {
+                                $validationConfig = $get('validation_config') ?? [];
+                                $customLabels = $validationConfig['custom_labels'] ?? [];
+                                if (empty($customLabels['start_time'])) {
+                                    $validationConfig['custom_labels']['start_time'] = 'Waktu Mulai';
+                                    $set('validation_config', $validationConfig);
+                                }
+                                if (empty($customLabels['end_time'])) {
+                                    $validationConfig['custom_labels']['end_time'] = 'Waktu Selesai';
+                                    $set('validation_config', $validationConfig);
+                                }
                             }
                         }),
                 ]),
@@ -273,6 +307,10 @@ class FormSchemaBuilder
                             $html .= '<p class="font-small text-gray-700 dark:text-gray-100">Sub-fields yang akan dibuat:</p>';
 
                             foreach ($structure as $subKey => $config) {
+                                // Use custom label if provided, otherwise use default label
+                                $validationConfig = $get('validation_config') ?? [];
+                                $customLabels = $validationConfig['custom_labels'] ?? [];
+                                $actualLabel = $customLabels[$subKey] ?? $config['label'];
                                 $fullKey = $fieldKey . '_' . $subKey;
                                 $required = $config['required'] ? ' <span class="text-red-500">*</span>' : '';
                                 $readonly = $config['readonly'] ?? false ? ' (read-only)' : '';
@@ -281,8 +319,8 @@ class FormSchemaBuilder
 
                                 $html .= "<div class=\"flex items-center space-x-2\">";
                                 $html .= "<span class=\"inline-block w-2 h-2 bg-blue-500 rounded-full\"></span>";
-                                $html .= "<code class=\"text-xs bg-gray-100 px-2 py-1 rounded\">{$fullKey}</code>";
-                                $html .= "<span>{$config['label']}{$required}{$readonly} <em class=\"text-gray-500\">({$typeDisplay})</em></span>";
+                                $html .= "<code class=\"text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded\">{$fullKey}</code>";
+                                $html .= "<span>{$actualLabel}{$required}{$readonly} <em class=\"text-gray-500\">({$typeDisplay})</em></span>";
 
                                 if (isset($config['options']) && is_array($config['options'])) {
                                     $optionsStr = implode(', ', array_map(fn($opt) => "'{$opt}'", $config['options']));
@@ -321,6 +359,25 @@ class FormSchemaBuilder
             // Time Duration Specific Settings
             Section::make('Pengaturan Time Duration')
                 ->schema([
+                    Grid::make(2)
+                        ->schema([
+                            TextInput::make('validation_config.custom_labels.start_time')
+                                ->label('Label Field Waktu Mulai')
+                                ->placeholder('Waktu Mulai')
+                                ->default('Waktu Mulai')
+                                ->helperText('Label yang ditampilkan untuk field waktu mulai')
+                                ->maxLength(100)
+                                ->live(onBlur: true),
+
+                            TextInput::make('validation_config.custom_labels.end_time')
+                                ->label('Label Field Waktu Selesai')
+                                ->placeholder('Waktu Selesai')
+                                ->default('Waktu Selesai')
+                                ->helperText('Label yang ditampilkan untuk field waktu selesai')
+                                ->maxLength(100)
+                                ->live(onBlur: true),
+                        ]),
+
                     Select::make('validation_config.threshold_type')
                         ->label('Tipe Validasi Threshold')
                         ->options([
@@ -350,6 +407,23 @@ class FormSchemaBuilder
             // Time Range Specific Settings
             Section::make('Pengaturan Time Range')
                 ->schema([
+                    Grid::make(2)
+                        ->schema([
+                            TextInput::make('validation_config.custom_labels.start_time')
+                                ->label('Label Field Waktu Mulai')
+                                ->placeholder('Waktu Mulai')
+                                ->helperText('Label yang ditampilkan untuk field waktu mulai')
+                                ->maxLength(100)
+                                ->live(onBlur: true),
+
+                            TextInput::make('validation_config.custom_labels.end_time')
+                                ->label('Label Field Waktu Selesai')
+                                ->placeholder('Waktu Selesai')
+                                ->helperText('Label yang ditampilkan untuk field waktu selesai')
+                                ->maxLength(100)
+                                ->live(onBlur: true),
+                        ]),
+
                     TimePicker::make('validation_config.default_start_time')
                         ->label('Default Waktu Mulai Rentang')
                         ->seconds(false)

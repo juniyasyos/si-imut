@@ -22,6 +22,7 @@ class TimeDurationFieldBuilder
      * @param mixed $visibleCondition Visibility condition
      * @param string $defaultThreshold Default threshold time (HH:MM:SS)
      * @param string $thresholdType Type of threshold validation ('less_than' or 'greater_than')
+     * @param array $customLabels Custom labels for start_time and end_time fields
      * @return Grid
      */
     public static function create(
@@ -29,7 +30,8 @@ class TimeDurationFieldBuilder
         bool $required = false,
         $visibleCondition = true,
         string $defaultThreshold = '00:20',
-        string $thresholdType = 'less_than'
+        string $thresholdType = 'less_than',
+        array $customLabels = []
     ): Grid {
         return Grid::make(3)
             ->schema([
@@ -40,8 +42,8 @@ class TimeDurationFieldBuilder
                         // Force set the threshold type value
                         $set($fieldKey . '_threshold_type', $thresholdType);
                     }),
-                self::createStartTimePicker($fieldKey, $required),
-                self::createEndTimePicker($fieldKey, $required),
+                self::createStartTimePicker($fieldKey, $required, $customLabels),
+                self::createEndTimePicker($fieldKey, $required, $customLabels),
                 self::createDurationDisplay($fieldKey),
                 self::createThresholdPicker($fieldKey, $defaultThreshold)
                     ->columnSpan(2),
@@ -57,12 +59,15 @@ class TimeDurationFieldBuilder
      * 
      * @param string $fieldKey Base field key
      * @param bool $required Is required
+     * @param array $customLabels Custom labels for start_time and end_time fields
      * @return TimePicker
      */
-    public static function createStartTimePicker(string $fieldKey, bool $required): TimePicker
+    public static function createStartTimePicker(string $fieldKey, bool $required, array $customLabels = []): TimePicker
     {
+        $startTimeLabel = $customLabels['start_time'] ?? 'Waktu Mulai';
+
         return TimePicker::make($fieldKey . '_start_time')
-            ->label('Waktu Mulai')
+            ->label($startTimeLabel)
             ->required($required)
             ->seconds(false)
             ->debounce(1000)
@@ -84,12 +89,15 @@ class TimeDurationFieldBuilder
      * 
      * @param string $fieldKey Base field key
      * @param bool $required Is required
+     * @param array $customLabels Custom labels for start_time and end_time fields
      * @return TimePicker
      */
-    public static function createEndTimePicker(string $fieldKey, bool $required): TimePicker
+    public static function createEndTimePicker(string $fieldKey, bool $required, array $customLabels = []): TimePicker
     {
+        $endTimeLabel = $customLabels['end_time'] ?? 'Waktu Selesai';
+
         return TimePicker::make($fieldKey . '_end_time')
-            ->label('Waktu Selesai')
+            ->label($endTimeLabel)
             ->required($required)
             ->seconds(false)
             ->debounce(1000)

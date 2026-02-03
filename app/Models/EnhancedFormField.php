@@ -156,8 +156,18 @@ class EnhancedFormField extends Model
         }
 
         try {
-            $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
-            $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
+            // Try HH:mm:ss first, then fallback to HH:mm
+            try {
+                $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
+            } catch (\Exception $e) {
+                $start = \Carbon\Carbon::createFromFormat('H:i', $startTime);
+            }
+
+            try {
+                $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
+            } catch (\Exception $e) {
+                $end = \Carbon\Carbon::createFromFormat('H:i', $endTime);
+            }
 
             // Handle case where end time is next day
             if ($end->lessThan($start)) {
@@ -175,6 +185,25 @@ class EnhancedFormField extends Model
 
     private function scoreTimeRange($value): float
     {
+        // Handle composite array from time_range field
+        if (is_array($value)) {
+            $inputValue = $value['input_value'] ?? null;
+            $startTime = $value['start_time'] ?? null;
+            $endTime = $value['end_time'] ?? null;
+
+            if (!$inputValue || !$startTime || !$endTime) {
+                return 0;
+            }
+
+            // Check if input_value is within start_time and end_time range
+            if ($inputValue >= $startTime && $inputValue <= $endTime) {
+                return 100;
+            }
+
+            return 0;
+        }
+
+        // Fallback for legacy string value
         $config = $this->validation_config;
         $minTime = $config['time_range']['min_time'] ?? '00:00';
         $maxTime = $config['time_range']['max_time'] ?? '23:59';

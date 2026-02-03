@@ -9,6 +9,8 @@ use App\Models\FieldResponse;
 use App\Models\EnhancedFormField;
 use App\Services\DynamicForm\DynamicFormService;
 use App\Services\DynamicForm\ComplianceCalculatorService;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -250,17 +252,23 @@ class CreateDailyReportEntry extends CreateRecord
                     $startTime = $responseData[$field->field_key . '_start_time'] ?? null;
                     $endTime = $responseData[$field->field_key . '_end_time'] ?? null;
                     $validDuration = $responseData[$field->field_key . '_valid_duration_setting'] ?? null;
-                    $validIndicator = $responseData[$field->field_key . '_valid_indicator'] ?? '0';
+                    $validIndicator = TimeUtility::checkDurationValidity($startTime, $endTime, $validDuration ?? '00:15:00', 'less_than') ? '1' : '0';
 
                     // Store all sub-fields in responses for compliance calculation
-                    $responses[$field->field_key] = $fieldValue;
+                    $responses[$field->field_key] = [
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'valid_duration_setting' => $validDuration,
+                        'valid_indicator' => $validIndicator,
+                    ];
                     $responses[$field->field_key . '_start_time'] = $startTime;
                     $responses[$field->field_key . '_end_time'] = $endTime;
                     $responses[$field->field_key . '_valid_duration_setting'] = $validDuration;
                     $responses[$field->field_key . '_valid_indicator'] = $validIndicator;
 
+
                     // Create field response record with composite value
-                    FieldResponse::create([
+                    $fieldResponseData = [
                         'daily_report_response_id' => $dailyReport->id,
                         'form_field_id' => $field->id,
                         'field_value' => [
@@ -269,17 +277,23 @@ class CreateDailyReportEntry extends CreateRecord
                             'valid_duration_setting' => $validDuration,
                             'valid_indicator' => $validIndicator,
                         ],
-                        'compliance_score' => ($startTime && $endTime) ? ($field->calculateFieldScore($validIndicator) ?? 0) : 0,
-                    ]);
+                        'compliance_score' => ($startTime && $endTime) ? (($validIndicator == '1') ? 100 : 0) : 0,
+                    ];
+                    FieldResponse::create($fieldResponseData);
                 } elseif ($field->field_type === 'time_range') {
                     // Handle time_range field type - collect sub-fields
                     $inputValue = $responseData[$field->field_key . '_input_value'] ?? null;
                     $startTime = $responseData[$field->field_key . '_start_time'] ?? null;
                     $endTime = $responseData[$field->field_key . '_end_time'] ?? null;
-                    $validIndicator = $responseData[$field->field_key . '_valid_indicator'] ?? '0';
+                    $validIndicator = TimeRangeFieldBuilder::isInputValueValid($inputValue, $startTime, $endTime) ? '1' : '0';
 
                     // Store all sub-fields in responses for compliance calculation
-                    $responses[$field->field_key] = $inputValue;
+                    $responses[$field->field_key] = [
+                        'input_value' => $inputValue,
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'valid_indicator' => $validIndicator,
+                    ];
                     $responses[$field->field_key . '_input_value'] = $inputValue;
                     $responses[$field->field_key . '_start_time'] = $startTime;
                     $responses[$field->field_key . '_end_time'] = $endTime;
@@ -295,7 +309,7 @@ class CreateDailyReportEntry extends CreateRecord
                             'end_time' => $endTime,
                             'valid_indicator' => $validIndicator,
                         ],
-                        'compliance_score' => $inputValue ? ($field->calculateFieldScore($validIndicator) ?? 0) : 0,
+                        'compliance_score' => $inputValue ? (($validIndicator == '1') ? 100 : 0) : 0,
                     ]);
                 } else {
                     $responses[$field->field_key] = $fieldValue;

@@ -120,6 +120,7 @@ class FormFields
             case 'time_duration':
                 $threshold = $field->validation_config['threshold'] ?? '00:15';
                 $thresholdType = $field->validation_config['threshold_type'] ?? 'less_than';
+                $customLabels = $field->validation_config['custom_labels'] ?? [];
                 // dd([
                 //     'field_key' => $fieldKey,
                 //     'field_validation_config' => $field->validation_config,
@@ -132,18 +133,21 @@ class FormFields
                     $required,
                     $visibleCondition,
                     $threshold,
-                    $thresholdType
+                    $thresholdType,
+                    $customLabels
                 );
 
             case 'time_range':
                 $defaultStartTime = $field->validation_config['default_start_time'] ?? '08:00';
                 $defaultEndTime = $field->validation_config['default_end_time'] ?? '17:00';
+                $customLabels = $field->validation_config['custom_labels'] ?? [];
                 return TimeRangeFieldBuilder::create(
                     $fieldKey,
                     $required,
                     $visibleCondition,
                     $defaultStartTime,
-                    $defaultEndTime
+                    $defaultEndTime,
+                    $customLabels
                 );
 
             default:
@@ -193,7 +197,7 @@ class FormFields
      */
     private static function createStartTimePicker(string $fieldKey, bool $required)
     {
-        return TimeDurationFieldBuilder::createStartTimePicker($fieldKey, $required);
+        return TimeDurationFieldBuilder::createStartTimePicker($fieldKey, $required, []);
     }
 
     /**
@@ -201,7 +205,7 @@ class FormFields
      */
     private static function createEndTimePicker(string $fieldKey, bool $required)
     {
-        return TimeDurationFieldBuilder::createEndTimePicker($fieldKey, $required);
+        return TimeDurationFieldBuilder::createEndTimePicker($fieldKey, $required, []);
     }
 
     /**

@@ -61,23 +61,6 @@
             {{-- Desktop Sidebar (Sticky) --}}
             <aside class="hidden lg:block lg:col-span-1">
                 <div class="sticky top-0 space-y-4 sm:space-y-6">
-                    {{-- Action Card --}}
-                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
-                        <div class="p-4 sm:p-6 space-y-4">
-                            <button type="button"
-                                wire:click="create"
-                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 active:scale-95">
-                                <x-heroicon-s-paper-airplane class="w-5 h-5" />
-                                Simpan Laporan
-                            </button>
-
-                            <a href="{{ $this->getResource()::getUrl('index') }}"
-                                class="block text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50">
-                                ← Kembali ke daftar
-                            </a>
-                        </div>
-                    </div>
-
                     {{-- Help Card --}}
                     <div class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl shadow-sm border border-yellow-200 dark:border-yellow-700/30 overflow-hidden">
                         <div class="p-4 sm:p-6">
@@ -103,6 +86,23 @@
                                     </ul>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {{-- Action Card --}}
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
+                        <div class="p-4 sm:p-6 space-y-4">
+                            <button type="button"
+                                wire:click="create"
+                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 active:scale-95">
+                                <x-heroicon-s-paper-airplane class="w-5 h-5" />
+                                Simpan Laporan
+                            </button>
+
+                            <a href="{{ $this->getResource()::getUrl('index') }}"
+                                class="block text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                                ← Kembali ke daftar
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -134,7 +134,7 @@
     <script>
         // Auto-save interval (optional - can be enabled if needed)
         let autoSaveInterval;
-        
+
         document.addEventListener('livewire:navigated', () => {
             // Could implement auto-save logic here if needed
             // autoSaveInterval = setInterval(() => {
@@ -198,7 +198,9 @@
 
         /* Touch-friendly interactive elements */
         @media (hover: none) and (pointer: coarse) {
-            button, a {
+
+            button,
+            a {
                 min-height: 44px;
                 min-width: 44px;
             }
