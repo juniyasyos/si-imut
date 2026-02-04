@@ -41,15 +41,19 @@ class DefaultFormTemplateSeeder extends Seeder
                 // Create default FormTemplate
                 $formTemplate = FormTemplate::create([
                     'imut_profile_id' => $profile->id,
-                    'title' => $imutDataTitle . ' - ' . $profile->version,
-                    'description' => 'Form untuk ' . $imutDataTitle,
-                    'compliance_method' => 'threshold',
-                    'auto_fail_on_critical' => false,
+                    'title' => 'Template Observasi: ' . $imutDataTitle,
+                    'description' => 'Form observasi cerdas dengan conditional logic untuk ' . $imutDataTitle . ' - v' . $profile->version,
+                    'compliance_method' => 'weighted_average',
+                    'auto_fail_on_critical' => true,
                     'scoring_config' => json_encode([
+                        'method' => 'weighted_average',
+                        'critical_fields_auto_fail' => true,
+                        'partial_compliance_allowed' => true,
                         'form_fields' => [
                             [
-                                'field_name' => 'status_kepatuhan',
-                                'compliance_weight' => 100
+                                'field_name' => 'status_observasi',
+                                'compliance_weight' => 100,
+                                'is_critical' => true
                             ]
                         ]
                     ])
@@ -69,31 +73,40 @@ class DefaultFormTemplateSeeder extends Seeder
     }
 
     /**
-     * Create default form fields for a template
+     * Create default form fields for a template - More complex but concise
      */
     private function createDefaultFields(FormTemplate $formTemplate): void
     {
-        // Field 1: Status Kepatuhan (Radio with options)
+        // Field 1: Status Observasi (Radio with complex compliance logic)
         $statusField = EnhancedFormField::create([
             'form_template_id' => $formTemplate->id,
-            'field_key' => 'status_kepatuhan',
-            'field_label' => 'Status Kepatuhan',
-            'field_description' => 'Pilih status kepatuhan',
+            'field_key' => 'status_observasi',
+            'field_label' => 'Status Observasi',
+            'field_description' => 'Pilih status hasil observasi indikator ini',
             'field_type' => 'radio',
-            'validation_config' => json_encode(['required' => true]),
+            'validation_config' => json_encode([
+                'required' => true,
+                'conditional_fields' => [
+                    'tidak_patuh' => ['alasan_tidak_patuh', 'tindakan_perbaikan'],
+                    'perlu_perbaikan' => ['rencana_perbaikan', 'timeline']
+                ]
+            ]),
             'compliance_weight' => 100,
-            'is_critical_field' => false,
+            'is_critical_field' => true,
             'compliance_rules' => json_encode([
                 'compliant_values' => ['patuh'],
-                'non_compliant_values' => ['tidak_patuh']
+                'partial_compliant_values' => ['perlu_perbaikan'],
+                'non_compliant_values' => ['tidak_patuh'],
+                'scoring_logic' => 'weighted_average',
+                'critical_fail_threshold' => 0
             ]),
             'order_index' => 1
         ]);
 
-        // Options for status kepatuhan
+        // Options for status observasi with complex scoring
         FormFieldOption::create([
             'enhanced_form_field_id' => $statusField->id,
-            'option_text' => 'Patuh',
+            'option_text' => '✅ Patuh - Memenuhi semua standar',
             'option_value' => 'patuh',
             'is_correct' => true,
             'compliance_value' => 100,
@@ -102,51 +115,91 @@ class DefaultFormTemplateSeeder extends Seeder
 
         FormFieldOption::create([
             'enhanced_form_field_id' => $statusField->id,
-            'option_text' => 'Tidak Patuh',
+            'option_text' => '⚠️ Perlu Perbaikan - Memerlukan tindakan korektif',
+            'option_value' => 'perlu_perbaikan',
+            'is_correct' => false,
+            'compliance_value' => 50,
+            'order_index' => 2
+        ]);
+
+        FormFieldOption::create([
+            'enhanced_form_field_id' => $statusField->id,
+            'option_text' => '❌ Tidak Patuh - Pelanggaran kriteria',
             'option_value' => 'tidak_patuh',
             'is_correct' => false,
             'compliance_value' => 0,
-            'order_index' => 2
-        ]);
-
-        // Field 2: Tanggal Observasi
-        EnhancedFormField::create([
-            'form_template_id' => $formTemplate->id,
-            'field_key' => 'tanggal_observasi',
-            'field_label' => 'Tanggal Observasi',
-            'field_description' => 'Tanggal pelaksanaan observasi',
-            'field_type' => 'date',
-            'validation_config' => json_encode(['required' => true]),
-            'compliance_weight' => 0,
-            'is_critical_field' => false,
-            'order_index' => 2
-        ]);
-
-        // Field 3: Waktu Observasi
-        EnhancedFormField::create([
-            'form_template_id' => $formTemplate->id,
-            'field_key' => 'waktu_observasi',
-            'field_label' => 'Waktu Observasi',
-            'field_description' => 'Waktu pelaksanaan observasi',
-            'field_type' => 'time',
-            'validation_config' => json_encode(['required' => true]),
-            'compliance_weight' => 0,
-            'is_critical_field' => false,
-            'time_format' => 'HH:mm',
             'order_index' => 3
         ]);
 
-        // Field 4: Catatan
+        // Conditional Field 2: Alasan Tidak Patuh (Textarea - only shown when status = tidak_patuh)
         EnhancedFormField::create([
             'form_template_id' => $formTemplate->id,
-            'field_key' => 'catatan',
-            'field_label' => 'Catatan',
-            'field_description' => 'Catatan tambahan (opsional)',
+            'field_key' => 'alasan_tidak_patuh',
+            'field_label' => 'Alasan Ketidakpatuhan',
+            'field_description' => 'Jelaskan secara detail alasan indikator ini tidak patuh',
             'field_type' => 'textarea',
-            'validation_config' => json_encode(['required' => false]),
+            'validation_config' => json_encode([
+                'required' => true,
+                'min_length' => 10,
+                'max_length' => 500,
+                'conditional_show' => 'status_observasi:tidak_patuh'
+            ]),
+            'compliance_weight' => 0,
+            'is_critical_field' => false,
+            'order_index' => 2
+        ]);
+
+        // Conditional Field 3: Tindakan Perbaikan (Textarea - only shown when status = tidak_patuh)
+        EnhancedFormField::create([
+            'form_template_id' => $formTemplate->id,
+            'field_key' => 'tindakan_perbaikan',
+            'field_label' => 'Tindakan Perbaikan',
+            'field_description' => 'Jelaskan tindakan korektif yang akan dilakukan',
+            'field_type' => 'textarea',
+            'validation_config' => json_encode([
+                'required' => true,
+                'min_length' => 20,
+                'max_length' => 1000,
+                'conditional_show' => 'status_observasi:tidak_patuh'
+            ]),
+            'compliance_weight' => 0,
+            'is_critical_field' => false,
+            'order_index' => 3
+        ]);
+
+        // Conditional Field 4: Rencana Perbaikan (Textarea - only shown when status = perlu_perbaikan)
+        EnhancedFormField::create([
+            'form_template_id' => $formTemplate->id,
+            'field_key' => 'rencana_perbaikan',
+            'field_label' => 'Rencana Perbaikan',
+            'field_description' => 'Jelaskan rencana perbaikan yang akan dilakukan',
+            'field_type' => 'textarea',
+            'validation_config' => json_encode([
+                'required' => true,
+                'min_length' => 15,
+                'max_length' => 800,
+                'conditional_show' => 'status_observasi:perlu_perbaikan'
+            ]),
             'compliance_weight' => 0,
             'is_critical_field' => false,
             'order_index' => 4
+        ]);
+
+        // Conditional Field 5: Timeline Perbaikan (Date - only shown when status = perlu_perbaikan)
+        EnhancedFormField::create([
+            'form_template_id' => $formTemplate->id,
+            'field_key' => 'timeline_perbaikan',
+            'field_label' => 'Target Waktu Perbaikan',
+            'field_description' => 'Tanggal target penyelesaian perbaikan',
+            'field_type' => 'date',
+            'validation_config' => json_encode([
+                'required' => true,
+                'future_date_only' => true,
+                'conditional_show' => 'status_observasi:perlu_perbaikan'
+            ]),
+            'compliance_weight' => 0,
+            'is_critical_field' => false,
+            'order_index' => 5
         ]);
     }
 }
