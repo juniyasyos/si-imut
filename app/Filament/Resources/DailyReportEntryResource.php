@@ -6,7 +6,7 @@ use App\Filament\Resources\DailyReportEntryResource\Infolist\DailyReportEntryInf
 use App\Filament\Resources\DailyReportEntryResource\Pages;
 use App\Filament\Resources\DailyReportEntryResource\Schema\DailyReportEntrySchema;
 use App\Filament\Resources\DailyReportEntryResource\Table\DailyReportEntryTable;
-use App\Models\DailyReportEntry;
+use App\Models\DailyReportResponse;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DailyReportEntryResource extends Resource implements HasShieldPermissions
 {
-    protected static ?string $model = DailyReportEntry::class;
+    protected static ?string $model = DailyReportResponse::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
@@ -165,7 +165,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        if (!$user->hasRole('Unit Kerja') || !$user->unitKerjas()->exists()) {
+        if (!$user->unitKerjas()->exists()) {
             return false;
         }
 
@@ -186,7 +186,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        if (!$user->hasRole('Unit Kerja') || !$user->unitKerjas()->exists()) {
+        if (!$user->unitKerjas()->exists()) {
             return false;
         }
 
@@ -207,7 +207,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        if (!$user->hasRole('Unit Kerja') || !$user->unitKerjas()->exists()) {
+        if (!$user->unitKerjas()->exists()) {
             return false;
         }
 
@@ -291,12 +291,50 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
      * Generate URL for creating report entry for specific indicator and date
      * Usage: DailyReportEntryResource::getCreateUrl($indicatorId, $date)
      */
-    public static function getCreateUrl(int $indicatorId, string $date): string
+    public static function getCreateUrl(int $indicatorId, ?string $date = null): string
     {
         return static::getUrl('create') . '?' . http_build_query([
             'indicator' => $indicatorId,
-            'date' => $date
+            'date' => $date ?? now()->format('Y-m-d')
         ]);
+    }
+
+    /**
+     * Generate URL for editing report entry with optional parameters
+     * Usage: DailyReportEntryResource::getEditUrl($recordId, $indicatorId, $date)
+     */
+    public static function getEditUrl(int $recordId, ?int $indicatorId = null, ?string $date = null): string
+    {
+        $url = static::getUrl('edit', ['record' => $recordId]);
+
+        $params = [];
+        if ($indicatorId) {
+            $params['indicator'] = $indicatorId;
+        }
+        if ($date) {
+            $params['date'] = $date;
+        }
+
+        return $params ? $url . '?' . http_build_query($params) : $url;
+    }
+
+    /**
+     * Generate URL for viewing report entry with optional parameters
+     * Usage: DailyReportEntryResource::getViewUrl($recordId, $indicatorId, $date)
+     */
+    public static function getViewUrl(int $recordId, ?int $indicatorId = null, ?string $date = null): string
+    {
+        $url = static::getUrl('view', ['record' => $recordId]);
+
+        $params = [];
+        if ($indicatorId) {
+            $params['indicator'] = $indicatorId;
+        }
+        if ($date) {
+            $params['date'] = $date;
+        }
+
+        return $params ? $url . '?' . http_build_query($params) : $url;
     }
 
     /**

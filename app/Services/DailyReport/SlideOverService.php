@@ -35,8 +35,6 @@ class SlideOverService
             ])
             ->join('form_templates', 'daily_report_responses.form_template_id', '=', 'form_templates.id')
             ->join('imut_profil', 'form_templates.imut_profile_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
             ->join('unit_kerja', 'daily_report_responses.unit_kerja_id', '=', 'unit_kerja.id')
             ->join('users', 'daily_report_responses.submitted_by', '=', 'users.id')
             ->where('form_templates.id', $indicatorId)
@@ -51,7 +49,7 @@ class SlideOverService
                 });
             })
             ->whereDate('daily_report_responses.report_date', $date)
-            ->whereIn('imut_data_unit_kerja.unit_kerja_id', $userUnitIds)
+            ->whereIn('daily_report_responses.unit_kerja_id', $userUnitIds)
             ->latest('daily_report_responses.created_at')
             ->get();
 

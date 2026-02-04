@@ -347,4 +347,27 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             return [];
         }
     }
+
+    /**
+     * Delete a daily report entry
+     */
+    public function deleteReport(int $recordId): void
+    {
+        $record = DailyReportEntry::findOrFail($recordId);
+
+        // Check authorization
+        $this->authorize('delete', $record);
+
+        // Delete the record
+        $record->delete();
+
+        // Close slide-over if open
+        $this->slideOverOpen = false;
+
+        // Show success notification
+        $this->notify('success', 'Laporan berhasil dihapus');
+
+        // Reload data
+        $this->loadMatrixData();
+    }
 }

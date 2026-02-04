@@ -45,7 +45,12 @@ trait ReportManagementTrait
      */
     public function viewReport(int $reportId): void
     {
-        $this->redirect(DailyReportEntryResource::getUrl('view', ['record' => $reportId]));
+        $url = DailyReportEntryResource::getViewUrl(
+            $reportId,
+            $this->selectedIndicatorId,
+            $this->selectedDate
+        );
+        $this->redirect($url);
     }
 
     /**
@@ -53,7 +58,12 @@ trait ReportManagementTrait
      */
     public function editReport(int $reportId): void
     {
-        $this->redirect(DailyReportEntryResource::getUrl('edit', ['record' => $reportId]));
+        $url = DailyReportEntryResource::getEditUrl(
+            $reportId,
+            $this->selectedIndicatorId,
+            $this->selectedDate
+        );
+        $this->redirect($url);
     }
 
     /**

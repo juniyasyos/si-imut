@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
-use App\Models\ImutProfile;
 use App\Models\UnitKerja;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +17,6 @@ class TableViewController extends Controller
      * 
      * URL Parameters:
      * - form_template_id: ID form template (required)
-     * - imut_profile_id: ID profil IMUT (required)
      * - unit_kerja_id: ID unit kerja (optional, null = all units)
      * - period: Format Y-m (e.g., 2026-02)
      */
@@ -31,9 +29,8 @@ class TableViewController extends Controller
      * Get table data based on filters
      * 
      * URL Parameters:
-     * - form_template_id: ID form template (primary filter)
-     * - unit_kerja_id: ID unit kerja (optional)
-     * - imut_profile_id: ID profil IMUT (optional)
+     * - form_template_id: ID form template (primary filter, required)
+     * - unit_kerja_id: ID unit kerja (optional, jika kosong akan filter berdasarkan unit user)
      * - period: Format Y-m (e.g., 2026-02)
      */
     public function getData(Request $request)
@@ -43,7 +40,6 @@ class TableViewController extends Controller
         // Get filter parameters
         $formTemplateId = $request->input('form_template_id');
         $unitKerjaId = $request->input('unit_kerja_id');
-        $imutProfileId = $request->input('imut_profile_id');
         $period = $request->input('period', now()->format('Y-m'));
 
         // Debug - check laravel.log or use: tail -f storage/logs/laravel.log
@@ -51,7 +47,6 @@ class TableViewController extends Controller
             'user' => $user?->email,
             'form_template_id' => $formTemplateId,
             'unit_kerja_id' => $unitKerjaId,
-            'imut_profile_id' => $imutProfileId,
             'period' => $period,
         ]);
 
@@ -70,14 +65,9 @@ class TableViewController extends Controller
             ->whereYear('report_date', $year)
             ->whereMonth('report_date', $month);
 
-        // Apply form_template_id filter (most specific)
+        // Apply form_template_id filter
         if ($formTemplateId) {
             $query->where('form_template_id', $formTemplateId);
-        } elseif ($imutProfileId) {
-            // Only filter by profile if no specific template
-            $query->whereHas('formTemplate', function ($q) use ($imutProfileId) {
-                $q->where('imut_profile_id', $imutProfileId);
-            });
         }
 
         // Apply unit_kerja_id filter
@@ -92,7 +82,7 @@ class TableViewController extends Controller
         $entries = $query->orderBy('report_date', 'asc')->get();
 
         // Debug query result
-        \Log::info('TableView query result', [
+        Log::info('TableView query result', [
             'entries_count' => $entries->count(),
             'sql' => $query->toSql(),
             'bindings' => $query->getBindings(),
@@ -104,7 +94,7 @@ class TableViewController extends Controller
                 'tableDescription' => 'Tidak ada data untuk periode yang dipilih',
                 'tableConfig' => null,
                 'tableData' => [],
-                'metadata' => $this->buildMetadata($unitKerjaId, $imutProfileId, $period),
+                'metadata' => $this->buildMetadata($unitKerjaId, $period),
                 'user' => $this->getUserInfo($user),
             ]);
         }
@@ -121,7 +111,6 @@ class TableViewController extends Controller
         // Build metadata
         $metadata = $this->buildMetadata(
             $unitKerjaId,
-            $imutProfileId,
             $period,
             $formTemplate,
             $entries->first()->unitKerja
@@ -274,7 +263,7 @@ class TableViewController extends Controller
 
             // Log first entry to see structure
             if ($index === 0) {
-                \Log::info('First Entry fieldResponses', [
+                Log::info('First Entry fieldResponses', [
                     'entry_id' => $entry->id,
                     'report_date' => $entry->report_date->format('Y-m-d'),
                     'fieldResponses_count' => $entry->fieldResponses->count(),
@@ -347,13 +336,12 @@ class TableViewController extends Controller
     /**
      * Build metadata for the response
      */
-    private function buildMetadata($unitKerjaId, $imutProfileId, $period, ?FormTemplate $formTemplate = null, ?UnitKerja $unitKerja = null): array
+    private function buildMetadata($unitKerjaId, $period, ?FormTemplate $formTemplate = null, ?UnitKerja $unitKerja = null): array
     {
         [$year, $month] = explode('-', $period);
 
         $metadata = [
             'unit_kerja_id' => $unitKerjaId,
-            'imut_profile_id' => $imutProfileId,
             'period' => $period,
             'year' => (int) $year,
             'month' => (int) $month,
@@ -370,10 +358,6 @@ class TableViewController extends Controller
             $metadata['imut_profile'] = $formTemplate->imutProfile?->title;
             $metadata['imut_data'] = $formTemplate->imutProfile?->imutData?->title;
             $metadata['form_template'] = $formTemplate->title;
-        } elseif ($imutProfileId) {
-            $profile = ImutProfile::with('imutData')->find($imutProfileId);
-            $metadata['imut_profile'] = $profile?->title;
-            $metadata['imut_data'] = $profile?->imutData?->title;
         }
 
         return $metadata;

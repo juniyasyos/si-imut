@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ListLaporanImuts extends ListRecords
 {
@@ -25,6 +26,7 @@ class ListLaporanImuts extends ListRecords
                 ->modalHeading('Pengaturan Auto Generate Laporan IMUT')
                 ->modalDescription('Konfigurasikan pembuatan laporan IMUT secara otomatis sesuai jadwal yang ditentukan.')
                 ->modalWidth('5xl')
+                ->visible(fn() => Gate::allows('update_laporan::imut'))
                 ->form([
                     Forms\Components\Section::make('Pengaturan Dasar')
                         ->schema([

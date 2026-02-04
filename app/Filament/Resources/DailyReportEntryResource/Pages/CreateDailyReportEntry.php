@@ -43,7 +43,7 @@ class CreateDailyReportEntry extends CreateRecord
 
         // Store original parameters for redirect
         $this->originalIndicatorId = $indicatorId;
-        $this->originalDate = $date;
+        $this->originalDate = $date ?? now()->format('Y-m-d');
 
         if ($indicatorId) {
             $this->formTemplate = FormTemplate::with(['formFields.options', 'imutProfile'])->find($indicatorId);
@@ -58,6 +58,16 @@ class CreateDailyReportEntry extends CreateRecord
                 $this->redirect($this->getResource()::getUrl('index'));
                 return;
             }
+        } else {
+            // If no indicator, redirect to index page with message
+            Notification::make()
+                ->title('Parameter Tidak Lengkap')
+                ->body('Silakan pilih indikator terlebih dahulu dari halaman daftar laporan.')
+                ->warning()
+                ->send();
+
+            $this->redirect($this->getResource()::getUrl('index'));
+            return;
         }
 
         parent::mount();
@@ -314,7 +324,7 @@ class CreateDailyReportEntry extends CreateRecord
                         ],
                         'compliance_score' => $inputValue ? (($validIndicator == '1') ? 100 : 0) : 0,
                     ];
-                    
+
                     // Create field response record with composite value
                     FieldResponse::create($fieldResponseData);
                 } else {
