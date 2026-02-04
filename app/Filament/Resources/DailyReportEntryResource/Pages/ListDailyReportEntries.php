@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\DailyReportEntry;
+use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Services\DailyReport\SlideOverService;
 use App\Traits\DailyReport\FormHandlerTrait;
@@ -11,6 +12,7 @@ use App\Traits\DailyReport\DebugTrait;
 use Carbon\Carbon;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -349,25 +351,52 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     }
 
     /**
-     * Delete a daily report entry
+     * Delete a daily report entry via API
      */
-    public function deleteReport(int $recordId): void
+    public function deleteReport($recordId): void
     {
-        $record = DailyReportEntry::findOrFail($recordId);
+        try {
+            $record = DailyReportResponse::findOrFail($recordId);
+            
+            // Delete the record
+            $record->delete();
 
-        // Check authorization
-        $this->authorize('delete', $record);
+            // Close slide-over if open
+            $this->slideOverOpen = true;
 
-        // Delete the record
-        $record->delete();
+            // Show success notification
+            Notification::make()
+                ->success()
+                ->title('Berhasil')
+                ->body('Laporan berhasil dihapus')
+                ->send();
 
-        // Close slide-over if open
-        $this->slideOverOpen = false;
+            // Reload data
+            $this->loadMatrixData();
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            Notification::make()
+                ->danger()
+                ->title('Akses Ditolak')
+                ->body('Anda tidak memiliki izin untuk menghapus laporan ini')
+                ->send();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Notification::make()
+                ->danger()
+                ->title('Data Tidak Ditemukan')
+                ->body('Laporan yang akan dihapus tidak ditemukan')
+                ->send();
+        } catch (\Exception $e) {
+            Log::error('Error deleting daily report response', [
+                'id' => $recordId,
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
 
-        // Show success notification
-        $this->notify('success', 'Laporan berhasil dihapus');
-
-        // Reload data
-        $this->loadMatrixData();
+            Notification::make()
+                ->danger()
+                ->title('Terjadi Kesalahan')
+                ->body('Gagal menghapus laporan')
+                ->send();
+        }
     }
 }

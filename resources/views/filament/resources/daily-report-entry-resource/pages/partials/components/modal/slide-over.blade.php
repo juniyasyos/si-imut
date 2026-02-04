@@ -10,7 +10,7 @@
     x-transition:leave="transition-opacity ease-in duration-100"
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
-    @keydown.escape.window="$wire.closeSlideOver()">
+    @keydown.escape.window="$wire.closeSlideOver()">>
 
     <!-- Optimized Backdrop -->
     <div class="!absolute !inset-0"
@@ -160,21 +160,19 @@
 
                                 <!-- Actions -->
                                 <div class="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-slate-600">
-                                    @if(\Carbon\Carbon::parse($report['created_at'])->diffInHours(now()) <= 24)
-                                        <button
+                                    <button
                                         wire:click="editReport({{ $report['id'] }})"
                                         class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-yellow-700 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-600">
                                         @svg("heroicon-m-pencil", "w-4 h-4 mr-1.5")
                                         Edit
-                                        </button>
+                                    </button>
 
-                                        <button type="button"
-                                            onclick="deleteReport({{ $report['id'] }})"
-                                            class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-600">
-                                            @svg("heroicon-m-trash", "w-4 h-4 mr-1.5")
-                                            Hapus
-                                        </button>
-                                        @endif
+                                    <button type="button"
+                                        wire:click="deleteReport({{ $report['id'] }})"
+                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-600">
+                                        @svg("heroicon-m-trash", "w-4 h-4 mr-1.5")
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                             @endforeach
@@ -333,57 +331,4 @@
         </div>
     </div>
     @endif
-
 </div>
-
-<script>
-    function deleteReport(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus laporan ini?')) {
-            return;
-        }
-
-        // Show loading state
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.innerHTML = '<div class="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-red-600"></div>';
-        button.disabled = true;
-
-        fetch(`/api/daily-report-responses/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success notification
-                    if (typeof $wire !== 'undefined') {
-                        $wire.dispatch('notify', {
-                            type: 'success',
-                            message: data.message
-                        });
-
-                        // Close slide-over and reload data
-                        $wire.closeSlideOver();
-                        $wire.loadMatrixData();
-                    } else {
-                        alert(data.message);
-                        location.reload();
-                    }
-                } else {
-                    throw new Error(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting report:', error);
-                alert('Gagal menghapus laporan: ' + (error.message || 'Terjadi kesalahan'));
-
-                // Restore button state
-                button.innerHTML = originalText;
-                button.disabled = false;
-            });
-    }
-</script>

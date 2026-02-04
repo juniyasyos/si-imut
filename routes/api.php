@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\DailyReportResponseController;
+
 use App\Http\Controllers\Api\GreetingController;
 use App\Http\Controllers\Api\ImutBenchmarkingController;
 use App\Http\Controllers\Api\ImutDataApiController;
@@ -45,8 +44,3 @@ Route::prefix('imut-data')->group(function () {
 // Imut Indicator Report Routes
 Route::get('/imut-indicator-report/{indicator}/{periode}', [ImutIndicatorReportController::class, 'show'])
     ->name('api.imut-indicator-report.show');
-
-// Daily Report Response API Routes
-Route::middleware(['web'])->group(function () {
-    Route::delete('/daily-report-responses/{id}', [DailyReportResponseController::class, 'destroy']);
-});

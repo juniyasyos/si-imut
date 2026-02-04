@@ -270,11 +270,12 @@
 
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.monitoring.monitoring-view')
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.monitoring.legend')
+
+            {{-- Slide-over rendered inside the container --}}
+            @include('filament.resources.daily-report-entry-resource.pages.partials.components.modal.slide-over')
         </div>
 
-        {{-- Slide-over rendered outside the page wrapper to prevent overflow clipping --}}
-        @include('filament.resources.daily-report-entry-resource.pages.partials.components.modal.slide-over')
+        {{-- Scripts and styles --}}
+        @include('filament.resources.daily-report-entry-resource.pages.partials.components.scripts.scripts-styles')
     </div>
-
-    @include('filament.resources.daily-report-entry-resource.pages.partials.components.scripts.scripts-styles')
-</x-filament-panels::page> \
+</x-filament-panels::page>
