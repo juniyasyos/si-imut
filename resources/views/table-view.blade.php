@@ -84,6 +84,28 @@
 
 <body class="bg-gray-50 p-4 md:p-6" x-data="dynamicTable()">
 
+    <!-- Action Buttons -->
+    <div class="no-print my-6 max-w-full mx-auto flex flex-wrap justify-end gap-3">
+        <!-- Filter Toggle -->
+        <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+            <input type="checkbox" id="showReporter" x-model="showReporter" @change="calculateDisplayColumns()">
+            <label for="showReporter" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Pelapor</label>
+        </div>
+
+        <a href="{{ url('/siimut/daily-report-entries') }}"
+            class="px-5 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition shadow-sm text-sm">
+            ← Kembali
+        </a>
+        <button @click="fetchData()"
+            class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm text-sm">
+            🔄 Refresh
+        </button>
+        <button onclick="window.print()"
+            class="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition shadow-sm text-sm">
+            🖨️ Cetak
+        </button>
+    </div>
+
     <!-- Loading State -->
     <div x-show="loading" x-cloak class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl">
@@ -163,13 +185,15 @@
                         <!-- Row 1: Parent Headers -->
                         <tr class="bg-blue-700">
                             <template x-for="(header, index) in tableConfig.headers" :key="'parent-' + index">
-                                <th :colspan="header.children ? header.children.length : 1"
-                                    :rowspan="header.children ? 1 : (hasMultiLevelHeaders ? 2 : 1)"
-                                    class="border border-gray-300 px-2 py-2 text-center font-semibold text-white text-xs"
-                                    :class="header.bgColor || 'bg-blue-700'"
-                                    :style="header.width ? 'width: ' + header.width : ''"
-                                    x-text="header.label">
-                                </th>
+                                <template x-if="!(header.key === 'submitted_by_name' && !showReporter)">
+                                    <th :colspan="header.children ? header.children.length : 1"
+                                        :rowspan="header.children ? 1 : (hasMultiLevelHeaders ? 2 : 1)"
+                                        class="border border-gray-300 px-2 py-2 text-center font-semibold text-white text-xs"
+                                        :class="header.bgColor || 'bg-blue-700'"
+                                        :style="header.width ? 'width: ' + header.width : ''"
+                                        x-text="header.label">
+                                    </th>
+                                </template>
                             </template>
                         </tr>
 
@@ -255,22 +279,6 @@
         </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="no-print mt-6 max-w-full mx-auto flex flex-wrap justify-end gap-3">
-        <a href="{{ url('/siimut/daily-report-entries') }}"
-            class="px-5 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition shadow-sm text-sm">
-            ← Kembali
-        </a>
-        <button @click="fetchData()"
-            class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm text-sm">
-            🔄 Refresh
-        </button>
-        <button onclick="window.print()"
-            class="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition shadow-sm text-sm">
-            🖨️ Cetak
-        </button>
-    </div>
-
     <script>
         function dynamicTable() {
             return {
@@ -288,6 +296,7 @@
                 metadata: {},
                 summary: {},
                 userData: null,
+                showReporter: true,
 
                 async init() {
                     await this.fetchData();
@@ -386,6 +395,10 @@
                                 this.displayColumns.push(child.key);
                             });
                         } else if (header.key) {
+                            // Skip reporter column if not showing
+                            if (header.key === 'submitted_by_name' && !this.showReporter) {
+                                return;
+                            }
                             this.displayColumns.push(header.key);
                         }
                     });
