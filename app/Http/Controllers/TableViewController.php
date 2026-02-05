@@ -141,6 +141,8 @@ class TableViewController extends Controller
     private function buildTableConfig(FormTemplate $formTemplate): array
     {
         $headers = [];
+        $fieldCounter = 0; // Counter untuk field (A, B, C...)
+        $fieldCodeMapping = []; // Track kode untuk logging
 
         // Add Tanggal column
         $headers[] = [
@@ -152,32 +154,56 @@ class TableViewController extends Controller
             'width' => '100px',
         ];
 
-        // Process form fields
-        $formFields = $formTemplate->formFields()->orderBy('order_index')->get();
+        // Process form fields - Explicitly with order_index - WITH OPTIONS EAGER LOAD
+        $formFields = $formTemplate->formFields()
+            ->with(['options' => function ($q) {
+                $q->orderBy('order_index', 'ASC');
+            }])
+            ->orderBy('enhanced_form_fields.order_index', 'ASC')
+            ->get();
 
         foreach ($formFields as $field) {
             $fieldType = $field->field_type;
-            $options = $field->options;
+            $options = $field->options()->orderBy('order_index')->get();
 
-            // Field types with options become parent-child columns
+            // Field types with options become parent-child columns with numeric codes
             if ($this->isMultiColumnFieldType($fieldType) && $options->count() > 0) {
+                $fieldLetter = chr(65 + $fieldCounter); // A, B, C, D...
+                $fieldCodes = [];
                 $children = [];
-                foreach ($options as $option) {
+                foreach ($options as $index => $option) {
+                    // Format: A1, A2, A3 (Field 1), B1, B2, B3 (Field 2), dst
+                    $optionCode = $fieldLetter . ($index + 1);
+                    $fieldCodes[] = $optionCode;
                     $children[] = [
                         'key' => $field->field_key . '_' . $option->option_value,
-                        'label' => $option->option_text,
+                        'label' => $optionCode,
+                        'full_label' => $option->option_text,
                         'align' => 'center',
                         'bgColor' => 'bg-blue-600',
-                        'format' => 'checkbox',
-                        'width' => '80px',
+                        'format' => 'field_code',
+                        'width' => '60px',
+                        'option_code' => $optionCode,
+                        'option_value' => $option->option_value,
                     ];
                 }
+
+                // Store mapping untuk logging
+                $fieldCodeMapping[$field->field_key] = [
+                    'field_label' => $field->field_label,
+                    'field_letter' => $fieldLetter,
+                    'codes' => $fieldCodes,
+                    'options' => $options->pluck('option_text', 'option_value')->toArray()
+                ];
 
                 $headers[] = [
                     'label' => $field->field_label,
                     'bgColor' => 'bg-blue-800',
                     'children' => $children,
+                    'field_type' => 'multi_select_group',
+                    'field_key' => $field->field_key,
                 ];
+                $fieldCounter++; // Increment untuk field berikutnya
             }
             // Time duration fields
             elseif ($fieldType === 'time_duration') {
@@ -226,7 +252,7 @@ class TableViewController extends Controller
         // Add Pelapor column
         $headers[] = [
             'key' => 'submitted_by_name',
-            'label' => 'Pelapor',
+            'label' => 'Pengumpul Data',
             'align' => 'left',
             'bgColor' => 'bg-blue-700',
             'width' => '150px',
@@ -242,7 +268,25 @@ class TableViewController extends Controller
             'width' => '80px',
         ];
 
-        return ['headers' => $headers];
+        // Build legend for multi-select fields
+        $legend = $this->buildLegend($formTemplate);
+
+        // Log field code mapping untuk debugging
+        Log::info('Table config field code mapping', [
+            'form_template_id' => $formTemplate->id,
+            'field_code_mapping' => $fieldCodeMapping,
+            'total_multi_column_fields' => $fieldCounter,
+            'total_headers' => count($headers),
+        ]);
+
+        return [
+            'headers' => $headers,
+            'legend' => $legend,
+            'encoding_rules' => [
+                1 => 'Dipilih',
+                0 => 'Tidak dipilih'
+            ]
+        ];
     }
 
     /**
@@ -297,17 +341,23 @@ class TableViewController extends Controller
                 $fieldType = $field->field_type;
                 $fieldValue = $responses[$fieldKey] ?? null;
 
-                // Multi-column field types (select with options)
+                // Multi-column field types (select with options) - Store KODE (A1, A2, A3) atau 0 jika tidak dipilih
                 if ($this->isMultiColumnFieldType($fieldType) && $field->options->count() > 0) {
-                    foreach ($field->options as $option) {
+                    // Cari field letter index (A=0, B=1, C=2, dst)
+                    $fieldLetterIndex = $this->getFieldLetterIndex($formTemplate, $fieldKey);
+                    $fieldLetter = chr(65 + $fieldLetterIndex); // A, B, C...
+
+                    $fieldOptions = $field->options()->orderBy('order_index')->get();
+                    foreach ($fieldOptions as $optIndex => $option) {
                         $optionKey = $fieldKey . '_' . $option->option_value;
+                        $optionCode = $fieldLetter . ($optIndex + 1); // A1, A2, A3 dst
 
                         if (is_array($fieldValue)) {
                             // Multi-select: check if option is in array
-                            $row[$optionKey] = in_array($option->option_value, $fieldValue) ? 1 : 0;
+                            $row[$optionKey] = in_array($option->option_value, $fieldValue) ? $optionCode : 0;
                         } else {
                             // Single select: check if matches
-                            $row[$optionKey] = ($fieldValue === $option->option_value) ? 1 : 0;
+                            $row[$optionKey] = ($fieldValue === $option->option_value) ? $optionCode : 0;
                         }
                     }
                 }
@@ -317,10 +367,29 @@ class TableViewController extends Controller
                         $row[$fieldKey . '_start'] = $fieldValue['start_time'] ?? '-';
                         $row[$fieldKey . '_end'] = $fieldValue['end_time'] ?? '-';
                         $row[$fieldKey . '_valid'] = $fieldValue['valid_indicator'] ?? 0;
+
+                        // Log validation logic for time duration
+                        Log::info('Time duration validation logic', [
+                            'entry_id' => $entry->id,
+                            'field_key' => $fieldKey,
+                            'field_value' => $fieldValue,
+                            'start_time' => $fieldValue['start_time'] ?? null,
+                            'end_time' => $fieldValue['end_time'] ?? null,
+                            'valid_indicator' => $fieldValue['valid_indicator'] ?? 0,
+                            'is_valid_set' => isset($fieldValue['valid_indicator']),
+                        ]);
                     } else {
                         $row[$fieldKey . '_start'] = '-';
                         $row[$fieldKey . '_end'] = '-';
                         $row[$fieldKey . '_valid'] = 0;
+
+                        // Log when field value is not an array
+                        Log::info('Time duration field value is not an array', [
+                            'entry_id' => $entry->id,
+                            'field_key' => $fieldKey,
+                            'field_value' => $fieldValue,
+                            'valid_indicator_set_to' => 0,
+                        ]);
                     }
                 }
                 // Simple fields
@@ -330,10 +399,26 @@ class TableViewController extends Controller
             }
 
             // Add validation status from fieldResponses
-            // Check if all field responses are valid
-            $validCount = $entry->fieldResponses->where('is_valid', true)->count();
+            // Check if all field responses have compliance_score > 0
+            $validCount = $entry->fieldResponses->where('compliance_score', '>', 0)->count();
             $totalCount = $entry->fieldResponses->count();
             $row['validation_status'] = ($totalCount > 0 && $validCount === $totalCount) ? 1 : 0;
+
+            // Log validation status for each entry
+            Log::info('Entry validation status', [
+                'entry_id' => $entry->id,
+                'report_date' => $entry->report_date->format('Y-m-d'),
+                'total_field_responses' => $totalCount,
+                'valid_field_responses' => $validCount,
+                'validation_status' => $row['validation_status'],
+                'field_responses_details' => $entry->fieldResponses->map(function ($fr) {
+                    return [
+                        'field_key' => $fr->formField?->field_key,
+                        'is_valid' => $fr->is_valid,
+                        'compliance_score' => $fr->compliance_score,
+                    ];
+                })->toArray(),
+            ]);
 
             $tableData[] = $row;
         }
@@ -418,7 +503,7 @@ class TableViewController extends Controller
 
         // Calculate overall validation compliance
         $validEntries = $entries->filter(function ($entry) {
-            $validCount = $entry->fieldResponses->where('is_valid', true)->count();
+            $validCount = $entry->fieldResponses->where('compliance_score', '>', 0)->count();
             $totalCount = $entry->fieldResponses->count();
             return $totalCount > 0 && $validCount === $totalCount;
         })->count();
@@ -494,5 +579,97 @@ class TableViewController extends Controller
             'text', 'textarea' => '200px',
             default => '150px',
         };
+    }
+
+    /**
+     * Get field letter index untuk kode (A=0, B=1, C=2, dst)
+     * Hanya count multi-column fields yang punya options
+     */
+    private function getFieldLetterIndex(FormTemplate $formTemplate, string $fieldKey): int
+    {
+        $formFields = $formTemplate->formFields()
+            ->with(['options' => function ($q) {
+                $q->orderBy('order_index', 'ASC');
+            }])
+            ->orderBy('enhanced_form_fields.order_index', 'ASC')
+            ->get();
+
+        $letterIndex = 0;
+        foreach ($formFields as $field) {
+            if ($field->field_key === $fieldKey) {
+                return $letterIndex;
+            }
+            // Hanya count field yang multi-column dengan options
+            if ($this->isMultiColumnFieldType($field->field_type) && $field->options->count() > 0) {
+                $letterIndex++;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Build legend for multi-select fields
+     */
+    private function buildLegend(FormTemplate $formTemplate): array
+    {
+        $legend = [];
+        $formFields = $formTemplate->formFields()
+            ->orderBy('enhanced_form_fields.order_index', 'ASC')
+            ->with('options')
+            ->get();
+        $fieldCounter = 0; // Counter untuk field (A, B, C...)
+        $legendCodeMapping = []; // Track untuk logging
+
+        foreach ($formFields as $field) {
+            $fieldOptions = $field->options()->orderBy('order_index')->get();
+            if ($this->isMultiColumnFieldType($field->field_type) && $fieldOptions->count() > 0) {
+                $fieldLetter = chr(65 + $fieldCounter); // A, B, C, D...
+                $fieldLegend = [
+                    'field_label' => $field->field_label,
+                    'field_key' => $field->field_key,
+                    'options' => []
+                ];
+                $fieldOptionCodes = [];
+
+                foreach ($fieldOptions as $index => $option) {
+                    // Format: A1, A2, A3 (Field 1), B1, B2, B3 (Field 2), dst
+                    $optionCode = $fieldLetter . ($index + 1);
+                    $fieldOptionCodes[$optionCode] = $option->option_text;
+                    $fieldLegend['options'][] = [
+                        'code' => $optionCode,
+                        'label' => $option->option_text,
+                        'value' => $option->option_value
+                    ];
+                }
+
+                $legend[$field->field_key] = $fieldLegend;
+                $legendCodeMapping[$field->field_key] = [
+                    'field_label' => $field->field_label,
+                    'field_letter' => $fieldLetter,
+                    'codes' => $fieldOptionCodes,
+                ];
+                $fieldCounter++; // Increment untuk field berikutnya
+            }
+        }
+
+        // Log legend structure
+        Log::info('Table legend field code mapping', [
+            'form_template_id' => $formTemplate->id,
+            'legend_code_mapping' => $legendCodeMapping,
+            'total_multi_column_fields' => $fieldCounter,
+        ]);
+
+        // Validate sync dengan header
+        Log::info('Field counter consistency check', [
+            'form_template_id' => $formTemplate->id,
+            'legend_field_counter' => $fieldCounter,
+            'all_formfields_count' => $formTemplate->formFields()->count(),
+            'multi_column_fields_count' => $formTemplate->formFields()
+                ->whereIn('field_type', ['single_select', 'multi_select', 'compliance_checker', 'conditional_trigger'])
+                ->whereHas('options')
+                ->count(),
+        ]);
+
+        return $legend;
     }
 }

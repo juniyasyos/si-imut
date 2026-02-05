@@ -21,8 +21,15 @@
         }
 
         @page {
-            size: A4 landscape;
             margin: 1cm;
+        }
+
+        @page: landscape {
+            size: A4 landscape;
+        }
+
+        @page: portrait {
+            size: A4 portrait;
         }
 
         @media print {
@@ -45,6 +52,11 @@
                 margin: 0 !important;
                 box-shadow: none !important;
                 border: none !important;
+            }
+
+            .legend-container {
+                page-break-before: always;
+                margin-top: 20px;
             }
         }
 
@@ -79,31 +91,106 @@
             background-color: #fee2e2;
             color: #991b1b;
         }
+
+        /* Print orientation */
+        body.print-landscape {
+            margin: 0;
+            padding: 1cm;
+        }
+
+        body.print-portrait {
+            margin: 0;
+            padding: 1cm;
+        }
+
+        @media print {
+            body.print-landscape {
+                width: 100%;
+                height: 100%;
+            }
+
+            body.print-portrait {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        /* Legend styling */
+        .legend-container {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #0369a1;
+        }
+
+        .legend-header {
+            background: linear-gradient(90deg, #0369a1 0%, #0284c7 100%);
+            color: white;
+        }
+
+        .legend-field-group {
+            background: white;
+            border: 1px solid #cbd5e1;
+            transition: box-shadow 0.2s;
+        }
+
+        .legend-field-group:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .legend-code {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 p-4 md:p-6" x-data="dynamicTable()">
 
     <!-- Action Buttons -->
-    <div class="no-print my-6 max-w-full mx-auto flex flex-wrap justify-end gap-3">
-        <!-- Filter Toggle -->
-        <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
-            <input type="checkbox" id="showReporter" x-model="showReporter" @change="calculateDisplayColumns()">
-            <label for="showReporter" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Pelapor</label>
+    <div class="no-print my-6 max-w-full mx-auto space-y-3">
+        <!-- Print Options -->
+        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-sm font-medium text-amber-900">🖨️ Opsi Print:</div>
+                <div class="flex items-center gap-2">
+                    <input type="radio" id="orientation-landscape" name="printOrientation" value="landscape" checked @change="printOrientation = $event.target.value">
+                    <label for="orientation-landscape" class="text-sm text-amber-800 cursor-pointer">Landscape</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="radio" id="orientation-portrait" name="printOrientation" value="portrait" @change="printOrientation = $event.target.value">
+                    <label for="orientation-portrait" class="text-sm text-amber-800 cursor-pointer">Portrait</label>
+                </div>
+            </div>
         </div>
 
-        <a href="{{ url('/siimut/daily-report-entries') }}"
-            class="px-5 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition shadow-sm text-sm">
-            ← Kembali
-        </a>
-        <button @click="fetchData()"
-            class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm text-sm">
-            🔄 Refresh
-        </button>
-        <button onclick="window.print()"
-            class="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition shadow-sm text-sm">
-            🖨️ Cetak
-        </button>
+        <!-- Filter Toggles -->
+        <div class="flex flex-wrap justify-end gap-3">
+            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                <input type="checkbox" id="showReporter" x-model="showReporter" @change="calculateDisplayColumns()">
+                <label for="showReporter" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Pelapor</label>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                <input type="checkbox" id="showLegend" x-model="showLegend">
+                <label for="showLegend" class="text-sm text-gray-700 cursor-pointer">Tampilkan Legenda</label>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                <input type="checkbox" id="useFullLabels" x-model="useFullLabels">
+                <label for="useFullLabels" class="text-sm text-gray-700 cursor-pointer">Label Lengkap</label>
+            </div>
+
+            <a href="{{ url('/siimut/daily-report-entries') }}"
+                class="px-5 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition shadow-sm text-sm">
+                ← Kembali
+            </a>
+            <button @click="fetchData()"
+                class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm text-sm">
+                🔄 Refresh
+            </button>
+            <button @click="handlePrint()"
+                class="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition shadow-sm text-sm">
+                🖨️ Cetak
+            </button>
+        </div>
     </div>
 
     <!-- Loading State -->
@@ -176,6 +263,64 @@
             <p class="text-gray-600 text-sm" x-text="tableDescription"></p>
         </div>
 
+        <!-- Legend Panel - Professional Design -->
+        <div x-show="!loading && !error && showLegend && tableConfig.legend" class="no-print mb-8">
+            <div class="legend-container rounded-lg border border-sky-200 overflow-hidden">
+                <!-- Legend Header -->
+                <div class="legend-header px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000-2A4 4 0 000 5v10a4 4 0 004 4h12a4 4 0 004-4V5a4 4 0 00-4-4 1 1 0 000 2 2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" clip-rule="evenodd"></path>
+                        </svg>
+                        <h3 class="text-lg font-bold">LEGENDA KODE FIELD</h3>
+                    </div>
+                    <div class="text-sm font-medium opacity-90">Panduan Interpretasi Data</div>
+                </div>
+
+                <!-- Encoding Rules -->
+                <div class="bg-sky-50 px-6 py-3 border-b border-sky-200 flex gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-8 h-8 bg-green-100 border-2 border-green-400 rounded font-bold text-green-700 text-center leading-8">1</span>
+                        <span class="text-slate-700"><strong>Dipilih</strong> - Item telah dipilih/dicentang</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-8 h-8 bg-gray-100 border-2 border-gray-400 rounded font-bold text-gray-600 text-center leading-8">0</span>
+                        <span class="text-slate-700"><strong>Tidak Dipilih</strong> - Item belum dipilih</span>
+                    </div>
+                </div>
+
+                <!-- Field Groups -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="(legend, fieldKey) in tableConfig.legend" :key="'legend-' + fieldKey">
+                            <div class="legend-field-group rounded-lg p-4">
+                                <!-- Field Title -->
+                                <div class="mb-3 pb-2 border-b-2 border-blue-300">
+                                    <h4 class="text-sm font-bold text-slate-900" x-text="legend.field_label"></h4>
+                                </div>
+
+                                <!-- Options List -->
+                                <div class="space-y-2">
+                                    <template x-for="(option, index) in legend.options" :key="'option-' + index">
+                                        <div class="flex items-start gap-3">
+                                            <span class="inline-block min-w-max legend-code px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-mono border border-blue-300" x-text="option.code"></span>
+                                            <span class="text-xs text-slate-700 mt-1" x-text="option.label"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Footer Note -->
+                <div class="bg-sky-50 px-6 py-3 border-t border-sky-200 text-xs text-slate-600 italic">
+                    📋 Catatan: Gunakan legenda ini sebagai referensi saat membaca dan menginterpretasi data dalam tabel di atas.
+                </div>
+            </div>
+        </div>
+
         <!-- Dynamic Table -->
         <div x-show="!loading && !error && tableData.length > 0" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
@@ -206,7 +351,8 @@
                                             <th class="border border-gray-300 px-2 py-1.5 text-center text-xs font-semibold text-white"
                                                 :class="child.bgColor || 'bg-blue-600'"
                                                 :style="child.width ? 'width: ' + child.width : ''"
-                                                x-text="child.label">
+                                                :title="child.full_label || child.label"
+                                                x-text="useFullLabels && child.full_label ? child.full_label : child.label">
                                             </th>
                                         </template>
                                     </template>
@@ -297,6 +443,9 @@
                 summary: {},
                 userData: null,
                 showReporter: true,
+                showLegend: false,
+                useFullLabels: false,
+                printOrientation: 'landscape',
 
                 async init() {
                     await this.fetchData();
@@ -432,6 +581,34 @@
                     return 'text-left';
                 },
 
+                handlePrint() {
+                    // Create style element for page orientation
+                    let printStyle = document.getElementById('print-orientation-style');
+                    if (printStyle) {
+                        printStyle.remove();
+                    }
+
+                    printStyle = document.createElement('style');
+                    printStyle.id = 'print-orientation-style';
+
+                    if (this.printOrientation === 'landscape') {
+                        printStyle.textContent = '@page { size: A4 landscape; margin: 1cm; }';
+                        document.body.classList.add('print-landscape');
+                        document.body.classList.remove('print-portrait');
+                    } else {
+                        printStyle.textContent = '@page { size: A4 portrait; margin: 1cm; }';
+                        document.body.classList.add('print-portrait');
+                        document.body.classList.remove('print-landscape');
+                    }
+
+                    document.head.appendChild(printStyle);
+
+                    // Trigger print dialog
+                    setTimeout(() => {
+                        window.print();
+                    }, 100);
+                },
+
                 getColumnWidth(column) {
                     const config = this.getHeaderConfig(column);
                     if (config.width) return 'width: ' + config.width + '; min-width: ' + config.width;
@@ -454,6 +631,23 @@
                                     return '<span class="cell-check checked">✓</span>';
                                 } else {
                                     return '<span class="cell-check unchecked">✗</span>';
+                                }
+
+                            case 'field_code':
+                                // Render field code (A1, A2, A3) dengan visual indicator
+                                if (value === 0 || value === false || value === '0') {
+                                    return '<span class="inline-block w-6 h-6 bg-gray-100 text-gray-500 border border-gray-300 rounded text-center leading-6 font-medium text-xs" title="Tidak dipilih">-</span>';
+                                } else {
+                                    // value adalah kode seperti "A1", "A2", "B1", dll
+                                    return '<span class="inline-block px-1.5 py-0.5 bg-green-100 text-green-800 border border-green-300 rounded text-center leading-5 font-mono font-bold text-xs" title="Dipilih: ' + value + '">' + value + '</span>';
+                                }
+
+                            case 'numeric_code':
+                                const numericValue = parseInt(value);
+                                if (numericValue === 1) {
+                                    return '<span class="inline-block w-6 h-6 bg-green-100 text-green-800 border border-green-300 rounded text-center leading-6 font-medium text-xs" title="Dipilih">1</span>';
+                                } else {
+                                    return '<span class="inline-block w-6 h-6 bg-gray-100 text-gray-500 border border-gray-300 rounded text-center leading-6 font-medium text-xs" title="Tidak dipilih">0</span>';
                                 }
 
                             case 'percentage':
