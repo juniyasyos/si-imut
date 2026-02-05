@@ -61,27 +61,27 @@
             "order_index": 2,
             "options": [
                 {
-                    "option_text": "1. Sebelum kontak dengan pasien",
+                    "option_text": "Sebelum kontak dengan pasien",
                     "option_value": "sebelum_kontak_pasien",
                     "is_correct": true
                 },
                 {
-                    "option_text": "2. Sebelum prosedur bersih/aseptik",
+                    "option_text": "Sebelum prosedur bersih/aseptik",
                     "option_value": "sebelum_prosedur_aseptik",
                     "is_correct": true
                 },
                 {
-                    "option_text": "3. Setelah prosedur/risiko terpapar cairan tubuh",
+                    "option_text": "Setelah prosedur/risiko terpapar cairan tubuh",
                     "option_value": "setelah_risiko_cairan",
                     "is_correct": true
                 },
                 {
-                    "option_text": "4. Setelah kontak dengan pasien",
+                    "option_text": "Setelah kontak dengan pasien",
                     "option_value": "setelah_kontak_pasien",
                     "is_correct": true
                 },
                 {
-                    "option_text": "5. Setelah kontak dengan area sekitar pasien",
+                    "option_text": "Setelah kontak dengan area sekitar pasien",
                     "option_value": "setelah_kontak_area_sekitar",
                     "is_correct": true
                 }
@@ -112,32 +112,32 @@
             "order_index": 3,
             "options": [
                 {
-                    "option_text": "1. Gosok kedua telapak tangan",
+                    "option_text": "Gosok kedua telapak tangan",
                     "option_value": "gosok_telapak_tangan",
                     "is_correct": true
                 },
                 {
-                    "option_text": "2. Gosok punggung-sela jari kanan-kiri",
+                    "option_text": "Gosok punggung-sela jari kanan-kiri",
                     "option_value": "gosok_punggung_sela_jari",
                     "is_correct": true
                 },
                 {
-                    "option_text": "3. Gosok kedua telapak dan sela jari",
+                    "option_text": "Gosok kedua telapak dan sela jari",
                     "option_value": "gosok_telapak_sela_jari",
                     "is_correct": true
                 },
                 {
-                    "option_text": "4. Jari sisi dalam kedua tangan mengunci",
+                    "option_text": "Jari sisi dalam kedua tangan mengunci",
                     "option_value": "jari_sisi_dalam_mengunci",
                     "is_correct": true
                 },
                 {
-                    "option_text": "5. Gosok ibu jari berputar dlm genggaman",
+                    "option_text": "Gosok ibu jari berputar dlm genggaman",
                     "option_value": "gosok_ibu_jari_berputar",
                     "is_correct": true
                 },
                 {
-                    "option_text": "6. Ujung jari berputar ke telapak kanan-kiri",
+                    "option_text": "Ujung jari berputar ke telapak kanan-kiri",
                     "option_value": "ujung_jari_berputar",
                     "is_correct": true
                 }

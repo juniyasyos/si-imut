@@ -43,12 +43,12 @@ class TableViewController extends Controller
         $period = $request->input('period', now()->format('Y-m'));
 
         // Debug - check laravel.log or use: tail -f storage/logs/laravel.log
-        Log::info('TableView getData params', [
-            'user' => $user?->email,
-            'form_template_id' => $formTemplateId,
-            'unit_kerja_id' => $unitKerjaId,
-            'period' => $period,
-        ]);
+        // Log::info('TableView getData params', [
+        //     'user' => $user?->email,
+        //     'form_template_id' => $formTemplateId,
+        //     'unit_kerja_id' => $unitKerjaId,
+        //     'period' => $period,
+        // ]);
 
         // Parse period
         [$year, $month] = explode('-', $period);
@@ -149,6 +149,7 @@ class TableViewController extends Controller
             'align' => 'center',
             'bgColor' => 'bg-blue-700',
             'format' => 'date',
+            'width' => '100px',
         ];
 
         // Process form fields
@@ -168,6 +169,7 @@ class TableViewController extends Controller
                         'align' => 'center',
                         'bgColor' => 'bg-blue-600',
                         'format' => 'checkbox',
+                        'width' => '80px',
                     ];
                 }
 
@@ -188,19 +190,22 @@ class TableViewController extends Controller
                             'label' => 'Mulai',
                             'align' => 'center',
                             'bgColor' => 'bg-blue-600',
+                            'width' => '100px',
                         ],
                         [
                             'key' => $field->field_key . '_end',
                             'label' => 'Selesai',
                             'align' => 'center',
                             'bgColor' => 'bg-blue-600',
+                            'width' => '100px',
                         ],
                         [
                             'key' => $field->field_key . '_valid',
-                            'label' => 'Valid',
+                            'label' => 'Sesuai',
                             'align' => 'center',
                             'bgColor' => 'bg-blue-600',
                             'format' => 'checkbox',
+                            'width' => '80px',
                         ],
                     ],
                 ];
@@ -213,6 +218,7 @@ class TableViewController extends Controller
                     'align' => $this->getFieldAlignment($fieldType),
                     'bgColor' => 'bg-blue-700',
                     'format' => $this->getFieldFormat($fieldType),
+                    'width' => $this->getFieldWidth($fieldType),
                 ];
             }
         }
@@ -223,15 +229,17 @@ class TableViewController extends Controller
             'label' => 'Pelapor',
             'align' => 'left',
             'bgColor' => 'bg-blue-700',
+            'width' => '150px',
         ];
 
         // Add validation compliance
         $headers[] = [
             'key' => 'validation_status',
-            'label' => 'Valid',
+            'label' => 'Sesuai',
             'align' => 'center',
             'bgColor' => 'bg-green-700',
             'format' => 'checkbox',
+            'width' => '80px',
         ];
 
         return ['headers' => $headers];
@@ -471,6 +479,20 @@ class TableViewController extends Controller
             'date' => 'date',
             'number' => 'number',
             default => null,
+        };
+    }
+
+    /**
+     * Get default width for field type
+     */
+    private function getFieldWidth(string $fieldType): string
+    {
+        return match ($fieldType) {
+            'boolean', 'single_select', 'multi_select' => '120px',
+            'number', 'rating_scale' => '100px',
+            'date' => '120px',
+            'text', 'textarea' => '200px',
+            default => '150px',
         };
     }
 }

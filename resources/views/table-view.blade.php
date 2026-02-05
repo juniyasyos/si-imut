@@ -167,6 +167,7 @@
                                     :rowspan="header.children ? 1 : (hasMultiLevelHeaders ? 2 : 1)"
                                     class="border border-gray-300 px-2 py-2 text-center font-semibold text-white text-xs"
                                     :class="header.bgColor || 'bg-blue-700'"
+                                    :style="header.width ? 'width: ' + header.width : ''"
                                     x-text="header.label">
                                 </th>
                             </template>
@@ -180,6 +181,7 @@
                                         <template x-for="(child, cIndex) in header.children" :key="'child-' + hIndex + '-' + cIndex">
                                             <th class="border border-gray-300 px-2 py-1.5 text-center text-xs font-semibold text-white"
                                                 :class="child.bgColor || 'bg-blue-600'"
+                                                :style="child.width ? 'width: ' + child.width : ''"
                                                 x-text="child.label">
                                             </th>
                                         </template>
@@ -195,7 +197,8 @@
                             <tr class="hover:bg-gray-50 transition" :class="rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
                                 <template x-for="(column, colIndex) in displayColumns" :key="'cell-' + rowIndex + '-' + colIndex">
                                     <td class="border border-gray-300 px-2 py-1.5 text-xs"
-                                        :class="getCellAlignment(column, row[column])">
+                                        :class="getCellAlignment(column, row[column])"
+                                        :style="getColumnWidth(column)"
                                         <span x-html="formatCellValue(row[column], column, row)"></span>
                                     </td>
                                 </template>
@@ -211,8 +214,8 @@
                                     <span>Total Data: <strong x-text="summary.total_entries"></strong></span>
                                     <span x-show="summary.validation_compliance !== undefined">
                                         Validasi: <strong :class="summary.validation_compliance >= 80 ? 'text-green-600' : 'text-red-600'" x-text="summary.validation_compliance + '%'"></strong>
-                                        (<span class="text-green-600" x-text="summary.valid_entries"></span> valid,
-                                        <span class="text-red-600" x-text="summary.invalid_entries"></span> invalid)
+                                        (<span class="text-green-600" x-text="summary.valid_entries"></span> sesuai,
+                                        <span class="text-red-600" x-text="summary.invalid_entries"></span> tidak sesuai)
                                     </span>
                                 </div>
                             </td>
@@ -414,6 +417,12 @@
                     }
 
                     return 'text-left';
+                },
+
+                getColumnWidth(column) {
+                    const config = this.getHeaderConfig(column);
+                    if (config.width) return 'width: ' + config.width + '; min-width: ' + config.width;
+                    return '';
                 },
 
                 formatCellValue(value, column, rowData = {}) {
