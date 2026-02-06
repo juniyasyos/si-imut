@@ -163,6 +163,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
             })
             ->columns(2)
             ->icon('heroicon-o-clipboard-document-check')
-            ->collapsible();
+            ->collapsible()
+            ->collapsed();
     }
 }

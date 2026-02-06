@@ -118,7 +118,7 @@ class UserResourceTable extends UserResource
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->relationship('roles', 'label')
-                        ->multiple()
+                        // ->multiple()
                         ->searchable()
                         ->preload()
                         ->optionsLimit(10)

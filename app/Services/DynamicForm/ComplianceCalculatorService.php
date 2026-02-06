@@ -107,7 +107,7 @@ class ComplianceCalculatorService
                             $fieldScore = $field->compliance_weight; // Default to full score if filled
                     }
                 } else if ($field->is_critical_field && $field->validation_config['required'] ?? false) {
-                    $warnings[] = "Critical field '{$field->field_label}' is required but empty";
+                    $warnings[] = "❌ Field kritis '{$field->field_label}' wajib diisi. Jawaban Anda tidak memenuhi standar compliance.";
                     if ($formTemplate->auto_fail_on_critical) {
                         $autoFail = true;
                     }
@@ -125,9 +125,9 @@ class ComplianceCalculatorService
 
         if ($autoFail) {
             $percentage = 0;
-            $status = 'Auto-Failed (Critical field missing)';
+            $status = '❌ TIDAK PATUH (Field kritis kosong)';
         } else {
-            $status = $percentage >= 80 ? 'Compliant' : ($percentage >= 60 ? 'Partially Compliant' : 'Non-Compliant');
+            $status = $percentage >= 100 ? '✅ PATUH' : '❌ TIDAK PATUH';
         }
 
         return [

@@ -34,12 +34,23 @@ class ConditionalLogicHandler
         }
 
         $logic = $conditionalLogic;
-        if (isset($logic['condition_type']) && $logic['condition_type'] === 'show_when') {
+        $conditionType = $logic['condition_type'] ?? null;
+
+        if ($conditionType === 'show_when') {
             return function ($get) use ($logic, $prefix) {
                 $dependentValue = $get($prefix . $logic['depends_on_field']);
                 return isset($logic['trigger_values']) && is_array($logic['trigger_values'])
                     ? in_array($dependentValue, $logic['trigger_values'])
                     : false;
+            };
+        }
+
+        if ($conditionType === 'hide_when') {
+            return function ($get) use ($logic, $prefix) {
+                $dependentValue = $get($prefix . $logic['depends_on_field']);
+                return isset($logic['trigger_values']) && is_array($logic['trigger_values'])
+                    ? !in_array($dependentValue, $logic['trigger_values'])
+                    : true;
             };
         }
 
@@ -75,12 +86,19 @@ class ConditionalLogicHandler
         }
 
         $logic = $conditionalLogic;
+        $conditionType = $logic['condition_type'] ?? null;
         $dependentValue = $data[$logic['depends_on_field']] ?? null;
 
-        if (isset($logic['condition_type']) && $logic['condition_type'] === 'show_when') {
+        if ($conditionType === 'show_when') {
             return isset($logic['trigger_values']) && is_array($logic['trigger_values'])
                 ? in_array($dependentValue, $logic['trigger_values'])
                 : false;
+        }
+
+        if ($conditionType === 'hide_when') {
+            return isset($logic['trigger_values']) && is_array($logic['trigger_values'])
+                ? !in_array($dependentValue, $logic['trigger_values'])
+                : true;
         }
 
         return true;

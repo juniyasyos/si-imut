@@ -30,6 +30,10 @@ class FormFields
         $required = $field->validation_config['required'] ?? false;
         $visibleCondition = ConditionalLogicHandler::getVisibilityCondition($field->conditional_logic, $prefix);
 
+        // if ($field->field_key === 'six_steps_compliance') {
+        //     dd($field);
+        // }
+
         switch ($field->field_type) {
             case 'text':
                 $historySuggestions = $field->history_suggestions ?? [];

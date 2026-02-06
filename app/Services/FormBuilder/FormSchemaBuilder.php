@@ -64,7 +64,8 @@ class FormSchemaBuilder
                         ->defaultItems(0)
                         ->addActionLabel('Tambah Field Baru')
                         ->reorderableWithButtons()
-                        ->collapsible()
+                        ->collapsible(true)
+                        ->collapsed()
                         ->deleteAction(
                             fn(\Filament\Forms\Components\Actions\Action $action) => $action
                                 ->label('Hapus Field')
@@ -243,7 +244,7 @@ class FormSchemaBuilder
                 ->label('Opsi Pilihan')
                 ->headers([
                     Header::make('label')->label('Label Opsi')->width('70%'),
-                    Header::make('is_correct')->label('Benar/Pass')->width('30%'),
+                    Header::make('is_correct')->label('Benar/Pass (Centang jika opsi ini menandakan compliance/benar)')->width('30%'),
                 ])
                 ->schema([
                     TextInput::make('label')
@@ -257,7 +258,6 @@ class FormSchemaBuilder
 
                     Toggle::make('is_correct')
                         ->label('')
-                        ->helperText('Centang jika opsi ini menandakan compliance/benar')
                         ->default(true),
 
                     Hidden::make('value')
@@ -460,7 +460,9 @@ class FormSchemaBuilder
                         ->schema([
                             Select::make('conditional_logic.depends_on_field')
                                 ->label('Bergantung pada Field')
-                                ->options(fn($get) => self::getAvailableFieldsForCondition($get('../../fields') ?? []))
+                                ->options(fn($get) => self::getAvailableFieldsForCondition(
+                                    $get('../../fields') ?? [], ($get('field_key'))
+                                ))
                                 ->helperText('Field yang mempengaruhi kondisi (pada preview, jika kondisi tidak terpenuhi field akan dinonaktifkan)')
                                 ->visible(fn($get) => $get('has_conditional_logic'))
                                 ->live(),
@@ -492,14 +494,51 @@ class FormSchemaBuilder
 
     /**
      * Get available fields for conditional logic dependency
+     * Only returns fields that appear BEFORE the current field (higher up in the form)
+     * Uses order_index to determine field position instead of array key
+     * 
+     * @param array $fields All form fields
+     * @param string $currentFieldKey The field_key of the current field being edited (required non-null)
+     * @return array Options of available fields that appear before current field
      */
-    private static function getAvailableFieldsForCondition(array $fields): array
+    private static function getAvailableFieldsForCondition(array $fields, string $currentFieldKey): array
     {
         $options = [];
 
-        foreach ($fields as $index => $field) {
-            if (!empty($field['field_key']) && !empty($field['field_label'])) {
-                $options[$field['field_key']] = $field['field_label'];
+        // If currentFieldKey is empty (field baru tanpa field_key), return empty
+        if (empty($currentFieldKey)) {
+            return $options;
+        }
+
+        $currentOrderIndex = null;
+
+        // First pass: find current field's order_index using field_key
+        foreach ($fields as $field) {
+            $fieldKey = $field['field_key'] ?? '';
+            if (!empty($fieldKey) && $fieldKey === $currentFieldKey) {
+                $currentOrderIndex = $field['order_index'] ?? 0;
+                break;
+            }
+        }
+
+        // Second pass: collect only fields that appear BEFORE current field (using order_index)
+        foreach ($fields as $field) {
+            $fieldKey = $field['field_key'] ?? '';
+            $fieldLabel = $field['field_label'] ?? '';
+
+            if (!empty($fieldKey) && !empty($fieldLabel)) {
+                // Skip if this is the current field
+                if ($fieldKey === $currentFieldKey) {
+                    continue;
+                }
+
+                // Skip if this field appears after or at same position as current field
+                $fieldOrderIndex = $field['order_index'] ?? 0;
+                if ($currentOrderIndex !== null && $fieldOrderIndex >= $currentOrderIndex) {
+                    continue;
+                }
+
+                $options[$fieldKey] = $fieldLabel;
             }
         }
 

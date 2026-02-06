@@ -7,7 +7,7 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">Form Builder</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Buat form dinamis seperti Google Form</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Desain dan buat formulir interaktif untuk mengumpulkan informasi dari pengguna dengan mudah</p>
                 </div>
             </div>
 
@@ -15,14 +15,14 @@
                 <div class="flex gap-3">
                     @svg("heroicon-o-information-circle", "w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5")
                     <div class="text-sm text-blue-800 dark:text-blue-300">
-                        <p class="font-semibold mb-1">Cara Menggunakan Form Builder:</p>
+                        <p class="font-semibold mb-1">Panduan Membuat Formulir:</p>
                         <ul class="list-disc list-inside space-y-1 ml-2">
-                            <li>Isi judul dan deskripsi form</li>
-                            <li>Tambah pertanyaan dengan klik tombol "+ Tambah Pertanyaan"</li>
-                            <li>Pilih tipe input sesuai kebutuhan (Text, Number, Date, Boolean, dll)</li>
-                            <li>Untuk Select/Radio/Checkbox, tambahkan opsi pilihan</li>
-                            <li>Drag untuk mengatur urutan pertanyaan</li>
-                            <li>Klik "Simpan Form" untuk menyimpan</li>
+                            <li>Mulai dengan memberikan judul dan penjelasan singkat untuk formulir Anda</li>
+                            <li>Tambahkan pertanyaan baru menggunakan tombol "+ Tambah Pertanyaan"</li>
+                            <li>Pilih jenis input yang tepat untuk setiap pertanyaan, seperti teks, angka, tanggal, atau pilihan ya/tidak</li>
+                            <li>Untuk pertanyaan dengan opsi, isi daftar pilihan yang tersedia</li>
+                            <li>Susun ulang pertanyaan dengan menarik dan melepas untuk mengatur urutan</li>
+                            <li>Simpan formulir Anda setelah selesai mengatur semua elemen</li>
                         </ul>
                     </div>
                 </div>
