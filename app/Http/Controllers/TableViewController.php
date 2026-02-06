@@ -164,7 +164,8 @@ class TableViewController extends Controller
 
         foreach ($formFields as $field) {
             $fieldType = $field->field_type;
-            $options = $field->options()->orderBy('order_index')->get();
+            // Gunakan relation yang sudah eager-loaded & ordered di line 160-161
+            $options = $field->options;
 
             // Field types with options become parent-child columns with numeric codes
             if ($this->isMultiColumnFieldType($fieldType) && $options->count() > 0) {
@@ -271,13 +272,28 @@ class TableViewController extends Controller
         // Build legend for multi-select fields
         $legend = $this->buildLegend($formTemplate);
 
-        // Log field code mapping untuk debugging
-        Log::info('Table config field code mapping', [
-            'form_template_id' => $formTemplate->id,
-            'field_code_mapping' => $fieldCodeMapping,
-            'total_multi_column_fields' => $fieldCounter,
-            'total_headers' => count($headers),
-        ]);
+        // // Log field code mapping untuk debugging
+        // Log::info('Table config field code mapping', [
+        //     'form_template_id' => $formTemplate->id,
+        //     'field_code_mapping' => $fieldCodeMapping,
+        //     'total_multi_column_fields' => $fieldCounter,
+        //     'total_headers' => count($headers),
+        // ]);
+
+        // // Log DETAILED headers structure untuk debugging mismatch
+        // Log::info('Table config headers detail - FOR DEBUG', [
+        //     'form_template_id' => $formTemplate->id,
+        //     'headers_count' => count($headers),
+        //     'headers_structure' => array_map(function ($h, $idx) {
+        //         return [
+        //             'index' => $idx,
+        //             'label' => $h['label'],
+        //             'key' => $h['key'] ?? 'N/A',
+        //             'children_count' => count($h['children'] ?? []),
+        //             'children_labels' => array_map(fn($c) => $c['label'], $h['children'] ?? []),
+        //         ];
+        //     }, $headers, array_keys($headers)),
+        // ]);
 
         return [
             'headers' => $headers,
@@ -295,7 +311,12 @@ class TableViewController extends Controller
     private function transformEntriesToTableData($entries, FormTemplate $formTemplate): array
     {
         $tableData = [];
-        $formFields = $formTemplate->formFields()->with('options')->orderBy('order_index')->get();
+        $formFields = $formTemplate->formFields()
+            ->with(['options' => function ($q) {
+                $q->orderBy('order_index', 'ASC');
+            }])
+            ->orderBy('enhanced_form_fields.order_index', 'ASC')
+            ->get();
 
         foreach ($entries as $index => $entry) {
             $row = [
@@ -347,7 +368,8 @@ class TableViewController extends Controller
                     $fieldLetterIndex = $this->getFieldLetterIndex($formTemplate, $fieldKey);
                     $fieldLetter = chr(65 + $fieldLetterIndex); // A, B, C...
 
-                    $fieldOptions = $field->options()->orderBy('order_index')->get();
+                    // Gunakan relation yang sudah eager-loaded & ordered
+                    $fieldOptions = $field->options;
                     foreach ($fieldOptions as $optIndex => $option) {
                         $optionKey = $fieldKey . '_' . $option->option_value;
                         $optionCode = $fieldLetter . ($optIndex + 1); // A1, A2, A3 dst
@@ -614,14 +636,17 @@ class TableViewController extends Controller
     {
         $legend = [];
         $formFields = $formTemplate->formFields()
+            ->with(['options' => function ($q) {
+                $q->orderBy('order_index', 'ASC');
+            }])
             ->orderBy('enhanced_form_fields.order_index', 'ASC')
-            ->with('options')
             ->get();
         $fieldCounter = 0; // Counter untuk field (A, B, C...)
         $legendCodeMapping = []; // Track untuk logging
 
         foreach ($formFields as $field) {
-            $fieldOptions = $field->options()->orderBy('order_index')->get();
+            // Gunakan relation yang sudah eager-loaded & ordered
+            $fieldOptions = $field->options;
             if ($this->isMultiColumnFieldType($field->field_type) && $fieldOptions->count() > 0) {
                 $fieldLetter = chr(65 + $fieldCounter); // A, B, C, D...
                 $fieldLegend = [

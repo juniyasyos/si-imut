@@ -15,16 +15,6 @@
 
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-2">
-                    <!-- Table View Button -->
-                    <a href="{{ route('table-view') }}" target="_blank"
-                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                        </svg>
-                        <span class="hidden sm:inline">Lihat Tabel</span>
-                        <span class="sm:hidden">Tabel</span>
-                    </a>
-
                     <!-- Period Navigation -->
                     <button
                         @click="changeMonitoringPeriod('prev')"

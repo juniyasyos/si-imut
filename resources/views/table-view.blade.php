@@ -7,6 +7,10 @@
     <title>Tabel Data - SIIMUT</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- KaTeX for Mathematical Formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Roboto:wght@300;400;500;700&display=swap');
@@ -141,6 +145,29 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+
+        /* KaTeX Math Rendering Styles */
+        .katex {
+            font-size: 1rem;
+            white-space: normal;
+        }
+
+        .katex-display {
+            margin: 1em 0;
+            display: block !important;
+        }
+
+        @media print {
+            .katex {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .katex-display {
+                margin: 0.5em 0;
+            }
+        }
     </style>
 </head>
 
@@ -258,16 +285,11 @@
             </div>
         </div>
 
-        <!-- Description -->
-        <div x-show="!loading && !error" class="mb-4">
-            <p class="text-gray-600 text-sm" x-text="tableDescription"></p>
-        </div>
-
         <!-- Legend Panel - Professional Design -->
-        <div x-show="!loading && !error && showLegend && tableConfig.legend" class="no-print mb-8">
+        <div x-show="!loading && !error && showLegend && tableConfig.legend" class="mb-4">
             <div class="legend-container rounded-lg border border-sky-200 overflow-hidden">
                 <!-- Legend Header -->
-                <div class="legend-header px-6 py-4 flex items-center justify-between">
+                <div class="legend-header px-6 py-2 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
@@ -278,23 +300,11 @@
                     <div class="text-sm font-medium opacity-90">Panduan Interpretasi Data</div>
                 </div>
 
-                <!-- Encoding Rules -->
-                <div class="bg-sky-50 px-6 py-3 border-b border-sky-200 flex gap-6 text-sm">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-block w-8 h-8 bg-green-100 border-2 border-green-400 rounded font-bold text-green-700 text-center leading-8">1</span>
-                        <span class="text-slate-700"><strong>Dipilih</strong> - Item telah dipilih/dicentang</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="inline-block w-8 h-8 bg-gray-100 border-2 border-gray-400 rounded font-bold text-gray-600 text-center leading-8">0</span>
-                        <span class="text-slate-700"><strong>Tidak Dipilih</strong> - Item belum dipilih</span>
-                    </div>
-                </div>
-
                 <!-- Field Groups -->
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-2">
+                    <div class="grid grid-cols-3 gap-6">
                         <template x-for="(legend, fieldKey) in tableConfig.legend" :key="'legend-' + fieldKey">
-                            <div class="legend-field-group rounded-lg p-4">
+                            <div class="legend-field-group rounded-lg p-3">
                                 <!-- Field Title -->
                                 <div class="mb-3 pb-2 border-b-2 border-blue-300">
                                     <h4 class="text-sm font-bold text-slate-900" x-text="legend.field_label"></h4>
@@ -312,11 +322,6 @@
                             </div>
                         </template>
                     </div>
-                </div>
-
-                <!-- Footer Note -->
-                <div class="bg-sky-50 px-6 py-3 border-t border-sky-200 text-xs text-slate-600 italic">
-                    📋 Catatan: Gunakan legenda ini sebagai referensi saat membaca dan menginterpretasi data dalam tabel di atas.
                 </div>
             </div>
         </div>
@@ -345,17 +350,14 @@
                         <!-- Row 2: Child Headers (only if multi-level) -->
                         <template x-if="hasMultiLevelHeaders">
                             <tr class="bg-blue-600">
-                                <template x-for="(header, hIndex) in tableConfig.headers" :key="'childrow-' + hIndex">
-                                    <template x-if="header.children">
-                                        <template x-for="(child, cIndex) in header.children" :key="'child-' + hIndex + '-' + cIndex">
-                                            <th class="border border-gray-300 px-2 py-1.5 text-center text-xs font-semibold text-white"
-                                                :class="child.bgColor || 'bg-blue-600'"
-                                                :style="child.width ? 'width: ' + child.width : ''"
-                                                :title="child.full_label || child.label"
-                                                x-text="useFullLabels && child.full_label ? child.full_label : child.label">
-                                            </th>
-                                        </template>
-                                    </template>
+                                <!-- Render flat child headers array - no nested loops to avoid browser reflow -->
+                                <template x-for="(child, idx) in flatChildHeaders" :key="'child-' + idx">
+                                    <th class="border border-gray-300 px-2 py-1.5 text-center text-xs font-semibold text-white"
+                                        :class="child.bgColor || 'bg-blue-600'"
+                                        :style="child.width ? 'width: ' + child.width : ''"
+                                        :title="child.parent_label + ' → ' + child.label + ' (Key: ' + child.key + ')'"
+                                        x-text="useFullLabels && child.full_label ? child.full_label : child.label">
+                                    </th>
                                 </template>
                             </tr>
                         </template>
@@ -378,15 +380,28 @@
 
                     <!-- Summary Row -->
                     <tfoot x-show="summary && summary.total_entries > 0">
-                        <tr class="bg-gray-100 font-semibold">
-                            <td :colspan="displayColumns.length" class="border border-gray-300 px-3 py-2 text-xs">
-                                <div class="flex flex-wrap justify-between gap-4">
-                                    <span>Total Data: <strong x-text="summary.total_entries"></strong></span>
-                                    <span x-show="summary.validation_compliance !== undefined">
-                                        Validasi: <strong :class="summary.validation_compliance >= 80 ? 'text-green-600' : 'text-red-600'" x-text="summary.validation_compliance + '%'"></strong>
-                                        (<span class="text-green-600" x-text="summary.valid_entries"></span> sesuai,
-                                        <span class="text-red-600" x-text="summary.invalid_entries"></span> tidak sesuai)
-                                    </span>
+                        <tr class="bg-slate-100 border-t border-slate-300">
+                            <td :colspan="displayColumns.length" class="border border-slate-300 px-4 py-3 text-sm">
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <!-- Total Data Section -->
+                                    <div class="flex items-center gap-3">
+                                        <div>
+                                            <span class="text-slate-600 font-medium text-xs uppercase tracking-wide">Total Entri Data</span>
+                                            <span class="text-slate-900 font-bold text-lg ml-2" x-text="summary.total_entries"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Validation Compliance Section -->
+                                    <div x-show="summary.validation_compliance !== undefined" class="flex items-center gap-3">
+                                        <div>
+                                            <span class="text-slate-600 font-medium text-xs uppercase tracking-wide">Tingkat Kesesuaian Validasi</span>
+                                            <span class="font-bold text-lg ml-2" :class="summary.validation_compliance >= 80 ? 'text-green-700' : 'text-red-700'" x-text="summary.validation_compliance + '%'"></span>
+                                            <span class="text-xs text-slate-500 ml-2">
+                                                (<span class="text-green-600 font-semibold" x-text="summary.valid_entries"></span> sesuai,
+                                                <span class="text-red-600 font-semibold" x-text="summary.invalid_entries"></span> tidak sesuai)
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -401,6 +416,63 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
             <p class="mt-4 text-gray-600">Tidak ada data untuk periode yang dipilih</p>
+        </div>
+
+        <!-- Validation Formula & Analysis Section -->
+        <div x-show="!loading && !error" class="mt-8">
+
+            <!-- Validation Formula -->
+            <div class="border border-gray-300 p-6 mb-6">
+                <div class="text-center">
+                    <div class="text-sm font-semibold text-gray-800 mb-4">RUMUS VALIDASI</div>
+
+                    <!-- Main Formula -->
+                    <div class="my-3 text-base">
+                        $$\text{VALIDASI} = \frac{\sum \text{ITEM YANG VALID}}{\sum \text{YANG DI VALIDATOR}} \times 100\%$$
+                    </div>
+
+                    <!-- Calculation Result -->
+                    <div class="mt-3 text-sm text-gray-700">
+                        VALIDASI = <span x-text="summary.valid_entries || 0"></span>/<span x-text="summary.total_entries || 0"></span> X 100% = <span class="font-semibold" x-text="summary.validation_compliance !== undefined ? summary.validation_compliance + '%' : '0%'"></span>
+                    </div>
+
+                    <!-- Interpretation -->
+                    <div class="text-center text-sm text-gray-700 mt-1">
+                        Hasil validasi didapatkan data yang dilakukan validasi mencapai <span class="font-semibold" x-text="summary.validation_compliance !== undefined ? summary.validation_compliance + '%' : '0%'"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis & Recommendation Table -->
+            <div class="border border-gray-300 overflow-hidden">
+                <table class="w-full border-collapse text-sm">
+                    <tbody>
+                        <!-- Analysis Row -->
+                        <tr class="border-b border-gray-300">
+                            <td class="border-r border-gray-300 px-4 py-3 font-semibold text-gray-800 bg-gray-100" style="width: 120px; vertical-align: top;">
+                                Analisis
+                            </td>
+                            <td class="px-4 py-3 text-gray-800">
+                                <div x-show="summary.total_entries > 0" x-text="getAnalysisText()"></div>
+                                <div x-show="summary.total_entries === 0">
+                                    Tidak ada data untuk periode yang dipilih.
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Recommendation Row -->
+                        <tr>
+                            <td class="border-r border-gray-300 px-4 py-3 font-semibold text-gray-800 bg-gray-100" style="width: 120px; vertical-align: top;">
+                                Rekomendasi
+                            </td>
+                            <td class="px-4 py-3 text-gray-800">
+                                <div x-text="getRecommendationText()"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
 
         <!-- Footer & Signature -->
@@ -439,6 +511,7 @@
                 hasMultiLevelHeaders: false,
                 tableData: [],
                 displayColumns: [],
+                flatChildHeaders: [], // Flatten array of {label, key, parent, bgColor, width, full_label}
                 metadata: {},
                 summary: {},
                 userData: null,
@@ -498,6 +571,7 @@
                             this.tableConfig = jsonData.tableConfig;
                             this.hasMultiLevelHeaders = jsonData.tableConfig.headers.some(h => h.children && h.children.length > 0);
                             this.calculateDisplayColumns();
+                            this.buildFlatChildHeaders(); // Build flat array untuk row 2
                         } else {
                             this.tableConfig = {
                                 headers: []
@@ -525,12 +599,43 @@
                             multiLevel: this.hasMultiLevelHeaders
                         });
 
+                        // Log EXACT headers structure untuk debug visual mismatch
+                        console.log('🔍 Headers structure detail:', this.tableConfig.headers.map((h, idx) => ({
+                            index: idx,
+                            label: h.label,
+                            key: h.key || 'N/A',
+                            children_count: (h.children || []).length,
+                            children_labels: (h.children || []).map(c => c.label).join(', '),
+                            children_keys: (h.children || []).map(c => c.key).join(', '),
+                        })));
+
+                        // Log displayColumns urutan
+                        console.log('📊 displayColumns order:', this.displayColumns);
+
                     } catch (error) {
                         console.error('✗ Error:', error);
                         this.error = true;
                         this.errorMessage = error.message;
                     } finally {
                         this.loading = false;
+                        // Re-render KaTeX formulas after data loaded
+                        setTimeout(() => {
+                            if (typeof renderMathInElement !== 'undefined') {
+                                renderMathInElement(document.body, {
+                                    delimiters: [{
+                                            left: '$$',
+                                            right: '$$',
+                                            display: true
+                                        },
+                                        {
+                                            left: '$',
+                                            right: '$',
+                                            display: false
+                                        }
+                                    ]
+                                });
+                            }
+                        }, 100);
                     }
                 },
 
@@ -551,6 +656,30 @@
                             this.displayColumns.push(header.key);
                         }
                     });
+                },
+
+                buildFlatChildHeaders() {
+                    this.flatChildHeaders = [];
+                    if (!this.tableConfig || !this.tableConfig.headers) return;
+
+                    // Loop semua headers dan flatten children-nya ke single array
+                    this.tableConfig.headers.forEach(header => {
+                        if (header.children && Array.isArray(header.children)) {
+                            header.children.forEach(child => {
+                                this.flatChildHeaders.push({
+                                    label: child.label,
+                                    full_label: child.full_label,
+                                    key: child.key,
+                                    parent_label: header.label,
+                                    bgColor: child.bgColor || 'bg-blue-600',
+                                    width: child.width,
+                                });
+                            });
+                        }
+                    });
+
+                    console.log('📋 Flat child headers count:', this.flatChildHeaders.length);
+                    console.log('📋 Flat child headers:', this.flatChildHeaders.map(c => c.label).join(', '));
                 },
 
                 getHeaderConfig(columnKey) {
@@ -603,10 +732,27 @@
 
                     document.head.appendChild(printStyle);
 
+                    // Re-render KaTeX before printing
+                    if (typeof renderMathInElement !== 'undefined') {
+                        renderMathInElement(document.body, {
+                            delimiters: [{
+                                    left: '$$',
+                                    right: '$$',
+                                    display: true
+                                },
+                                {
+                                    left: '$',
+                                    right: '$',
+                                    display: false
+                                }
+                            ]
+                        });
+                    }
+
                     // Trigger print dialog
                     setTimeout(() => {
                         window.print();
-                    }, 100);
+                    }, 300);
                 },
 
                 getColumnWidth(column) {
@@ -712,6 +858,31 @@
                     }
 
                     return value;
+                },
+
+                getAnalysisText() {
+                    if (this.summary.total_entries === 0) {
+                        return 'Tidak ada data untuk periode yang dipilih.';
+                    }
+                    const compliance = this.summary.validation_compliance !== undefined ? this.summary.validation_compliance + '%' : '0%';
+                    const period = this.metadata.period_label || 'periode ini';
+                    return `Capaian indikator angka Waktu Lapor Hasil Tes Kritis laboratorium pada bulan ${period} sesuai standar yaitu sebesar ${compliance}.`;
+                },
+
+                getRecommendationText() {
+                    if (this.summary.total_entries === 0) {
+                        return 'Tidak ada rekomendasi - data kosong';
+                    }
+
+                    const compliance = this.summary.validation_compliance || 0;
+
+                    if (compliance >= 80) {
+                        return 'Tetap melakukan monitoring waktu lapor tes kritis laboratorium ≤ 30 menit kepada seluruh staf';
+                    } else if (compliance > 0) {
+                        return 'Perlu peningkatan monitoring waktu lapor tes kritis laboratorium agar mencapai target ≤ 30 menit dan meningkatkan kepatuhan ke standar';
+                    } else {
+                        return 'Tidak ada rekomendasi - data kosong';
+                    }
                 }
             }
         }
