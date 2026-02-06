@@ -74,5 +74,8 @@ return [
         'view_imut_data_report_detail_laporan::imut',
         'update_numerator_denominator_imut::penilaian',
         'create_recommendation_penilaian_imut::penilaian',
+
+        // Daily Report Validation
+        'validate_reports',
     ],
 ];

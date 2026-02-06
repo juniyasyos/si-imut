@@ -394,11 +394,11 @@
                                     <!-- Validation Compliance Section -->
                                     <div x-show="summary.validation_compliance !== undefined" class="flex items-center gap-3">
                                         <div>
-                                            <span class="text-slate-600 font-medium text-xs uppercase tracking-wide">Tingkat Kesesuaian</span>
+                                            <span class="text-slate-600 font-medium text-xs uppercase tracking-wide">Tingkat Kebenaran Data yg Dikumpulkan</span>
                                             <span class="font-bold text-lg ml-2" :class="summary.validation_compliance >= 80 ? 'text-green-700' : 'text-red-700'" x-text="summary.validation_compliance + '%'"></span>
                                             <span class="text-xs text-slate-500 ml-2">
-                                                (<span class="text-green-600 font-semibold" x-text="summary.valid_entries"></span> sesuai,
-                                                <span class="text-red-600 font-semibold" x-text="summary.invalid_entries"></span> tidak sesuai)
+                                                (<span class="text-green-600 font-semibold" x-text="summary.valid_entries"></span> benar,
+                                                <span class="text-red-600 font-semibold" x-text="summary.invalid_entries"></span> salah)
                                             </span>
                                         </div>
                                     </div>
@@ -515,7 +515,7 @@
                 metadata: {},
                 summary: {},
                 userData: null,
-                showReporter: true,
+                showReporter: false,
                 showLegend: false,
                 useFullLabels: false,
                 printOrientation: 'landscape',

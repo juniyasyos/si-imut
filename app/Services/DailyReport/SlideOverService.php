@@ -82,6 +82,7 @@ class SlideOverService
                 'unit_name' => $report->unit_name,
                 'submitted_by_name' => $report->submitted_by_name,
                 'form_title' => $report->form_title,
+                'is_validated' => $report->validation_status,
                 'field_responses' => $reportFieldResponses->map(function ($response) {
                     return [
                         'field_label' => $response->field_label,

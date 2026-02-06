@@ -23,6 +23,9 @@ class DailyReportResponse extends Model
         'calculation_details',
         'responses',
         'notes',
+        'validation_status',
+        'validated_by',
+        'validated_at',
     ];
 
     protected $casts = [
@@ -30,6 +33,8 @@ class DailyReportResponse extends Model
         'auto_calculated' => 'boolean',
         'compliance_status' => 'boolean',
         'calculation_details' => 'array',
+        'validation_status' => 'string',
+        'validated_at' => 'datetime',
     ];
 
     public function formTemplate(): BelongsTo
@@ -50,6 +55,11 @@ class DailyReportResponse extends Model
     public function submittedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    public function validator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
     public function fieldResponses(): HasMany

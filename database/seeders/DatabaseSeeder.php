@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
                 DefaultFormTemplateSeeder::class,
 
                 // Step 4: Create simulation data for specific indicators
-                HandwashingSimulationSeeder::class,
+                // HandwashingSimulationSeeder::class,
 
                 // Step 5: Create sample daily report entries for testing
                 SampleDailyReportSeeder::class,

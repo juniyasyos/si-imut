@@ -103,6 +103,47 @@ trait ReportManagementTrait
     }
 
     /**
+     * Toggle validation status of a report
+     */
+    public function toggleValidation(int $reportId, string $status): void
+    {
+        $report = \App\Models\DailyReportResponse::findOrFail($reportId);
+
+        // Check permissions - only users with validator_pic permission can validate
+        $user = Auth::user();
+        if (!$user || !$user->can('validate_reports')) {
+            $this->addError('validation', 'Anda tidak memiliki izin untuk memvalidasi laporan ini.');
+            return;
+        }
+
+        // Validate status parameter
+        if (!in_array($status, ['valid', 'invalid'])) {
+            $this->addError('validation', 'Status validasi tidak valid.');
+            return;
+        }
+
+        try {
+            $report->update([
+                'validation_status' => $status,
+                'validated_by' => $user->id,
+                'validated_at' => now(),
+            ]);
+
+            // Refresh slide-over data
+            $this->loadDailyReports();
+
+            $statusText = $status === 'valid' ? 'valid' : 'tidak valid';
+            \Filament\Notifications\Notification::make()
+                ->title('Status Validasi Diubah')
+                ->body('Laporan berhasil ditandai sebagai ' . $statusText)
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            $this->addError('validation', 'Gagal mengubah status validasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Save the report
      */
     public function saveReport(): void

@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\DailyReportResponse;
 use App\Policies\ActivityPolicy;
-use App\Policies\FolderCustomPolicy;
-use App\Policies\MediaCustomPolicy;
+use App\Policies\DailyReportResponsePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Activitylog\Models\Activity;
@@ -13,11 +13,12 @@ class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
         Activity::class => ActivityPolicy::class,
+        DailyReportResponse::class => DailyReportResponsePolicy::class,
         // \Juniyasyos\FilamentMediaManager\Models\Folder::class => FolderCustomPolicy::class,
         // \Juniyasyos\FilamentMediaManager\Models\Media::class => MediaCustomPolicy::class,
     ];
 
-public function boot(): void
+    public function boot(): void
     {
         $this->registerPolicies();
 

@@ -16,7 +16,7 @@
         </div>
 
         <!-- Quick Filters -->
-        <div class="flex flex-wrap gap-2">
+        <!-- <div class="flex flex-wrap gap-2">
             <button
                 @click="statusFilter = 'all'"
                 :class="statusFilter === 'all' ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
@@ -41,6 +41,6 @@
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
                 Terlambat
             </button>
-        </div>
+        </div> -->
     </div>
 </div>
