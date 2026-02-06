@@ -17,7 +17,7 @@ return new class extends Migration
 
             // Replace duration columns
             $table->renameColumn('analysis_duration', 'recommendation_analysis_duration');
-            
+
             // Drop unnecessary columns
             $table->dropColumn(['recommendation_duration', 'grace_period', 'analysis_template', 'recommendation_template', 'required_fields', 'require_approval']);
         });
