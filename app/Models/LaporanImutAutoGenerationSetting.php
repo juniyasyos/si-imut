@@ -14,8 +14,6 @@ class LaporanImutAutoGenerationSetting extends Model
     protected $fillable = [
         'is_enabled',
         'frequency',
-        'period_start_day',
-        'period_end_day',
         'report_month_based_on',
         'data_entry_duration',
         'recommendation_analysis_duration',
@@ -37,8 +35,6 @@ class LaporanImutAutoGenerationSetting extends Model
         'default_unit_kerjas' => 'array',
         'reminder_schedule' => 'array',
         'notification_targets' => 'array',
-        'period_start_day' => 'integer',
-        'period_end_day' => 'integer',
         'data_entry_duration' => 'integer',
         'recommendation_analysis_duration' => 'integer',
     ];
@@ -69,8 +65,6 @@ class LaporanImutAutoGenerationSetting extends Model
         return [
             'is_enabled' => false,
             'frequency' => 'monthly',
-            'period_start_day' => 5,
-            'period_end_day' => 4,
             'report_month_based_on' => 'start',
             'data_entry_duration' => 7,
             'recommendation_analysis_duration' => 2,
@@ -123,5 +117,28 @@ class LaporanImutAutoGenerationSetting extends Model
     public function getDefaultUnitKerjaIds(): array
     {
         return $this->default_unit_kerjas ?? [];
+    }
+
+    /**
+     * Get period start day (always 1 for full month)
+     */
+    public function getPeriodStartDay(): int
+    {
+        return 1;
+    }
+
+    /**
+     * Get period end day - last day of month
+     * For most calculations, you'll pass a specific month/year
+     */
+    public function getPeriodEndDay($year = null, $month = null): int
+    {
+        if (!$year || !$month) {
+            // Default to current month
+            $year = $year ?? date('Y');
+            $month = $month ?? date('m');
+        }
+
+        return (int)\Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('d');
     }
 }

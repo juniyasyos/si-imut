@@ -48,149 +48,64 @@ class ListLaporanImuts extends ListRecords
                         ->columns(2),
 
                     Forms\Components\Section::make('Periode Laporan')
-                        ->description('Tentukan periode pelaporan bulanan.')
+                        ->description('Periode laporan menggunakan tanggal 1 sampai akhir bulan secara otomatis.')
                         ->schema([
-                            Forms\Components\Select::make('period_preset')
-                                ->label('Preset Periode')
-                                ->helperText('Pilih preset atau atur manual')
-                                ->options([
-                                    'standard' => '1 - 31 (Awal sampai Akhir Bulan)',
-                                    'shift_5' => '5 - 4 (Tanggal 5 bulan ini sampai 4 bulan depan)',
-                                    'shift_10' => '10 - 9 (Tanggal 10 bulan ini sampai 9 bulan depan)',
-                                    'custom' => 'Custom (Atur Manual)',
-                                ])
-                                ->default('standard')
-                                ->live()
-                                ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                    if ($state === 'standard') {
-                                        $set('period_start_day', 1);
-                                        $set('period_end_day', 31);
-                                        $set('report_month_based_on', 'start');
-                                    } elseif ($state === 'shift_5') {
-                                        $set('period_start_day', 5);
-                                        $set('period_end_day', 4);
-                                        $set('report_month_based_on', 'start');
-                                    } elseif ($state === 'shift_10') {
-                                        $set('period_start_day', 10);
-                                        $set('period_end_day', 9);
-                                        $set('report_month_based_on', 'start');
-                                    }
-                                })
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-
-                            Forms\Components\TextInput::make('period_start_day')
-                                ->label('Tanggal Mulai')
-                                ->helperText('Hari dalam bulan (1-31)')
-                                ->numeric()
-                                ->minValue(1)
-                                ->maxValue(31)
-                                ->default(5)
-                                ->required()
-                                ->live()
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled') || $get('period_preset') !== 'custom'),
-
-                            Forms\Components\TextInput::make('period_end_day')
-                                ->label('Tanggal Akhir')
-                                ->helperText('Hari dalam bulan (1-31)')
-                                ->numeric()
-                                ->minValue(1)
-                                ->maxValue(31)
-                                ->default(4)
-                                ->required()
-                                ->live()
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled') || $get('period_preset') !== 'custom'),
+                            Forms\Components\Placeholder::make('period_display')
+                                ->label('Periode Laporan')
+                                ->content(fn() => new \Illuminate\Support\HtmlString('
+                                    <div class="text-sm">
+                                        <span class="font-semibold">Tanggal 1 sampai akhir bulan</span>
+                                        <p class="text-gray-500 text-xs mt-1">Otomatis menyesuaikan dengan jumlah hari di setiap bulan (28-31 hari)</p>
+                                    </div>
+                                ')),
 
                             Forms\Components\Select::make('report_month_based_on')
                                 ->label('Nama Laporan Berdasarkan')
                                 ->helperText('Tentukan bulan mana yang dipakai untuk nama laporan')
                                 ->options([
-                                    'start' => 'Bulan Awal Periode (Tanggal Mulai)',
-                                    'end' => 'Bulan Akhir Periode (Tanggal Akhir)',
+                                    'start' => 'Bulan Awal Periode (Tanggal 1)',
+                                    'end' => 'Bulan Akhir Periode (Akhir Bulan)',
                                 ])
                                 ->default('start')
                                 ->required()
-                                ->live()
                                 ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
 
                             Forms\Components\Placeholder::make('period_preview')
-                                ->label('Preview Periode & Penamaan')
+                                ->label('Preview Penamaan Laporan')
                                 ->content(function (Forms\Get $get) {
-                                    $start = $get('period_start_day') ?? 5;
-                                    $end = $get('period_end_day') ?? 4;
                                     $basedOn = $get('report_month_based_on') ?? 'start';
 
-                                    if ($start <= $end) {
-                                        // Dalam satu bulan
+                                    if ($basedOn === 'start') {
                                         return new \Illuminate\Support\HtmlString('
                                             <div class="text-sm space-y-2">
-                                                <div class="flex items-start gap-2">
-                                                    <span class="font-semibold text-gray-700 dark:text-gray-300">Periode:</span>
-                                                    <span class="text-gray-600 dark:text-gray-400">' . $start . ' Januari sampai ' . $end . ' Januari 2026</span>
-                                                </div>
-                                                <div class="flex items-start gap-2">
-                                                    <span class="font-semibold text-gray-700 dark:text-gray-300">Nama Laporan:</span>
-                                                    <span class="text-gray-600 dark:text-gray-400">Laporan IMUT Januari 2026</span>
-                                                </div>
+                                                <p class="text-gray-700 dark:text-gray-300">
+                                                    Contoh: <strong>Laporan IMUT Januari 2026</strong>
+                                                    <span class="text-xs text-gray-500">(periode 1 Jan - 31 Jan)</span>
+                                                </p>
+                                                <p class="text-gray-700 dark:text-gray-300">
+                                                    Contoh: <strong>Laporan IMUT Februari 2026</strong>
+                                                    <span class="text-xs text-gray-500">(periode 1 Feb - 28 Feb)</span>
+                                                </p>
                                             </div>
                                         ');
                                     } else {
-                                        // Lintas bulan
-                                        if ($basedOn === 'start') {
-                                            return new \Illuminate\Support\HtmlString('
-                                                <div class="text-sm space-y-3">
-                                                    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                                        <div class="flex items-start gap-2 mb-1">
-                                                            <span class="font-semibold text-blue-700 dark:text-blue-300">Periode:</span>
-                                                            <span class="text-blue-600 dark:text-blue-400">' . $start . ' Januari - ' . $end . ' Februari 2026</span>
-                                                        </div>
-                                                        <div class="flex items-start gap-2">
-                                                            <span class="font-semibold text-blue-700 dark:text-blue-300">Nama Laporan:</span>
-                                                            <span class="text-blue-600 dark:text-blue-400">Laporan IMUT <strong>Januari</strong> 2026 <em class="text-xs">(berdasarkan bulan awal)</em></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                        <div class="flex items-start gap-2 mb-1">
-                                                            <span class="font-semibold text-gray-700 dark:text-gray-300">Periode:</span>
-                                                            <span class="text-gray-600 dark:text-gray-400">' . $start . ' Februari - ' . $end . ' Maret 2026</span>
-                                                        </div>
-                                                        <div class="flex items-start gap-2">
-                                                            <span class="font-semibold text-gray-700 dark:text-gray-300">Nama Laporan:</span>
-                                                            <span class="text-gray-600 dark:text-gray-400">Laporan IMUT <strong>Februari</strong> 2026</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ');
-                                        } else {
-                                            return new \Illuminate\Support\HtmlString('
-                                                <div class="text-sm space-y-3">
-                                                    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                                        <div class="flex items-start gap-2 mb-1">
-                                                            <span class="font-semibold text-blue-700 dark:text-blue-300">Periode:</span>
-                                                            <span class="text-blue-600 dark:text-blue-400">' . $start . ' Januari - ' . $end . ' Februari 2026</span>
-                                                        </div>
-                                                        <div class="flex items-start gap-2">
-                                                            <span class="font-semibold text-blue-700 dark:text-blue-300">Nama Laporan:</span>
-                                                            <span class="text-blue-600 dark:text-blue-400">Laporan IMUT <strong>Februari</strong> 2026 <em class="text-xs">(berdasarkan bulan akhir)</em></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                        <div class="flex items-start gap-2 mb-1">
-                                                            <span class="font-semibold text-gray-700 dark:text-gray-300">Periode:</span>
-                                                            <span class="text-gray-600 dark:text-gray-400">' . $start . ' Februari - ' . $end . ' Maret 2026</span>
-                                                        </div>
-                                                        <div class="flex items-start gap-2">
-                                                            <span class="font-semibold text-gray-700 dark:text-gray-300">Nama Laporan:</span>
-                                                            <span class="text-gray-600 dark:text-gray-400">Laporan IMUT <strong>Maret</strong> 2026</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ');
-                                        }
+                                        return new \Illuminate\Support\HtmlString('
+                                            <div class="text-sm space-y-2">
+                                                <p class="text-gray-700 dark:text-gray-300">
+                                                    Contoh: <strong>Laporan IMUT Januari 2026</strong>
+                                                    <span class="text-xs text-gray-500">(periode 1 Des 2025 - 31 Jan 2026)</span>
+                                                </p>
+                                                <p class="text-gray-700 dark:text-gray-300">
+                                                    Contoh: <strong>Laporan IMUT Februari 2026</strong>
+                                                    <span class="text-xs text-gray-500">(periode 1 Jan - 28 Feb 2026)</span>
+                                                </p>
+                                            </div>
+                                        ');
                                     }
                                 })
                                 ->columnSpanFull(),
                         ])
-                        ->columns(4),
+                        ->columns(2),
 
                     Forms\Components\Section::make('Timeline & Deadline')
                         ->description('Tentukan durasi waktu untuk setiap tahap pengisian laporan')
@@ -251,8 +166,9 @@ class ListLaporanImuts extends ListRecords
                     return $settings->toArray();
                 })
                 ->action(function (array $data) {
-                    // Remove non-database fields
-                    unset($data['period_preset']);
+                    // Ensure integer casting for numeric fields
+                    $data['data_entry_duration'] = isset($data['data_entry_duration']) && is_numeric($data['data_entry_duration']) ? (int)$data['data_entry_duration'] : 7;
+                    $data['recommendation_analysis_duration'] = isset($data['recommendation_analysis_duration']) && is_numeric($data['recommendation_analysis_duration']) ? (int)$data['recommendation_analysis_duration'] : 2;
 
                     $settings = LaporanImutAutoGenerationSetting::getInstance();
                     $settings->fill($data);
