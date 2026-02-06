@@ -90,6 +90,23 @@ class ImutDataResource extends Resource implements HasShieldPermissions
         return __('filament-forms::imut-data.navigation.group');
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $user = Auth::user();
+
+        if ($user->can('view_all_data_imut::data')) {
+            return (string) ImutData::count();
+        }
+
+        if ($user->can('view_by_unit_kerja_imut::data')) {
+            return (string) ImutData::whereHas('unitKerja', function ($q) use ($user) {
+                $q->where('unit_kerja_id', $user->unitKerjas->pluck('id')->toArray());
+            })->count();
+        }
+
+        return null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema(ImutDataSchema::make());

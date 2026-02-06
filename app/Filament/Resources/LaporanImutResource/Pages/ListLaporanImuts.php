@@ -33,19 +33,17 @@ class ListLaporanImuts extends ListRecords
                             Forms\Components\Toggle::make('is_enabled')
                                 ->label('Aktifkan Auto Generate')
                                 ->helperText('Nyalakan untuk mengaktifkan pembuatan laporan otomatis')
-                                ->default(false)
+                                ->default(true)
                                 ->live(),
 
                             Forms\Components\Select::make('frequency')
                                 ->label('Frekuensi Pembuatan')
                                 ->options([
                                     'monthly' => 'Bulanan',
-                                    'quarterly' => 'Triwulanan',
-                                    'yearly' => 'Tahunan',
                                 ])
                                 ->default('monthly')
                                 ->required()
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
+                                ->disabled(),
                         ])
                         ->columns(2),
 
@@ -61,7 +59,7 @@ class ListLaporanImuts extends ListRecords
                                     'shift_10' => '10 - 9 (Tanggal 10 bulan ini sampai 9 bulan depan)',
                                     'custom' => 'Custom (Atur Manual)',
                                 ])
-                                ->default('shift_5')
+                                ->default('standard')
                                 ->live()
                                 ->afterStateUpdated(function ($state, Forms\Set $set) {
                                     if ($state === 'standard') {
@@ -198,7 +196,7 @@ class ListLaporanImuts extends ListRecords
                         ->description('Tentukan durasi waktu untuk setiap tahap pengisian laporan')
                         ->schema([
                             Forms\Components\TextInput::make('data_entry_duration')
-                                ->label('Durasi Pengisian Data (hari)')
+                                ->label('Berapa Hari Sebelumnya Bisa Diisi (hari)')
                                 ->numeric()
                                 ->minValue(1)
                                 ->maxValue(90)
@@ -207,39 +205,18 @@ class ListLaporanImuts extends ListRecords
                                 ->suffix('hari')
                                 ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
 
-                            Forms\Components\TextInput::make('analysis_duration')
-                                ->label('Durasi Analisis (hari)')
+                            Forms\Components\TextInput::make('recommendation_analysis_duration')
+                                ->label('Durasi Pengisian Analisis & Rekomendasi (hari)')
                                 ->numeric()
                                 ->minValue(1)
                                 ->maxValue(30)
-                                ->default(3)
-                                ->required()
-                                ->suffix('hari')
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-
-                            Forms\Components\TextInput::make('recommendation_duration')
-                                ->label('Durasi Rekomendasi (hari)')
-                                ->numeric()
-                                ->minValue(1)
-                                ->maxValue(30)
-                                ->default(2)
-                                ->required()
-                                ->suffix('hari')
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-
-                            Forms\Components\TextInput::make('grace_period')
-                                ->label('Grace Period (hari)')
-                                ->helperText('Tambahan waktu setelah deadline')
-                                ->numeric()
-                                ->minValue(0)
-                                ->maxValue(15)
                                 ->default(2)
                                 ->required()
                                 ->suffix('hari')
                                 ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
                         ])
                         ->collapsible()
-                        ->columns(4),
+                        ->columns(2),
 
                     Forms\Components\Section::make('Pengaturan Otomasi')
                         ->schema([
@@ -267,68 +244,16 @@ class ListLaporanImuts extends ListRecords
                                 ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
                         ])
                         ->collapsible()
-                        ->columns(3),
-
-                    Forms\Components\Section::make('Notifikasi & Reminder')
-                        ->schema([
-                            Forms\Components\TagsInput::make('reminder_schedule')
-                                ->label('Jadwal Reminder (hari sebelum deadline)')
-                                ->helperText('Misal: 3,1 untuk reminder 3 hari dan 1 hari sebelum deadline')
-                                ->placeholder('Masukkan angka dan tekan Enter')
-                                ->default([3, 1])
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-
-                            Forms\Components\CheckboxList::make('notification_targets')
-                                ->label('Target Notifikasi')
-                                ->options([
-                                    'pic' => 'PIC Unit Kerja',
-                                    'supervisor' => 'Supervisor',
-                                    'all' => 'Semua Pengguna',
-                                ])
-                                ->default(['pic', 'supervisor'])
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-
-                            Forms\Components\Toggle::make('enable_escalation')
-                                ->label('Enable Escalation')
-                                ->helperText('Kirim notifikasi ke level atas jika terlewat deadline')
-                                ->default(false)
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-                        ])
-                        ->collapsible()
-                        ->columns(3),
-
-                    Forms\Components\Section::make('Template')
-                        ->schema([
-                            Forms\Components\Textarea::make('analysis_template')
-                                ->label('Template Analisis')
-                                ->helperText('Template default untuk field analisis')
-                                ->rows(3)
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-
-                            Forms\Components\Textarea::make('recommendation_template')
-                                ->label('Template Rekomendasi')
-                                ->helperText('Template default untuk field rekomendasi')
-                                ->rows(3)
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-                        ])
-                        ->collapsible()
-                        ->columns(2),
-
-                    Forms\Components\Section::make('Quality Control')
-                        ->collapsible()
-                        ->schema([
-                            Forms\Components\Toggle::make('require_approval')
-                                ->label('Require Approval')
-                                ->helperText('Perlu approval sebelum finalize')
-                                ->default(false)
-                                ->disabled(fn(Forms\Get $get) => !$get('is_enabled')),
-                        ]),
+                        ->columns(3)
                 ])
                 ->fillForm(function () {
                     $settings = LaporanImutAutoGenerationSetting::getInstance();
                     return $settings->toArray();
                 })
                 ->action(function (array $data) {
+                    // Remove non-database fields
+                    unset($data['period_preset']);
+
                     $settings = LaporanImutAutoGenerationSetting::getInstance();
                     $settings->fill($data);
                     $settings->updated_by = Auth::id();

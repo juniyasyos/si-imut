@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
+use App\Models\LaporanImutAutoGenerationSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -52,6 +53,23 @@ class TableViewController extends Controller
 
         // Parse period
         [$year, $month] = explode('-', $period);
+        $date = Carbon::createFromDate($year, $month, 1);
+
+        // Get period settings
+        $settings = LaporanImutAutoGenerationSetting::getInstance();
+        $periodStart = $settings->period_start_day;
+        $periodEnd = $settings->period_end_day;
+
+        // Calculate period based on settings
+        if ($periodStart <= $periodEnd) {
+            // Same month period (e.g., 1-31)
+            $startDate = $date->copy()->day($periodStart)->startOfDay();
+            $endDate = $date->copy()->day($periodEnd)->endOfDay();
+        } else {
+            // Cross-month period (e.g., 5 this month - 4 next month)
+            $startDate = $date->copy()->day($periodStart)->startOfDay();
+            $endDate = $date->copy()->addMonth()->day($periodEnd)->endOfDay();
+        }
 
         // Build query
         $query = DailyReportResponse::query()
@@ -62,8 +80,7 @@ class TableViewController extends Controller
                 'submittedBy',
                 'fieldResponses.formField.options'
             ])
-            ->whereYear('report_date', $year)
-            ->whereMonth('report_date', $month);
+            ->whereBetween('report_date', [$startDate, $endDate]);
 
         // Apply form_template_id filter
         if ($formTemplateId) {
@@ -82,11 +99,11 @@ class TableViewController extends Controller
         $entries = $query->orderBy('report_date', 'asc')->get();
 
         // Debug query result
-        Log::info('TableView query result', [
-            'entries_count' => $entries->count(),
-            'sql' => $query->toSql(),
-            'bindings' => $query->getBindings(),
-        ]);
+        // Log::info('TableView query result', [
+        //     'entries_count' => $entries->count(),
+        //     'sql' => $query->toSql(),
+        //     'bindings' => $query->getBindings(),
+        // ]);
 
         if ($entries->isEmpty()) {
             return response()->json([
@@ -112,6 +129,8 @@ class TableViewController extends Controller
         $metadata = $this->buildMetadata(
             $unitKerjaId,
             $period,
+            $startDate,
+            $endDate,
             $formTemplate,
             $entries->first()->unitKerja
         );
@@ -334,27 +353,27 @@ class TableViewController extends Controller
                 }
             }
 
-            // Log first entry to see structure
-            if ($index === 0) {
-                Log::info('First Entry fieldResponses', [
-                    'entry_id' => $entry->id,
-                    'report_date' => $entry->report_date->format('Y-m-d'),
-                    'fieldResponses_count' => $entry->fieldResponses->count(),
-                    'fieldResponses' => $entry->fieldResponses->map(function ($fr) {
-                        return [
-                            'id' => $fr->id,
-                            'form_field_id' => $fr->form_field_id,
-                            'field_key' => $fr->formField?->field_key,
-                            'field_label' => $fr->formField?->field_label,
-                            'field_type' => $fr->formField?->field_type,
-                            'field_value' => $fr->field_value,
-                            'is_valid' => $fr->is_valid,
-                            'compliance_score' => $fr->compliance_score,
-                        ];
-                    })->toArray(),
-                    'responses_array' => $responses,
-                ]);
-            }
+            // // Log first entry to see structure
+            // if ($index === 0) {
+            //     Log::info('First Entry fieldResponses', [
+            //         'entry_id' => $entry->id,
+            //         'report_date' => $entry->report_date->format('Y-m-d'),
+            //         'fieldResponses_count' => $entry->fieldResponses->count(),
+            //         'fieldResponses' => $entry->fieldResponses->map(function ($fr) {
+            //             return [
+            //                 'id' => $fr->id,
+            //                 'form_field_id' => $fr->form_field_id,
+            //                 'field_key' => $fr->formField?->field_key,
+            //                 'field_label' => $fr->formField?->field_label,
+            //                 'field_type' => $fr->formField?->field_type,
+            //                 'field_value' => $fr->field_value,
+            //                 'is_valid' => $fr->is_valid,
+            //                 'compliance_score' => $fr->compliance_score,
+            //             ];
+            //         })->toArray(),
+            //         'responses_array' => $responses,
+            //     ]);
+            // }
 
             // Process each form field
             foreach ($formFields as $field) {
@@ -391,27 +410,27 @@ class TableViewController extends Controller
                         $row[$fieldKey . '_valid'] = $fieldValue['valid_indicator'] ?? 0;
 
                         // Log validation logic for time duration
-                        Log::info('Time duration validation logic', [
-                            'entry_id' => $entry->id,
-                            'field_key' => $fieldKey,
-                            'field_value' => $fieldValue,
-                            'start_time' => $fieldValue['start_time'] ?? null,
-                            'end_time' => $fieldValue['end_time'] ?? null,
-                            'valid_indicator' => $fieldValue['valid_indicator'] ?? 0,
-                            'is_valid_set' => isset($fieldValue['valid_indicator']),
-                        ]);
+                        // Log::info('Time duration validation logic', [
+                        //     'entry_id' => $entry->id,
+                        //     'field_key' => $fieldKey,
+                        //     'field_value' => $fieldValue,
+                        //     'start_time' => $fieldValue['start_time'] ?? null,
+                        //     'end_time' => $fieldValue['end_time'] ?? null,
+                        //     'valid_indicator' => $fieldValue['valid_indicator'] ?? 0,
+                        //     'is_valid_set' => isset($fieldValue['valid_indicator']),
+                        // ]);
                     } else {
                         $row[$fieldKey . '_start'] = '-';
                         $row[$fieldKey . '_end'] = '-';
                         $row[$fieldKey . '_valid'] = 0;
 
-                        // Log when field value is not an array
-                        Log::info('Time duration field value is not an array', [
-                            'entry_id' => $entry->id,
-                            'field_key' => $fieldKey,
-                            'field_value' => $fieldValue,
-                            'valid_indicator_set_to' => 0,
-                        ]);
+                        // // Log when field value is not an array
+                        // Log::info('Time duration field value is not an array', [
+                        //     'entry_id' => $entry->id,
+                        //     'field_key' => $fieldKey,
+                        //     'field_value' => $fieldValue,
+                        //     'valid_indicator_set_to' => 0,
+                        // ]);
                     }
                 }
                 // Simple fields
@@ -426,21 +445,21 @@ class TableViewController extends Controller
             $totalCount = $entry->fieldResponses->count();
             $row['validation_status'] = ($totalCount > 0 && $validCount === $totalCount) ? 1 : 0;
 
-            // Log validation status for each entry
-            Log::info('Entry validation status', [
-                'entry_id' => $entry->id,
-                'report_date' => $entry->report_date->format('Y-m-d'),
-                'total_field_responses' => $totalCount,
-                'valid_field_responses' => $validCount,
-                'validation_status' => $row['validation_status'],
-                'field_responses_details' => $entry->fieldResponses->map(function ($fr) {
-                    return [
-                        'field_key' => $fr->formField?->field_key,
-                        'is_valid' => $fr->is_valid,
-                        'compliance_score' => $fr->compliance_score,
-                    ];
-                })->toArray(),
-            ]);
+            // // Log validation status for each entry
+            // Log::info('Entry validation status', [
+            //     'entry_id' => $entry->id,
+            //     'report_date' => $entry->report_date->format('Y-m-d'),
+            //     'total_field_responses' => $totalCount,
+            //     'valid_field_responses' => $validCount,
+            //     'validation_status' => $row['validation_status'],
+            //     'field_responses_details' => $entry->fieldResponses->map(function ($fr) {
+            //         return [
+            //             'field_key' => $fr->formField?->field_key,
+            //             'is_valid' => $fr->is_valid,
+            //             'compliance_score' => $fr->compliance_score,
+            //         ];
+            //     })->toArray(),
+            // ]);
 
             $tableData[] = $row;
         }
@@ -451,16 +470,33 @@ class TableViewController extends Controller
     /**
      * Build metadata for the response
      */
-    private function buildMetadata($unitKerjaId, $period, ?FormTemplate $formTemplate = null, ?UnitKerja $unitKerja = null): array
+    private function buildMetadata($unitKerjaId, $period, $startDate, $endDate, ?FormTemplate $formTemplate = null, ?UnitKerja $unitKerja = null): array
     {
         [$year, $month] = explode('-', $period);
+
+        // Calculate period label based on actual date range
+        $startDay = $startDate->day;
+        $endDay = $endDate->day;
+        $startMonth = $startDate->translatedFormat('F');
+        $endMonth = $endDate->translatedFormat('F');
+        $yearLabel = $startDate->year;
+
+        if ($startDate->month === $endDate->month) {
+            // Same month
+            $periodLabel = "{$startDay} - {$endDay} {$startMonth} {$yearLabel}";
+        } else {
+            // Cross month
+            $periodLabel = "{$startDay} {$startMonth} - {$endDay} {$endMonth} {$yearLabel}";
+        }
 
         $metadata = [
             'unit_kerja_id' => $unitKerjaId,
             'period' => $period,
             'year' => (int) $year,
             'month' => (int) $month,
-            'period_label' => Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y'),
+            'period_label' => $periodLabel,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
         ];
 
         if ($unitKerja) {
@@ -677,23 +713,23 @@ class TableViewController extends Controller
             }
         }
 
-        // Log legend structure
-        Log::info('Table legend field code mapping', [
-            'form_template_id' => $formTemplate->id,
-            'legend_code_mapping' => $legendCodeMapping,
-            'total_multi_column_fields' => $fieldCounter,
-        ]);
+        // // Log legend structure
+        // Log::info('Table legend field code mapping', [
+        //     'form_template_id' => $formTemplate->id,
+        //     'legend_code_mapping' => $legendCodeMapping,
+        //     'total_multi_column_fields' => $fieldCounter,
+        // ]);
 
-        // Validate sync dengan header
-        Log::info('Field counter consistency check', [
-            'form_template_id' => $formTemplate->id,
-            'legend_field_counter' => $fieldCounter,
-            'all_formfields_count' => $formTemplate->formFields()->count(),
-            'multi_column_fields_count' => $formTemplate->formFields()
-                ->whereIn('field_type', ['single_select', 'multi_select', 'compliance_checker', 'conditional_trigger'])
-                ->whereHas('options')
-                ->count(),
-        ]);
+        // // Validate sync dengan header
+        // Log::info('Field counter consistency check', [
+        //     'form_template_id' => $formTemplate->id,
+        //     'legend_field_counter' => $fieldCounter,
+        //     'all_formfields_count' => $formTemplate->formFields()->count(),
+        //     'multi_column_fields_count' => $formTemplate->formFields()
+        //         ->whereIn('field_type', ['single_select', 'multi_select', 'compliance_checker', 'conditional_trigger'])
+        //         ->whereHas('options')
+        //         ->count(),
+        // ]);
 
         return $legend;
     }

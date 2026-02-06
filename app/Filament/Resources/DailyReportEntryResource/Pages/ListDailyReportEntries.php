@@ -210,11 +210,6 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 })
                 ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
                     $query->whereBetween('report_date', [$startDate, $endDate]);
-
-                    // Only filter by unit_kerja if user has units (not admin/tim mutu)
-                    if (!empty($unitKerjaIds)) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    }
                 }])
                 ->get();
 
@@ -357,7 +352,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     {
         try {
             $record = DailyReportResponse::findOrFail($recordId);
-            
+
             // Delete the record
             $record->delete();
 
