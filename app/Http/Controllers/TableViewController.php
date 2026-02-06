@@ -57,19 +57,10 @@ class TableViewController extends Controller
 
         // Get period settings
         $settings = LaporanImutAutoGenerationSetting::getInstance();
-        $periodStart = $settings->period_start_day;
-        $periodEnd = $settings->period_end_day;
 
-        // Calculate period based on settings
-        if ($periodStart <= $periodEnd) {
-            // Same month period (e.g., 1-31)
-            $startDate = $date->copy()->day($periodStart)->startOfDay();
-            $endDate = $date->copy()->day($periodEnd)->endOfDay();
-        } else {
-            // Cross-month period (e.g., 5 this month - 4 next month)
-            $startDate = $date->copy()->day($periodStart)->startOfDay();
-            $endDate = $date->copy()->addMonth()->day($periodEnd)->endOfDay();
-        }
+        // Use full month approach (1 - end of month)
+        $startDate = $date->copy()->startOfMonth()->startOfDay();
+        $endDate = $date->copy()->endOfMonth()->endOfDay();
 
         // Build query
         $query = DailyReportResponse::query()
@@ -281,11 +272,11 @@ class TableViewController extends Controller
         // Add validation compliance
         $headers[] = [
             'key' => 'validation_status',
-            'label' => 'Sesuai',
+            'label' => 'Pengumpul Data',
             'align' => 'center',
             'bgColor' => 'bg-green-700',
             'format' => 'checkbox',
-            'width' => '80px',
+            'width' => '120px',
         ];
 
         // Build legend for multi-select fields

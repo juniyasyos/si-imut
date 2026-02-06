@@ -180,19 +180,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
             // Get period settings
             $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
-            $periodStart = $settings->period_start_day;
-            $periodEnd = $settings->period_end_day;
 
-            // Calculate period based on settings
-            if ($periodStart <= $periodEnd) {
-                // Same month period (e.g., 1-31)
-                $startDate = $date->copy()->day($periodStart)->startOfDay();
-                $endDate = $date->copy()->day($periodEnd)->endOfDay();
-            } else {
-                // Cross-month period (e.g., 5 this month - 4 next month)
-                $startDate = $date->copy()->day($periodStart)->startOfDay();
-                $endDate = $date->copy()->addMonth()->day($periodEnd)->endOfDay();
-            }
+            // Use full month approach (1 - end of month)
+            $startDate = $date->copy()->startOfMonth()->startOfDay();
+            $endDate = $date->copy()->endOfMonth()->endOfDay();
 
             // Get user's unit kerja IDs
             $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
@@ -210,10 +201,13 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 })
                 ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
                     $query->whereBetween('report_date', [$startDate, $endDate]);
+
+                    // Only filter by unit_kerja if user has units (not admin/tim mutu)
+                    if (!empty($unitKerjaIds)) {
+                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                    }
                 }])
                 ->get();
-
-            // dd($startDate, $endDate, $templates);
 
 
             // Get first unit kerja ID for URL (or null for all units)
@@ -287,19 +281,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
             // Get period settings
             $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
-            $periodStart = $settings->period_start_day;
-            $periodEnd = $settings->period_end_day;
 
-            // Calculate period based on settings
-            if ($periodStart <= $periodEnd) {
-                // Same month period (e.g., 1-31)
-                $startDate = $date->copy()->day($periodStart)->startOfDay();
-                $endDate = $date->copy()->day($periodEnd)->endOfDay();
-            } else {
-                // Cross-month period (e.g., 5 this month - 4 next month)
-                $startDate = $date->copy()->day($periodStart)->startOfDay();
-                $endDate = $date->copy()->addMonth()->day($periodEnd)->endOfDay();
-            }
+            // Use full month approach (1 - end of month)
+            $startDate = $date->copy()->startOfMonth()->startOfDay();
+            $endDate = $date->copy()->endOfMonth()->endOfDay();
 
             // Get user's unit kerja IDs
             $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();

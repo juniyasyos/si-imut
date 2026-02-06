@@ -257,16 +257,9 @@ class LaporanImutAutoGenerationService
     {
         $settings = LaporanImutAutoGenerationSetting::getInstance();
 
-        // Determine which month to generate based on current date and period settings
+        // Generate for current month using full month approach
         $now = Carbon::now();
-
-        // If current day is after period_start_day, generate for current month
-        // Otherwise, generate for previous month
-        if ($now->day >= $settings->period_start_day) {
-            $targetDate = $now;
-        } else {
-            $targetDate = $now->copy()->subMonth();
-        }
+        $targetDate = $now;
 
         return $this->generateForMonth($targetDate, $settings);
     }
