@@ -81,7 +81,7 @@
                     <div class="mb-6">
 
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Laporan Hari Ini</h3>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">List Laporan di Hari Ini</h3>
                         </div>
 
                         @if(!empty($this->dailyReports))
@@ -175,29 +175,64 @@
                                     </button>
 
                                     @if(auth()->user()->can('validate_reports'))
-                                    <button type="button"
-                                        wire:click="toggleValidation({{ $report['id'] }}, 'valid')"
-                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded {{ $report['is_validated'] === 'valid' ? 'text-green-700 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-600' : 'text-gray-700 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400 border border-gray-200 dark:border-gray-600' }}">
-                                        @if($report['is_validated'] === 'valid')
-                                        @svg("heroicon-m-check-circle", "w-4 h-4 mr-1.5")
-                                        Valid
-                                        @else
-                                        @svg("heroicon-m-check-circle", "w-4 h-4 mr-1.5")
-                                        Set Valid
-                                        @endif
-                                    </button>
+                                    <div class="flex-1 relative" x-data="{ open: false }">
+                                        <button @click="open = !open" type="button"
+                                            class="w-full inline-flex items-center justify-between px-4 py-2 text-sm font-medium rounded border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border-gray-300 dark:border-slate-600 transition-colors">
+                                            <span class="flex items-center gap-2">
+                                                @if($report['is_validated'] === 'valid')
+                                                <span class="text-green-600 dark:text-green-400">✓</span>
+                                                <span>Valid</span>
+                                                @elseif($report['is_validated'] === 'invalid')
+                                                <span class="text-red-600 dark:text-red-400">✗</span>
+                                                <span>Invalid</span>
+                                                @else
+                                                <span class="text-gray-400">—</span>
+                                                <span class="text-gray-500">Tentukan Status</span>
+                                                @endif
+                                            </span>
+                                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                            </svg>
+                                        </button>
 
-                                    <button type="button"
-                                        wire:click="toggleValidation({{ $report['id'] }}, 'invalid')"
-                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded {{ $report['is_validated'] === 'invalid' ? 'text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-600' : 'text-gray-700 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400 border border-gray-200 dark:border-gray-600' }}">
-                                        @if($report['is_validated'] === 'invalid')
-                                        @svg("heroicon-m-x-circle", "w-4 h-4 mr-1.5")
-                                        Invalid
-                                        @else
-                                        @svg("heroicon-m-x-circle", "w-4 h-4 mr-1.5")
-                                        Set Invalid
-                                        @endif
-                                    </button>
+                                        <!-- Dropdown Menu -->
+                                        <div x-show="open" @click.away="open = false"
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="opacity-0 scale-95"
+                                            x-transition:enter-end="opacity-100 scale-100"
+                                            x-transition:leave="transition ease-in duration-75"
+                                            x-transition:leave-start="opacity-100 scale-100"
+                                            x-transition:leave-end="opacity-0 scale-95"
+                                            class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg z-10">
+
+                                            <button type="button" wire:click="toggleValidation({{ $report['id'] }}, 'valid')" @click="open = false"
+                                                class="w-full text-left px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-3 {{ $report['is_validated'] === 'valid' ? 'bg-green-50 dark:bg-green-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                                <span class="text-lg text-green-600">✓</span>
+                                                <div>
+                                                    <div class="font-medium text-gray-900 dark:text-white">Valid</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">Laporan telah tervalidasi</div>
+                                                </div>
+                                            </button>
+
+                                            <button type="button" wire:click="toggleValidation({{ $report['id'] }}, 'invalid')" @click="open = false"
+                                                class="w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 {{ $report['is_validated'] === 'invalid' ? 'bg-red-50 dark:bg-red-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                                <span class="text-lg text-red-600">✗</span>
+                                                <div>
+                                                    <div class="font-medium text-gray-900 dark:text-white">Invalid</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">Laporan tidak valid</div>
+                                                </div>
+                                            </button>
+
+                                            <button type="button" wire:click="toggleValidation({{ $report['id'] }}, null)" @click="open = false"
+                                                class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/20 flex items-center gap-3 {{ $report['is_validated'] === null ? 'bg-gray-50 dark:bg-gray-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                                <span class="text-lg text-gray-400">—</span>
+                                                <div>
+                                                    <div class="font-medium text-gray-900 dark:text-white">Hapus</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">Batalkan validasi</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
                                     @endif
                                 </div>
                             </div>

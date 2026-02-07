@@ -197,6 +197,10 @@
                 <label for="showReporter" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Pelapor</label>
             </div>
             <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
+                <input type="checkbox" id="showValidator" x-model="showValidator" @change="calculateDisplayColumns()">
+                <label for="showValidator" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Validator</label>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
                 <input type="checkbox" id="showLegend" x-model="showLegend">
                 <label for="showLegend" class="text-sm text-gray-700 cursor-pointer">Tampilkan Legenda</label>
             </div>
@@ -335,7 +339,7 @@
                         <!-- Row 1: Parent Headers -->
                         <tr class="bg-blue-700">
                             <template x-for="(header, index) in tableConfig.headers" :key="'parent-' + index">
-                                <template x-if="!(header.key === 'submitted_by_name' && !showReporter)">
+                                <template x-if="!(header.key === 'submitted_by_name' && !showReporter) && !(header.key === 'validated_by_name' && !showValidator)">
                                     <th :colspan="header.children ? header.children.length : 1"
                                         :rowspan="header.children ? 1 : (hasMultiLevelHeaders ? 2 : 1)"
                                         class="border border-gray-300 px-2 py-2 text-center font-semibold text-white text-xs"
@@ -352,12 +356,14 @@
                             <tr class="bg-blue-600">
                                 <!-- Render flat child headers array - no nested loops to avoid browser reflow -->
                                 <template x-for="(child, idx) in flatChildHeaders" :key="'child-' + idx">
-                                    <th class="border border-gray-300 px-2 py-1.5 text-center text-xs font-semibold text-white"
-                                        :class="child.bgColor || 'bg-blue-600'"
-                                        :style="child.width ? 'width: ' + child.width : ''"
-                                        :title="child.parent_label + ' → ' + child.label + ' (Key: ' + child.key + ')'"
-                                        x-text="useFullLabels && child.full_label ? child.full_label : child.label">
-                                    </th>
+                                    <template x-if="displayColumns.includes(child.key)">
+                                        <th class="border border-gray-300 px-2 py-1.5 text-center text-xs font-semibold text-white"
+                                            :class="child.bgColor || 'bg-blue-600'"
+                                            :style="child.width ? 'width: ' + child.width : ''"
+                                            :title="child.parent_label + ' → ' + child.label + ' (Key: ' + child.key + ')'"
+                                            x-text="useFullLabels && child.full_label ? child.full_label : child.label">
+                                        </th>
+                                    </template>
                                 </template>
                             </tr>
                         </template>
@@ -391,14 +397,15 @@
                                         </div>
                                     </div>
 
-                                    <!-- Validation Compliance Section -->
-                                    <div x-show="summary.validation_compliance !== undefined" class="flex items-center gap-3">
+                                    <!-- Compliance Data Section -->
+                                    <div x-show="summary.compliance_entries !== undefined" class="flex items-center gap-3">
                                         <div>
-                                            <span class="text-slate-600 font-medium text-xs uppercase tracking-wide">Tingkat Kebenaran Data yg Dikumpulkan</span>
-                                            <span class="font-bold text-lg ml-2" :class="summary.validation_compliance >= 80 ? 'text-green-700' : 'text-red-700'" x-text="summary.validation_compliance + '%'"></span>
+                                            <span class="text-slate-600 font-medium text-xs uppercase tracking-wide">Jumlah Data Sesuai/Patuh</span>
+                                            <span class="font-bold text-lg ml-2 text-green-700" x-text="summary.compliance_entries"></span>
                                             <span class="text-xs text-slate-500 ml-2">
-                                                (<span class="text-green-600 font-semibold" x-text="summary.valid_entries"></span> benar,
-                                                <span class="text-red-600 font-semibold" x-text="summary.invalid_entries"></span> salah)
+                                                (<span class="text-green-600 font-semibold" x-text="summary.compliance_entries"></span> sesuai,
+                                                <span class="text-red-600 font-semibold" x-text="summary.non_compliance_entries"></span> tidak sesuai,
+                                                dari <span class="text-slate-700 font-semibold" x-text="summary.total_entries"></span> total)
                                             </span>
                                         </div>
                                     </div>
@@ -428,17 +435,17 @@
 
                     <!-- Main Formula -->
                     <div class="my-3 text-base">
-                        $$\text{VALIDASI} = \frac{\sum \text{ITEM YANG VALID}}{\sum \text{YANG DI VALIDATOR}} \times 100\%$$
+                        $$\text{VALIDASI} = \frac{\sum \text{YANG VALID}}{\sum \text{YANG TERVALIDASI}} \times 100\%$$
                     </div>
 
                     <!-- Calculation Result -->
                     <div class="mt-3 text-sm text-gray-700">
-                        VALIDASI = <span x-text="summary.valid_entries || 0"></span>/<span x-text="summary.total_entries || 0"></span> X 100% = <span class="font-semibold" x-text="summary.validation_compliance !== undefined ? summary.validation_compliance + '%' : '0%'"></span>
+                        VALIDASI = <span x-text="summary.valid_entries || 0"></span>/<span x-text="summary.validated_entries || 0"></span> X 100% = <span class="font-semibold" x-text="summary.validated_entries > 0 ? ((summary.valid_entries / summary.validated_entries) * 100).toFixed(2) + '%' : 'N/A'"></span>
                     </div>
 
                     <!-- Interpretation -->
                     <div class="text-center text-sm text-gray-700 mt-1">
-                        Hasil validasi didapatkan data yang dilakukan validasi mencapai <span class="font-semibold" x-text="summary.validation_compliance !== undefined ? summary.validation_compliance + '%' : '0%'"></span>
+                        Dari <span class="font-semibold" x-text="summary.validated_entries || 0"></span> data yang telah divalidasi, sebanyak <span class="font-semibold" x-text="summary.valid_entries || 0"></span> data menunjukkan hasil yang valid dengan tingkat validasi <span class="font-semibold" x-text="summary.validated_entries > 0 ? ((summary.valid_entries / summary.validated_entries) * 100).toFixed(2) + '%' : 'N/A'"></span>
                     </div>
                 </div>
             </div>
@@ -477,17 +484,31 @@
 
         <!-- Footer & Signature -->
         <div class="mt-8 border-t-2 border-gray-300 pt-6">
-            <div class="flex justify-between mt-8">
-                <div class="text-center w-48 md:w-56">
-                    <div class="text-sm mb-16">Mengetahui,<br>Kepala Bagian Mutu</div>
-                    <div class="text-sm font-bold border-t-2 border-black pt-2">(...........................)</div>
-                </div>
-                <div class="text-center w-48 md:w-56">
-                    <div class="text-sm mb-16">
-                        <span x-text="metadata.period_label ? 'Jember, ' + new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : ''"></span>,<br>
-                        Penanggung Jawab
+            <div class="flex justify-between mt-8 gap-4">
+                <div class="text-center flex-1">
+                    <div class="text-sm mb-10 font-semibold"><br><br>Pengumpul Data</div>
+                    <div class="text-sm font-bold border-black pt-2">(...........................)</div>
+                    <div class="text-xs text-gray-600 mb-12 min-h-8">
+                        <div x-show="usersByUnit.pengumpul_data && usersByUnit.pengumpul_data.length > 0">
+                            <template x-for="user in usersByUnit.pengumpul_data" :key="'pengumpul-' + user.id">
+                                <div x-text="user.name"></div>
+                            </template>
+                        </div>
                     </div>
-                    <div class="text-sm font-bold border-t-2 border-black pt-2">(...........................)</div>
+                </div>
+                <div class="text-center flex-1">
+                    <div class="text-sm mb-2">
+                        <span x-text="metadata.period_label ? 'Jember, ' + new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : ''"></span>
+                    </div>
+                    <div class="text-sm mb-10 font-semibold">Validator Data / Penanggung Jawab</div>
+                    <div class="text-sm font-bold border-black pt-2">(...........................)</div>
+                    <div class="text-xs text-gray-600 mb-3 min-h-8">
+                        <div x-show="usersByUnit.validator && usersByUnit.validator.length > 0">
+                            <template x-for="user in usersByUnit.validator" :key="'validator-' + user.id">
+                                <div x-text="user.name"></div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -515,7 +536,9 @@
                 metadata: {},
                 summary: {},
                 userData: null,
+                usersByUnit: {},
                 showReporter: false,
+                showValidator: false,
                 showLegend: false,
                 useFullLabels: false,
                 printOrientation: 'landscape',
@@ -565,6 +588,7 @@
                         this.metadata = jsonData.metadata || {};
                         this.summary = jsonData.summary || {};
                         this.userData = jsonData.user || null;
+                        this.usersByUnit = jsonData.usersByUnit || {};
 
                         // Set table config
                         if (jsonData.tableConfig && jsonData.tableConfig.headers) {
@@ -653,6 +677,10 @@
                             if (header.key === 'submitted_by_name' && !this.showReporter) {
                                 return;
                             }
+                            // Skip validator column if not showing
+                            if (header.key === 'validated_by_name' && !this.showValidator) {
+                                return;
+                            }
                             this.displayColumns.push(header.key);
                         }
                     });
@@ -663,6 +691,7 @@
                     if (!this.tableConfig || !this.tableConfig.headers) return;
 
                     // Loop semua headers dan flatten children-nya ke single array
+                    // Filter hanya children yang parent-nya ada di displayColumns
                     this.tableConfig.headers.forEach(header => {
                         if (header.children && Array.isArray(header.children)) {
                             header.children.forEach(child => {

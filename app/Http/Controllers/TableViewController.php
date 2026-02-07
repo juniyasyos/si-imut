@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
+use App\Models\User;
 use App\Models\LaporanImutAutoGenerationSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +70,7 @@ class TableViewController extends Controller
                 'formTemplate.imutProfile.imutData',
                 'unitKerja',
                 'submittedBy',
+                'validator',
                 'fieldResponses.formField.options'
             ])
             ->whereBetween('report_date', [$startDate, $endDate]);
@@ -111,7 +113,7 @@ class TableViewController extends Controller
         $formTemplate = $entries->first()->formTemplate;
 
         // Build table configuration from form fields
-        $tableConfig = $this->buildTableConfig($formTemplate);
+        $tableConfig = $this->buildTableConfig($formTemplate, $entries);
 
         // Transform entries to table data
         $tableData = $this->transformEntriesToTableData($entries, $formTemplate);
@@ -126,11 +128,15 @@ class TableViewController extends Controller
             $entries->first()->unitKerja
         );
 
-        // Build summary
-        $summary = $this->buildSummary($entries, $formTemplate);
+        // Build summary (pass tableData which contains validation_status)
+        $summary = $this->buildSummary($tableData, $entries, $formTemplate);
+
+        // Get users (pengumpul data & validator) berdasarkan unit kerja laporan
+        $reportUnitKerja = $entries->first()->unitKerja;
+        $usersByUnit = $this->getUsersByUnit($reportUnitKerja);
 
         return response()->json([
-            'tableTitle' => $metadata['imut_profile'] ?? 'Data Laporan Harian',
+            'tableTitle' => $metadata['imut_data'] ?? 'Data Laporan Harian',
             'tableDescription' => sprintf(
                 'Menampilkan %d data laporan harian %s periode %s',
                 $entries->count(),
@@ -142,13 +148,14 @@ class TableViewController extends Controller
             'metadata' => $metadata,
             'summary' => $summary,
             'user' => $this->getUserInfo($user),
+            'usersByUnit' => $usersByUnit,
         ]);
     }
 
     /**
      * Build table configuration from form template
      */
-    private function buildTableConfig(FormTemplate $formTemplate): array
+    private function buildTableConfig(FormTemplate $formTemplate, $entries = null): array
     {
         $headers = [];
         $fieldCounter = 0; // Counter untuk field (A, B, C...)
@@ -219,7 +226,7 @@ class TableViewController extends Controller
             // Time duration fields
             elseif ($fieldType === 'time_duration') {
                 $headers[] = [
-                    'label' => $field->field_label,
+                    'label' => $field->field_label . ' (Jam:Menit)',
                     'bgColor' => 'bg-blue-800',
                     'children' => [
                         [
@@ -237,12 +244,57 @@ class TableViewController extends Controller
                             'width' => '100px',
                         ],
                         [
+                            'key' => $field->field_key . '_duration',
+                            'label' => 'Selisih',
+                            'align' => 'center',
+                            'bgColor' => 'bg-blue-600',
+                            'width' => '100px',
+                        ],
+                        [
                             'key' => $field->field_key . '_valid',
                             'label' => 'Sesuai',
                             'align' => 'center',
                             'bgColor' => 'bg-blue-600',
                             'format' => 'checkbox',
                             'width' => '80px',
+                        ],
+                    ],
+                ];
+            }
+            // Time range fields
+            elseif ($fieldType === 'time_range') {
+                // Extract boundary times from first entry for header label
+                $boundaryLabel = '(Jam Kerja)';
+                if ($entries && $entries->count() > 0) {
+                    $firstEntry = $entries->first();
+                    $firstResponse = $firstEntry->fieldResponses->firstWhere('form_field_id', $field->id);
+                    if ($firstResponse && is_array($firstResponse->field_value)) {
+                        $startTime = $firstResponse->field_value['start_time'] ?? null;
+                        $endTime = $firstResponse->field_value['end_time'] ?? null;
+                        if ($startTime && $endTime) {
+                            $boundaryLabel = "({$startTime} - {$endTime})";
+                        }
+                    }
+                }
+
+                $headers[] = [
+                    'label' => $field->field_label . ' ' . $boundaryLabel,
+                    'bgColor' => 'bg-blue-800',
+                    'children' => [
+                        [
+                            'key' => $field->field_key . '_input_value',
+                            'label' => 'Waktu',
+                            'align' => 'center',
+                            'bgColor' => 'bg-blue-600',
+                            'width' => '100px',
+                        ],
+                        [
+                            'key' => $field->field_key . '_valid_indicator',
+                            'label' => 'Sesuai',
+                            'align' => 'center',
+                            'bgColor' => 'bg-blue-600',
+                            'format' => 'checkbox',
+                            'width' => '100px',
                         ],
                     ],
                 ];
@@ -272,11 +324,28 @@ class TableViewController extends Controller
         // Add validation compliance
         $headers[] = [
             'key' => 'validation_status',
-            'label' => 'Pengumpul Data',
+            'label' => 'Status Kepatuhan',
             'align' => 'center',
             'bgColor' => 'bg-green-700',
             'format' => 'checkbox',
             'width' => '120px',
+        ];
+        // Add validation status column
+        $headers[] = [
+            'key' => 'is_validated',
+            'label' => 'Tervalidasi',
+            'align' => 'center',
+            'bgColor' => 'bg-yellow-700',
+            'width' => '130px',
+        ];
+
+        // Add validator name column
+        $headers[] = [
+            'key' => 'validated_by_name',
+            'label' => 'Validator',
+            'align' => 'left',
+            'bgColor' => 'bg-yellow-700',
+            'width' => '150px',
         ];
 
         // Build legend for multi-select fields
@@ -329,10 +398,16 @@ class TableViewController extends Controller
             ->get();
 
         foreach ($entries as $index => $entry) {
+            // Pre-calculate validation status based on field responses - REMOVE THIS UNUSED LOGIC
+            // Will be recalculated later using consistent compliance_score logic
+            $totalFieldResponses = $entry->fieldResponses->count();
+
             $row = [
                 'no' => $index + 1,
                 'report_date' => $entry->report_date->format('Y-m-d'),
                 'submitted_by_name' => $entry->submittedBy?->name ?? '-',
+                'is_validated' => $entry->validation_status === 'valid' ? '✓' : ($entry->validation_status === 'invalid' ? '✗' : '—'),
+                'validated_by_name' => $entry->validator?->name ?? '-',
             ];
 
             // Build responses array from fieldResponses relation
@@ -400,6 +475,20 @@ class TableViewController extends Controller
                         $row[$fieldKey . '_end'] = $fieldValue['end_time'] ?? '-';
                         $row[$fieldKey . '_valid'] = $fieldValue['valid_indicator'] ?? 0;
 
+                        // Calculate duration
+                        $duration = '-';
+                        if (!empty($fieldValue['start_time']) && !empty($fieldValue['end_time'])) {
+                            try {
+                                $start = Carbon::createFromFormat('H:i', $fieldValue['start_time']);
+                                $end = Carbon::createFromFormat('H:i', $fieldValue['end_time']);
+                                $diff = $start->diff($end);
+                                $duration = sprintf('%02d:%02d', $diff->h, $diff->i);
+                            } catch (\Exception $e) {
+                                $duration = '-';
+                            }
+                        }
+                        $row[$fieldKey . '_duration'] = $duration;
+
                         // Log validation logic for time duration
                         // Log::info('Time duration validation logic', [
                         //     'entry_id' => $entry->id,
@@ -414,6 +503,7 @@ class TableViewController extends Controller
                         $row[$fieldKey . '_start'] = '-';
                         $row[$fieldKey . '_end'] = '-';
                         $row[$fieldKey . '_valid'] = 0;
+                        $row[$fieldKey . '_duration'] = '-';
 
                         // // Log when field value is not an array
                         // Log::info('Time duration field value is not an array', [
@@ -424,6 +514,17 @@ class TableViewController extends Controller
                         // ]);
                     }
                 }
+                // Time range
+                elseif ($fieldType === 'time_range') {
+                    if (is_array($fieldValue)) {
+                        // Display user input time (not the boundary range)
+                        $row[$fieldKey . '_input_value'] = $fieldValue['input_value'] ?? '-';
+                        $row[$fieldKey . '_valid_indicator'] = $fieldValue['valid_indicator'] ?? 0;
+                    } else {
+                        $row[$fieldKey . '_input_value'] = '-';
+                        $row[$fieldKey . '_valid_indicator'] = 0;
+                    }
+                }
                 // Simple fields
                 else {
                     $row[$fieldKey] = $fieldValue;
@@ -431,21 +532,40 @@ class TableViewController extends Controller
             }
 
             // Add validation status from fieldResponses
-            // Check if all field responses have compliance_score > 0
-            $validCount = $entry->fieldResponses->where('compliance_score', '>', 0)->count();
-            $totalCount = $entry->fieldResponses->count();
-            $row['validation_status'] = ($totalCount > 0 && $validCount === $totalCount) ? 1 : 0;
+            // PERBAIKAN: Check HANYA field yang berkontribusi pada compliance scoring
+            // (Bukan field text/number yang hanya untuk data support)
+
+            $complianceScorableFieldResponses = $entry->fieldResponses->filter(function ($fr) {
+                $fieldType = $fr->formField?->field_type;
+                // Hanya include field types yang berkontribusi pada compliance score
+                return $this->isComplianceScoringFieldType($fieldType);
+            });
+
+            if ($complianceScorableFieldResponses->isEmpty()) {
+                // Tidak ada compliance-scoring field, dianggap valid by default
+                $row['validation_status'] = 1;
+            } else {
+                // Check apakah SEMUA compliance-scoring field memiliki compliance_score > 0
+                $validCount = $complianceScorableFieldResponses->where('compliance_score', '>', 0)->count();
+                $totalCount = $complianceScorableFieldResponses->count();
+                $row['validation_status'] = ($validCount === $totalCount) ? 1 : 0;
+            }
 
             // // Log validation status for each entry
-            // Log::info('Entry validation status', [
+            // Log::info('Entry validation status & compliance-scoring fields analysis', [
             //     'entry_id' => $entry->id,
             //     'report_date' => $entry->report_date->format('Y-m-d'),
-            //     'total_field_responses' => $totalCount,
-            //     'valid_field_responses' => $validCount,
+            //     'total_field_responses' => $entry->fieldResponses->count(),
+            //     'compliance_scoring_fields' => $complianceScorableFieldResponses->count(),
+            //     'valid_compliance_fields' => $complianceScorableFieldResponses->where('compliance_score', '>', 0)->count(),
             //     'validation_status' => $row['validation_status'],
             //     'field_responses_details' => $entry->fieldResponses->map(function ($fr) {
+            //         $fieldType = $fr->formField?->field_type;
             //         return [
             //             'field_key' => $fr->formField?->field_key,
+            //             'field_type' => $fieldType,
+            //             'contributes_to_compliance' => $this->isComplianceScoringFieldType($fieldType),
+            //             'field_value' => $fr->field_value,
             //             'is_valid' => $fr->is_valid,
             //             'compliance_score' => $fr->compliance_score,
             //         ];
@@ -507,10 +627,19 @@ class TableViewController extends Controller
 
     /**
      * Build summary statistics
+     * 
+     * Compliance Data (dari validation_status di tableData):
+     *   - compliance_entries = count validation_status = 1 (sesuai/patuh)
+     *   - non_compliance_entries = count validation_status = 0 (tidak sesuai/patuh)
+     * 
+     * Validation Data (dari is_validated di database):
+     *   - valid_entries = count validation_status dalam DB = 'valid' (✓)
+     *   - validated_entries = count validation_status = 'valid' OR 'invalid' (✓ + ✗)
+     *   - — diabaikan
      */
-    private function buildSummary($entries, FormTemplate $formTemplate): array
+    private function buildSummary($tableData, $entries, FormTemplate $formTemplate): array
     {
-        $totalEntries = $entries->count();
+        $totalEntries = count($tableData);
         $formFields = $formTemplate->formFields()->with('options')->get();
 
         $summary = [
@@ -550,18 +679,48 @@ class TableViewController extends Controller
             }
         }
 
-        // Calculate overall validation compliance
-        $validEntries = $entries->filter(function ($entry) {
-            $validCount = $entry->fieldResponses->where('compliance_score', '>', 0)->count();
-            $totalCount = $entry->fieldResponses->count();
-            return $totalCount > 0 && $validCount === $totalCount;
-        })->count();
+        // ===== COMPLIANCE DATA (dari validation_status di tableData) =====
+        // Hitung dari kolom validation_status (1=sesuai, 0=tidak sesuai)
+        // INDEPENDEN dari is_validated (tervalidasi atau tidak)
+        $complianceEntries = 0;    // validation_status = 1
+        $nonComplianceEntries = 0; // validation_status = 0
 
-        if ($totalEntries > 0) {
-            $summary['validation_compliance'] = round(($validEntries / $totalEntries) * 100, 2);
-            $summary['valid_entries'] = $validEntries;
-            $summary['invalid_entries'] = $totalEntries - $validEntries;
+        foreach ($tableData as $row) {
+            if (isset($row['validation_status'])) {
+                if ($row['validation_status'] == 1) {
+                    $complianceEntries++;
+                } else {
+                    $nonComplianceEntries++;
+                }
+            }
         }
+
+        // ===== VALIDATION DATA (dari is_validated dalam database) =====
+        // Count entries berdasarkan database validation_status field:
+        // - 'valid' = ✓ (valid_entries)
+        // - 'invalid' = ✗ (tidak valid tapi sudah divalidasi)
+        // - lainnya = — (belum divalidasi / abaikan)
+        $validEntries = 0;
+        $validatedEntries = 0;
+
+        foreach ($entries as $entry) {
+            if ($entry->validation_status === 'valid') {
+                $validEntries++;
+                $validatedEntries++;
+            } elseif ($entry->validation_status === 'invalid') {
+                $validatedEntries++;
+            }
+        }
+
+        // Set summary with all metrics
+        // Compliance metrics (dari validation_status di tableData)
+        $summary['compliance_entries'] = $complianceEntries;       // Jumlah sesuai/patuh
+        $summary['non_compliance_entries'] = $nonComplianceEntries; // Jumlah tidak sesuai/patuh
+
+        // Validation metrics (dari is_validated dalam database)
+        $summary['valid_entries'] = $validEntries;        // Jumlah ✓
+        $summary['validated_entries'] = $validatedEntries; // Jumlah ✓ + ✗
+        $summary['total_entries'] = $totalEntries;        // Semua entries
 
         return $summary;
     }
@@ -576,6 +735,82 @@ class TableViewController extends Controller
             'unit_kerja' => $user?->unitKerjas()->first()?->unit_name,
             'is_admin' => $user && (str_contains($user->email ?? '', 'admin') || $user->hasRole('super_admin')),
         ];
+    }
+
+    /**
+     * Get pengumpul data & validator berdasarkan unit kerja
+     */
+    private function getUsersByUnit($unitKerja): array
+    {
+        if (!$unitKerja) {
+            return [
+                'pengumpul_data' => [],
+                'validator' => [],
+            ];
+        }
+
+        // Get semua user yang active
+        $allUsers = User::with('roles', 'unitKerjas')
+            ->where('status', 'active')
+            ->get();
+
+        $pengumpulData = [];
+        $validator = [];
+
+        foreach ($allUsers as $user) {
+            // Get user's units
+            $userUnits = $user->unitKerjas->pluck('id')->toArray();
+
+            // Check if user termasuk dalam unit laboratorium ini
+            if (!in_array($unitKerja->id, $userUnits)) {
+                continue; // Skip user yang tidak dari unit ini
+            }
+
+            $roles = $user->roles->pluck('name')->toArray();
+
+            // Check if user has pengumpul_data role
+            if (in_array('pengumpul_data', $roles)) {
+                $pengumpulData[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ];
+            }
+
+            // Check if user has validator_pic or validator role
+            if (in_array('validator_pic', $roles) || in_array('validator', $roles)) {
+                $validator[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ];
+            }
+        }
+
+        return [
+            'pengumpul_data' => $pengumpulData,
+            'validator' => $validator,
+            'unit_kerja_id' => $unitKerja->id,
+            'unit_kerja_name' => $unitKerja->unit_name,
+        ];
+    }
+
+    /**
+     * Check if field type contributes to compliance scoring
+     * (NOT just for data collection)
+     */
+    private function isComplianceScoringFieldType(string $fieldType): bool
+    {
+        return in_array($fieldType, [
+            'boolean',
+            'single_select',
+            'multi_select',
+            'conditional_trigger',
+            'compliance_checker',
+            'time_duration',
+            'time_range',
+            'rating_scale',
+        ]);
     }
 
     /**

@@ -104,8 +104,10 @@ trait ReportManagementTrait
 
     /**
      * Toggle validation status of a report
+     * @param int $reportId
+     * @param string|null $status - 'valid', 'invalid', or null to clear
      */
-    public function toggleValidation(int $reportId, string $status): void
+    public function toggleValidation(int $reportId, ?string $status = null): void
     {
         $report = \App\Models\DailyReportResponse::findOrFail($reportId);
 
@@ -116,23 +118,34 @@ trait ReportManagementTrait
             return;
         }
 
-        // Validate status parameter
-        if (!in_array($status, ['valid', 'invalid'])) {
+        // Validate status parameter - allow null for clearing
+        if ($status !== null && !in_array($status, ['valid', 'invalid'])) {
             $this->addError('validation', 'Status validasi tidak valid.');
             return;
         }
 
         try {
-            $report->update([
-                'validation_status' => $status,
-                'validated_by' => $user->id,
-                'validated_at' => now(),
-            ]);
+            if ($status === null) {
+                // Clear validation
+                $report->update([
+                    'validation_status' => null,
+                    'validated_by' => null,
+                    'validated_at' => null,
+                ]);
+                $statusText = 'dihapus';
+            } else {
+                // Set validation
+                $report->update([
+                    'validation_status' => $status,
+                    'validated_by' => $user->id,
+                    'validated_at' => now(),
+                ]);
+                $statusText = $status === 'valid' ? 'valid' : 'tidak valid';
+            }
 
             // Refresh slide-over data
             $this->loadDailyReports();
 
-            $statusText = $status === 'valid' ? 'valid' : 'tidak valid';
             \Filament\Notifications\Notification::make()
                 ->title('Status Validasi Diubah')
                 ->body('Laporan berhasil ditandai sebagai ' . $statusText)

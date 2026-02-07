@@ -106,10 +106,13 @@ class ComplianceCalculatorService
                         default:
                             $fieldScore = $field->compliance_weight; // Default to full score if filled
                     }
-                } else if ($field->is_critical_field && $field->validation_config['required'] ?? false) {
-                    $warnings[] = "❌ Field kritis '{$field->field_label}' wajib diisi. Jawaban Anda tidak memenuhi standar compliance.";
-                    if ($formTemplate->auto_fail_on_critical) {
-                        $autoFail = true;
+                } else if ($field->is_critical_field) {
+                    $validationConfig = is_array($field->validation_config) ? $field->validation_config : [];
+                    if ($validationConfig['required'] ?? false) {
+                        $warnings[] = "❌ Field kritis '{$field->field_label}' wajib diisi. Jawaban Anda tidak memenuhi standar compliance.";
+                        if ($formTemplate->auto_fail_on_critical) {
+                            $autoFail = true;
+                        }
                     }
                 }
 
