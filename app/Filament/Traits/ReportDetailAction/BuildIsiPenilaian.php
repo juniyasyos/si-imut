@@ -37,13 +37,52 @@ trait BuildIsiPenilaian
                 $form->fill($this->getPenilaianFormFillData($record));
             })
             ->form(function () use ($livewireComponent) {
+                // Get record to build table view parameters
+                $record = $livewireComponent->record ?? null;
+                $formTemplateId = null;
+                $imutProfileId = null;
+                $unitKerjaId = null;
+                $period = null;
+
+                if ($record) {
+                    $formTemplateId = optional($record->profile)->formTemplates()->first()?->id;
+                    $imutProfileId = optional($record->profile)->id;
+                    $unitKerjaId = optional($record->laporanUnitKerja)->unit_kerja_id;
+                    $laporan = optional($record->laporanUnitKerja)->laporanImut;
+                    if ($laporan) {
+                        $period = sprintf('%04d-%02d', $laporan->report_year, $laporan->report_month);
+                    }
+                }
+
                 return [
                     Section::make('Perhitungan')
                         ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
                         ->columns(3),
 
                     Section::make('Unggah Bukti Pendukung')
+                        ->visible(function (callable $get) {
+                            // Show section only if there's media
+                            return !empty($get('document_upload'));
+                        })
+                        ->disabled(true)
                         ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
+
+                    Section::make('Data Pendukung')
+                        ->visible(function (callable $get) {
+                            // Show this section only if there's NO media
+                            return empty($get('document_upload'));
+                        })
+                        ->description('Tidak ada dokumen pendukung. Lihat data laporan harian untuk informasi lebih detail.')
+                        ->schema([
+                            \Filament\Forms\Components\View::make('filament.forms.components.alternative-data-section')
+                                ->columnSpanFull()
+                                ->viewData([
+                                    'formTemplateId' => $formTemplateId,
+                                    'imutProfileId' => $imutProfileId,
+                                    'unitKerjaId' => $unitKerjaId,
+                                    'period' => $period,
+                                ]),
+                        ]),
 
                     Section::make('Analisis dan Rekomendasi')
                         ->schema($this->buildAnalysisSchemaForAction($livewireComponent)),
@@ -221,5 +260,33 @@ trait BuildIsiPenilaian
         ];
 
         $penilaian->update($update);
+    }
+
+    /**
+     * Build table view URL for a record
+     */
+    protected function buildTableViewUrl($record): string
+    {
+        $formTemplateId = optional($record->profile)->formTemplates()->first()?->id;
+        $imutProfileId = optional($record->profile)->id;
+        $unitKerjaId = optional($record->laporanUnitKerja)->unit_kerja_id;
+        $laporan = optional($record->laporanUnitKerja)->laporanImut;
+
+        $url = route('table-view');
+        if ($formTemplateId) {
+            $params = ['form_template_id' => $formTemplateId];
+            if ($imutProfileId) {
+                $params['imut_profile_id'] = $imutProfileId;
+            }
+            if ($unitKerjaId) {
+                $params['unit_kerja_id'] = $unitKerjaId;
+            }
+            if ($laporan) {
+                $params['period'] = sprintf('%04d-%02d', $laporan->report_year, $laporan->report_month);
+            }
+            $url .= '?' . http_build_query($params);
+        }
+
+        return $url;
     }
 }

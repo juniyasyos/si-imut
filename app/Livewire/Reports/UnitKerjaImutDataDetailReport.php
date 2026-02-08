@@ -4,6 +4,7 @@ namespace App\Livewire\Reports;
 
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Models\ImutCategory;
+use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\UnitKerja;
@@ -283,6 +284,51 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         $end = Carbon::parse($this->laporan->assessment_period_end);
 
         return $today->betweenIncluded($start, $end);
+    }
+
+    public function openTableView(): void
+    {
+        if (!$this->laporanId || !$this->unitKerjaId) {
+            return;
+        }
+
+        // Get first imut penilaian dengan relasi profile
+        $penilaian = ImutPenilaian::query()
+            ->whereHas('laporanUnitKerja', function ($query) {
+                $query->where('laporan_imut_id', $this->laporanId)
+                    ->where('unit_kerja_id', $this->unitKerjaId);
+            })
+            ->with(['profile.formTemplates', 'laporanUnitKerja.laporanImut'])
+            ->first();
+
+        if (!$penilaian || !$penilaian->profile) {
+            return;
+        }
+
+        // Get form template dari profile
+        $formTemplate = $penilaian->profile->formTemplates()->first();
+        if (!$formTemplate) {
+            return;
+        }
+
+        // Build period dari laporan
+        $laporan = $penilaian->laporanUnitKerja->laporanImut;
+        if (!$laporan) {
+            return;
+        }
+
+        $period = sprintf('%04d-%02d', $laporan->report_year, $laporan->report_month);
+
+        // Build URL dengan parameter yang aman
+        $params = [
+            'form_template_id' => $formTemplate->id,
+            'imut_profile_id' => $penilaian->profile->id,
+            'unit_kerja_id' => $this->unitKerjaId,
+            'period' => $period,
+        ];
+
+        $url = route('table-view') . '?' . http_build_query($params);
+        $this->dispatch('openUrlInNewTab', $url);
     }
 
     public function render()

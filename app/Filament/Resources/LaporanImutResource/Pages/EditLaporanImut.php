@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Filament\Resources\LaporanImutResource;
+use App\Jobs\CalculateLaporanFromDailyReports;
 use App\Jobs\ProsesPenilaianImut;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
-use App\Services\DailyReportAggregationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Actions\Action as FormAction;
@@ -355,28 +355,16 @@ class EditLaporanImut extends EditRecord
                 ->modalSubmitActionLabel('Ya, Hitung Sekarang')
                 ->modalIcon('heroicon-o-calculator')
                 ->action(function () use ($laporan) {
-                    try {
-                        $service = app(DailyReportAggregationService::class);
-                        $results = $service->calculateForLaporan($laporan);
+                    // Dispatch job to queue
+                    CalculateLaporanFromDailyReports::dispatch($laporan->id);
 
-                        $totalPenilaian = $results['total_penilaians'];
-                        $calculatedCount = $results['calculated'];
-                        $skippedCount = $results['skipped'];
-
-                        Notification::make()
-                            ->title('✅ Perhitungan Berhasil')
-                            ->body("Berhasil menghitung {$calculatedCount} dari {$totalPenilaian} penilaian.\n{$skippedCount} penilaian tidak memiliki data daily report.")
-                            ->success()
-                            ->duration(8000)
-                            ->send();
-                    } catch (\Exception $e) {
-                        Notification::make()
-                            ->title('❌ Perhitungan Gagal')
-                            ->body('Terjadi kesalahan: ' . $e->getMessage())
-                            ->danger()
-                            ->persistent()
-                            ->send();
-                    }
+                    // Show queued notification
+                    Notification::make()
+                        ->title('⏳ Perhitungan Sedang Diproses')
+                        ->body("Laporan **{$laporan->name}** sedang dihitung. Anda akan menerima notifikasi ketika perhitungan selesai.")
+                        ->info()
+                        ->duration(5000)
+                        ->send();
                 })
                 ->visible(fn() => Gate::allows('update_laporan::imut')),
 

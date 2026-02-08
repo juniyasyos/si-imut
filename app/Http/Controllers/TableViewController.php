@@ -104,7 +104,7 @@ class TableViewController extends Controller
                 'tableDescription' => 'Tidak ada data untuk periode yang dipilih',
                 'tableConfig' => null,
                 'tableData' => [],
-                'metadata' => $this->buildMetadata($unitKerjaId, $period),
+                'metadata' => $this->buildMetadata($unitKerjaId, $period, $startDate, $endDate),
                 'user' => $this->getUserInfo($user),
             ]);
         }
