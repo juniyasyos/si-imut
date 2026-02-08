@@ -81,6 +81,7 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                     ->wrap()
                     ->lineClamp(2)
                     ->sortable()
+                    ->weight('medium')
                     ->searchable(query: function (EloquentBuilder $query, string $search) {
                         return $query->where('unit_kerja.unit_name', 'like', "%{$search}%");
                     }),

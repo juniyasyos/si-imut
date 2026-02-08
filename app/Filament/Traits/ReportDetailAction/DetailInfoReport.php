@@ -103,7 +103,7 @@ trait DetailInfoReport
         $livewireComponent = $this;
 
         return Action::make('detail_info')
-            ->label('Detail Info')
+            ->label('Detail Info Profil')
             ->icon('heroicon-o-information-circle')
             ->color('primary')
             ->slideOver()
