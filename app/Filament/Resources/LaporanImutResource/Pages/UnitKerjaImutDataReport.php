@@ -73,7 +73,29 @@ class UnitKerjaImutDataReport extends Page
 
     public function getTitle(): string
     {
-        return 'Summary Laporan Unit Kerja';
+        if ($this->unitKerja) {
+            return "Analisis Kinerja - Unit {$this->unitKerja->unit_name}";
+        }
+
+        return 'Analisis Data Unit Kerja';
+    }
+
+    public function getHeading(): string
+    {
+        return $this->getTitle();
+    }
+
+    public function getSubheading(): ?string
+    {
+        if (!$this->laporan) {
+            return null;
+        }
+
+        $startDate = $this->laporan->assessment_period_start?->format('d M Y');
+        $endDate = $this->laporan->assessment_period_end?->format('d M Y');
+        $status = ucfirst($this->laporan->status ?? '');
+
+        return "Periode: {$startDate} - {$endDate} | Status: {$status}";
     }
 
     protected function getFormStatePath(): string
