@@ -59,11 +59,19 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         $this->dispatch('$refresh');
     }
 
-    protected function loadLaporan(): void
+    /**
+     * Load laporan data.
+     *
+     * @return bool True if laporan was successfully loaded
+     */
+    protected function loadLaporan(): bool
     {
         if ($this->laporanId) {
             $this->laporan = LaporanImut::find($this->laporanId);
+            return $this->laporan !== null;
         }
+
+        return false;
     }
 
     public function refreshTable(): void
@@ -269,22 +277,38 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         return ! $this->isLaporanEditable();
     }
 
+    /**
+     * Check if the laporan is editable for analysis and recommendations.
+     *
+     * Logic:
+     * - During assessment period (up to end date): NOT editable
+     * - After end date: Editable within recommendation_analysis_duration days
+     *
+     * @return bool
+     */
     public function isLaporanEditable(): bool
     {
-        if (! $this->laporan) {
-            $this->loadLaporan();
-        }
-
-        if (! $this->laporan) {
+        // Ensure laporan is loaded
+        if (!$this->laporan && !$this->loadLaporan()) {
             return false;
         }
 
         $today = Carbon::today();
-        $start = Carbon::parse($this->laporan->assessment_period_start);
-        $end = Carbon::parse($this->laporan->assessment_period_end);
+        $endDate = Carbon::parse($this->laporan->assessment_period_end);
 
-        return $today->betweenIncluded($start, $end);
+        // During assessment period (including end date): not editable for analysis
+        if ($today->lte($endDate)) {
+            return false;
+        }
+
+        // After assessment period: editable within analysis duration window
+        $analysisDuration = $this->laporan->recommendation_analysis_duration ?? 0;
+        $analysisDeadline = $endDate->copy()->addDays($analysisDuration);
+
+        return $today->lte($analysisDeadline);
     }
+
+
 
     public function openTableView(): void
     {

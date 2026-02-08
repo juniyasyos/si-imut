@@ -159,6 +159,7 @@ trait BuildIsiPenilaian
                 ->required()
                 ->minLength(20)
                 ->maxLength(100000)
+                ->readOnly($shouldLock)
                 ->disabled(!$canRecommend)
                 ->rows(4)
                 ->live(onBlur: true)
