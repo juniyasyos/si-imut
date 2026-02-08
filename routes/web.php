@@ -22,22 +22,22 @@ Route::get('/api/table-data', [TableViewController::class, 'getData'])
     ->name('api.table-data');
 
 // Print Report Routes
-Route::prefix('print')->name('print.')->group(function () {
-    // Preview dengan dummy data
-    Route::get('/preview/imut-data-report', [PrintReportController::class, 'previewImutDataReport'])
-        ->name('preview.imut-data-report');
+// Route::prefix('print')->name('print.')->group(function () {
+//     // Preview dengan dummy data
+//     Route::get('/preview/imut-data-report', [PrintReportController::class, 'previewImutDataReport'])
+//         ->name('preview.imut-data-report');
 
-    Route::get('/preview/imut-indicator-report', [PrintReportController::class, 'previewImutIndicatorReport'])
-        ->name('preview.imut-indicator-report')
-        ->middleware(['auth', 'can:view_all_data_imut::data']);
+//     Route::get('/preview/imut-indicator-report', [PrintReportController::class, 'previewImutIndicatorReport'])
+//         ->name('preview.imut-indicator-report')
+//         ->middleware(['auth', 'can:view_all_data_imut::data']);
 
-    // Print real data (dengan laporan_id)
-    Route::get('/imut-data-report', [PrintReportController::class, 'printImutDataReport'])
-        ->name('imut-data-report');
+//     // Print real data (dengan laporan_id)
+//     Route::get('/imut-data-report', [PrintReportController::class, 'printImutDataReport'])
+//         ->name('imut-data-report');
 
-    Route::get('/imut-indicator-report', [PrintReportController::class, 'printImutIndicatorReport'])
-        ->name('imut-indicator-report');
-});
+//     Route::get('/imut-indicator-report', [PrintReportController::class, 'printImutIndicatorReport'])
+//         ->name('imut-indicator-report');
+// });
 
 Route::middleware(['web'])->group(function () {
     // Root route redirect

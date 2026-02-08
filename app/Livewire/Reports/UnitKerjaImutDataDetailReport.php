@@ -214,7 +214,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->placeholder('0.00')
                 ->nullable()
                 ->debounce(1000)
-                ->readOnly($shouldLock)
+                ->readOnly()
                 ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
 
             TextInput::make('denominator_value')
@@ -223,7 +223,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->placeholder('0.00')
                 ->nullable()
                 ->debounce(1000)
-                ->readOnly($shouldLock)
+                ->readOnly()
                 ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
 
             TextInput::make('result_operation')

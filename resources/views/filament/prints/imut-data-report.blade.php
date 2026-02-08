@@ -41,7 +41,7 @@
 
     <!-- Header -->
     <div class="header">
-        <div class="institution">SISTEM INFORMASI INDIKATOR MUTU</div>
+        <div class="institution">SISTEM INFORMASI INDIKATOR MUTU yaya</div>
         <h1>Laporan IMUT Per Laporan</h1>
         <h2>{{ $laporan->name }}</h2>
     </div>
