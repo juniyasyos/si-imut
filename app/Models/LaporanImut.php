@@ -26,6 +26,7 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * @property string $status
  * @property Carbon $assessment_period_start
  * @property Carbon $assessment_period_end
+ * @property int $recommendation_analysis_duration
  * @property int $created_by
  * @property-read User $createdBy
  * @property-read \Illuminate\Support\Collection|UnitKerja[] $unitKerjas
@@ -58,6 +59,7 @@ class LaporanImut extends Model
         'assessment_period_end',
         'report_month',
         'report_year',
+        'recommendation_analysis_duration',
         'created_by',
         'is_auto_generated',
     ];

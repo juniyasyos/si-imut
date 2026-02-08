@@ -56,29 +56,32 @@ class ProsesPenilaianImut implements ShouldQueue
                             continue;
                         }
 
+                        // VALIDASI: Cek apakah IMUT data benar-benar milik unit kerja
+                        $isValidOwnership = $unitKerja->imutData()
+                            ->where('imut_data.id', $imutData->id)
+                            ->exists();
+
+                        if (!$isValidOwnership) {
+                            Log::warning(
+                                "ProsesPenilaianImut [{$laporan->id}]: REJECTED '{$imutData->title}' - " .
+                                    "IMUT data ID {$imutData->id} NOT owned by unit '{$unitKerja->unit_name}'",
+                                ['unit_id' => $unitKerja->id]
+                            );
+                            continue;
+                        }
+
                         // Cari profil yang tepat untuk periode laporan ini
                         $selectedProfile = $this->findValidProfileForReport($imutData, $laporan);
 
-                        // if (! $selectedProfile) {
-                        //     $indikatorKurangProfil[] = $imutData->title;
-
-                        //     // Debug: Check why no profile found
-                        //     $profileCount = $imutData->profiles()->count();
-                        //     $validProfileCount = $imutData->profiles()
-                        //         ->validForPeriod($laporan->assessment_period_start, $laporan->assessment_period_end)
-                        //         ->count();
-
-                        //     Log::warning("ProsesPenilaianImut [{$laporan->id}]: No valid profile for '{$imutData->title}'", [
-                        //         'assessment_start' => $laporan->assessment_period_start?->toDateString(),
-                        //         'assessment_end' => $laporan->assessment_period_end?->toDateString(),
-                        //         'total_profiles' => $profileCount,
-                        //         'valid_profiles_for_period' => $validProfileCount,
-                        //         'imut_data_id' => $imutData->id
-                        //     ]);
-                        //     continue;
-                        // }
-
-                        // Log::info("ProsesPenilaianImut [{$laporan->id}]: ✓ Creating penilaian for '{$imutData->title}' with profile '{$selectedProfile->version}'");
+                        if (!$selectedProfile) {
+                            $indikatorKurangProfil[] = $imutData->title;
+                            Log::warning("ProsesPenilaianImut [{$laporan->id}]: No valid profile for '{$imutData->title}'", [
+                                'assessment_start' => $laporan->assessment_period_start?->toDateString(),
+                                'assessment_end' => $laporan->assessment_period_end?->toDateString(),
+                                'imut_data_id' => $imutData->id
+                            ]);
+                            continue;
+                        }
 
                         // Track profil yang digunakan untuk laporan ini
                         $this->trackSelectedProfile($laporan, $imutData, $selectedProfile, $profilTerpilih);
@@ -93,6 +96,12 @@ class ProsesPenilaianImut implements ShouldQueue
 
                 // Log profil yang digunakan untuk transparansi
                 $this->logSelectedProfiles($profilTerpilih, $laporan);
+
+                // CLEANUP: Hapus orphaned ImutPenilaian yang tidak konsisten
+                $cleanupResult = $this->cleanupOrphanedPenilaian($laporan);
+                if ($cleanupResult['cleaned'] > 0) {
+                    Log::info("ProsesPenilaianImut [{$laporan->id}]: Removed {$cleanupResult['cleaned']} orphaned records");
+                }
 
                 // Notifikasi ke pembuat laporan jika ada indikator tanpa profil
                 if (! empty($indikatorKurangProfil)) {
@@ -111,6 +120,52 @@ class ProsesPenilaianImut implements ShouldQueue
                 'exception' => $e,
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * CLEANUP: Hapus orphaned ImutPenilaian yang tidak konsisten dengan relasi unit kerja
+     */
+    private function cleanupOrphanedPenilaian(LaporanImut $laporan): array
+    {
+        try {
+            // Identifikasi dan hapus penilaian dengan IMUT data yang tidak milik unit kerja
+            // Gunakan NOT EXISTS untuk cek validasi dengan lebih clean
+            $orphanedIds = DB::table('laporan_unit_kerjas')
+                ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
+                ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
+                ->where('laporan_unit_kerjas.laporan_imut_id', $laporan->id)
+                ->whereNotExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('imut_data_unit_kerja')
+                        ->whereColumn('imut_data_unit_kerja.unit_kerja_id', 'laporan_unit_kerjas.unit_kerja_id')
+                        ->whereColumn('imut_data_unit_kerja.imut_data_id', 'imut_profil.imut_data_id');
+                })
+                ->pluck('imut_penilaians.id')
+                ->toArray();
+
+            if (empty($orphanedIds)) {
+                return ['cleaned' => 0, 'ids' => []];
+            }
+
+            // Hapus orphaned records
+            ImutPenilaian::whereIn('id', $orphanedIds)->delete();
+
+            Log::info("ProsesPenilaianImut [{$laporan->id}]: Cleaned up orphaned penilaian", [
+                'count' => count($orphanedIds),
+                'ids' => $orphanedIds
+            ]);
+
+            return [
+                'cleaned' => count($orphanedIds),
+                'ids' => $orphanedIds
+            ];
+        } catch (\Exception $e) {
+            Log::error("ProsesPenilaianImut [{$laporan->id}]: Cleanup failed", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return ['cleaned' => 0, 'ids' => []];
         }
     }
 

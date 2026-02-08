@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LaporanImutResource\Schema;
 
 use App\Filament\Resources\LaporanImutResource;
+use App\Models\LaporanImutAutoGenerationSetting;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
@@ -19,6 +20,13 @@ class LaporanImutSchema extends LaporanImutResource
 {
     public static function make(): array
     {
+        // Load setting untuk auto-generate period dan duration
+        $settings = LaporanImutAutoGenerationSetting::getInstance();
+
+        // Hitung assessment period dari setting (data entry duration)
+        $assessmentStart = now()->addDays($settings->data_entry_duration);
+        $assessmentEnd = $assessmentStart->copy()->endOfMonth();
+
         return [
             Section::make('Informasi Laporan')
                 ->description('Lengkapi data laporan di bawah ini.')
@@ -143,6 +151,23 @@ class LaporanImutSchema extends LaporanImutResource
                         ->default(fn() => Auth::id())
                         ->disabled()
                         ->columnSpanFull(),
+
+                    // NEW: Durasi Pengisian Analisis & Rekomendasi
+                    Section::make('📋 Pengaturan Timeline Pengisian')
+                        ->description('Durasi waktu yang tersedia untuk pengisian analisis dan rekomendasi.')
+                        ->columnSpanFull()
+                        ->schema([
+                            TextInput::make('recommendation_analysis_duration')
+                                ->label('Durasi Pengisian Analisis & Rekomendasi')
+                                ->numeric()
+                                ->minValue(1)
+                                ->maxValue(30)
+                                ->default($settings->recommendation_analysis_duration)
+                                ->required()
+                                ->suffix('hari')
+                                ->helperText('Jumlah hari yang tersedia untuk pengisian analisis dan rekomendasi setelah periode asesmen berakhir.')
+                                ->columnSpanFull(),
+                        ]),
 
                     Section::make('Pemilihan Unit Kerja')
                         ->description('Tentukan unit kerja yang berwenang melakukan penilaian indikator mutu pada periode laporan ini.')

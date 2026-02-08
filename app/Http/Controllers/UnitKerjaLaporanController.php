@@ -55,11 +55,21 @@ class UnitKerjaLaporanController extends Controller
         $allMonths = PeriodFilter::getMonthsInRange($dateRange['start'], $dateRange['end']);
 
         foreach ($imutDataItems as $imutData) {
+            // Get the active profile for this IMUT data
+            $profile = $imutData->profiles()
+                ->validForPeriod($dateRange['start'], $dateRange['end'])
+                ->orderBy('valid_from', 'desc')
+                ->first();
+
+            $targetValue = $profile?->target_value ?? 0;
+            $targetOperator = $profile?->target_operator ?? '>=';
+
             $imutDetail = [
                 'id' => $imutData->id,
                 'title' => $imutData->title,
                 'category' => $imutData->kategori?->name ?? 'Uncategorized',
-                'standard' => $imutData->imut_standard ?? 0,
+                'standard' => $targetValue,
+                'target_operator' => $targetOperator,
                 'data' => [],
             ];
 
@@ -84,13 +94,16 @@ class UnitKerjaLaporanController extends Controller
                             ? ($penilaian->numerator_value / $penilaian->denominator_value) * 100
                             : 0;
 
+                        // Determine status based on target operator
+                        $status = $this->checkTargetStatus($percentage, $targetValue, $targetOperator);
+
                         $imutDetail['data'][] = [
                             'month' => $month['value'],
                             'month_label' => $month['label'],
                             'numerator' => $penilaian->numerator_value ?? 0,
                             'denominator' => $penilaian->denominator_value ?? 0,
                             'percentage' => round($percentage, 2),
-                            'status' => $percentage >= $imutData->imut_standard ? 'achieved' : 'not-achieved',
+                            'status' => $status,
                         ];
                     } else {
                         $imutDetail['data'][] = [
@@ -123,6 +136,9 @@ class UnitKerjaLaporanController extends Controller
         // Prepare period label
         $periodLabel = PeriodFilter::formatPeriodLabel($tipe, $periode);
 
+        // Build chart data
+        $chartData = $this->buildChartData($dataByImut);
+
         return view('reports.unit-kerja-laporan', [
             'unit' => $unit,
             'tipe' => $tipe,
@@ -132,7 +148,57 @@ class UnitKerjaLaporanController extends Controller
             'dataByImut' => $dataByImut,
             'summary' => $summary,
             'allMonths' => $allMonths,
+            'chartData' => $chartData,
         ]);
+    }
+
+    /**
+     * Build chart data structure for JavaScript
+     */
+    private function buildChartData(array $dataByImut): array
+    {
+        $chartDataMap = [];
+
+        foreach ($dataByImut as $imut) {
+            $labels = [];
+            $percentages = [];
+
+            foreach ($imut['data'] as $dataPoint) {
+                $labels[] = $dataPoint['month_label'];
+                $percentages[] = $dataPoint['percentage'];
+            }
+
+            $chartDataMap['chart-' . $imut['id']] = [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pencapaian (%)',
+                        'data' => $percentages,
+                        'borderColor' => '#0284c7',
+                        'backgroundColor' => 'rgba(2, 132, 199, 0.1)',
+                        'borderWidth' => 2,
+                        'pointBackgroundColor' => '#0284c7',
+                        'pointBorderColor' => '#fff',
+                        'pointBorderWidth' => 2,
+                        'pointRadius' => 4,
+                        'pointHoverRadius' => 6,
+                        'tension' => 0.4,
+                        'fill' => true,
+                    ],
+                    [
+                        'label' => 'Target Standar',
+                        'data' => array_fill(0, count($imut['data']), $imut['standard']),
+                        'borderColor' => '#ef4444',
+                        'borderDash' => [5, 5],
+                        'borderWidth' => 2,
+                        'pointRadius' => 0,
+                        'fill' => false,
+                    ]
+                ]
+            ];
+        }
+
+        return $chartDataMap;
     }
 
     /**
@@ -175,5 +241,42 @@ class UnitKerjaLaporanController extends Controller
                 ? round(($totalNumerator / $totalDenominator) * 100, 2)
                 : 0,
         ];
+    }
+
+    /**
+     * Check if a value meets the target threshold based on operator
+     */
+    private function checkTargetStatus($value, $target, $operator): string
+    {
+        if ($target === 0 || $target === null) {
+            return 'no-data';
+        }
+
+        $achieved = false;
+
+        switch ($operator) {
+            case '>=':
+            case '≥':
+                $achieved = $value >= $target;
+                break;
+            case '>':
+                $achieved = $value > $target;
+                break;
+            case '<=':
+            case '≤':
+                $achieved = $value <= $target;
+                break;
+            case '<':
+                $achieved = $value < $target;
+                break;
+            case '=':
+            case '==':
+                $achieved = $value == $target;
+                break;
+            default:
+                $achieved = $value >= $target;
+        }
+
+        return $achieved ? 'achieved' : 'not-achieved';
     }
 }

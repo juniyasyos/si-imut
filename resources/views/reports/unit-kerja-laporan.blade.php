@@ -148,9 +148,9 @@
         @foreach ($dataByImut as $index => $imut)
         <div class="mb-9 border border-slate-200 rounded-lg overflow-hidden bg-white break-inside-avoid">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-5 py-4 border-b-2 border-blue-900">
+            <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-black px-5 py-4 border-b-2 border-blue-900">
                 <h3 class="text-sm font-bold mb-1">{{ $index + 1 }}. {{ $imut['title'] }}</h3>
-                <p class="text-xs text-blue-100">Kategori: {{ $imut['category'] }} | Target Standar: {{ $imut['standard'] }}%</p>
+                <p class="text-xs text-blue-100">Kategori: {{ $imut['category'] }} | Target Standar: {{ $imut['target_operator'] }} {{ $imut['standard'] }}%</p>
             </div>
 
             <!-- Content -->
@@ -161,11 +161,12 @@
                         <table class="w-full border-collapse text-xs">
                             <thead class="bg-slate-100 border-b-2 border-slate-300">
                                 <tr>
-                                    <th class="border border-slate-200 px-3 py-2 text-left font-semibold text-slate-700 w-1/5">Periode</th>
-                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/5">N</th>
-                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/5">D</th>
-                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/5">Persentase</th>
-                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/5">Status</th>
+                                    <th class="border border-slate-200 px-3 py-2 text-left font-semibold text-slate-700 w-1/6">Periode</th>
+                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/6">N</th>
+                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/6">D</th>
+                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/6">Persentase</th>
+                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/6">Nilai Standard</th>
+                                    <th class="border border-slate-200 px-3 py-2 text-center font-semibold text-slate-700 w-1/6">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -192,6 +193,7 @@
                                     <td class="border border-slate-200 px-3 py-2 text-center">{{ number_format($dataPoint['numerator']) }}</td>
                                     <td class="border border-slate-200 px-3 py-2 text-center">{{ number_format($dataPoint['denominator']) }}</td>
                                     <td class="border border-slate-200 px-3 py-2 text-right font-semibold">{{ number_format($dataPoint['percentage'], 2) }}%</td>
+                                    <td class="border border-slate-200 px-3 py-2 text-center font-semibold text-blue-600">{{ $imut['standard'] }}%</td>
                                     <td class="border border-slate-200 px-3 py-2 text-center">
                                         @if ($dataPoint['status'] === 'achieved')
                                         <span class="text-green-700 font-semibold">✓ Tercapai</span>
@@ -214,12 +216,39 @@
                                     $overallPercentage = $totalD > 0 ? ($totalN / $totalD) * 100 : 0;
                                     @endphp
                                     <td class="border border-slate-200 px-3 py-2 text-right">{{ number_format($overallPercentage, 2) }}%</td>
+                                    <td class="border border-slate-200 px-3 py-2 text-center font-semibold text-blue-600">{{ $imut['target_operator'] }} {{ $imut['standard'] }}%</td>
                                     <td class="border border-slate-200 px-3 py-2 text-center">
-                                        @if ($overallPercentage >= $imut['standard'])
-                                        <span class="text-green-700">✓ Tercapai</span>
-                                        @else
-                                        <span class="text-red-700">✗ Belum Tercapai</span>
-                                        @endif
+                                        @php
+                                        $achieved = false;
+                                        $operator = $imut['target_operator'] ?? '>=';
+                                        switch ($operator) {
+                                        case '>=':
+                                        case '≥':
+                                        $achieved = $overallPercentage >= $imut['standard'];
+                                        break;
+                                        case '>':
+                                        $achieved = $overallPercentage > $imut['standard'];
+                                        break;
+                                        case '<=':
+                                            case '≤' :
+                                            $achieved=$overallPercentage <=$imut['standard'];
+                                            break;
+                                            case '<' :
+                                            $achieved=$overallPercentage < $imut['standard'];
+                                            break;
+                                            case '=' :
+                                            case '==' :
+                                            $achieved=$overallPercentage==$imut['standard'];
+                                            break;
+                                            default:
+                                            $achieved=$overallPercentage>= $imut['standard'];
+                                            }
+                                            @endphp
+                                            @if ($achieved)
+                                            <span class="text-green-700">✓ Tercapai</span>
+                                            @else
+                                            <span class="text-red-700">✗ Belum Tercapai</span>
+                                            @endif
                                     </td>
                                 </tr>
                                 @endif
@@ -229,91 +258,9 @@
 
                     <!-- Chart -->
                     <div class="flex items-center justify-center min-h-[250px]">
-                        <canvas id="chart-{{ $imut['id'] }}" style="max-height: 250px;"></canvas>
+                        <canvas id="chart-{{ $imut['id'] }}" data-chart data-json='{{ json_encode($chartData['chart-' . $imut['id']] ?? []) }}' style="max-height: 250px;"></canvas>
                     </div>
                 </div>
-
-                <!-- Chart Script -->
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const ctx = document.getElementById('chart-{{ $imut['
-                            id '] }}');
-                        if (ctx) {
-                            const chartData = {
-                                labels: [
-                                    @foreach($imut['data'] as $dataPoint)
-                                    '{{ $dataPoint['
-                                    month_label '] }}',
-                                    @endforeach
-                                ],
-                                datasets: [{
-                                        label: 'Pencapaian (%)',
-                                        data: [
-                                            @foreach($imut['data'] as $dataPoint) {
-                                                {
-                                                    $dataPoint['percentage']
-                                                }
-                                            },
-                                            @endforeach
-                                        ],
-                                        borderColor: '#0284c7',
-                                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
-                                        borderWidth: 2,
-                                        pointBackgroundColor: '#0284c7',
-                                        pointBorderColor: '#fff',
-                                        pointBorderWidth: 2,
-                                        pointRadius: 4,
-                                        pointHoverRadius: 6,
-                                        tension: 0.4,
-                                        fill: true,
-                                    },
-                                    {
-                                        label: 'Target Standar',
-                                        data: Array({
-                                            {
-                                                count($imut['data'])
-                                            }
-                                        }).fill({
-                                            {
-                                                $imut['standard']
-                                            }
-                                        }),
-                                        borderColor: '#ef4444',
-                                        borderDash: [5, 5],
-                                        borderWidth: 2,
-                                        pointRadius: 0,
-                                        fill: false,
-                                    }
-                                ]
-                            };
-
-                            new Chart(ctx, {
-                                type: 'line',
-                                data: chartData,
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: true,
-                                    plugins: {
-                                        legend: {
-                                            position: 'top',
-                                        },
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            max: 100,
-                                            ticks: {
-                                                callback: function(value) {
-                                                    return value + '%';
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    });
-                </script>
             </div>
         </div>
         @endforeach
@@ -333,8 +280,8 @@
                 <li>N = Numerator (Pembilang): Jumlah kejadian yang memenuhi kriteria</li>
                 <li>D = Denominator (Penyebut): Jumlah total kejadian yang diobservasi</li>
                 <li>Persentase = (N / D) × 100%</li>
-                <li>Status Tercapai jika Persentase ≥ Standar IMUT</li>
-                <li>Target Standar untuk indikator ini adalah: <strong>{{ $imut['standard'] ?? 0 }}%</strong></li>
+                <li>Status Tercapai jika Persentase {{ $imut['target_operator'] ?? '>=' }} Target Standar</li>
+                <li>Target Standar untuk indikator ini adalah: <strong>{{ $imut['target_operator'] ?? '>=' }} {{ $imut['standard'] ?? 0 }}%</strong></li>
             </ul>
         </div>
 
@@ -365,6 +312,57 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Charts from data-json attribute
+            if (typeof Chart !== 'undefined') {
+                const canvases = document.querySelectorAll('[data-chart]');
+                console.log('Found', canvases.length, 'charts to render');
+
+                canvases.forEach(canvas => {
+                    const chartId = canvas.id;
+                    const dataJson = canvas.dataset.json;
+
+                    console.log('Processing chart:', chartId, 'Data:', dataJson);
+
+                    if (dataJson) {
+                        try {
+                            const chartData = JSON.parse(dataJson);
+                            console.log('Parsed chart data:', chartData);
+
+                            new Chart(canvas, {
+                                type: 'line',
+                                data: chartData,
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'top',
+                                        },
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            max: 100,
+                                            ticks: {
+                                                callback: function(value) {
+                                                    return value + '%';
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            console.log('Chart', chartId, 'initialized successfully');
+                        } catch (e) {
+                            console.error('Error initializing chart', chartId, e);
+                            console.error('Data was:', dataJson);
+                        }
+                    } else {
+                        console.warn('No data found for chart', chartId);
+                    }
+                });
+            }
+
             // Back button
             const backBtn = document.getElementById('backBtn');
             if (backBtn) {

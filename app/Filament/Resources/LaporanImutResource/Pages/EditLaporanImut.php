@@ -159,9 +159,14 @@ class EditLaporanImut extends EditRecord
      */
     protected function getUnitsWithDataBeingRemoved(): array
     {
-        // Get current form data
-        $formData = $this->form->getState();
-        $currentUnitKerjaIds = $formData['unitKerjas'] ?? [];
+        try {
+            // Use getRawState() to avoid validation errors when form is not fully filled
+            $formData = $this->form->getRawState();
+            $currentUnitKerjaIds = $formData['unitKerjas'] ?? [];
+        } catch (\Exception $e) {
+            // If getRawState() also fails, fall back to current record's unit kerjas
+            $currentUnitKerjaIds = $this->record->unitKerjas->pluck('id')->toArray();
+        }
 
         // Get original unit kerja IDs
         if (empty($this->originalUnitKerjaIds)) {
@@ -208,8 +213,14 @@ class EditLaporanImut extends EditRecord
      */
     protected function getUnitKerjaChanges(): array
     {
-        $formData = $this->form->getState();
-        $currentUnitKerjaIds = $formData['unitKerjas'] ?? [];
+        try {
+            // Use getRawState() to avoid validation errors when form is not fully filled
+            $formData = $this->form->getRawState();
+            $currentUnitKerjaIds = $formData['unitKerjas'] ?? [];
+        } catch (\Exception $e) {
+            // If getRawState() also fails, fall back to current record's unit kerjas
+            $currentUnitKerjaIds = $this->record->unitKerjas->pluck('id')->toArray();
+        }
 
         if (empty($this->originalUnitKerjaIds)) {
             $this->originalUnitKerjaIds = $this->record->unitKerjas->pluck('id')->toArray();

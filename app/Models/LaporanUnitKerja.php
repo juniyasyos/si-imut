@@ -131,15 +131,16 @@ class LaporanUnitKerja extends Model
     }
 
     /**
-     * Mengambil detail laporan berdasarkan data IMUT tertentu.
+     * Mengambil detail laporan berdasarkan data IMUT tertentu dengan validasi unit kerja.
      *
      * @param int $laporanId
      * @param int $imutDataId
+     * @param int|null $unitKerjaId - Validasi tambahan untuk memastikan data sesuai unit kerja
      * @return Builder
      */
-    public static function getReportByImutDataDetails(int $laporanId, int $imutDataId): Builder
+    public static function getReportByImutDataDetails(int $laporanId, int $imutDataId, ?int $unitKerjaId = null): Builder
     {
-        return (new ImutDataDetailReportQueryBuilder())->build($laporanId, $imutDataId);
+        return (new ImutDataDetailReportQueryBuilder())->build($laporanId, $imutDataId, $unitKerjaId);
     }
 
     /**
