@@ -28,7 +28,7 @@ class Login extends BaseLogin
 
         // If SSO is enabled, redirect to SSO login route
         $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
-        if ($ssoEnabled && route('sso.login') !== request()->url()) {
+        if ($ssoEnabled) {
             $this->redirect(route('sso.login'), navigate: false);
             return;
         }
@@ -48,7 +48,7 @@ class Login extends BaseLogin
         // Prevent custom login if SSO is enabled
         $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
         if ($ssoEnabled) {
-            $this->redirect(route('login'), navigate: false);
+            $this->redirect(route('sso.login'), navigate: false);
             return null;
         }
 

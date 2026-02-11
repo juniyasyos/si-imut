@@ -14,9 +14,9 @@ class Authenticate extends Middleware
     {
         if (! $request->expectsJson()) {
             // Check if IAM/SSO is enabled
-            if (config('iam.enabled', false)) {
+            if (config('iam.enabled', false) || env('USE_SSO', false)) {
                 // Redirect to SSO login
-                return route('iam.sso.login');
+                return route('sso.login');
             }
 
             // Check if Filament login exists
@@ -24,13 +24,8 @@ class Authenticate extends Middleware
                 return route('filament.siimut.auth.login');
             }
 
-            // Fallback to login route
-            if (\Illuminate\Support\Facades\Route::has('login')) {
-                return route('login');
-            }
-
-            // Last resort: return login path
-            return '/login';
+            // Fallback to sso login path (safe even if route not registered)
+            return '/sso/login';
         }
 
         return null;
