@@ -26,7 +26,8 @@ class Login extends BaseLogin
     {
         parent::mount();
 
-        // If SSO is enabled, redirect to SSO login route
+        // If SSO is enabled, redirect to SSO login route immediately
+        // This prevents any custom login form from being rendered
         $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
         if ($ssoEnabled) {
             $this->redirect(route('sso.login'), navigate: false);
@@ -46,10 +47,10 @@ class Login extends BaseLogin
     public function authenticate(): ?LoginResponse
     {
         // Prevent custom login if SSO is enabled
+        // This is a safeguard in case form submission happens despite redirect
         $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
         if ($ssoEnabled) {
-            $this->redirect(route('sso.login'), navigate: false);
-            return null;
+            return $this->redirect(route('sso.login'), navigate: false);
         }
 
         try {
