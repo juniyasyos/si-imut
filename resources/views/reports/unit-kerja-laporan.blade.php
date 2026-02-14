@@ -55,36 +55,14 @@
     @endphp
 
     <!-- Header dengan Logo (Formal Style) -->
-    <div class="border-b-2 border-gray-800 pb-4 mb-6">
-        <div class="flex items-start justify-between gap-4 md:gap-6 mb-3">
-            <!-- Logo Kiri -->
-            <div class="w-32 h-32 flex-shrink-0">
-                <img src="{{ asset('images/assets/logo-rs.webp') }}"
-                    alt="Logo RS Citra Husada Jember" class="w-full h-full object-contain">
-            </div>
-
-            <!-- Text Content -->
-            <div class="flex-1 text-center">
-                <h1 class="text-lg md:text-xl font-bold text-gray-900 mb-1 tracking-wide">RUMAH SAKIT CITRA HUSADA JEMBER</h1>
-                <div class="text-xs text-gray-600 mb-2 tracking-tighter">Jl. Contoh No. 123, Jember, Jawa Timur 68100 | Telp: (0331) 123456</div>
-                <div class="h-px bg-gray-400 my-2"></div>
-                <h2 class="text-sm md:text-base font-bold text-gray-800 uppercase tracking-widest">Laporan IMUT Per Unit Kerja</h2>
-                <div class="text-xs text-gray-600 mt-1 tracking-tighter">Sistem Informasi Indikator Mutu (SI-IMUT)</div>
-            </div>
-
-            <!-- Logo Kanan -->
-             <div class="w-14 h-14 md:w-16 md:h-16 mr-5 mt-4">
-                    <x-logo-report />
-                </div>
-        </div>
-
-        <!-- Document Info Bar -->
-        <div class="bg-gray-100 border border-gray-300 rounded px-3 md:px-4 py-2 flex flex-wrap justify-between items-center text-xs gap-2">
-            <div><span class="font-semibold text-gray-700">Unit Kerja:</span> <span class="text-gray-600">{{ $unit->unit_name }}</span></div>
-            <div><span class="font-semibold text-gray-700">Periode:</span> <span class="text-gray-600">{{ $periodLabel }}</span></div>
-            <div><span class="font-semibold text-gray-700">Tanggal Cetak:</span> <span class="text-gray-600">{{ now()->translatedFormat('d F Y, H:i') }} WIB</span></div>
-        </div>
-    </div>
+    <x-basic-report-header
+        title="Laporan IMUT Per Unit Kerja"
+        :additionalInfo="[
+            ['label' => 'Unit Kerja', 'value' => $unit->unit_name],
+            ['label' => 'Periode', 'value' => $periodLabel],
+            ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
+        ]"
+    />
 
     <!-- Info Section -->
     <div class="bg-slate-50 border border-slate-200 rounded-md p-5 mb-6">

@@ -12,6 +12,8 @@ use App\Filament\Widgets\AccountWidget;
 use App\Filament\Widgets\FilamentInfoWidget;
 use App\Filament\Widgets\ImutCapaianUnitKerjaWidget;
 use App\Filament\Widgets\LaporanLatestWidget;
+use App\Livewire\TtdUploadComponent;
+use App\Livewire\CustomPersonalInfo;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Settings\KaidoSetting;
@@ -141,6 +143,9 @@ class AdminPanelProvider extends PanelProvider
                     hasAvatars: false,
                     slug: 'my-profile'
                 )
+                ->myProfileComponents([
+                    'personal_info' => CustomPersonalInfo::class,
+                ])
                 ->enableTwoFactorAuthentication(),
         ];
 

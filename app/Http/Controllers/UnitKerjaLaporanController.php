@@ -56,10 +56,34 @@ class UnitKerjaLaporanController extends Controller
 
         foreach ($imutDataItems as $imutData) {
             // Get the active profile for this IMUT data
+            // First try to find profile valid for the entire period
             $profile = $imutData->profiles()
                 ->validForPeriod($dateRange['start'], $dateRange['end'])
                 ->orderBy('valid_from', 'desc')
                 ->first();
+
+            // If no profile is valid for the entire period, get the most recent profile
+            // that was valid before or at the start of the period
+            if (!$profile) {
+                $profile = $imutData->profiles()
+                    ->where(function ($q) use ($dateRange) {
+                        $q->whereNull('valid_until')
+                            ->orWhere('valid_until', '>=', $dateRange['start']->toDateString());
+                    })
+                    ->where(function ($q) use ($dateRange) {
+                        $q->whereNull('valid_from')
+                            ->orWhere('valid_from', '<=', $dateRange['start']->toDateString());
+                    })
+                    ->orderBy('valid_from', 'desc')
+                    ->first();
+            }
+
+            // If still no profile found, use the most recent profile available
+            if (!$profile) {
+                $profile = $imutData->profiles()
+                    ->orderBy('valid_from', 'desc')
+                    ->first();
+            }
 
             $targetValue = $profile?->target_value ?? 0;
             $targetOperator = $profile?->target_operator ?? '>=';

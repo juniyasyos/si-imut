@@ -40,7 +40,7 @@ Route::prefix('laporan/indikator-mutu')->name('laporan.indikator-mutu.')->group(
             ->where([
                 'unitKerja' => '[a-z0-9-]+',
                 'tipe' => 'yearly|quarterly|semester|custom',
-                'periode' => '[a-z0-9\-,]+'
+                'periode' => '[a-zA-Z0-9\-,]+'
             ]);
     });
 });

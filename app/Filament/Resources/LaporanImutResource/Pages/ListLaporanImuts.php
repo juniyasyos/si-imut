@@ -208,6 +208,15 @@ class ListLaporanImuts extends ListRecords
                                         return $user->unitKerjas()->orderBy('unit_name')->pluck('unit_name', 'id');
                                     }
                                 })
+                                ->default(function () {
+                                    $user = Auth::user();
+
+                                    if ($user->unitKerjas()->count() === 0) {
+                                        return null; // No default if user has no assigned unit kerja
+                                    } else {
+                                        return $user->unitKerjas()->orderBy('unit_name')->first()->id;
+                                    }
+                                })
                                 ->required()
                                 ->searchable()
                                 ->placeholder('Pilih unit kerja...'),

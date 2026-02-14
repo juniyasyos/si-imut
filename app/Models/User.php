@@ -87,6 +87,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'email',
         'password',
         'status',
+        'avatar_url',
+        'ttd_url',
     ];
 
     /**
@@ -135,6 +137,16 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar_url ? Storage::url($this->avatar_url) : null;
+    }
+
+    /**
+     * Mengambil URL TTD pengguna untuk Filament
+     *
+     * @return string|null
+     */
+    public function getFilamentTtdUrl(): ?string
+    {
+        return $this->ttd_url ? Storage::url($this->ttd_url) : null;
     }
 
     /**
