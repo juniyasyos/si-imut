@@ -86,7 +86,8 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function shouldRegisterNavigation(): bool
     {
-        return Utils::isResourceNavigationRegistered();
+        // return Utils::isResourceNavigationRegistered();
+        return false;
     }
 
     public static function getNavigationGroup(): ?string

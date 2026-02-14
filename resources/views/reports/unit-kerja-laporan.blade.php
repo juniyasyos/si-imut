@@ -76,12 +76,9 @@
             </div>
 
             <!-- Logo Kanan -->
-            <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0">
-                <svg viewBox="0 0 100 100" class="w-full h-full">
-                    <rect width="100" height="100" rx="10" fill="#059669" />
-                    <path d="M30 50 L45 65 L70 35" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-                </svg>
-            </div>
+             <div class="w-14 h-14 md:w-16 md:h-16 mr-5 mt-4">
+                    <x-logo-report />
+                </div>
         </div>
 
         <!-- Document Info Bar -->

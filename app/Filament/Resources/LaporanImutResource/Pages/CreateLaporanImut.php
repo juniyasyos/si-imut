@@ -38,9 +38,9 @@ class CreateLaporanImut extends CreateRecord
         // Load setting untuk auto-generate period dan duration
         $settings = LaporanImutAutoGenerationSetting::getInstance();
 
-        // Hitung assessment period dari setting (data entry duration)
-        $assessmentStart = now()->addDays($settings->data_entry_duration);
-        $assessmentEnd = $assessmentStart->copy()->endOfMonth();
+        // Hitung assessment period dari awal bulan ini sampai akhir bulan ini
+        $assessmentStart = now()->startOfMonth();
+        $assessmentEnd = now()->endOfMonth();
 
         return $form
             ->schema([
@@ -116,7 +116,7 @@ class CreateLaporanImut extends CreateRecord
                                             ->disabled()
                                             ->dehydrated()
                                             ->default($assessmentStart->format('Y-m-d'))
-                                            ->helperText('Dihitung: Hari ini + ' . $settings->data_entry_duration . ' hari (durasi pengisian data)')
+                                            ->helperText('Dihitung: Awal bulan ini (durasi pengisian data dari awal sampai akhir bulan)')
                                             ->readOnly(),
 
                                         Forms\Components\TextInput::make('assessment_period_end')
