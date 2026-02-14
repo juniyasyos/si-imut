@@ -737,22 +737,11 @@
             @endif
 
             <!-- Footer & Signature -->
-            <div class="mt-10 border-t-2 border-gray-300 pt-6">
-                <div class="flex justify-between mt-10">
-                    <div class="text-center w-56">
-                        <div class="text-sm mb-20">Mengetahui,<br>Kepala Bagian Mutu</div>
-                        <div class="text-sm font-bold border-t-2 border-black pt-2">(...........................)</div>
-                    </div>
-                    <div class="text-center w-56">
-                        <div class="text-sm mb-20">{{ now()->translatedFormat('d F Y') }},<br>Penanggung Jawab</div>
-                        <div class="text-sm font-bold border-t-2 border-black pt-2">{{ $laporan->createdBy->name ?? '(...........................)' }}</div>
-                    </div>
-                </div>
-
-                <div class="text-center mt-6 text-sm text-gray-500">
-                    Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)
-                </div>
-            </div>
+            <x-report-footer-signature
+                :leftSignature="'(...........................)'"
+                :rightSignature="$laporan->createdBy->name ?? '(...........................)'"
+                :rightSignatureImage="$laporan->createdBy->getFilamentTtdUrl() ?? null"
+            />
 
         </div>
 

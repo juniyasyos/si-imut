@@ -245,36 +245,15 @@
     </div>
 
     <!-- Footer & Signature -->
-    <div class="mt-10 pt-5 border-t-2 border-slate-300">
-        <div class="mb-5">
-            <strong>📝 Catatan:</strong>
-            <ul class="ml-5 mt-2 text-xs space-y-1">
-                <li>N = Numerator (Pembilang): Jumlah kejadian yang memenuhi kriteria</li>
-                <li>D = Denominator (Penyebut): Jumlah total kejadian yang diobservasi</li>
-                <li>Persentase = (N / D) × 100%</li>
-                <li>Status Tercapai jika Persentase {{ $imut['target_operator'] ?? '>=' }} Target Standar</li>
-                <li>Target Standar untuk indikator ini adalah: <strong>{{ $imut['target_operator'] ?? '>=' }} {{ $imut['standard'] ?? 0 }}%</strong></li>
-            </ul>
-        </div>
-
-        <div class="grid grid-cols-2 gap-12 mt-8">
-            <div class="text-center">
-                <div class="text-xs mb-24 font-semibold"><br><br>Pengumpul Data</div>
-                <div class="text-xs font-bold border-t border-black pt-1">(...........................)</div>
-            </div>
-            <div class="text-center">
-                <div class="text-xs mb-2">
-                    <span>Jember, {{ now()->translatedFormat('d F Y') }}</span>
-                </div>
-                <div class="text-xs mb-24 font-semibold">Validator Data / Penanggung Jawab</div>
-                <div class="text-xs font-bold border-t border-black pt-1">(...........................)</div>
-            </div>
-        </div>
-
-        <div class="text-center mt-6 text-xs text-gray-500">
-            Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)
-        </div>
-    </div>
+    <x-report-footer-data-collector
+        :notes="[
+            'N = Numerator (Pembilang): Jumlah kejadian yang memenuhi kriteria',
+            'D = Denominator (Penyebut): Jumlah total kejadian yang diobservasi',
+            'Persentase = (N / D) × 100%',
+            'Status Tercapai jika Persentase ' . ($imut['target_operator'] ?? '>=') . ' Target Standar',
+            'Target Standar untuk indikator ini adalah: ' . ($imut['target_operator'] ?? '>=') . ' ' . ($imut['standard'] ?? 0) . '%'
+        ]"
+    />
 
     <!-- Preview Controls -->
     <div class="no-print flex gap-3 mt-6">

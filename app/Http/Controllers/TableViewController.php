@@ -774,6 +774,7 @@ class TableViewController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'ttd_url' => $user->getFilamentTtdUrl(),
                 ];
             }
 
@@ -783,6 +784,7 @@ class TableViewController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'ttd_url' => $user->getFilamentTtdUrl(),
                 ];
             }
         }

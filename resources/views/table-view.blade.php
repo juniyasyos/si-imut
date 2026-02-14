@@ -477,39 +477,12 @@
         </div>
 
         <!-- Footer & Signature -->
-        <div class="mt-8 border-t-2 border-gray-300 pt-6">
-            <div class="flex justify-between mt-8 gap-4">
-                <div class="text-center flex-1">
-                    <div class="text-sm mb-10 font-semibold"><br><br>Pengumpul Data</div>
-                    <div class="text-sm font-bold border-black pt-2">(...........................)</div>
-                    <div class="text-xs text-gray-600 mb-12 min-h-8">
-                        <div x-show="usersByUnit.pengumpul_data && usersByUnit.pengumpul_data.length > 0">
-                            <template x-for="user in usersByUnit.pengumpul_data" :key="'pengumpul-' + user.id">
-                                <div x-text="user.name"></div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center flex-1">
-                    <div class="text-sm mb-2">
-                        <span x-text="metadata.period_label ? 'Jember, ' + new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : ''"></span>
-                    </div>
-                    <div class="text-sm mb-10 font-semibold">Validator Data / Penanggung Jawab</div>
-                    <div class="text-sm font-bold border-black pt-2">(...........................)</div>
-                    <div class="text-xs text-gray-600 mb-3 min-h-8">
-                        <div x-show="usersByUnit.validator && usersByUnit.validator.length > 0">
-                            <template x-for="user in usersByUnit.validator" :key="'validator-' + user.id">
-                                <div x-text="user.name"></div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mt-6 text-xs text-gray-500">
-                Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)
-            </div>
-        </div>
+        <x-report-footer-data-collector-alpine
+            :leftUsersAlpine="'usersByUnit.pengumpul_data'"
+            :rightUsersAlpine="'usersByUnit.validator'"
+            :dateAlpine="'metadata.period_label ? &quot;Jember, &quot; + new Date().toLocaleDateString(&quot;id-ID&quot;, {day: &quot;numeric&quot;, month: &quot;long&quot;, year: &quot;numeric&quot;}) : &quot;&quot;'"
+            :marginTop="'mt-8'"
+        />
     </div>
 
     <script>
