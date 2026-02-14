@@ -58,12 +58,9 @@
     <div class="border-b-2 border-gray-800 pb-4 mb-6">
         <div class="flex items-start justify-between gap-4 md:gap-6 mb-3">
             <!-- Logo Kiri -->
-            <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0">
-                <svg viewBox="0 0 100 100" class="w-full h-full">
-                    <circle cx="50" cy="50" r="45" fill="#1e40af" />
-                    <path d="M50 20 L50 80 M20 50 L80 50" stroke="white" stroke-width="8" stroke-linecap="round" />
-                    <circle cx="50" cy="50" r="12" fill="white" />
-                </svg>
+            <div class="w-32 h-32 flex-shrink-0">
+                <img src="{{ asset('images/assets/logo-rs.webp') }}"
+                    alt="Logo RS Citra Husada Jember" class="w-full h-full object-contain">
             </div>
 
             <!-- Text Content -->
@@ -145,7 +142,7 @@
         @foreach ($dataByImut as $index => $imut)
         <div class="mb-9 border border-slate-200 rounded-lg overflow-hidden bg-white break-inside-avoid">
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-black px-5 py-4 border-b-2 border-blue-900">
+            <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-5 py-4 border-b-2 border-blue-900">
                 <h3 class="text-sm font-bold mb-1">{{ $index + 1 }}. {{ $imut['title'] }}</h3>
                 <p class="text-xs text-blue-100">Kategori: {{ $imut['category'] }} | Target Standar: {{ $imut['target_operator'] }} {{ $imut['standard'] }}%</p>
             </div>
