@@ -188,20 +188,25 @@ class ListLaporanImuts extends ListRecords
                 ->modalHeading('Laporan IMUT Unit Kerja')
                 ->modalDescription('Pilih unit kerja dan periode untuk melihat laporan detail.')
                 ->modalWidth('2xl')
-                ->visible(function () {
-                    $user = Auth::user();
-                    return $user && $user->unitKerjas()->exists();
-                })
+                ->visible(fn() => Auth::check())
                 ->form([
                     Forms\Components\Section::make('Pilih Unit Kerja & Periode')
                         ->schema([
                             Forms\Components\Select::make('unit_kerja_id')
                                 ->label('Unit Kerja')
                                 ->options(function () {
-                                    return Auth::user()
-                                        ->unitKerjas()
-                                        ->orderBy('unit_name')
-                                        ->pluck('unit_name', 'id');
+                                    $user = Auth::user();
+
+                                    // Check if user has admin or tim mutu roles
+                                    $isAdminOrTimMutu = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
+
+                                    if ($isAdminOrTimMutu) {
+                                        // Admin/Tim Mutu can see all unit kerja
+                                        return UnitKerja::orderBy('unit_name')->pluck('unit_name', 'id');
+                                    } else {
+                                        // PIC/Pengumpul Data can only see their assigned unit kerja
+                                        return $user->unitKerjas()->orderBy('unit_name')->pluck('unit_name', 'id');
+                                    }
                                 })
                                 ->required()
                                 ->searchable()
@@ -308,6 +313,25 @@ class ListLaporanImuts extends ListRecords
                 ])
                 ->openUrlInNewTab()
                 ->action(function (array $data) {
+                    $user = Auth::user();
+
+                    // Check if user has access to the selected unit kerja
+                    $isAdminOrTimMutu = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
+
+                    if (!$isAdminOrTimMutu) {
+                        // For PIC/Pengumpul Data, check if they have access to the selected unit kerja
+                        $hasAccess = $user->unitKerjas()->where('unit_kerja_id', $data['unit_kerja_id'])->exists();
+
+                        if (!$hasAccess) {
+                            Notification::make()
+                                ->title('Akses Ditolak')
+                                ->body('Anda tidak memiliki akses ke unit kerja yang dipilih.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+                    }
+
                     $unitKerja = UnitKerja::find($data['unit_kerja_id']);
                     if (!$unitKerja) {
                         Notification::make()
