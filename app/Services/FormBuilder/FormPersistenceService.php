@@ -219,4 +219,12 @@ class FormPersistenceService
             $template->delete();
         }
     }
+
+    public function deleteResponses(ImutProfile $record): void
+    {
+        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        if ($formTemplate) {
+            $formTemplate->dailyReportResponses()->delete();
+        }
+    }
 }

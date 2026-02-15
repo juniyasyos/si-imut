@@ -17,6 +17,7 @@ use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 
 class ManageFormBuilder extends Page implements HasForms
 {
@@ -31,10 +32,13 @@ class ManageFormBuilder extends Page implements HasForms
     public bool $autoSaveEnabled = false;
     public bool $hasExistingResponses = false;
     public int $responseCount = 0;
+    public bool $canForceUpdate = false;
 
     public function mount(ImutProfile $record): void
     {
         $this->record = $record;
+        $this->canForceUpdate = Gate::allows('updateFormWithExistingResponses', $this->record);
+
         $formDataService = new FormDataService();
         $this->data = $formDataService->loadFormData($record);
         $this->form->fill($this->data);
@@ -50,25 +54,40 @@ class ManageFormBuilder extends Page implements HasForms
         return $form
             ->schema(FormSchemaBuilder::buildFormSchema())
             ->statePath('data')
-            ->model($this->record);
+            ->model($this->record)
+            ->disabled($this->hasExistingResponses && !$this->canForceUpdate);
     }
 
     protected function getHeaderActions(): array
     {
+        if ($this->hasExistingResponses && !$this->canForceUpdate) {
+            return [
+                Action::make('locked')
+                    ->label('Form Sudah Memiliki Data Response')
+                    ->icon('heroicon-o-lock-closed')
+                    ->color('gray')
+                    ->disabled(),
+
+                Action::make('preview')
+                    ->label('Preview Form')
+                    ->icon('heroicon-o-eye')
+                    ->action('preview')
+                    ->color('info'),
+            ];
+        }
+
         $saveAction = Action::make('save')
             ->label('Simpan Form')
             ->icon('heroicon-o-check')
-            ->color('success');
+            ->color('success')
+            ->action('performSave');
 
-        if ($this->hasExistingResponses) {
+        if ($this->hasExistingResponses && $this->canForceUpdate) {
             $saveAction->requiresConfirmation()
-                ->modalHeading('Konfirmasi Perubahan Form')
-                ->modalDescription("Form template ini sudah memiliki {$this->responseCount} data respons harian. Perubahan struktur field dapat membuat beberapa data respons yang sudah diinputkan menjadi tidak valid atau tidak lengkap. Data respons tidak akan dihapus, tetapi mungkin perlu diperbarui secara manual. Apakah Anda yakin ingin melanjutkan?")
-                ->modalSubmitActionLabel('Ya, Simpan Perubahan')
-                ->modalCancelActionLabel('Batal')
-                ->action('performSave');
-        } else {
-            $saveAction->action('performSave');
+                ->modalHeading('Konfirmasi Perubahan Form (Super Admin)')
+                ->modalDescription("Form template ini sudah memiliki {$this->responseCount} data respons harian. Sebagai super admin, Anda dapat memaksa update, yang akan menghapus semua data respons yang ada. Apakah Anda yakin ingin melanjutkan?")
+                ->modalSubmitActionLabel('Ya, Hapus Data dan Simpan')
+                ->modalCancelActionLabel('Batal');
         }
 
         return [
@@ -90,6 +109,11 @@ class ManageFormBuilder extends Page implements HasForms
             DB::beginTransaction();
 
             $formPersistenceService = new FormPersistenceService();
+
+            if ($this->hasExistingResponses && $this->canForceUpdate) {
+                $formPersistenceService->deleteResponses($this->record);
+            }
+
             $formPersistenceService->saveFormData($this->record, $data);
             $formPersistenceService->calculateAndUpdateCompliance($this->record);
 
@@ -137,13 +161,15 @@ class ManageFormBuilder extends Page implements HasForms
 
     public function preview(): void
     {
-        // Save current form data before redirecting to preview
-        try {
-            $data = $this->form->getState();
-            $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->saveFormData($this->record, $data);
-        } catch (\Exception $e) {
-            // Continue to preview even if save fails
+        // Save current form data before redirecting to preview (only if no existing responses)
+        if (!$this->hasExistingResponses) {
+            try {
+                $data = $this->form->getState();
+                $formPersistenceService = new FormPersistenceService();
+                $formPersistenceService->saveFormData($this->record, $data);
+            } catch (\Exception $e) {
+                // Continue to preview even if save fails
+            }
         }
 
         // Redirect to preview page

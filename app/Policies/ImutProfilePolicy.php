@@ -103,6 +103,14 @@ class ImutProfilePolicy
     }
 
     /**
+     * Cek apakah user dapat update form template meskipun ada existing responses (akan menghapus responses).
+     */
+    public function updateFormWithExistingResponses(User $user, ImutProfile $imutProfile): bool
+    {
+        return $user->can('update_form_with_existing_responses');
+    }
+
+    /**
      * Mengecek apakah user adalah pemilik dari data ImutProfile melalui relasi imutData->created_by.
      */
     protected function isOwner(User $user, ImutProfile $imutProfile): bool

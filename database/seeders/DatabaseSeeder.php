@@ -16,9 +16,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(
             [
+                ShieldSeeder::class,
+                UserSeeder::class,
+                AssignSuperAdminRoleSeeder::class,
                 // KaidoSettingSeeder::class,
-                // ShieldSeeder::class,
-                // UserSeeder::class,
                 // UnitKerjaSeeder::class,
                 RoleUpgradeSeeder::class,
                 // ImutCategorySeeder::class,
