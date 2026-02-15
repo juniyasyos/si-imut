@@ -3,6 +3,9 @@
     class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
     style="display: none;">
 
+    <!-- Full Screen Loading Overlay -->
+    <div x-show="isDateLoading" x-transition.opacity.duration.500ms class="fixed inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md z-[9999]" style="display: none;"></div>
+
     <!-- Header with Search -->
     <div class="mb-6">
         <div class="flex flex-col gap-4">
@@ -17,7 +20,7 @@
                 <div class="flex items-center gap-2">
                     <!-- Period Navigation -->
                     <button
-                        @click="changeMonitoringPeriod('prev')"
+                        @click="isDateLoading = true; $wire.call('changeMonitoringPeriod', 'prev')"
                         class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -26,7 +29,7 @@
                     </button>
 
                     <button
-                        @click="changeMonitoringPeriod('current')"
+                        @click="isDateLoading = true; $wire.call('changeMonitoringPeriod', 'current')"
                         class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -35,7 +38,7 @@
                     </button>
 
                     <button
-                        @click="changeMonitoringPeriod('next')"
+                        @click="isDateLoading = true; $wire.call('changeMonitoringPeriod', 'next')"
                         class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
                         <span class="hidden sm:inline">Berikutnya</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
