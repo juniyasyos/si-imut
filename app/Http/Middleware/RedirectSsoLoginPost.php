@@ -29,9 +29,9 @@ class RedirectSsoLoginPost
 
         // If SSO is enabled and custom login page is NOT registered,
         // redirect any /siimut/login access to SSO
-        if ($ssoEnabled && !$hasCustomLoginPage && $request->path() === 'siimut/login') {
-            return redirect()->route('sso.login');
-        }
+        // if ($ssoEnabled && !$hasCustomLoginPage && $request->path() === 'siimut/login') {
+        //     return redirect()->route('sso.login');
+        // }
 
         return $next($request);
     }
