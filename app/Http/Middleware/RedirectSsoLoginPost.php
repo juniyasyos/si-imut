@@ -33,12 +33,6 @@ class RedirectSsoLoginPost
             return redirect()->route('sso.login');
         }
 
-        // If SSO is enabled but form was submitted before redirect could happen,
-        // also redirect POST requests to /siimut/login to SSO
-        if ($ssoEnabled && $request->isMethod('POST') && $request->path() === 'siimut/login') {
-            return redirect()->route('sso.login');
-        }
-
         return $next($request);
     }
 }
