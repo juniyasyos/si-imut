@@ -137,14 +137,16 @@
                                 </a>
 
                                 <!-- Export Button -->
-                                <button
-                                    @click="$wire.call('exportMonitoring', item.id)"
+                                <a
+                                    :href="`{{ route('export.monitoring', ':templateId') }}`.replace(':templateId', item.id) + '?month=' + monitoringMonth"
+                                    target="_blank"
                                     class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800 transition-colors"
-                                    title="Export Data">
+                                    title="Download Excel">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
-                                </button>
+                                    <span class="hidden sm:inline">Download Excel</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -218,14 +220,15 @@
                                 <span>Response</span>
                             </button>
 
-                            <button
-                                @click="$wire.call('exportMonitoring', item.id)"
+                            <a
+                                :href="`{{ route('export.monitoring', ':templateId') }}`.replace(':templateId', item.id) + '?month=' + monitoringMonth"
+                                target="_blank"
                                 class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                <span>Export</span>
-                            </button>
+                                <span>Download Excel</span>
+                            </a>
                         </div>
                     </div>
                 </div>

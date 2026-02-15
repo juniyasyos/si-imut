@@ -63,12 +63,13 @@
                 <span>Response</span>
             </button>
 
-            <button
-                @click="$wire.call('exportMonitoring', item.id)"
+            <a
+                :href="`{{ route('export.monitoring', ':templateId') }}`.replace(':templateId', item.id) + '?month=' + monitoringMonth"
+                target="_blank"
                 class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800 transition-colors">
                 @svg("heroicon-o-arrow-down-tray", "w-4 h-4")
-                <span>Export</span>
-            </button>
+                <span>Download Excel</span>
+            </a>
         </div>
     </div>
 </div>
