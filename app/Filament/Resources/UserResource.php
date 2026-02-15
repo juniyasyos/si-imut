@@ -104,6 +104,43 @@ class UserResource extends Resource implements HasShieldPermissions
         return $form->schema(UserResourceSchema::make());
     }
 
+    protected static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $roles = $data['roles'] ?? [];
+        unset($data['roles']);
+
+        return $data;
+    }
+
+    protected static function mutateFormDataBeforeSave(array $data): array
+    {
+        $roles = $data['roles'] ?? [];
+        unset($data['roles']);
+
+        return $data;
+    }
+
+    protected static function afterCreate($record, array $data): void
+    {
+        if (isset($data['roles'])) {
+            $record->syncRoles($data['roles']);
+        }
+    }
+
+    protected static function afterSave($record, array $data): void
+    {
+        if (isset($data['roles'])) {
+            $record->syncRoles($data['roles']);
+        }
+    }
+
+    protected static function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['roles'] = $data['record']->roles->pluck('id')->toArray() ?? [];
+
+        return $data;
+    }
+
     public static function canCreate(): bool
     {
         return true;
@@ -121,7 +158,7 @@ class UserResource extends Resource implements HasShieldPermissions
     public static function getRelations(): array
     {
         return [
-            ActivitylogRelationManager::class,
+            // ActivitylogRelationManager::class,
         ];
     }
 

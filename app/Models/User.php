@@ -146,7 +146,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     public function getFilamentTtdUrl(): ?string
     {
-        return $this->ttd_url ? Storage::url($this->ttd_url) : null;
+        return $this->ttd_url ? Storage::disk('s3')->url($this->ttd_url) : null;
     }
 
     /**

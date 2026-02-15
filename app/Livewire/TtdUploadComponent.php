@@ -34,7 +34,7 @@ class TtdUploadComponent extends MyProfileComponent
             ->schema([
                 FileUpload::make('ttd_url')
                     ->label('Upload Tanda Tangan Digital')
-                    ->disk('public')
+                    ->disk('s3')
                     ->directory('ttd')
                     ->image()
                     ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])

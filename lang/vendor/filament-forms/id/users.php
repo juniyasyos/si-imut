@@ -20,6 +20,7 @@ return [
         'created_at' => 'Tanggal Dibuat',
         'updated_at' => 'Tanggal Diperbarui',
         'avatar_url' => 'Foto Profil',
+        'ttd_url' => 'Tanda Tangan Digital',
         'roles' => 'Peran',
         'role' => 'Peran',
         'position_id' => 'Posisi',
@@ -77,6 +78,15 @@ return [
         'account' => [
             'title' => 'Pengaturan Akun',
             'description' => 'Atur kredensial login dan izin akses.'
+        ],
+        'documents' => [
+            'title' => 'Dokumen & Tanda Tangan',
+            'description' => 'Upload dokumen dan tanda tangan digital pengguna.'
+        ],
+        'roles' => [
+            'title' => 'Peran & Izin Akses',
+            'description' => 'Tetapkan peran dan izin akses untuk pengguna.',
+            'select_placeholder' => 'Pilih peran pengguna'
         ]
     ],
 

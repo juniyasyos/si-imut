@@ -12,6 +12,7 @@ use App\Filament\Resources\RoleResource\Tables\RoleResourceTable;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
+use Illuminate\Container\Attributes\Auth;
 
 class RoleResource extends Resource implements HasShieldPermissions
 {
@@ -86,6 +87,7 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function shouldRegisterNavigation(): bool
     {
+        // dd($user = auth()->user());
         return Utils::isResourceNavigationRegistered();
         // return false;
     }

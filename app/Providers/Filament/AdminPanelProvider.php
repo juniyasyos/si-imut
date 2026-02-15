@@ -145,6 +145,7 @@ class AdminPanelProvider extends PanelProvider
                 )
                 ->myProfileComponents([
                     'personal_info' => CustomPersonalInfo::class,
+                    'ttd_upload' => TtdUploadComponent::class,
                 ])
                 ->enableTwoFactorAuthentication(),
         ];

@@ -3,18 +3,15 @@
 namespace App\Filament\Resources\UserResource\Schema;
 
 use App\Filament\Resources\UserResource;
-use App\Models\Position;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Actions\Action as FieldAction;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Pages\CreateRecord;
 
 class UserResourceSchema extends UserResource
@@ -116,65 +113,30 @@ class UserResourceSchema extends UserResource
                     ]),
                 ]),
 
-            Section::make(__('filament-forms::users.form.position.title'))
-                ->description(__('filament-forms::users.form.position.description'))
+            Section::make(__('filament-forms::users.form.documents.title'))
+                ->description(__('filament-forms::users.form.documents.description'))
                 ->schema([
-                    Select::make('position_id')
-                        ->label(__('filament-forms::users.fields.position'))
-                        ->relationship('position', 'name')
+                    FileUpload::make('ttd_url')
+                        ->label(__('filament-forms::users.fields.ttd_url'))
+                        ->disk('s3')
+                        ->directory('ttd')
+                        ->image()
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                        ->maxSize(2048)
+                        ->nullable(),
+                ]),
+
+            Section::make(__('filament-forms::users.form.roles.title'))
+                ->description(__('filament-forms::users.form.roles.description'))
+                ->schema([
+                    Select::make('roles')
+                        ->label(__('filament-forms::users.fields.roles'))
+                        ->relationship('roles', 'name')
+                        // ->multiple()
                         ->preload()
                         ->searchable()
-                        ->placeholder(__('filament-forms::users.form.position.select_placeholder'))
-                        ->createOptionForm(fn(Form $form) => $form->schema([
-                            TextInput::make('name')
-                                ->required()
-                                ->label(__('filament-forms::users.form.position.create_label')),
-                            TextInput::make('description')
-                                ->label(__('filament-forms::users.form.position.create_description'))
-                                ->nullable(),
-                        ]))
-                        ->suffixActions([
-                            FieldAction::make('editPosition')
-                                ->icon('heroicon-o-pencil-square')
-                                ->visible(fn(Get $get) => filled($get('position_id')))
-                                ->modalHeading(__('filament-forms::users.form.position.edit_modal_title'))
-                                ->form([
-                                    TextInput::make('name')
-                                        ->required(),
-                                    TextInput::make('description'),
-                                ])
-                                ->mountUsing(function (FieldAction $action, Get $get) {
-                                    $position = Position::find($get('position_id'));
-                                    if ($position) {
-                                        $action->fill([
-                                            'name' => $position->name,
-                                            'description' => $position->description,
-                                        ]);
-                                    }
-                                })
-                                ->action(function (array $data, Get $get) {
-                                    $position = Position::find($get('position_id'));
-                                    if ($position) {
-                                        $position->update([
-                                            'name' => $data['name'],
-                                            'description' => $data['description'],
-                                        ]);
-                                    }
-                                }),
-
-                            FieldAction::make('deletePosition')
-                                ->icon('heroicon-o-trash')
-                                ->color('danger')
-                                ->requiresConfirmation()
-                                // ->visible(fn(Get $get) => filled($get('position_id')))
-                                ->action(function (Get $get, Set $set) {
-                                    $position = Position::find($get('position_id'));
-                                    if ($position) {
-                                        $position->delete();
-                                        $set('position_id', null);
-                                    }
-                                }),
-                        ]),
+                        ->placeholder(__('filament-forms::users.form.roles.select_placeholder'))
+                        ->required(),
                 ]),
         ];
     }

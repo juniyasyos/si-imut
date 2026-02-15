@@ -16,14 +16,6 @@ class CustomPersonalInfo extends PersonalInfo
         return [
             $this->getNameComponent(),
             $this->getEmailComponent(),
-            FileUpload::make('ttd_url')
-                ->label('Upload Tanda Tangan Digital')
-                ->disk('public')
-                ->directory('ttd')
-                ->image()
-                ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
-                ->maxSize(2048)
-                ->required(false),
         ];
     }
 

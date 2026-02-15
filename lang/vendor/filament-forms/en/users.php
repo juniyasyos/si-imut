@@ -20,6 +20,7 @@ return [
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',
         'avatar_url' => 'Profile Photo',
+        'ttd_url' => 'Digital Signature',
         'roles' => 'Roles',
         'role' => 'Role',
         'position_id' => 'Position',
@@ -77,6 +78,15 @@ return [
         'account' => [
             'title' => 'Account Settings',
             'description' => 'Configure credentials'
+        ],
+        'documents' => [
+            'title' => 'Documents & Signature',
+            'description' => 'Upload documents and digital signature for the user.'
+        ],
+        'roles' => [
+            'title' => 'Roles & Access Permissions',
+            'description' => 'Assign roles and access permissions to the user.',
+            'select_placeholder' => 'Select user role'
         ]
     ],
 
