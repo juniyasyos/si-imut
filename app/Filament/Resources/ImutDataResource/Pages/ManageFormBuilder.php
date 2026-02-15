@@ -13,6 +13,8 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -57,6 +59,9 @@ class ManageFormBuilder extends Page implements HasForms
         return [
             Action::make('save')
                 ->label('Simpan Form')
+                ->visible(function (Model $record) {
+                    return Auth::user()?->can('delete_imut::profile') && $record->imutData->created_by === Auth::id();
+                })
                 ->icon('heroicon-o-check')
                 ->action('save')
                 ->color('success'),

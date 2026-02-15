@@ -155,7 +155,7 @@ class ProfilesRelationManager extends RelationManager
                     ->tooltip('Lainnya'),
                 DeleteAction::make()
                     ->visible(function (Model $record) {
-                        return Auth::user()?->can('delete_imut::profile') || $record->imutData->created_by === Auth::id();
+                        return Auth::user()?->can('delete_imut::profile') && $record->imutData->created_by === Auth::id();
                     }),
                 RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
                 ForceDeleteAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),

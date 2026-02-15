@@ -30,6 +30,7 @@ class EditImutData extends EditRecord
                 ->label('Lihat Grafik IMUT')
                 ->color('primary')
                 ->icon('heroicon-s-chart-bar')
+                ->visible(fn($record) => Auth::user() && ($record->created_by === Auth::id() || Auth::user()->can('view_all_data_imut::data')))
                 ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
             ActionGroup::make([

@@ -16,6 +16,8 @@ use Filament\Forms\Components\TimePicker;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 
 class FormSchemaBuilder
 {
@@ -28,11 +30,13 @@ class FormSchemaBuilder
                         ->label('Judul Form')
                         ->required()
                         ->maxLength(255)
+                        ->readonly(fn($record) => self::shouldBeReadonly($record))
                         ->columnSpanFull(),
 
                     Textarea::make('description')
                         ->label('Deskripsi Form')
                         ->maxLength(1000)
+                        ->readOnly(fn($record) => self::shouldBeReadonly($record))
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
@@ -45,11 +49,13 @@ class FormSchemaBuilder
                             'auto_calculate' => 'Kalkulasi Otomatis (Direkomendasikan)',
                             'manual_check' => 'Pemeriksaan Manual',
                         ])
+                        ->disabled(fn($record) => self::shouldBeReadonly($record))
                         ->default('auto_calculate')
                         ->helperText('Kalkulasi otomatis akan menghitung compliance berdasarkan bobot field dan nilai kritikalitas.'),
 
                     Toggle::make('auto_fail_on_critical')
                         ->label('Auto Fail pada Field Kritical')
+                        ->disabled(fn($record) => self::shouldBeReadonly($record))
                         ->helperText('Jika diaktifkan, form akan langsung dianggap tidak compliant jika ada field kritical yang tidak terisi.')
                         ->default(true),
                 ])
@@ -62,6 +68,7 @@ class FormSchemaBuilder
                         ->label('Fields')
                         ->schema(self::getFieldSchema())
                         ->defaultItems(0)
+                        ->disabled(fn($record) => self::shouldBeReadonly($record))
                         ->addActionLabel('Tambah Field Baru')
                         ->reorderableWithButtons()
                         ->collapsible(true)
@@ -87,7 +94,7 @@ class FormSchemaBuilder
                             return "📋 {$name}{$critical}";
                         })
                         ->columnSpanFull()
-                ]),
+                ])
         ];
     }
 
@@ -461,7 +468,8 @@ class FormSchemaBuilder
                             Select::make('conditional_logic.depends_on_field')
                                 ->label('Bergantung pada Field')
                                 ->options(fn($get) => self::getAvailableFieldsForCondition(
-                                    $get('../../fields') ?? [], ($get('field_key'))
+                                    $get('../../fields') ?? [],
+                                    ($get('field_key'))
                                 ))
                                 ->helperText('Field yang mempengaruhi kondisi (pada preview, jika kondisi tidak terpenuhi field akan dinonaktifkan)')
                                 ->visible(fn($get) => $get('has_conditional_logic'))
@@ -575,5 +583,10 @@ class FormSchemaBuilder
         }
 
         return $options;
+    }
+
+    private static function shouldBeReadonly(Model $record): bool
+    {
+        return !($record->imutData->created_by === Auth::id()) && Auth::user()?->can('delete_imut::profile');
     }
 }
