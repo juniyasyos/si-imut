@@ -53,6 +53,33 @@ class AppServiceProvider extends ServiceProvider
         $this->registerObservers();
         $this->ensureKaidoSettings();
 
+        // Jika MinIO dulu tidak tersedia lalu sekarang tersedia — dispatch job untuk sync local -> s3
+        try {
+            $cacheCheckKey = 's3_availability_check_throttle';
+            $cacheStatusKey = 's3_available_last_status';
+
+            if (!\Illuminate\Support\Facades\Cache::has($cacheCheckKey)) {
+                $isAvailable = \App\Support\StorageFallback::isS3Available();
+
+                $previous = \Illuminate\Support\Facades\Cache::get($cacheStatusKey, null);
+
+                // jika sebelumnya false (atau null) dan sekarang true -> dispatch sync
+                if ($isAvailable && ($previous === false || $previous === null)) {
+                    // dispatch background job untuk sinkronisasi (misal folder 'ttd')
+                    \App\Jobs\SyncLocalToS3Job::dispatch(['ttd']);
+                }
+
+                // simpan status terakhir selama 2 jam (dipakai untuk mendeteksi transisi down->up)
+                \Illuminate\Support\Facades\Cache::put($cacheStatusKey, $isAvailable, now()->addHours(2));
+
+                // throttle berikutnya: 2 jam (hindari pengecekan berlebih)
+                \Illuminate\Support\Facades\Cache::put($cacheCheckKey, true, now()->addHours(2));
+            }
+        } catch (\Throwable $e) {
+            // jangan ganggu bootstrap jika pengecekan gagal
+            logger()->debug('S3 availability check in AppServiceProvider failed: ' . $e->getMessage());
+        }
+
         // Uncomment if you want to force HTTPS in production
         // if (config('app.env') === 'production') {
         //     URL::forceScheme('https');

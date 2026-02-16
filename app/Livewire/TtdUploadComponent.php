@@ -20,10 +20,16 @@ class TtdUploadComponent extends MyProfileComponent
 
     public $userClass;
 
+    // disk yang akan dipakai oleh FileUpload — otomatis fallback ke 'local' bila MinIO tidak dapat diakses
+    public string $storageDisk = 's3';
+
     public function mount()
     {
         $this->user = auth()->user();
         $this->userClass = get_class($this->user);
+
+        // Tentukan disk berdasarkan ketersediaan MinIO
+        $this->storageDisk = \App\Support\StorageFallback::isS3Available() ? 's3' : 'local';
 
         $this->form->fill($this->user->only($this->only));
     }
@@ -34,7 +40,7 @@ class TtdUploadComponent extends MyProfileComponent
             ->schema([
                 FileUpload::make('ttd_url')
                     ->label('Upload Tanda Tangan Digital')
-                    ->disk('s3')
+                    ->disk($this->storageDisk)
                     ->directory('ttd')
                     ->image()
                     ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
