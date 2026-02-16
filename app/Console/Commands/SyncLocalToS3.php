@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 class SyncLocalToS3 extends Command
 {
-    protected $signature = 'storage:sync-local-to-s3 {paths? : Comma-separated paths on `local` disk (default: "ttd")} {--delete : Delete local copy after successful sync} {--dry-run : Do not perform upload, only show what would be done}';
+    protected $signature = 'storage:sync-local-to-s3 {paths? : Comma-separated paths on `public`/`local` disks (default: "ttd")} {--delete : Delete local copy after successful sync} {--dry-run : Do not perform upload, only show what would be done}';
 
-    protected $description = 'Sync files from `local` disk to S3 (used as fallback->sync)';
+    protected $description = 'Sync files from `public`/`local` disks to S3 (used as fallback->sync)';
 
     public function handle(): int
     {
@@ -26,11 +26,14 @@ class SyncLocalToS3 extends Command
         $this->info('Starting sync from local -> s3 for paths: ' . implode(', ', $paths));
 
         if ($this->option('dry-run')) {
-            // run a lightweight discovery
+            // run a lightweight discovery across public + local
             $local = \Illuminate\Support\Facades\Storage::disk('local');
+            $public = \Illuminate\Support\Facades\Storage::disk('public');
+
             foreach ($paths as $path) {
-                $files = $local->allFiles($path);
-                $this->line("  [DRY] Found " . count($files) . " files in local/{$path}");
+                $publicCount = $public->exists($path) ? count($public->allFiles($path)) : 0;
+                $localCount = $local->exists($path) ? count($local->allFiles($path)) : 0;
+                $this->line("  [DRY] Found {$publicCount} files in public/{$path}, {$localCount} files in local/{$path}");
             }
 
             $this->info('Dry-run complete.');

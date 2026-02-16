@@ -9,6 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
+use App\Support\StorageFallback;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
@@ -140,13 +141,35 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     }
 
     /**
-     * Mengambil URL TTD pengguna untuk Filament
+     * Mengambil URL TTD pengguna untuk Filament.
+     * - Prioritaskan S3 jika tersedia (MinIO aktif).
+     * - Jika S3 tidak tersedia, gunakan `public` disk (accessible via /storage).
+     * - Method tidak mengubah nilai DB (`ttd_url` tetap path relatif).
      *
      * @return string|null
      */
     public function getFilamentTtdUrl(): ?string
     {
-        return $this->ttd_url ? Storage::disk('s3')->url($this->ttd_url) : null;
+        if (! $this->ttd_url) {
+            return null;
+        }
+
+        // Jika MinIO/S3 tersedia: kembalikan URL S3 (file sudah disync saat MinIO up)
+        if (StorageFallback::isS3Available()) {
+            try {
+                return Storage::disk('s3')->url($this->ttd_url);
+            } catch (\Throwable $e) {
+                // fallback ke public jika ada error
+            }
+        }
+
+        // Jika ada salinan di public (fallback saat MinIO mati), kembalikan URL public
+        if (Storage::disk('public')->exists($this->ttd_url)) {
+            return Storage::disk('public')->url($this->ttd_url);
+        }
+
+        // terakhir: coba kembalikan URL S3 (meskipun mungkin tidak reachable)
+        return Storage::disk('s3')->url($this->ttd_url);
     }
 
     /**

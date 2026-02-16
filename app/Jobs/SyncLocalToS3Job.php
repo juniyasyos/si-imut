@@ -36,19 +36,33 @@ class SyncLocalToS3Job implements ShouldQueue
         }
 
         $local = Storage::disk('local');
+        $public = Storage::disk('public');
         $s3 = Storage::disk('s3');
 
         foreach ($this->paths as $path) {
-            $files = $local->allFiles($path);
+            // collect files from both public and local (avoid duplicates)
+            $publicFiles = $public->exists($path) ? $public->allFiles($path) : [];
+            $localFiles = $local->exists($path) ? $local->allFiles($path) : [];
+
+            $files = array_values(array_unique(array_merge($publicFiles, $localFiles)));
 
             foreach ($files as $file) {
+                // determine source disk
+                $sourceDiskName = $public->exists($file) ? 'public' : ($local->exists($file) ? 'local' : null);
+                if ($sourceDiskName === null) {
+                    Log::warning("SyncLocalToS3Job: source file not found on public/local: {$file}");
+                    continue;
+                }
+
+                $source = ($sourceDiskName === 'public') ? $public : $local;
+
                 try {
                     // Skip directories
-                    if ($local->mimeType($file) === null) {
+                    if ($source->mimeType($file) === null) {
                         continue;
                     }
                 } catch (\Throwable $e) {
-                    // if mimeType fails for some files, still attempt copy
+                    // continue attempting copy
                 }
 
                 if ($s3->exists($file)) {
@@ -56,11 +70,11 @@ class SyncLocalToS3Job implements ShouldQueue
                     continue;
                 }
 
-                Log::info("SyncLocalToS3Job: uploading {$file} to s3...");
+                Log::info("SyncLocalToS3Job: uploading {$file} to s3 (source={$sourceDiskName})...");
 
-                $stream = $local->readStream($file);
+                $stream = $source->readStream($file);
                 if ($stream === false) {
-                    Log::warning("SyncLocalToS3Job: failed to open stream for local file {$file}");
+                    Log::warning("SyncLocalToS3Job: failed to open stream for {$sourceDiskName} file {$file}");
                     continue;
                 }
 
@@ -68,7 +82,18 @@ class SyncLocalToS3Job implements ShouldQueue
                     $s3->put($file, $stream, 'public');
                     Log::info("SyncLocalToS3Job: uploaded {$file} → s3");
 
-                    if ($this->deleteLocalAfterSync) {
+                    // if the source was `local`, ensure a public copy exists so /storage/... dapat diakses
+                    if ($sourceDiskName === 'local' && !$public->exists($file)) {
+                        // copy using stream to avoid double buffering large files
+                        $localStream = $local->readStream($file);
+                        if ($localStream !== false) {
+                            $public->put($file, $localStream, 'public');
+                            if (is_resource($localStream)) fclose($localStream);
+                            Log::info("SyncLocalToS3Job: copied {$file} from local → public");
+                        }
+                    }
+
+                    if ($this->deleteLocalAfterSync && $local->exists($file)) {
                         $local->delete($file);
                         Log::info("SyncLocalToS3Job: deleted local copy {$file}");
                     }

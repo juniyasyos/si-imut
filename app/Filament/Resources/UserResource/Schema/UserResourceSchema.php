@@ -118,7 +118,7 @@ class UserResourceSchema extends UserResource
                 ->schema([
                     FileUpload::make('ttd_url')
                         ->label(__('filament-forms::users.fields.ttd_url'))
-                        ->disk(\App\Support\StorageFallback::isS3Available() ? 's3' : 'local')
+                        ->disk(\App\Support\StorageFallback::isS3Available() ? 's3' : 'public')
                         ->directory('ttd')
                         ->image()
                         ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])

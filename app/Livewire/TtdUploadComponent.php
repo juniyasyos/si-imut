@@ -29,7 +29,8 @@ class TtdUploadComponent extends MyProfileComponent
         $this->userClass = get_class($this->user);
 
         // Tentukan disk berdasarkan ketersediaan MinIO
-        $this->storageDisk = \App\Support\StorageFallback::isS3Available() ? 's3' : 'local';
+        // gunakan `public` (dapat diakses melalui /storage) sebagai fallback — bukan `local` yang private
+        $this->storageDisk = \App\Support\StorageFallback::isS3Available() ? 's3' : 'public';
 
         $this->form->fill($this->user->only($this->only));
     }
