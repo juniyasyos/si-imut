@@ -61,8 +61,7 @@
             ['label' => 'Unit Kerja', 'value' => $unit->unit_name],
             ['label' => 'Periode', 'value' => $periodLabel],
             ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
-        ]"
-    />
+        ]" />
 
     <!-- Info Section -->
     <div class="bg-slate-50 border border-slate-200 rounded-md p-5 mb-6">
@@ -246,13 +245,17 @@
 
     <!-- Footer & Signature -->
     <x-report-footer-data-collector
+        :unit="$unit"
+        :leftUsers="$usersByUnit['pengumpul_data'] ?? null"
+        :leftSignatureImage="$usersByUnit['pengumpul_data'][0]['ttd_url'] ?? null"
+        :rightUsers="$usersByUnit['validator'] ?? null"
+        :rightSignatureImage="$usersByUnit['validator'][0]['ttd_url'] ?? null"
         :notes="[
             'N = Numerator (Pembilang): Jumlah kejadian yang memenuhi kriteria',
             'D = Denominator (Penyebut): Jumlah total kejadian yang diobservasi',
             'Persentase = (N / D) × 100%',
             'Status Tercapai jika Persentase ' . ($imut['target_operator'] ?? '>=') . ' Target Standar',
-        ]"
-    />
+        ]" />
 
     <!-- Preview Controls -->
     <div class="no-print flex gap-3 mt-6">
