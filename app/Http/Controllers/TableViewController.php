@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TableViewController extends Controller
 {
@@ -91,13 +92,6 @@ class TableViewController extends Controller
         // Get entries
         $entries = $query->orderBy('report_date', 'asc')->get();
 
-        // Debug query result
-        // Log::info('TableView query result', [
-        //     'entries_count' => $entries->count(),
-        //     'sql' => $query->toSql(),
-        //     'bindings' => $query->getBindings(),
-        // ]);
-
         if ($entries->isEmpty()) {
             return response()->json([
                 'tableTitle' => 'Data Laporan Harian',
@@ -132,8 +126,26 @@ class TableViewController extends Controller
         $summary = $this->buildSummary($tableData, $entries, $formTemplate);
 
         // Get users (pengumpul data & validator) berdasarkan unit kerja laporan
+        // Pass current entries so selection (top pengumpul) is computed for the active period
         $reportUnitKerja = $entries->first()->unitKerja;
-        $usersByUnit = $this->getUsersByUnit($reportUnitKerja);
+        $usersByUnit = $this->getUsersByUnit($reportUnitKerja, $entries);
+
+        Log::info('TableView query result', [
+            'tableTitle' => $metadata['imut_data'] ?? 'Data Laporan Harian',
+            'tableDescription' => sprintf(
+                'Menampilkan %d data laporan harian %s periode %s',
+                $entries->count(),
+                $metadata['unit_kerja'] ?? '',
+                $metadata['period_label'] ?? $period
+            ),
+            'tableConfig' => $tableConfig,
+            'tableData' => $tableData,
+            'metadata' => $metadata,
+            'summary' => $summary,
+            'user' => $this->getUserInfo($user),
+            'usersByUnit' => $usersByUnit,
+        ]);
+
 
         return response()->json([
             'tableTitle' => $metadata['imut_data'] ?? 'Data Laporan Harian',
@@ -739,8 +751,11 @@ class TableViewController extends Controller
 
     /**
      * Get pengumpul data & validator berdasarkan unit kerja
+     * - optimized: query only users that belong to the specified unit
+     * - period-aware: if $entries provided, pick top pengumpul by submission count
+     * - returns only the selected TTDs (pengumpul top & PIC/validator) in arrays
      */
-    private function getUsersByUnit($unitKerja): array
+    private function getUsersByUnit($unitKerja, $entries = null): array
     {
         if (!$unitKerja) {
             return [
@@ -749,49 +764,121 @@ class TableViewController extends Controller
             ];
         }
 
-        // Get semua user yang active
-        $allUsers = User::with('roles', 'unitKerjas')
-            ->where('status', 'active')
-            ->get();
+        // Precompute counts from $entries (if available) to choose "top" users
+        $submissionCounts = [];
+        $validationCounts = [];
+        $submitterIds = [];
+        $validatorIds = [];
+        if ($entries && $entries->count()) {
+            $groupedSubmitted = $entries->groupBy('submitted_by')->map->count();
+            $submissionCounts = $groupedSubmitted->toArray();
+            $submitterIds = array_map('intval', array_keys($submissionCounts));
 
-        $pengumpulData = [];
-        $validator = [];
-
-        foreach ($allUsers as $user) {
-            // Get user's units
-            $userUnits = $user->unitKerjas->pluck('id')->toArray();
-
-            // Check if user termasuk dalam unit laboratorium ini
-            if (!in_array($unitKerja->id, $userUnits)) {
-                continue; // Skip user yang tidak dari unit ini
-            }
-
-            $roles = $user->roles->pluck('name')->toArray();
-
-            // Check if user has pengumpul_data role
-            if (in_array('pengumpul_data', $roles)) {
-                $pengumpulData[] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'ttd_url' => $user->getFilamentTtdUrl(),
-                ];
-            }
-
-            // Check if user has validator_pic or validator role
-            if (in_array('validator_pic', $roles) || in_array('validator', $roles)) {
-                $validator[] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'ttd_url' => $user->getFilamentTtdUrl(),
-                ];
-            }
+            $groupedValidated = $entries->groupBy('validated_by')->map->count();
+            $validationCounts = $groupedValidated->toArray();
+            $validatorIds = array_map('intval', array_keys($validationCounts));
         }
 
+        // Query only users that belong to the target unit (more efficient)
+        $unitUsers = User::with('roles', 'unitKerjas')
+            ->where('status', 'active')
+            ->whereHas('unitKerjas', function ($q) use ($unitKerja) {
+                $q->where('unit_kerja.id', $unitKerja->id);
+            })
+            ->get();
+
+        // 1) Try selecting top pengumpul from actual submitters in the current entries (preferred)
+        //    IMPORTANT: include submitters even when they are not attached to the unit —
+        //    the footer should reflect who actually submitted the entries for the period.
+        $submitterCandidates = collect();
+        if (!empty($submitterIds)) {
+            $submitterCandidates = User::with('roles', 'unitKerjas')
+                ->whereIn('id', $submitterIds)
+                ->get()
+                // prefer users who also belong to this unit (stable ordering)
+                ->sortByDesc(fn($u) => $u->unitKerjas->pluck('id')->contains($unitKerja->id) ? 1 : 0);
+        }
+
+        // 2) Fallback candidate set: unit users who have role pengumpul_data
+        $pengumpulRoleCandidates = $unitUsers->filter(fn($u) => $u->roles->pluck('name')->contains('pengumpul_data'));
+
+        // 3) Validator candidates: prefer validators who actually validated entries in this period
+        //    same rule as submitters — prefer validators from $entries even if not unit-affiliated
+        $validatorCandidatesFromEntries = collect();
+        if (!empty($validatorIds)) {
+            $validatorCandidatesFromEntries = User::with('roles', 'unitKerjas')
+                ->whereIn('id', $validatorIds)
+                ->get()
+                ->sortByDesc(fn($u) => $u->roles->pluck('name')->contains('validator_pic') ? 1 : 0);
+        }
+
+        $validatorRoleCandidates = $unitUsers->filter(fn($u) => $u->roles->pluck('name')->intersect(['validator_pic', 'validator'])->isNotEmpty());
+
+        // Choose top pengumpul: prefer submitterCandidates who have pengumpul_data role.
+        // IMPORTANT: never select a user whose role contains 'validator_pic' as the pengumpul
+        // even when they were the submitter for the period.
+        $topPengumpul = null;
+        // if ($submitterCandidates->isNotEmpty()) {
+        //     // 1) prefer submitters with the explicit pengumpul_data role
+        //     $preferred = $submitterCandidates->filter(fn($u) => $u->roles->pluck('name')->contains('pengumpul_data'));
+
+        //     if ($preferred->isNotEmpty()) {
+        //         $pool = $preferred;
+        //     } else {
+        //         // 2) otherwise consider submitters but exclude any who are validator_pic
+        //         $nonValidatorPicSubmitters = $submitterCandidates->reject(fn($u) => $u->roles->pluck('name')->contains('validator_pic'));
+
+        //         // If excluding validator_pic leaves an empty pool, fall back to original submitters
+        //         $pool = $nonValidatorPicSubmitters->isNotEmpty() ? $nonValidatorPicSubmitters : $submitterCandidates;
+        //     }
+
+        //     // choose top by submission count (preserves previous behavior)
+        //     $topPengumpul = $pool->sortByDesc(fn($u) => $submissionCounts[$u->id] ?? 0)->first();
+        // } elseif ($pengumpulRoleCandidates->isNotEmpty()) {
+        //     }
+        $topPengumpul = $pengumpulRoleCandidates->sortByDesc(fn($u) => $submissionCounts[$u->id] ?? 0)->first();
+
+        // Choose top validator: prefer validators who validated entries in this period and prefer role validator_pic
+        $topValidator = null;
+        if ($validatorCandidatesFromEntries->isNotEmpty()) {
+            $preferredPic = $validatorCandidatesFromEntries->filter(fn($u) => $u->roles->pluck('name')->contains('validator_pic'));
+            $pool = $preferredPic->isNotEmpty() ? $preferredPic : $validatorCandidatesFromEntries;
+            $topValidator = $pool->sortByDesc(fn($u) => $validationCounts[$u->id] ?? 0)->first();
+        } elseif ($validatorRoleCandidates->isNotEmpty()) {
+            $preferredPic = $validatorRoleCandidates->filter(fn($u) => $u->roles->pluck('name')->contains('validator_pic'));
+            $pool = $preferredPic->isNotEmpty() ? $preferredPic : $validatorRoleCandidates;
+            $topValidator = $pool->first();
+        }
+
+        $formatUser = function ($user, $unitUsers) {
+            if (!$user) return null;
+            $publicTtd = null;
+            if ($user->ttd_url && Storage::disk('public')->exists($user->ttd_url)) {
+                // Storage::disk('public')->url() can return an absolute URL in some envs
+                // (e.g. "http://127.0.0.1:8000/storage/..."). Normalize to a
+                // relative path ("/storage/...") so client rendering and headless
+                // PDF renderers resolve the image reliably.
+                $rawPublicUrl = trim(Storage::disk('public')->url($user->ttd_url));
+                $pathOnly = parse_url($rawPublicUrl, PHP_URL_PATH) ?: $rawPublicUrl;
+                $publicTtd = '/' . ltrim($pathOnly, '/');
+            }
+
+            // Keep S3/external URL as-is via getFilamentTtdUrl()
+            $ttd = $publicTtd ?: $user->getFilamentTtdUrl();
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name')->toArray(),
+                'ttd_url' => $ttd ? trim($ttd) : '',
+                'unit_users' => $unitUsers
+            ];
+        };
+
         return [
-            'pengumpul_data' => $pengumpulData,
-            'validator' => $validator,
+            // Keep same keys/types for backward compatibility — but return only the selected entries
+            'pengumpul_data' => $topPengumpul ? [$formatUser($topPengumpul, $topPengumpul)] : [],
+            'validator' => $topValidator ? [$formatUser($topValidator, $topPengumpul)] : [],
             'unit_kerja_id' => $unitKerja->id,
             'unit_kerja_name' => $unitKerja->unit_name,
         ];

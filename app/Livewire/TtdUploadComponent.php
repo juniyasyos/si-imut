@@ -65,5 +65,5 @@ class TtdUploadComponent extends MyProfileComponent
     public function render()
     {
         return view('livewire.ttd-upload-component');
-    }
+    } 
 }

@@ -154,22 +154,32 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             return null;
         }
 
-        // Jika MinIO/S3 tersedia: kembalikan URL S3 (file sudah disync saat MinIO up)
+        $result = null;
+
+        // Prefer S3 when available
         if (StorageFallback::isS3Available()) {
             try {
-                return Storage::disk('s3')->url($this->ttd_url);
+                $result = Storage::disk('s3')->url($this->ttd_url);
             } catch (\Throwable $e) {
-                // fallback ke public jika ada error
+                $result = null; // continue to public fallback
             }
         }
 
-        // Jika ada salinan di public (fallback saat MinIO mati), kembalikan URL public
-        if (Storage::disk('public')->exists($this->ttd_url)) {
-            return Storage::disk('public')->url($this->ttd_url);
+        // Public fallback
+        if (! $result && Storage::disk('public')->exists($this->ttd_url)) {
+            $result = Storage::disk('public')->url($this->ttd_url);
         }
 
-        // terakhir: coba kembalikan URL S3 (meskipun mungkin tidak reachable)
-        return Storage::disk('s3')->url($this->ttd_url);
+        // Last-resort try S3 (may be unreachable)
+        if (! $result) {
+            try {
+                $result = Storage::disk('s3')->url($this->ttd_url);
+            } catch (\Throwable $e) {
+                $result = null;
+            }
+        }
+
+        return $result ? trim($result) : null;
     }
 
     /**

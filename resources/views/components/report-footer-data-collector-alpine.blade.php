@@ -1,23 +1,24 @@
 @props([
-    'leftTitle' => 'Pengumpul Data',
-    'leftSignature' => '(...........................)',
-    'leftUsers' => null,
-    'leftUsersAlpine' => null, // Untuk Alpine.js data
-    'leftSignatureImage' => null, // URL gambar TTD untuk kiri
-    'rightTitle' => 'Validator Data / Penanggung Jawab',
-    'rightSignature' => '(...........................)',
-    'rightUsers' => null,
-    'rightUsersAlpine' => null, // Untuk Alpine.js data
-    'rightSignatureImage' => null, // URL gambar TTD untuk kanan
-    'showDate' => true,
-    'date' => null,
-    'datePrefix' => 'Jember, ',
-    'dateAlpine' => null, // Untuk Alpine.js date
-    'showSystemNote' => true,
-    'systemNote' => 'Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)',
-    'notes' => null,
-    'borderColor' => 'border-gray-300',
-    'marginTop' => 'mt-8'
+'leftTitle' => 'Pengumpul Data',
+'leftSignature' => '(...........................)',
+'leftUsers' => null,
+'leftUsersAlpine' => null, // Untuk Alpine.js data
+'leftSignatureImage' => null, // URL gambar TTD untuk kiri
+'rightTitle' => 'Validator Data / Penanggung Jawab',
+'rightSignature' => '(...........................)',
+'rightUsers' => null,
+'rightUsersAlpine' => null, // Untuk Alpine.js data
+'rightSignatureImage' => null, // URL gambar TTD untuk kanan
+'showDate' => true,
+'date' => null,
+'datePrefix' => 'Jember, ',
+'dateAlpine' => null, // Untuk Alpine.js date
+'showSystemNote' => true,
+'systemNote' => 'Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)',
+'notes' => null,
+'borderColor' => 'border-gray-300',
+'debug' => true,
+'marginTop' => 'mt-8'
 ])
 
 <!-- Footer & Signature -->
@@ -35,69 +36,91 @@
 
     <div class="flex justify-between mt-8 gap-4">
         <div class="text-center flex-1">
-            <div class="text-sm mb-10 font-semibold"><br><br>{{ $leftTitle }}</div>
-            @if($leftSignatureImage)
-            <div class="mb-2">
-                <img src="{{ $leftSignatureImage }}" alt="Tanda Tangan" class="max-h-12 mx-auto border-b border-gray-400">
+            <div class="text-sm font-semibold"><br><br>{{ $leftTitle }}</div>
+
+            {{-- Alpine-driven primary signature image (use first pengumpul jika ada) --}}
+            <div x-show="{{ $leftUsersAlpine }} && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url" class="mb-1">
+                <img :src="(typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}[0].ttd_url) ? (({{ $leftUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $leftUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $leftUsersAlpine }}[0].ttd_url : '/storage/' + {{ $leftUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain">
             </div>
-            @endif
-            <div class="text-sm font-bold border-black pt-2">{{ $leftSignature }}</div>
-            @if($leftUsersAlpine)
+
             <div class="text-xs text-gray-600 mb-12 min-h-8">
                 <div x-show="{{ $leftUsersAlpine }} && {{ $leftUsersAlpine }}.length > 0">
                     <template x-for="user in {{ $leftUsersAlpine }}" :key="'left-' + user.id">
-                        <div x-text="user.name"></div>
-                        <div x-show="user.ttd_url" class="mt-1">
-                            <img :src="user.ttd_url" alt="Tanda Tangan" class="max-h-8 mx-auto border-b border-gray-400">
-                        </div>
+                        <div x-text="user.name" clasioioioioioioioioios="font-semibold"></div>
                     </template>
                 </div>
             </div>
-            @elseif($leftUsers && count($leftUsers) > 0)
-            <div class="text-xs text-gray-600 mb-12 min-h-8">
-                @foreach($leftUsers as $user)
-                <div>{{ $user['name'] ?? $user }}</div>
-                @endforeach
-            </div>
-            @endif
         </div>
         <div class="text-center flex-1">
             @if($showDate)
             <div class="text-sm mb-2">
                 @if($dateAlpine)
-                <span x-text="{{ $dateAlpine }}"></span>
+                {{-- keluarkan expression JS mentah (jangan di-escape sebagai &quot;) --}}
+                <span x-text='{!! $dateAlpine !!}'></span>
                 @else
-                <span>{{ $datePrefix }}{{ $date ?? now()->translatedFormat('d F Y') }}</span>
+                {{-- Client-side fallback: gunakan Alpine `metadata.period_label` bila tersedia. Ini mencegah
+                     HTML-escaped JS expression yang memecah Alpine runtime. --}}
+                <span x-text="(typeof metadata !== 'undefined' && metadata.period_label) ? '{{ $datePrefix }}' + new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '{{ $datePrefix }}{{ $date ?? now()->translatedFormat('d F Y') }}'"></span>
                 @endif
             </div>
             @endif
-            <div class="text-sm mb-10 font-semibold">{{ $rightTitle }}</div>
-            @if($rightSignatureImage)
-            <div class="mb-2">
-                <img src="{{ $rightSignatureImage }}" alt="Tanda Tangan" class="max-h-12 mx-auto border-b border-gray-400">
+            <div class="text-sm font-semibold">{{ $rightTitle }}</div>
+
+            {{-- Alpine-driven primary signature image (use first validator jika ada) --}}
+            <div x-show="{{ $rightUsersAlpine }} && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url" class="mb-1">
+                <img :src="(typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}[0].ttd_url) ? (({{ $rightUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $rightUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $rightUsersAlpine }}[0].ttd_url : '/storage/' + {{ $rightUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain border-b border-gray-400">
             </div>
-            @endif
-            <div class="text-sm font-bold border-black pt-2">{{ $rightSignature }}</div>
-            @if($rightUsersAlpine)
+
             <div class="text-xs text-gray-600 mb-3 min-h-8">
                 <div x-show="{{ $rightUsersAlpine }} && {{ $rightUsersAlpine }}.length > 0">
                     <template x-for="user in {{ $rightUsersAlpine }}" :key="'right-' + user.id">
-                        <div x-text="user.name"></div>
-                        <div x-show="user.ttd_url" class="mt-1">
-                            <img :src="user.ttd_url" alt="Tanda Tangan" class="max-h-8 mx-auto border-b border-gray-400">
-                        </div>
+                        <div x-text="user.name" class="font-semibold"></div>
                     </template>
                 </div>
             </div>
-            @elseif($rightUsers && count($rightUsers) > 0)
-            <div class="text-xs text-gray-600 mb-3 min-h-8">
-                @foreach($rightUsers as $user)
-                <div>{{ $user['name'] ?? $user }}</div>
-                @endforeach
-            </div>
-            @endif
         </div>
     </div>
+
+    @if($debug)
+    <div x-data="{ open: false }" class="mt-6">
+        <button type="button" x-on:click="open = !open" class="text-xs text-gray-600 underline mb-2">
+            <span x-text="open ? 'Sembunyikan debug log' : 'Tampilkan debug log (JSON)'"></span>
+        </button>
+
+        <div x-show="open" x-cloak class="bg-gray-50 p-3 rounded text-xs text-gray-700 border">
+            @php
+            $__debugData = [
+            'props' => [
+            'leftTitle' => $leftTitle,
+            'leftSignature' => $leftSignature,
+            'leftUsers' => $leftUsers,
+            'leftUsersAlpine' => $leftUsersAlpine,
+            'leftSignatureImage' => $leftSignatureImage,
+            'rightTitle' => $rightTitle,
+            'rightSignature' => $rightSignature,
+            'rightUsers' => $rightUsers,
+            'rightUsersAlpine' => $rightUsersAlpine,
+            'rightSignatureImage' => $rightSignatureImage,
+            'showDate' => $showDate,
+            'date' => $date,
+            'datePrefix' => $datePrefix,
+            'dateAlpine' => $dateAlpine,
+            'showSystemNote' => $showSystemNote,
+            'systemNote' => $systemNote,
+            'notes' => $notes,
+            'borderColor' => $borderColor,
+            'marginTop' => $marginTop,
+            ],
+            'attributes' => $attributes->getAttributes(),
+            ];
+            @endphp
+
+            <div class="mb-3 font-semibold">Server (Blade) — semua data</div>
+            <pre class="whitespace-pre-wrap text-[11px] max-h-64 overflow-auto rounded bg-white p-2 border">{{ json_encode($__debugData, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) }}</pre>
+
+        </div>
+    </div>
+    @endif
 
     @if($showSystemNote)
     <div class="text-center mt-6 text-xs text-gray-500">

@@ -255,7 +255,7 @@
         <div class="report-header border-b-2 border-gray-800 pb-4 mb-6">
             <div class="flex items-start justify-between gap-4 md:gap-6 mb-3">
                 <!-- Logo Kiri -->
-                 <div class="w-32 h-32 flex-shrink-0">
+                <div class="w-32 h-32 flex-shrink-0">
                     <img src="{{ asset('images/assets/logo-rs.webp') }}"
                         alt="Logo RS Citra Husada Jember" class="w-full h-full object-contain">
                 </div>
@@ -480,9 +480,7 @@
         <x-report-footer-data-collector-alpine
             :leftUsersAlpine="'usersByUnit.pengumpul_data'"
             :rightUsersAlpine="'usersByUnit.validator'"
-            :dateAlpine="'metadata.period_label ? &quot;Jember, &quot; + new Date().toLocaleDateString(&quot;id-ID&quot;, {day: &quot;numeric&quot;, month: &quot;long&quot;, year: &quot;numeric&quot;}) : &quot;&quot;'"
-            :marginTop="'mt-8'"
-        />
+            :marginTop="'mt-8'" />
     </div>
 
     <script>
@@ -556,6 +554,9 @@
                         this.summary = jsonData.summary || {};
                         this.userData = jsonData.user || null;
                         this.usersByUnit = jsonData.usersByUnit || {};
+
+                        // DEBUG: tunjukkan runtime usersByUnit (mempermudah verifikasi TTD pada client)
+                        console.log('usersByUnit (runtime):', this.usersByUnit);
 
                         // Set table config
                         if (jsonData.tableConfig && jsonData.tableConfig.headers) {

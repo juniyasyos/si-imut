@@ -1,17 +1,17 @@
 @props([
-    'leftTitle' => 'Mengetahui',
-    'leftSubtitle' => 'Kepala Bagian Mutu',
-    'leftSignature' => '(...........................)',
-    'leftSignatureImage' => null, // URL gambar TTD untuk kiri
-    'rightTitle' => 'Penanggung Jawab',
-    'rightSubtitle' => null,
-    'rightSignature' => '(...........................)',
-    'rightSignatureImage' => null, // URL gambar TTD untuk kanan
-    'showDate' => true,
-    'date' => null,
-    'showSystemNote' => true,
-    'systemNote' => 'Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)',
-    'notes' => null
+'leftTitle' => 'Mengetahui',
+'leftSubtitle' => 'Kepala Bagian Mutu',
+'leftSignature' => '(...........................)',
+'leftSignatureImage' => null, // URL gambar TTD untuk kiri
+'rightTitle' => 'Penanggung Jawab',
+'rightSubtitle' => null,
+'rightSignature' => '(...........................)',
+'rightSignatureImage' => null, // URL gambar TTD untuk kanan
+'showDate' => true,
+'date' => null,
+'showSystemNote' => true,
+'systemNote' => 'Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)',
+'notes' => null
 ])
 
 <!-- Footer & Signature -->
@@ -37,7 +37,7 @@
             </div>
             @if($leftSignatureImage)
             <div class="mb-2">
-                <img src="{{ $leftSignatureImage }}" alt="Tanda Tangan" class="max-h-12 mx-auto border-b border-gray-400">
+                <img src="{{ $leftSignatureImage }}" alt="Tanda Tangan" class="h-12 w-auto mx-auto object-contain border-b border-gray-400">
             </div>
             @endif
             <div class="text-sm font-bold border-t-2 border-black pt-2">{{ $leftSignature }}</div>
@@ -57,7 +57,7 @@
             </div>
             @if($rightSignatureImage)
             <div class="mb-2">
-                <img src="{{ $rightSignatureImage }}" alt="Tanda Tangan" class="max-h-12 mx-auto border-b border-gray-400">
+                <img src="{{ $rightSignatureImage }}" alt="Tanda Tangan" class="h-12 w-auto mx-auto object-contain border-b border-gray-400">
             </div>
             @endif
             <div class="text-sm font-bold border-t-2 border-black pt-2">{{ $rightSignature }}</div>
