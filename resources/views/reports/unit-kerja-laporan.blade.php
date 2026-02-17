@@ -251,7 +251,6 @@
             'D = Denominator (Penyebut): Jumlah total kejadian yang diobservasi',
             'Persentase = (N / D) × 100%',
             'Status Tercapai jika Persentase ' . ($imut['target_operator'] ?? '>=') . ' Target Standar',
-            'Target Standar untuk indikator ini adalah: ' . ($imut['target_operator'] ?? '>=') . ' ' . ($imut['standard'] ?? 0) . '%'
         ]"
     />
 

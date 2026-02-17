@@ -751,135 +751,27 @@ class TableViewController extends Controller
 
     /**
      * Get pengumpul data & validator berdasarkan unit kerja
-     * - optimized: query only users that belong to the specified unit
-     * - period-aware: if $entries provided, pick top pengumpul by submission count
-     * - returns only the selected TTDs (pengumpul top & PIC/validator) in arrays
+     * - Delegates selection rules to SignatoryService (single source of truth)
      */
     private function getUsersByUnit($unitKerja, $entries = null): array
     {
-        if (!$unitKerja) {
+        if (! $unitKerja) {
             return [
                 'pengumpul_data' => [],
                 'validator' => [],
             ];
         }
 
-        // Precompute counts from $entries (if available) to choose "top" users
-        $submissionCounts = [];
-        $validationCounts = [];
-        $submitterIds = [];
-        $validatorIds = [];
-        if ($entries && $entries->count()) {
-            $groupedSubmitted = $entries->groupBy('submitted_by')->map->count();
-            $submissionCounts = $groupedSubmitted->toArray();
-            $submitterIds = array_map('intval', array_keys($submissionCounts));
+        $service = new \App\Services\SignatoryService();
+        $signatories = $service->pickForUnit($unitKerja, $entries);
 
-            $groupedValidated = $entries->groupBy('validated_by')->map->count();
-            $validationCounts = $groupedValidated->toArray();
-            $validatorIds = array_map('intval', array_keys($validationCounts));
-        }
+        $unitUsers = $signatories['unit_users'];
 
-        // Query only users that belong to the target unit (more efficient)
-        $unitUsers = User::with('roles', 'unitKerjas')
-            ->where('status', 'active')
-            ->whereHas('unitKerjas', function ($q) use ($unitKerja) {
-                $q->where('unit_kerja.id', $unitKerja->id);
-            })
-            ->get();
+        $formatUser = function ($user) use ($unitUsers, $service) {
+            if (! $user) return null;
 
-        // 1) Try selecting top pengumpul from actual submitters in the current entries (preferred)
-        //    IMPORTANT: include submitters even when they are not attached to the unit —
-        //    the footer should reflect who actually submitted the entries for the period.
-        $submitterCandidates = collect();
-        if (!empty($submitterIds)) {
-            $submitterCandidates = User::with('roles', 'unitKerjas')
-                ->whereIn('id', $submitterIds)
-                ->get()
-                // prefer users who also belong to this unit (stable ordering)
-                ->sortByDesc(fn($u) => $u->unitKerjas->pluck('id')->contains($unitKerja->id) ? 1 : 0);
-        }
-
-        // 2) Fallback candidate set: unit users who have role pengumpul_data
-        $pengumpulRoleCandidates = $unitUsers->filter(fn($u) => $u->roles->pluck('name')->contains('pengumpul_data'));
-
-        // 3) Validator candidates: prefer validators who actually validated entries in this period
-        //    same rule as submitters — prefer validators from $entries even if not unit-affiliated
-        $validatorCandidatesFromEntries = collect();
-        if (!empty($validatorIds)) {
-            $validatorCandidatesFromEntries = User::with('roles', 'unitKerjas')
-                ->whereIn('id', $validatorIds)
-                ->get()
-                ->sortByDesc(fn($u) => $u->roles->pluck('name')->contains('validator_pic') ? 1 : 0);
-        }
-
-        $validatorRoleCandidates = $unitUsers->filter(fn($u) => $u->roles->pluck('name')->intersect(['validator_pic', 'validator'])->isNotEmpty());
-
-        // Choose top pengumpul: prefer submitterCandidates who have pengumpul_data role.
-        // IMPORTANT: never select a user whose role contains 'validator_pic' as the pengumpul
-        // even when they were the submitter for the period.
-        $topPengumpul = null;
-        // if ($submitterCandidates->isNotEmpty()) {
-        //     // 1) prefer submitters with the explicit pengumpul_data role
-        //     $preferred = $submitterCandidates->filter(fn($u) => $u->roles->pluck('name')->contains('pengumpul_data'));
-
-        //     if ($preferred->isNotEmpty()) {
-        //         $pool = $preferred;
-        //     } else {
-        //         // 2) otherwise consider submitters but exclude any who are validator_pic
-        //         $nonValidatorPicSubmitters = $submitterCandidates->reject(fn($u) => $u->roles->pluck('name')->contains('validator_pic'));
-
-        //         // If excluding validator_pic leaves an empty pool, fall back to original submitters
-        //         $pool = $nonValidatorPicSubmitters->isNotEmpty() ? $nonValidatorPicSubmitters : $submitterCandidates;
-        //     }
-
-        //     // choose top by submission count (preserves previous behavior)
-        //     $topPengumpul = $pool->sortByDesc(fn($u) => $submissionCounts[$u->id] ?? 0)->first();
-        // } elseif ($pengumpulRoleCandidates->isNotEmpty()) {
-        //     }
-        $topPengumpul = $pengumpulRoleCandidates->sortByDesc(fn($u) => $submissionCounts[$u->id] ?? 0)->first();
-
-        // Choose top validator: prefer validators who validated entries in this period and prefer role validator_pic
-        $topValidator = null;
-        if ($validatorCandidatesFromEntries->isNotEmpty()) {
-            $preferredPic = $validatorCandidatesFromEntries->filter(fn($u) => $u->roles->pluck('name')->contains('validator_pic'));
-            $pool = $preferredPic->isNotEmpty() ? $preferredPic : $validatorCandidatesFromEntries;
-            $topValidator = $pool->sortByDesc(fn($u) => $validationCounts[$u->id] ?? 0)->first();
-        } elseif ($validatorRoleCandidates->isNotEmpty()) {
-            $preferredPic = $validatorRoleCandidates->filter(fn($u) => $u->roles->pluck('name')->contains('validator_pic'));
-            $pool = $preferredPic->isNotEmpty() ? $preferredPic : $validatorRoleCandidates;
-            $topValidator = $pool->first();
-        }
-
-        $formatUser = function ($user, $unitUsers) {
-            if (!$user) return null;
-
-            $ttd = null;
-
-            // 1) If stored value is already an absolute URL, use it directly (covers explicit S3/minio URLs)
-            if ($user->ttd_url && preg_match('#^https?://#i', $user->ttd_url)) {
-                $ttd = trim($user->ttd_url);
-            } else {
-                // 2) Prefer canonical URL from the model helper (this prefers S3/MinIO when available)
-                $ttd = $user->getFilamentTtdUrl();
-
-                // 3) If helper returned a public-disk URL ("/storage/...") normalize to a relative path
-                if ($ttd) {
-                    $pathOnly = parse_url($ttd, PHP_URL_PATH) ?: $ttd;
-                    if (str_contains($pathOnly, '/storage/')) {
-                        $ttd = '/' . ltrim($pathOnly, '/');
-                    }
-                }
-
-                // 4) Last-resort: if no URL yet but file exists on local `public` disk, build relative path
-                if (! $ttd && $user->ttd_url && Storage::disk('public')->exists($user->ttd_url)) {
-                    $rawPublicUrl = trim(Storage::disk('public')->url($user->ttd_url));
-                    $pathOnly = parse_url($rawPublicUrl, PHP_URL_PATH) ?: $rawPublicUrl;
-                    $ttd = '/' . ltrim($pathOnly, '/');
-                }
-            }
-
-            // Keep S3/external URL as-is (ttd may be absolute S3 URL) or relative /storage/... for local files
-            $ttd = $ttd ? trim($ttd) : null;
+            // Use SignatoryService to resolve TTD with S3 -> public fallback
+            $ttd = $service->getTtdUrl($user);
 
             return [
                 'id' => $user->id,
@@ -887,16 +779,16 @@ class TableViewController extends Controller
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name')->toArray(),
                 'ttd_url' => $ttd ? trim($ttd) : '',
-                'unit_users' => $unitUsers
+                'unit_users' => $unitUsers,
             ];
         };
 
         return [
-            // Keep same keys/types for backward compatibility — but return only the selected entries
-            'pengumpul_data' => $topPengumpul ? [$formatUser($topPengumpul, $topPengumpul)] : [],
-            'validator' => $topValidator ? [$formatUser($topValidator, $topPengumpul)] : [],
+            'pengumpul_data' => $signatories['pengumpul'] ? [$formatUser($signatories['pengumpul'])] : [],
+            'validator' => $signatories['validator'] ? [$formatUser($signatories['validator'])] : [],
             'unit_kerja_id' => $unitKerja->id,
             'unit_kerja_name' => $unitKerja->unit_name,
+            'unit_users' => $unitUsers->map($formatUser)->values()->toArray(),
         ];
     }
 

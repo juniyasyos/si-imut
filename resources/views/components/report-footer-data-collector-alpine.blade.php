@@ -49,7 +49,7 @@
 
                 {{-- Alpine-driven signature (first user) --}}
                 <div x-show="{{ $leftUsersAlpine }} && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url" class="mb-1">
-                    <img :src="(typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}[0].ttd_url) ? (({{ $leftUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $leftUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $leftUsersAlpine }}[0].ttd_url : '/storage/' + {{ $leftUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain">
+                    <img :src="(typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url) ? (({{ $leftUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $leftUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $leftUsersAlpine }}[0].ttd_url : '/storage/' + {{ $leftUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain">
                 </div>
 
                 {{-- Placeholder when no image is available; reserves same vertical space and shows penanda --}}
@@ -97,7 +97,7 @@
 
                 {{-- Alpine-driven signature (first user) --}}
                 <div x-show="{{ $rightUsersAlpine }} && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url" class="mb-1">
-                    <img :src="(typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}[0].ttd_url) ? (({{ $rightUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $rightUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $rightUsersAlpine }}[0].ttd_url : '/storage/' + {{ $rightUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain border-b border-gray-400">
+                    <img :src="(typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url) ? (({{ $rightUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $rightUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $rightUsersAlpine }}[0].ttd_url : '/storage/' + {{ $rightUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain border-b border-gray-400">
                 </div>
 
                 {{-- Placeholder when no image is available; reserves same vertical space and shows penanda --}}
@@ -157,6 +157,16 @@
 
             <div class="mb-3 font-semibold">Server (Blade) — semua data</div>
             <pre class="whitespace-pre-wrap text-[11px] max-h-64 overflow-auto rounded bg-white p-2 border">{{ json_encode($__debugData, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) }}</pre>
+
+
+            <div class="mt-3 mb-1 font-semibold">Client (Alpine) — runtime data</div>
+            <pre x-text="JSON.stringify({
+                leftUsersAlpine: (typeof {{ $leftUsersAlpine ?? 'null' }} !== 'undefined' ? {{ $leftUsersAlpine ?? 'null' }} : null),
+                rightUsersAlpine: (typeof {{ $rightUsersAlpine ?? 'null' }} !== 'undefined' ? {{ $rightUsersAlpine ?? 'null' }} : null),
+                // server-provided `dateAlpine` (raw JS expression) is NOT evaluated here to avoid
+                // HTML-escaped tokens breaking Alpine. Show literal prop value instead.
+                dateAlpine: <?php echo json_encode($dateAlpine ?? null); ?>
+            }, null, 2)" class="whitespace-pre-wrap text-[11px] max-h-64 overflow-auto rounded bg-white p-2 border"></pre>
 
         </div>
     </div>

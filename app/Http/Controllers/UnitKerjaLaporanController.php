@@ -163,6 +163,31 @@ class UnitKerjaLaporanController extends Controller
         // Build chart data
         $chartData = $this->buildChartData($dataByImut);
 
+        // Prepare signatories for footer using SignatoryService
+        $signatoryService = new \App\Services\SignatoryService();
+        $signatories = $signatoryService->pickForUnit($unit);
+
+        // Format users for blade component (keep compatibility with existing props)
+        $formatForView = function ($user) use ($signatories, $signatoryService) {
+            if (! $user) return null;
+
+            // Use SignatoryService to resolve TTD (S3 first, then public/local)
+            $ttd = $signatoryService->getTtdUrl($user);
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'ttd_url' => $ttd ? trim($ttd) : '',
+            ];
+        };
+
+        $usersByUnit = [
+            'pengumpul_data' => $signatories['pengumpul'] ? [$formatForView($signatories['pengumpul'])] : [],
+            'validator' => $signatories['validator'] ? [$formatForView($signatories['validator'])] : [],
+            'unit_kerja_id' => $unit->id,
+            'unit_kerja_name' => $unit->unit_name,
+        ];
+
         return view('reports.unit-kerja-laporan', [
             'unit' => $unit,
             'tipe' => $tipe,
@@ -173,6 +198,7 @@ class UnitKerjaLaporanController extends Controller
             'summary' => $summary,
             'allMonths' => $allMonths,
             'chartData' => $chartData,
+            'usersByUnit' => $usersByUnit,
         ]);
     }
 
