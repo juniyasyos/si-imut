@@ -82,16 +82,22 @@ class ManageFormBuilder extends Page implements HasForms
             ->color('success')
             ->action('performSave');
 
-        if ($this->hasExistingResponses && $this->canForceUpdate) {
-            $saveAction->requiresConfirmation()
-                ->modalHeading('Konfirmasi Perubahan Form (Super Admin)')
-                ->modalDescription("Form template ini sudah memiliki {$this->responseCount} data respons harian. Sebagai super admin, Anda dapat memaksa update, yang akan menghapus semua data respons yang ada. Apakah Anda yakin ingin melanjutkan?")
-                ->modalSubmitActionLabel('Ya, Hapus Data dan Simpan')
-                ->modalCancelActionLabel('Batal');
-        }
+        // Explicit reset action for Super Admins (separate from Save)
+        $resetAction = Action::make('reset')
+            ->label('Reset Form & Hapus Responses')
+            ->icon('heroicon-o-trash')
+            ->color('danger')
+            ->visible(fn() => $this->canForceUpdate)
+            ->requiresConfirmation()
+            ->modalHeading('Reset Form dan Hapus Semua Data Respons')
+            ->modalDescription(fn() => "Aksi ini akan menghapus semua <strong>{$this->responseCount}</strong> data respons harian terkait dan mengosongkan struktur field pada template. Tindakan ini tidak dapat dibatalkan.")
+            ->action('performReset');
 
         return [
             $saveAction,
+
+            // Show Reset only to users with explicit permission
+            $resetAction,
 
             Action::make('preview')
                 ->label('Preview Form')
@@ -110,10 +116,8 @@ class ManageFormBuilder extends Page implements HasForms
 
             $formPersistenceService = new FormPersistenceService();
 
-            if ($this->hasExistingResponses && $this->canForceUpdate) {
-                $formPersistenceService->deleteResponses($this->record);
-            }
-
+            // NOTE: Do NOT delete existing responses during a normal save.
+            // Reset/delete of responses must be done explicitly via the dedicated Reset action.
             $formPersistenceService->saveFormData($this->record, $data);
             $formPersistenceService->calculateAndUpdateCompliance($this->record);
 
@@ -159,6 +163,46 @@ class ManageFormBuilder extends Page implements HasForms
         }
     }
 
+    /**
+     * Perform a destructive reset: delete all responses and remove form fields.
+     * Visible only to users with permission (Super Admin).
+     */
+    public function performReset(): void
+    {
+        if (! $this->canForceUpdate) {
+            Notification::make()->title('Akses ditolak')->danger()->send();
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $formPersistenceService = new FormPersistenceService();
+
+            // Delete all DailyReportResponse (and cascade FieldResponse)
+            $formPersistenceService->deleteResponses($this->record);
+
+            // Remove form fields so the template becomes empty
+            $formTemplate = \App\Models\FormTemplate::where('imut_profile_id', $this->record->id)->first();
+            if ($formTemplate) {
+                $formTemplate->formFields()->delete();
+                $formTemplate->update(['scoring_config' => null]);
+            }
+
+            DB::commit();
+
+            // Refresh UI state
+            $this->data = (new FormDataService())->loadFormData($this->record);
+            $this->form->fill($this->data);
+            $this->hasExistingResponses = false;
+            $this->responseCount = 0;
+
+            Notification::make()->title('Reset berhasil')->success()->send();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Notification::make()->title('Reset gagal')->body($e->getMessage())->danger()->send();
+        }
+    }
     public function preview(): void
     {
         // Save current form data before redirecting to preview (only if no existing responses)

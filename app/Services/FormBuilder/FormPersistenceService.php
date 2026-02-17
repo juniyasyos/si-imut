@@ -7,6 +7,7 @@ use App\Models\FormTemplate;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class FormPersistenceService
@@ -22,7 +23,7 @@ class FormPersistenceService
 
     private function saveToEnhancedFormat(ImutProfile $record, array $data): void
     {
-        // Ensure only one template per profile - find or create
+        // Ensure only one template per profile - find or create (defensive: handle duplicate-key races)
         $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
 
         if ($formTemplate) {
@@ -33,52 +34,121 @@ class FormPersistenceService
                 'compliance_method' => $data['compliance_method'],
                 'auto_fail_on_critical' => $data['auto_fail_on_critical'],
             ]);
-
-            // Delete existing fields and options, then recreate
-            $formTemplate->formFields()->delete();
         } else {
-            // Create new form template
-            $formTemplate = FormTemplate::create([
-                'imut_profile_id' => $record->id,
-                'title' => $data['title'],
-                'description' => $data['description'],
-                'compliance_method' => $data['compliance_method'],
-                'auto_fail_on_critical' => $data['auto_fail_on_critical'],
-                'status' => true,
-            ]);
+            // Try to create; if a duplicate-key is raised (concurrent/create-lookup race), re-fetch the existing record
+            try {
+                $formTemplate = FormTemplate::create([
+                    'imut_profile_id' => $record->id,
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'compliance_method' => $data['compliance_method'],
+                    'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // MySQL duplicate key code is 23000 / 1062 — treat as retryable for our unique imut_profile_id index
+                if (str_contains($e->getMessage(), 'unique_form_template_per_profile') || str_contains($e->getMessage(), 'Duplicate entry')) {
+                    // Another template already exists for this profile; fetch and update it instead
+                    $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+
+                    if (!$formTemplate) {
+                        // Unexpected — rethrow to surface the original problem
+                        throw $e;
+                    }
+
+                    $formTemplate->update([
+                        'title' => $data['title'],
+                        'description' => $data['description'],
+                        'compliance_method' => $data['compliance_method'],
+                        'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+                    ]);
+                } else {
+                    throw $e;
+                }
+            }
         }
 
-        $this->saveEnhancedFields($formTemplate, $data['fields'] ?? []);
+        // Reconcile fields with incoming payload in a non-destructive way
+        $this->reconcileEnhancedFields($formTemplate, $data['fields'] ?? []);
     }
 
-    private function saveEnhancedFields(FormTemplate $formTemplate, array $fields): void
+    /**
+     * Reconcile incoming fields with existing fields in a non-destructive way.
+     * - update existing fields (matched by field_key)
+     * - create new fields
+     * - delete only fields that are removed and have NO field_responses
+     * - preserve any field that already has responses
+     */
+    private function reconcileEnhancedFields(FormTemplate $formTemplate, array $fields): void
     {
+        $existingFields = $formTemplate->formFields()->get()->keyBy('field_key');
+        $incomingKeys = [];
+
         foreach ($fields as $index => $fieldData) {
-            // Only save conditional_logic if has_conditional_logic is true and conditional_logic has data
+            $fieldKey = $this->generateFieldKey($fieldData);
+            $incomingKeys[] = $fieldKey;
+
+            // Prepare conditional logic only when provided
             $conditionalLogic = null;
             if (($fieldData['has_conditional_logic'] ?? false) && !empty($fieldData['conditional_logic'])) {
                 $conditionalLogic = $fieldData['conditional_logic'];
             }
 
-            $field = EnhancedFormField::create([
-                'form_template_id' => $formTemplate->id,
-                'field_key' => $this->generateFieldKey($fieldData),
-                'field_label' => $fieldData['field_label'],
-                'field_description' => $fieldData['field_description'] ?? null,
-                'field_type' => $fieldData['field_type'],
-                'validation_config' => $fieldData['validation_config'] ?? [],
-                'history_suggestions' => $this->processHistorySuggestions($fieldData['history_suggestions'] ?? []),
-                'compliance_weight' => $fieldData['compliance_weight'] ?? 2,
-                'is_critical_field' => $fieldData['is_critical_field'] ?? false,
-                'conditional_logic' => $conditionalLogic,
-                'compliance_rules' => $fieldData['compliance_rules'] ?? null,
-                'order_index' => $index + 1,
-                'time_format' => $fieldData['time_format'] ?? 'HM',
-                'default_valid_duration' => $fieldData['default_valid_duration'] ?? 480,
-                'status' => true,
-            ]);
+            if ($existingFields->has($fieldKey)) {
+                // Update existing field (non-destructive)
+                $field = $existingFields->get($fieldKey);
+                $field->update([
+                    'field_label' => $fieldData['field_label'] ?? $field->field_label,
+                    'field_description' => $fieldData['field_description'] ?? $field->field_description,
+                    'field_type' => $fieldData['field_type'] ?? $field->field_type,
+                    'validation_config' => $fieldData['validation_config'] ?? $field->validation_config,
+                    'history_suggestions' => $this->processHistorySuggestions($fieldData['history_suggestions'] ?? []),
+                    'compliance_weight' => $fieldData['compliance_weight'] ?? $field->compliance_weight,
+                    'is_critical_field' => $fieldData['is_critical_field'] ?? $field->is_critical_field,
+                    'conditional_logic' => $conditionalLogic ?? $field->conditional_logic,
+                    'compliance_rules' => $fieldData['compliance_rules'] ?? $field->compliance_rules,
+                    'order_index' => $index + 1,
+                    'time_format' => $fieldData['time_format'] ?? $field->time_format,
+                    'default_valid_duration' => $fieldData['default_valid_duration'] ?? $field->default_valid_duration,
+                ]);
 
-            $this->saveFieldOptions($field, $fieldData['options'] ?? []);
+                // Reconcile options non-destructively (don't remove existing options that may be referenced by historical responses)
+                $this->reconcileFieldOptions($field, $fieldData['options'] ?? []);
+            } else {
+                // Create new field
+                $field = EnhancedFormField::create([
+                    'form_template_id' => $formTemplate->id,
+                    'field_key' => $fieldKey,
+                    'field_label' => $fieldData['field_label'] ?? ($fieldData['field_key'] ?? 'field'),
+                    'field_description' => $fieldData['field_description'] ?? null,
+                    'field_type' => $fieldData['field_type'] ?? 'text',
+                    'validation_config' => $fieldData['validation_config'] ?? [],
+                    'history_suggestions' => $this->processHistorySuggestions($fieldData['history_suggestions'] ?? []),
+                    'compliance_weight' => $fieldData['compliance_weight'] ?? 2,
+                    'is_critical_field' => $fieldData['is_critical_field'] ?? false,
+                    'conditional_logic' => $conditionalLogic,
+                    'compliance_rules' => $fieldData['compliance_rules'] ?? null,
+                    'order_index' => $index + 1,
+                    'time_format' => $fieldData['time_format'] ?? 'HM',
+                    'default_valid_duration' => $fieldData['default_valid_duration'] ?? 480,
+                ]);
+
+                $this->saveFieldOptions($field, $fieldData['options'] ?? []);
+            }
+        }
+
+        // Handle fields that were removed in incoming payload
+        $removedKeys = $existingFields->keys()->diff($incomingKeys);
+        foreach ($removedKeys as $removedKey) {
+            $removedField = $existingFields->get($removedKey);
+
+            // If there are historical field responses, do NOT delete — keep to preserve data
+            if ($removedField->fieldResponses()->exists()) {
+                // keep existing field intact (non-destructive)
+                continue;
+            }
+
+            // Safe to delete (no historical responses)
+            $removedField->delete();
         }
     }
 
@@ -109,8 +179,8 @@ class FormPersistenceService
                 'option_text' => $optionData['label'] ?? $optionData['option_text'] ?? '',
                 'option_value' => $optionData['value'] ?? $optionData['option_value'] ?? '',
                 'is_correct' => $optionData['is_correct'] ?? true,
+                'compliance_value' => $optionData['compliance_value'] ?? (($optionData['is_correct'] ?? false) ? 100 : 0),
                 'order_index' => $index + 1,
-                'status' => true,
             ]);
         }
     }
@@ -164,6 +234,44 @@ class FormPersistenceService
         }
 
         return $formatted;
+    }
+
+    /**
+     * Reconcile options for an existing field without deleting historically referenced options.
+     * - update matching options by option_value
+     * - create new options from incoming payload
+     * - DO NOT delete existing options (preserve historical references)
+     */
+    private function reconcileFieldOptions(EnhancedFormField $field, array $options): void
+    {
+        $existingOptions = $field->options()->get()->keyBy('option_value');
+
+        foreach ($options as $index => $optionData) {
+            $optionValue = $optionData['value'] ?? $optionData['option_value'] ?? null;
+            $optionText = $optionData['label'] ?? $optionData['option_text'] ?? $optionValue;
+
+            if ($optionValue && $existingOptions->has($optionValue)) {
+                $opt = $existingOptions->get($optionValue);
+                $opt->update([
+                    'option_text' => $optionText ?? $opt->option_text,
+                    'is_correct' => $optionData['is_correct'] ?? $opt->is_correct,
+                    'compliance_value' => $optionData['compliance_value'] ?? $opt->compliance_value,
+                    'order_index' => $index + 1,
+                ]);
+            } else {
+                // Create new option (safe)
+                FormFieldOption::create([
+                    'enhanced_form_field_id' => $field->id,
+                    'option_text' => $optionText ?? '',
+                    'option_value' => $optionValue ?? ($optionText ?? ''),
+                    'is_correct' => $optionData['is_correct'] ?? true,
+                    'compliance_value' => $optionData['compliance_value'] ?? (($optionData['is_correct'] ?? false) ? 100 : 0),
+                    'order_index' => $index + 1,
+                ]);
+            }
+        }
+
+        // Intentionally do not remove existing options to avoid breaking historical responses.
     }
 
     public function hasExistingResponses(ImutProfile $record): bool

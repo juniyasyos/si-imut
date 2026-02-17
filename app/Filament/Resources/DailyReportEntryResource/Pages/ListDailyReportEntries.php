@@ -104,7 +104,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
         $validatedDate = $this->selectedDate;
 
-        Log::info('OpenSlideOver called', ['indicator_id' => $indicatorId, 'date' => $validatedDate]);
+        // Log::info('OpenSlideOver called', ['indicator_id' => $indicatorId, 'date' => $validatedDate]);
 
         // Update URL without page refresh
         $this->js("

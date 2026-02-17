@@ -77,6 +77,17 @@ class ComplianceCalculatorService
                                 $passesMinimum = $correctSelected >= $minCorrect;
                                 $passesWrongRule = $allowWrong || $wrongSelected == 0;
 
+                                // dd([
+                                //     'field_key' => $field->field_key,
+                                //     'correctSelected' => $correctSelected,
+                                //     'wrongSelected' => $wrongSelected,
+                                //     'minCorrect' => $minCorrect,
+                                //     'allowWrong' => $allowWrong,
+                                //     'passesMinimum' => $passesMinimum,
+                                //     'passesWrongRule' => $passesWrongRule,
+                                //     '$minCorrect' => $minCorrect,
+                                // ]);
+
                                 $fieldScore = ($passesMinimum && $passesWrongRule) ? $field->compliance_weight : 0;
                             }
                             break;

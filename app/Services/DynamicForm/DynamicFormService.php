@@ -174,6 +174,8 @@ class DynamicFormService
                         $defaultValue = 0;
                         break;
                     case 'single_select':
+                        $defaultValue = null;
+                        break;
                     case 'boolean':
                         // Leave as null for selects to show placeholder
                         $defaultValue = null;
@@ -195,12 +197,5 @@ class DynamicFormService
         }
 
         return $data;
-    }
-
-    private static function convertMinutesToTime(int $minutes): string
-    {
-        $hours = intdiv($minutes, 60);
-        $mins = $minutes % 60;
-        return sprintf('%02d:%02d', $hours, $mins);
     }
 }
