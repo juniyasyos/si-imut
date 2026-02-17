@@ -17,7 +17,7 @@
 'systemNote' => 'Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)',
 'notes' => null,
 'borderColor' => 'border-gray-300',
-'debug' => true,
+'debug' => false,
 'marginTop' => 'mt-8'
 ])
 
