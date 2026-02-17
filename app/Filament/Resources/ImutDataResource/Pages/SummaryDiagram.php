@@ -106,7 +106,7 @@ class SummaryDiagram extends Page
                     }
 
                     if (!$latestLaporan) {
-                        Notification::make()
+                        Notification::make() 
                             ->title('Tidak ada laporan tersedia')
                             ->body('Belum ada laporan yang tersedia untuk indikator ini.')
                             ->warning()

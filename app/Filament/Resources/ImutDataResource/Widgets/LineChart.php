@@ -47,12 +47,14 @@ class LineChart extends ApexChartWidget
 
     protected function getFormSchema(): array
     {
+        // Years available from laporan_imuts (already ordered desc)
         $years = LaporanImut::select('report_year as year')
             ->distinct()
             ->orderBy('report_year', 'desc')
             ->pluck('year', 'year')
             ->toArray();
 
+        // Human-friendly month labels
         $months = [
             1 => 'Jan',
             2 => 'Feb',
@@ -80,6 +82,85 @@ class LineChart extends ApexChartWidget
             'S2' => 'Semester 2 (Jul - Des)'
         ];
 
+        // Default behaviour: use custom-range with end = current month (if available in laporan_imuts)
+        // and start = 6 months before end. If calculated months don't exist in laporan_imuts,
+        // fall back to the closest available periods (or to now() when no laporan exists).
+        $now = now();
+
+        // Latest overall report (fallback)
+        $latestOverall = LaporanImut::orderBy('report_year', 'desc')
+            ->orderBy('report_month', 'desc')
+            ->first();
+
+        // Prefer current month/year when available in laporan_imuts for end period
+        $endMonthCandidate = LaporanImut::where('report_year', $now->year)
+            ->where('report_month', '<=', $now->month)
+            ->max('report_month');
+
+        if ($endMonthCandidate) {
+            $defaultEndYear = (int) $now->year;
+            $defaultEndMonth = (int) $endMonthCandidate;
+        } elseif ($latestOverall) {
+            $defaultEndYear = (int) $latestOverall->report_year;
+            $defaultEndMonth = (int) $latestOverall->report_month;
+        } else {
+            $defaultEndYear = (int) $now->year;
+            $defaultEndMonth = (int) $now->month;
+        }
+
+        // Desired start = 6 months before selected end (inclusive)
+        $desiredStart = \Carbon\Carbon::create($defaultEndYear, $defaultEndMonth, 1)->subMonths(6);
+
+        // Find the closest available laporan_imut on or before desiredStart
+        $startRecord = LaporanImut::where(function ($q) use ($desiredStart) {
+            $q->where('report_year', '<', $desiredStart->year)
+                ->orWhere(function ($q2) use ($desiredStart) {
+                    $q2->where('report_year', '=', $desiredStart->year)
+                        ->where('report_month', '<=', $desiredStart->month);
+                });
+        })
+            ->orderBy('report_year', 'desc')
+            ->orderBy('report_month', 'desc')
+            ->first();
+
+        if ($startRecord) {
+            $defaultStartYear = (int) $startRecord->report_year;
+            $defaultStartMonth = (int) $startRecord->report_month;
+        } elseif ($latestOverall) {
+            // If nothing exists before desired start, pick the earliest available record
+            $earliest = LaporanImut::orderBy('report_year', 'asc')
+                ->orderBy('report_month', 'asc')
+                ->first();
+
+            if ($earliest) {
+                $defaultStartYear = (int) $earliest->report_year;
+                $defaultStartMonth = (int) $earliest->report_month;
+            } else {
+                // no laporan at all -> fallback to end period
+                $defaultStartYear = $defaultEndYear;
+                $defaultStartMonth = $defaultEndMonth;
+            }
+        } else {
+            $defaultStartYear = $defaultEndYear;
+            $defaultStartMonth = $defaultEndMonth;
+        }
+
+        // Ensure start is not after end
+        if (
+            $defaultStartYear > $defaultEndYear ||
+            ($defaultStartYear === $defaultEndYear && $defaultStartMonth > $defaultEndMonth)
+        ) {
+            $defaultStartYear = $defaultEndYear;
+            $defaultStartMonth = $defaultEndMonth;
+        }
+
+        // Keep quarter/semester/year defaults consistent with the computed end period
+        $defaultQuarter = 'Q' . (int) ceil($defaultEndMonth / 3);
+        $defaultSemester = $defaultEndMonth <= 6 ? 'S1' : 'S2';
+
+        // Provide a sensible default year for other selectors (use end year)
+        $defaultYear = $defaultEndYear;
+
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
 
         // Enhanced region options with grouping
@@ -101,7 +182,7 @@ class LineChart extends ApexChartWidget
                             'yearly' => '📆 Tahunan'
                         ])
                         ->default('custom')
-                        ->live() // Only for conditional fields visibility
+                        ->live()
                         ->columnSpan('full')
                         ->helperText('Pilih mode filter periode yang ingin digunakan'),
                 ]),
@@ -110,11 +191,11 @@ class LineChart extends ApexChartWidget
                 ->description('Atur rentang waktu data yang ingin ditampilkan pada grafik.')
                 ->columns(2)
                 ->schema([
-                    // Custom Range Filters (conditional)                    
+                    // Custom Range Filters (conditional)
                     Select::make('start_month')
                         ->label('Bulan Mulai')
-                        ->options($months)
-                        ->default(1)
+                        ->options(fn($get) => $this->getMonthsForYearOptions($get('start_year') ?? $defaultStartYear))
+                        ->default($defaultStartMonth)
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'custom')
                         ->columnSpan(1),
@@ -122,15 +203,15 @@ class LineChart extends ApexChartWidget
                     Select::make('start_year')
                         ->label('Tahun Mulai')
                         ->options($years)
-                        ->default(now()->year)
+                        ->default($defaultStartYear)
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'custom')
                         ->columnSpan(1),
 
                     Select::make('end_month')
                         ->label('Bulan Selesai')
-                        ->options($months)
-                        ->default(now()->month)
+                        ->options(fn($get) => $this->getMonthsForYearOptions($get('end_year') ?? $defaultEndYear))
+                        ->default($defaultEndMonth)
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'custom')
                         ->columnSpan(1),
@@ -138,7 +219,7 @@ class LineChart extends ApexChartWidget
                     Select::make('end_year')
                         ->label('Tahun Selesai')
                         ->options($years)
-                        ->default(now()->year)
+                        ->default($defaultEndYear)
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'custom')
                         ->columnSpan(1),
@@ -147,7 +228,7 @@ class LineChart extends ApexChartWidget
                     Select::make('quarter_year')
                         ->label('Tahun')
                         ->options($years)
-                        ->default(now()->year)
+                        ->default($defaultYear)
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'quarter')
                         ->columnSpan(1),
@@ -155,17 +236,17 @@ class LineChart extends ApexChartWidget
                     Select::make('quarters')
                         ->label('Pilih Quarter')
                         ->options($quarters)
-                        ->default(['Q1'])
+                        ->default([$defaultQuarter])
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'quarter')
                         ->helperText('Pilih satu atau lebih quarter yang ingin ditampilkan')
                         ->columnSpan(1),
 
-                    // Semester Filters (conditional)  
+                    // Semester Filters (conditional)
                     Select::make('semester_year')
                         ->label('Tahun')
                         ->options($years)
-                        ->default(now()->year)
+                        ->default($defaultYear)
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'semester')
                         ->columnSpan(1),
@@ -173,7 +254,7 @@ class LineChart extends ApexChartWidget
                     Select::make('semesters')
                         ->label('Pilih Semester')
                         ->options($semesters)
-                        ->default(['S1'])
+                        ->default([$defaultSemester])
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'semester')
                         ->helperText('Pilih satu atau lebih semester yang ingin ditampilkan')
@@ -184,7 +265,7 @@ class LineChart extends ApexChartWidget
                         ->label('Pilih Tahun')
                         ->options($years)
                         ->multiple()
-                        ->default([now()->year])
+                        ->default([$defaultYear])
                         ->required()
                         ->visible(fn($get) => $get('filter_mode') === 'yearly')
                         ->helperText('Pilih satu atau lebih tahun untuk ditampilkan')
@@ -539,7 +620,7 @@ class LineChart extends ApexChartWidget
         switch ($mode) {
             case 'quarter':
                 $quarters = $this->filterFormData['quarters'] ?? ['Q1'];
-                
+
                 // Ensure quarters is always an array
                 if (!is_array($quarters)) {
                     $quarters = [$quarters];
@@ -561,7 +642,7 @@ class LineChart extends ApexChartWidget
 
             case 'semester':
                 $semesters = $this->filterFormData['semesters'] ?? ['S1'];
-                
+
                 // Ensure semesters is always an array
                 if (!is_array($semesters)) {
                     $semesters = [$semesters];
@@ -598,7 +679,7 @@ class LineChart extends ApexChartWidget
             case 'quarter':
                 $year = $this->filterFormData['quarter_year'] ?? now()->year;
                 $quarters = $this->filterFormData['quarters'] ?? ['Q1'];
-                
+
                 // Ensure quarters is always an array
                 if (!is_array($quarters)) {
                     $quarters = [$quarters];
@@ -624,7 +705,7 @@ class LineChart extends ApexChartWidget
             case 'semester':
                 $year = $this->filterFormData['semester_year'] ?? now()->year;
                 $semesters = $this->filterFormData['semesters'] ?? ['S1'];
-                
+
                 // Ensure semesters is always an array
                 if (!is_array($semesters)) {
                     $semesters = [$semesters];
@@ -646,12 +727,12 @@ class LineChart extends ApexChartWidget
 
             case 'yearly':
                 $years = $this->filterFormData['yearly_years'] ?? [now()->year];
-                
+
                 // Ensure years is always an array
                 if (!is_array($years)) {
                     $years = [$years];
                 }
-                
+
                 return [min($years), 1, max($years), 12];
 
             default: // custom
@@ -662,6 +743,66 @@ class LineChart extends ApexChartWidget
                     $this->filterFormData['end_month'] ?? now()->month
                 ];
         }
+    }
+
+    /**
+     * Return available months for a given report year (limits options to months that exist in laporan_imuts).
+     * Falls back to full month list when no records exist for the year.
+     *
+     * @param mixed $year
+     * @return array
+     */
+    protected function getMonthsForYearOptions($year): array
+    {
+        $year = $year ? (int) $year : (int) (LaporanImut::max('report_year') ?? now()->year);
+
+        $monthRows = LaporanImut::where('report_year', $year)
+            ->distinct()
+            ->orderBy('report_month')
+            ->pluck('report_month')
+            ->toArray();
+
+        $labels = [
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'Mei',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Agu',
+            9 => 'Sep',
+            10 => 'Okt',
+            11 => 'Nov',
+            12 => 'Des'
+        ];
+
+        if (empty($monthRows)) {
+            return $labels; // fallback to full list
+        }
+
+        $result = [];
+        foreach ($monthRows as $m) {
+            $result[(int) $m] = $labels[(int) $m] ?? (string) $m;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Return latest report year available in laporan_imuts or null.
+     */
+    protected function getLatestReportYear(): ?int
+    {
+        return LaporanImut::max('report_year') ? (int) LaporanImut::max('report_year') : null;
+    }
+
+    /**
+     * Return latest report month for a given year (or null if none)
+     */
+    protected function getLatestReportMonthForYear(int $year): ?int
+    {
+        return LaporanImut::where('report_year', $year)->max('report_month') ? (int) LaporanImut::where('report_year', $year)->max('report_month') : null;
     }
 
     /**

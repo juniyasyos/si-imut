@@ -37,13 +37,13 @@
             </div>
             @if($leftSignatureImage)
             <div class="mb-2">
-                <img src="{{ $leftSignatureImage }}" alt="Tanda Tangan" class="h-12 w-auto mx-auto object-contain border-b border-gray-400">
+                <img src="{{ $leftSignatureImage }}" alt="Tanda Tangan" class="h-12 w-auto mx-auto object-contain>
             </div>
             @endif
             <div class="text-sm font-bold border-t-2 border-black pt-2">{{ $leftSignature }}</div>
         </div>
         <div class="text-center w-56">
-            <div class="text-sm mb-20">
+            <div class="text-sm mb-5">
                 @if($showDate && $rightSubtitle)
                 {{ $date ?? now()->translatedFormat('d F Y') }},<br>{{ $rightTitle }}
                 @elseif($showDate)
@@ -56,8 +56,8 @@
                 @endif
             </div>
             @if($rightSignatureImage)
-            <div class="mb-2">
-                <img src="{{ $rightSignatureImage }}" alt="Tanda Tangan" class="h-12 w-auto mx-auto object-contain border-b border-gray-400">
+            <div class="mb-5">
+                <img src="{{ $rightSignatureImage }}" alt="Tanda Tangan" class="h-12 w-auto mx-auto object-contain>
             </div>
             @endif
             <div class="text-sm font-bold border-t-2 border-black pt-2">{{ $rightSignature }}</div>

@@ -75,8 +75,7 @@
 
         <!-- Header dengan Logo -->
         <x-basic-report-header
-            title="Laporan Triwulan Indikator Mutu"
-        />
+            title="Laporan Triwulan Indikator Mutu" />
 
         <!-- Enhanced Dashboard -->
         <div class="bg-white border border-gray-300 rounded-lg shadow-sm mb-6 overflow-hidden">
@@ -473,12 +472,60 @@
 
 
         <!-- Footer & Signature -->
+
+
         <x-report-footer-signature
-            :leftSignature="$laporan->created_by ?? '(...........................)'"
-            :leftSignatureImage="$laporan->createdBy->getFilamentTtdUrl() ?? null"
-            :rightSignature="'(...........................)'"
-            :date="'3 Januari 2026'"
-        />
+            :leftSignature="$leftSignerName"
+            :leftSignatureImage="$leftSignerImage"
+            :rightSignature="$rightSignerName"
+            :rightSignatureImage="$rightSignerImage"
+            :date="$signatureDate" />
+
+        <!-- DEBUG PANEL: tampilkan informasi TTD untuk troubleshooting (no-print) -->
+        <!-- <div class="no-print mt-4 p-3 border border-red-200 bg-red-50 text-sm rounded">
+            <details open>
+                <summary class="font-semibold text-red-700">DEBUG TTD — informasi (hapus setelah verifikasi)</summary>
+
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-800">
+                    <div>
+                        <pre class="whitespace-pre-wrap break-words bg-white p-2 border rounded text-xs">{{ json_encode($ttdDebug ?? [], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) }}</pre>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <strong>Preview Left TTD</strong>
+                            <div class="mt-2 border p-2 bg-white text-center">
+                                @if($leftSignerImage)
+                                <img src="{{ $leftSignerImage }}" alt="left-ttd" class="mx-auto h-20 object-contain border">
+                                @else
+                                <div class="text-red-500">(no image resolved)</div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div>
+                            <strong>Preview Right TTD</strong>
+                            <div class="mt-2 border p-2 bg-white text-center">
+                                @if($rightSignerImage)
+                                <img src="{{ $rightSignerImage }}" alt="right-ttd" class="mx-auto h-20 object-contain border">
+                                @else
+                                <div class="text-red-500">(no image resolved)</div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div>
+                            <strong>Tips:</strong>
+                            <ul class="ml-4 list-disc">
+                                <li>Jika URL ter-resolve tetapi gambar tidak muncul, cek console/network di browser.</li>
+                                <li>Jika `ttd_url` relatif, pastikan file ada di <code>storage/app/public/</code> dan sudah dijalankan <code>php artisan storage:link</code>.</li>
+                                <li>Untuk S3, periksa konfigurasi disk `s3` di <code>.env</code>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </div> -->
     </div>
 
     <!-- Preview Controls -->

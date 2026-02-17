@@ -219,8 +219,7 @@
 
         <!-- Header dengan Logo -->
         <x-basic-report-header
-            title="Laporan Triwulan Indikator Mutu"
-        />
+            title="Laporan Triwulan Indikator Mutu" />
 
         <!-- Enhanced Dashboard -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -737,11 +736,46 @@
             @endif
 
             <!-- Footer & Signature -->
+            @php
+            $resolveTtdUrl = function ($userOrUrl = null) {
+            if (! $userOrUrl) return null;
+
+            $raw = null;
+            if ($userOrUrl instanceof \App\Models\User) {
+            $raw = $userOrUrl->getFilamentTtdUrl() ?? $userOrUrl->ttd_url ?? null;
+            } else {
+            $raw = $userOrUrl;
+            }
+
+            if (! $raw) return null;
+            if (preg_match('#^(https?://|/)#i', $raw)) return $raw;
+            return '/storage/' . ltrim($raw, '/');
+            };
+
+            // Safe Tim Mutu lookup
+            $timMutuUser = null;
+            try {
+            if (class_exists('\\Spatie\\Permission\\Models\\Role') && \\Spatie\\Permission\\Models\\Role::where('name', 'Tim Mutu')->exists()) {
+            $timMutuUser = \App\Models\User::role('Tim Mutu')->orderBy('name')->first();
+            }
+            } catch (\Throwable $e) {
+            $timMutuUser = null;
+            }
+
+            $penanggungJawabUser = \App\Models\User::where('name', 'like', '%suharnik%')->first();
+
+            $leftSignerName = $timMutuUser?->name ?? $laporan->createdBy?->name ?? '(...........................)';
+            $leftSignerImage = $resolveTtdUrl($timMutuUser) ?? $resolveTtdUrl($laporan->createdBy);
+
+            $rightSignerName = $penanggungJawabUser?->name ?? 'Suharnik';
+            $rightSignerImage = $resolveTtdUrl($penanggungJawabUser);
+            @endphp
+
             <x-report-footer-signature
-                :leftSignature="'(...........................)'"
-                :rightSignature="$laporan->createdBy->name ?? '(...........................)'"
-                :rightSignatureImage="$laporan->createdBy->getFilamentTtdUrl() ?? null"
-            />
+                :leftSignature="$leftSignerName"
+                :leftSignatureImage="$leftSignerImage"
+                :rightSignature="$rightSignerName"
+                :rightSignatureImage="$rightSignerImage" />
 
         </div>
 

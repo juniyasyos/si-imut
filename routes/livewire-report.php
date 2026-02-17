@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Route;
 // Route untuk report dengan URL yang profesional
 Route::prefix('laporan/indikator-mutu')->name('laporan.indikator-mutu.')->group(function () {
     // Basic report page
-    Route::get('/', [ImutIndicatorReportController::class, 'index'])
-        ->name('index');
+    // Route::get('/', [ImutIndicatorReportController::class, 'index'])
+    //     ->name('index');
 
     // Report dengan parameter indikator dan periode menggunakan slug
     Route::get('{indicator}/{periode}', [ImutIndicatorReportController::class, 'show'])
