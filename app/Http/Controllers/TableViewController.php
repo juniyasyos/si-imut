@@ -852,19 +852,35 @@ class TableViewController extends Controller
 
         $formatUser = function ($user, $unitUsers) {
             if (!$user) return null;
-            $publicTtd = null;
-            if ($user->ttd_url && Storage::disk('public')->exists($user->ttd_url)) {
-                // Storage::disk('public')->url() can return an absolute URL in some envs
-                // (e.g. "http://127.0.0.1:8000/storage/..."). Normalize to a
-                // relative path ("/storage/...") so client rendering and headless
-                // PDF renderers resolve the image reliably.
-                $rawPublicUrl = trim(Storage::disk('public')->url($user->ttd_url));
-                $pathOnly = parse_url($rawPublicUrl, PHP_URL_PATH) ?: $rawPublicUrl;
-                $publicTtd = '/' . ltrim($pathOnly, '/');
+
+            $ttd = null;
+
+            // 1) If stored value is already an absolute URL, use it directly (covers explicit S3/minio URLs)
+            if ($user->ttd_url && preg_match('#^https?://#i', $user->ttd_url)) {
+                $ttd = trim($user->ttd_url);
+            } else {
+                // 2) Prefer canonical URL from the model helper (this prefers S3/MinIO when available)
+                $ttd = $user->getFilamentTtdUrl();
+
+                // 3) If helper returned a public-disk URL ("/storage/...") normalize to a relative path
+                if ($ttd) {
+                    $pathOnly = parse_url($ttd, PHP_URL_PATH) ?: $ttd;
+                    if (str_contains($pathOnly, '/storage/')) {
+                        $ttd = '/' . ltrim($pathOnly, '/');
+                    }
+                }
+
+                // 4) Last-resort: if no URL yet but file exists on local `public` disk, build relative path
+                if (! $ttd && $user->ttd_url && Storage::disk('public')->exists($user->ttd_url)) {
+                    $rawPublicUrl = trim(Storage::disk('public')->url($user->ttd_url));
+                    $pathOnly = parse_url($rawPublicUrl, PHP_URL_PATH) ?: $rawPublicUrl;
+                    $ttd = '/' . ltrim($pathOnly, '/');
+                }
             }
 
-            // Keep S3/external URL as-is via getFilamentTtdUrl()
-            $ttd = $publicTtd ?: $user->getFilamentTtdUrl();
+            // Keep S3/external URL as-is (ttd may be absolute S3 URL) or relative /storage/... for local files
+            $ttd = $ttd ? trim($ttd) : null;
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,

@@ -4,7 +4,7 @@
 'leftUsers' => null,
 'leftUsersAlpine' => null, // Untuk Alpine.js data
 'leftSignatureImage' => null, // URL gambar TTD untuk kiri
-'rightTitle' => 'Validator Data / Penanggung Jawab',
+'rightTitle' => 'Validator Data / PIC Unit Kerja',
 'rightSignature' => '(...........................)',
 'rightUsers' => null,
 'rightUsersAlpine' => null, // Untuk Alpine.js data
@@ -38,20 +38,40 @@
         <div class="text-center flex-1">
             <div class="text-sm font-semibold"><br><br>{{ $leftTitle }}</div>
 
-            {{-- Alpine-driven primary signature image (use first pengumpul jika ada) --}}
-            <div x-show="{{ $leftUsersAlpine }} && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url" class="mb-1">
-                <img :src="(typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}[0].ttd_url) ? (({{ $leftUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $leftUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $leftUsersAlpine }}[0].ttd_url : '/storage/' + {{ $leftUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain">
+            {{-- Signature area: prefer Alpine-driven user TTD, fallback to server-side image, otherwise show placeholder line + penanda --}}
+            <div class="mb-1">
+                {{-- Server-side provided signature image (e.g. from getFilamentTtdUrl()) --}}
+                @if($leftSignatureImage)
+                <div class="mb-1">
+                    <img src="{{ $leftSignatureImage }}" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain">
+                </div>
+                @endif
+
+                {{-- Alpine-driven signature (first user) --}}
+                <div x-show="{{ $leftUsersAlpine }} && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url" class="mb-1">
+                    <img :src="(typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}[0].ttd_url) ? (({{ $leftUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $leftUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $leftUsersAlpine }}[0].ttd_url : '/storage/' + {{ $leftUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain">
+                </div>
+
+                {{-- Placeholder when no image is available; reserves same vertical space and shows penanda --}}
+                <div x-show="!((typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url) || {{ $leftSignatureImage ? 'true' : 'false' }})" class="mb-1 h-32 flex items-end justify-center"></div>
+
+                {{-- Show signature text: if prop is default-placeholder, hide it when a TTD image exists; otherwise always show --}}
+                @if($leftSignature !== '(...........................)')
+                <div class="text-xs font-bold pt-1">{{ $leftSignature }}</div>
+                @else
+                <div x-show="!((typeof {{ $leftUsersAlpine }} !== 'undefined' && {{ $leftUsersAlpine }}.length > 0 && {{ $leftUsersAlpine }}[0].ttd_url) || {{ $leftSignatureImage ? 'true' : 'false' }})" class="text-xs font-bold pt-1">{{ $leftSignature }}</div>
+                @endif
             </div>
 
             <div class="text-xs text-gray-600 mb-12 min-h-8">
                 <div x-show="{{ $leftUsersAlpine }} && {{ $leftUsersAlpine }}.length > 0">
                     <template x-for="user in {{ $leftUsersAlpine }}" :key="'left-' + user.id">
-                        <div x-text="user.name" clasioioioioioioioioios="font-semibold"></div>
+                        <div x-text="user.name" class="font-semibold"></div>
                     </template>
                 </div>
             </div>
         </div>
-        <div class="text-center flex-1">
+        <div class="text-center flex-1 mt-2">
             @if($showDate)
             <div class="text-sm mb-2">
                 @if($dateAlpine)
@@ -66,9 +86,29 @@
             @endif
             <div class="text-sm font-semibold">{{ $rightTitle }}</div>
 
-            {{-- Alpine-driven primary signature image (use first validator jika ada) --}}
-            <div x-show="{{ $rightUsersAlpine }} && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url" class="mb-1">
-                <img :src="(typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}[0].ttd_url) ? (({{ $rightUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $rightUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $rightUsersAlpine }}[0].ttd_url : '/storage/' + {{ $rightUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain border-b border-gray-400">
+            {{-- Signature area: prefer Alpine-driven user TTD, fallback to server-side image, otherwise show placeholder line + penanda --}}
+            <div class="mb-1">
+                {{-- Server-side provided signature image (e.g. from getFilamentTtdUrl()) --}}
+                @if($rightSignatureImage)
+                <div class="mb-1">
+                    <img src="{{ $rightSignatureImage }}" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain border-b border-gray-400">
+                </div>
+                @endif
+
+                {{-- Alpine-driven signature (first user) --}}
+                <div x-show="{{ $rightUsersAlpine }} && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url" class="mb-1">
+                    <img :src="(typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}[0].ttd_url) ? (({{ $rightUsersAlpine }}[0].ttd_url.indexOf('http') === 0 || {{ $rightUsersAlpine }}[0].ttd_url.indexOf('/') === 0) ? {{ $rightUsersAlpine }}[0].ttd_url : '/storage/' + {{ $rightUsersAlpine }}[0].ttd_url) : ''" alt="Tanda Tangan" class="h-32 w-auto mx-auto object-contain border-b border-gray-400">
+                </div>
+
+                {{-- Placeholder when no image is available; reserves same vertical space and shows penanda --}}
+                <div x-show="!((typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url) || {{ $rightSignatureImage ? 'true' : 'false' }})" class="mb-1 h-32 flex items-end justify-center border-b border-gray-400"></div>
+
+                {{-- Show signature text: if prop is default-placeholder, hide it when a TTD image exists; otherwise always show --}}
+                @if($rightSignature !== '(...........................)')
+                <div class="text-xs font-bold pt-1">{{ $rightSignature }}</div>
+                @else
+                <div x-show="!((typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url) || {{ $rightSignatureImage ? 'true' : 'false' }})" class="text-xs font-bold pt-1">{{ $rightSignature }}</div>
+                @endif
             </div>
 
             <div class="text-xs text-gray-600 mb-3 min-h-8">
