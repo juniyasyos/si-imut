@@ -86,12 +86,12 @@ class UnitKerjaLaporanController extends Controller
             }
 
             $targetValue = $profile?->target_value ?? 0;
-            $targetOperator = $profile?->target_operator ?? '>=';
+            $targetOperator = $profile->target_operator;
 
             $imutDetail = [
                 'id' => $imutData->id,
                 'title' => $imutData->title,
-                'category' => $imutData->kategori?->name ?? 'Uncategorized',
+                'category' => $imutData->categories?->category_name ?? 'Uncategorized',
                 'standard' => $targetValue,
                 'target_operator' => $targetOperator,
                 'data' => [],
