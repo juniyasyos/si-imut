@@ -91,6 +91,8 @@ class ImutProfileManageFormBuilderTest extends TestCase
             'compliance_method' => 'auto_calculate',
         ]);
 
+        $initialFieldCount = EnhancedFormField::where('form_template_id', $template->id)->count();
+
         $f1 = EnhancedFormField::create([
             'form_template_id' => $template->id,
             'field_key' => 'a',
@@ -120,7 +122,7 @@ class ImutProfileManageFormBuilderTest extends TestCase
             'field_value' => ['x'],
         ]);
 
-        $this->assertEquals(2, EnhancedFormField::where('form_template_id', $template->id)->count());
+        $this->assertEquals($initialFieldCount + 2, EnhancedFormField::where('form_template_id', $template->id)->count());
         $this->assertDatabaseCount('daily_report_responses', 1);
         $this->assertDatabaseCount('field_responses', 1);
 

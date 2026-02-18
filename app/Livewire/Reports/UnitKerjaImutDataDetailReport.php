@@ -51,6 +51,90 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         'refreshTable' => '$refresh',
     ];
 
+    /**
+     * On mount, load laporan (if provided) and check URL for auto-open action parameters.
+     * Supported URL query params:
+     * - action (or open_action): name of the table action to open (e.g. "isi_penilaian" or "detail_info")
+     * - record: explicit imut_penilaians.id
+     * - imut_profile_id: will be resolved to the matching ImutPenilaian for the current laporan/unit
+     * - form_template_id: will be resolved to the ImutProfile then to ImutPenilaian
+     */
+    public function mount(): void
+    {
+        // Ensure laporan is loaded when component mounted with props
+        $this->loadLaporan();
+
+        $action = request()->query('action') ?? request()->query('open_action');
+        $recordId = request()->query('record');
+        $imutProfileId = request()->query('imut_profile_id');
+        $formTemplateId = request()->query('form_template_id');
+
+        // Resolve record id from imut_profile_id when explicit record not provided
+        if (!$recordId && $imutProfileId) {
+            $penilaian = \App\Models\ImutPenilaian::where('imut_profil_id', (int) $imutProfileId)
+                ->whereHas('laporanUnitKerja', function ($q) {
+                    if ($this->laporanId) {
+                        $q->where('laporan_imut_id', $this->laporanId);
+                    }
+                    if ($this->unitKerjaId) {
+                        $q->where('unit_kerja_id', $this->unitKerjaId);
+                    }
+                })->first();
+
+            $recordId = $penilaian?->id;
+        }
+
+        // Resolve record id from form_template_id -> imut_profile -> penilaian
+        if (!$recordId && $formTemplateId) {
+            $profile = \App\Models\ImutProfile::whereHas('formTemplates', function ($q) use ($formTemplateId) {
+                $q->where('id', (int) $formTemplateId);
+            })->first();
+
+            if ($profile) {
+                $penilaian = \App\Models\ImutPenilaian::where('imut_profil_id', $profile->id)
+                    ->whereHas('laporanUnitKerja', function ($q) {
+                        if ($this->laporanId) {
+                            $q->where('laporan_imut_id', $this->laporanId);
+                        }
+                        if ($this->unitKerjaId) {
+                            $q->where('unit_kerja_id', $this->unitKerjaId);
+                        }
+                    })->first();
+
+                $recordId = $penilaian?->id;
+            }
+        }
+
+        if ($action && $recordId) {
+            $mounted = false;
+
+            // Prefer Filament/Livewire server-side mount if component supports it
+            if (method_exists($this, 'mountTableAction')) {
+                try {
+                    // mountTableAction is provided by Filament Tables (InteractsWithTable)
+                    $this->mountTableAction($action, (int) $recordId);
+                    $mounted = true;
+                } catch (\Throwable $e) {
+                    // log and fallback to client-side trigger
+                    \Illuminate\Support\Facades\Log::warning('mountTableAction failed', ['action' => $action, 'record' => $recordId, 'exception' => $e->getMessage()]);
+                }
+            }
+
+            // If server-side mount did not run, dispatch client-side fallback
+            if (! $mounted) {
+                $this->dispatchBrowserEvent('open-table-action', ['action' => $action, 'recordId' => (int) $recordId]);
+
+                // keep URL intact so user/dev can retry — do not remove query params here
+                return;
+            }
+
+            // Only remove the URL keys after successful server-side mount
+            $this->dispatchBrowserEvent('replaceUrlQuery', [
+                'keys' => ['action', 'open_action', 'record'],
+            ]);
+        }
+    }
+
     public function updateReport(int $laporanId, int $unitKerjaId): void
     {
         $this->laporanId = $laporanId;
