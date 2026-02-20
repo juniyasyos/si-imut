@@ -4,18 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | IAM Enabled
-    |--------------------------------------------------------------------------
-    |
-    | Enable or disable IAM/SSO authentication globally.
-    | When false (development mode), the application will use custom Filament login.
-    | When true (production mode), the application will use SSO authentication.
-    |
-    */
-    'enabled' => env('IAM_ENABLED', false),
-
-    /*
-    |--------------------------------------------------------------------------
     | IAM Application Key
     |--------------------------------------------------------------------------
     |
@@ -23,6 +11,8 @@ return [
     | must contain this app_key in the payload for validation.
     |
     */
+    'enabled' => env('IAM_ENABLED', false),
+
     'app_key' => env('IAM_APP_KEY', 'client-app'),
 
     /*
@@ -35,6 +25,29 @@ return [
     |
     */
     'jwt_secret' => env('IAM_JWT_SECRET', 'change-me'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | JWT Algorithm and Leeway
+    |--------------------------------------------------------------------------
+    |
+    | Algorithm used to sign JWTs (default HS256) and optional leeway (secs)
+    |
+    */
+    'jwt_algorithm' => env('IAM_JWT_ALGORITHM', 'HS256'),
+    'jwt_leeway' => (int) env('IAM_JWT_LEEWAY', 0),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Optional issuer / audience checks
+    |--------------------------------------------------------------------------
+    |
+    | When set, the middleware will validate the token's `iss` / `aud` claims
+    | against these configuration values.
+    |
+    */
+    'issuer' => env('IAM_ISSUER', env('IAM_BASE_URL', null)),
+    'audience' => env('IAM_AUDIENCE', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -55,7 +68,7 @@ return [
     | will derive it from the IAM base URL.
     |
     */
-    'verify_endpoint' => env('IAM_VERIFY_ENDPOINT'),
+    'verify_endpoint' => env('IAM_VERIFY_ENDPOINT', 'http://localhost:8000/api/sso/verify'),
 
     /*
     |--------------------------------------------------------------------------
@@ -111,6 +124,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Replace session on SSO callback
+    |--------------------------------------------------------------------------
+    |
+    | When true, an existing local session will be invalidated and replaced
+    | with the SSO user if the incoming token represents a different user.
+    |
+    */
+    'replace_session_on_callback' => env('IAM_REPLACE_SESSION_ON_CALLBACK', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | User Field Mapping
     |--------------------------------------------------------------------------
     |
@@ -123,7 +147,7 @@ return [
     'user_fields' => [
         'iam_id' => 'sub',        // Required: JWT sub maps to iam_id
         'name' => 'name',
-        'email' => 'email',
+        // 'email' => 'email',
         // Add custom mappings:
         'nip' => 'nip',
         // 'nik' => 'nik',
@@ -140,7 +164,7 @@ return [
     | Usually 'iam_id' or 'email'
     |
     */
-    'identifier_field' => env('IAM_IDENTIFIER_FIELD', 'nip'),
+    'identifier_field' => env('IAM_IDENTIFIER_FIELD', 'email'),
 
     /*
     |--------------------------------------------------------------------------
@@ -155,6 +179,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Role enforcement (optional)
+    |--------------------------------------------------------------------------
+    |
+    | - `require_roles` when true will reject SSO login if the token contains
+    |   no roles.
+    | - `required_roles` accepts a comma-separated list (via env) or an array
+    |   of role names; when non-empty the token must contain at least one of
+    |   these roles for login to succeed.
+    |
+    */
+    'require_roles' => env('IAM_REQUIRE_ROLES', false),
+    'required_roles' => env('IAM_REQUIRED_ROLES') ? array_map('trim', explode(',', env('IAM_REQUIRED_ROLES'))) : [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Store Access Token in Session
     |--------------------------------------------------------------------------
     |
@@ -166,17 +205,52 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Verify token each request
+    |--------------------------------------------------------------------------
+    |
+    | When enabled the client will call the IAM `verify` endpoint on every
+    | web request to ensure the stored access token is still valid. If the
+    | token is invalid the client will clear the session and redirect to
+    | the login page.
+    |
+    */
+    'verify_each_request' => env('IAM_VERIFY_EACH_REQUEST', true),
+
+    /*    |--------------------------------------------------------------------------
+    | Auto‑attach verify middleware
+    |--------------------------------------------------------------------------
+    |
+    | When `true` the package will automatically push its `iam.verify`
+    | middleware into the application's `web` middleware group. Leave
+    | `false` to register the middleware alias only and let the app add it
+    | to Kernel manually.
+    |
+    */
+    'attach_verify_middleware' => env('IAM_ATTACH_VERIFY_MIDDLEWARE', false),
+
+    /*    |--------------------------------------------------------------------------
     | Logout Route Name
     |--------------------------------------------------------------------------
     |
     | The route name to redirect after logout.
     |
     */
-    'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', '/'),
+    'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', 'home'),
 
     /*
-    |--------------------------------------------------------------------------
-    | Login Route Name  
+    |--------------------------------------------------------------------------    | OP‑initiated logout behaviour
+    --------------------------------------------------------------------------
+    |
+    | Controls how the client responds to OP‑initiated (front‑channel) logout
+    | requests from the IAM server (`GET /iam/logout`). When true the client
+    | will perform a full `auth()->logout()` + session invalidation. If false
+    | the plugin will only remove IAM-related session keys (legacy behaviour).
+    |
+    */
+    'logout_on_op_initiated' => env('IAM_LOGOUT_ON_OP_INITIATED', true),
+
+    /*
+    --------------------------------------------------------------------------    | Login Route Name  
     |--------------------------------------------------------------------------
     |
     | The route name for login page (used for unauthenticated redirects).
@@ -201,5 +275,31 @@ return [
             'login_route_name' => env('IAM_LOGIN_ROUTE_NAME', 'login'),
             'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', 'home'),
         ],
+        'filament' => [
+            'guard' => env('IAM_FILAMENT_GUARD', 'filament'),
+            'redirect_route' => env('IAM_FILAMENT_REDIRECT_ROUTE', null),
+            'login_route_name' => env('IAM_FILAMENT_LOGIN_ROUTE_NAME', 'filament.auth.login'),
+            'logout_redirect_route' => env('IAM_FILAMENT_LOGOUT_REDIRECT', null),
+        ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filament Integration
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, additional routes, hooks, and UI helpers for Filament will
+    | be registered. Disable to keep the package framework agnostic.
+    |
+    */
+    'filament' => [
+        'enabled' => env('IAM_FILAMENT_ENABLED', false),
+        'panel' => env('IAM_FILAMENT_PANEL', 'admin'),
+        'login_route' => env('IAM_FILAMENT_LOGIN_ROUTE', '/filament/sso/login'),
+        'callback_route' => env('IAM_FILAMENT_CALLBACK_ROUTE', '/filament/sso/callback'),
+        'login_button_text' => env('IAM_FILAMENT_LOGIN_BUTTON', 'Login via IAM'),
+        'logout_route' => env('IAM_FILAMENT_LOGOUT_ROUTE'),
+        'middleware' => ['web'],
+    ],
+
 ];
