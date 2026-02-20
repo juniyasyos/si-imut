@@ -170,7 +170,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         // Check if the record belongs to user's unit kerja
-        $userUnitIds = $user->unitKerjas()->pluck('id');
+        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id');
         return $userUnitIds->contains($record->unit_kerja_id);
     }
 
@@ -191,7 +191,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         // Check if the record belongs to user's unit kerja
-        $userUnitIds = $user->unitKerjas()->pluck('id');
+        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id');
         return $userUnitIds->contains($record->unit_kerja_id);
     }
 
@@ -212,7 +212,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         // Check if the record belongs to user's unit kerja
-        $userUnitIds = $user->unitKerjas()->pluck('id');
+        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id');
         return $userUnitIds->contains($record->unit_kerja_id);
     }
 

@@ -8,6 +8,7 @@ use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
+use App\Models\FieldResponse;
 use App\Observers\ImutBenchmarkingObserver;
 use App\Observers\ImutDataObserver;
 use App\Observers\ImutPenilaianObserver;
@@ -15,6 +16,7 @@ use App\Observers\ImutProfileObserver;
 use App\Observers\LaporanImutObserver;
 use App\Observers\MediaObserver;
 use App\Observers\UnitKerjaObserver;
+use App\Observers\FieldResponseObserver;
 use BezhanSalleh\FilamentLanguageSwitch\Enums\Placement;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Support\Facades\FilamentView;
@@ -159,6 +161,7 @@ class AppServiceProvider extends ServiceProvider
         ImutProfile::observe(ImutProfileObserver::class);
         LaporanImut::observe(LaporanImutObserver::class);
         ImutPenilaian::observe(ImutPenilaianObserver::class);
+        FieldResponse::observe(FieldResponseObserver::class);
     }
 
     /**

@@ -11,7 +11,7 @@ class UnitKerjaInfo extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 1;
 
     public static function canView(): bool
     {

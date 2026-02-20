@@ -13,6 +13,7 @@ return [
         'widget_UnitKerjaInfo',
         'widget_StatsForUnitKerja',
         'widget_LaporanLatestWidget',
+        'widget_LaporanUnitWidget',
 
         // Folder
         'view_any_folder::custom',

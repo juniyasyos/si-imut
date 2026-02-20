@@ -11,6 +11,7 @@ return [
 
         // Widget
         'widget_LaporanLatestWidget',
+        'widget_LaporanUnitWidget',
         'widget_DashboardSiimutOverview',
         'widget_ImutCapaianWidget',
         'widget_ImutTercapai',

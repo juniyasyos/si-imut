@@ -173,41 +173,6 @@ $daysRemaining = max(0, $today->diffInDays($end, false));
                 </div>
             </div>
 
-            {{-- Progress waktu (hanya status process) --}}
-            @if ($laporan->status === 'process')
-            <div
-                class="rounded-xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/40">
-                <div class="mb-2 flex items-center justify-between">
-                    <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
-                        Progress Periode Waktu
-                    </span>
-                    <span class="text-sm font-semibold text-blue-700 dark:text-blue-400">
-                        {{ $progressPercentage }}%
-                    </span>
-                </div>
-
-                <div class="h-2.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                    <div class="h-full rounded-full bg-blue-600 transition-all duration-500 ease-out"
-                        style="width: {{ $progressPercentage }}%">
-                    </div>
-                </div>
-
-                <div class="mt-2 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                    @svg("heroicon-m-clock", "h-3.5 w-3.5")
-                    @if ($daysRemaining > 0)
-                    <span>
-                        <span class="font-semibold text-gray-900 dark:text-gray-100">
-                            {{ $daysRemaining }} hari
-                        </span>
-                        tersisa hingga akhir periode.
-                    </span>
-                    @else
-                    <span>Periode penilaian berakhir hari ini.</span>
-                    @endif
-                </div>
-            </div>
-            @endif
-
             {{-- Info ringkas (grid) --}}
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {{-- Periode laporan --}}

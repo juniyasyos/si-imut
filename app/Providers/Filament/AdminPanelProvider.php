@@ -12,6 +12,7 @@ use App\Filament\Widgets\AccountWidget;
 use App\Filament\Widgets\FilamentInfoWidget;
 use App\Filament\Widgets\ImutCapaianUnitKerjaWidget;
 use App\Filament\Widgets\LaporanLatestWidget;
+use App\Filament\Widgets\LaporanUnitWidget;
 use App\Livewire\TtdUploadComponent;
 use App\Livewire\CustomPersonalInfo;
 use App\Models\UnitKerja;
