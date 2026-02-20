@@ -16,5 +16,5 @@ Schedule::command(NotifikasiDeadlineLaporan::class)->dailyAt('08:00');
 // Monthly report generation on 5th of each month at 01:00
 // Automatically calculates N/D from previous month's daily reports
 Schedule::command(GenerateMonthlyLaporanImut::class, ['--auto-calculate'])
-    ->monthlyOn(5, '01:00')
+    ->monthlyOn(1, '01:00')
     ->description('Auto-generate monthly IMUT report with daily report calculation');
