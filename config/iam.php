@@ -178,6 +178,20 @@ return [
     'role_guard_name' => env('IAM_ROLE_GUARD_NAME', 'web'),
 
     /*
+    |------------------------------------------------------------------------
+    | Back-channel security toggle
+    |------------------------------------------------------------------------
+    |
+    | Set this to `false` to disable verification entirely.  Useful during
+    | development or when you just want the sync route to exist without any
+    | HMAC/JWT checks.  The route itself can still be turned off with
+    | `sync_users`.
+    |
+    */
+    'backchannel_verify' => env('IAM_BACKCHANNEL_VERIFY', false),
+
+
+    /*
     |--------------------------------------------------------------------------
     | Role enforcement (optional)
     |--------------------------------------------------------------------------

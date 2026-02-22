@@ -593,6 +593,30 @@
             </div>
         </div>
 
+        <!-- Recommendations & Analysis Table -->
+        <div class="analysis-table-section">
+            <div class="table-title">Tabel Rekomendasi &amp; Analisis</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Periode</th>
+                        <th>Analisis</th>
+                        <th>Rekomendasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="note in availableNotes" :key="note.id">
+                        <tr>
+                            <td x-text="note.period_display"></td>
+                            <td x-text="note.analysis"></td>
+                            <td x-text="note.recommendation"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
         <!-- Analysis Box -->
         <div class="analysis-box">
             <h4>📊 Analisis dan Interpretasi Data</h4>

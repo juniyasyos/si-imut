@@ -232,6 +232,29 @@
                         <canvas id="chart-{{ $imut['id'] }}" data-chart data-json='{{ json_encode($chartData['chart-' . $imut['id']] ?? []) }}' style="max-height: 250px;"></canvas>
                     </div>
                 </div>
+
+                <!-- Analysis & Recommendations Table -->
+                <div class="mt-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">📌 Analisis & Rekomendasi</h4>
+                    <table class="w-full border-collapse text-xs">
+                        <thead class="bg-slate-100 border-b-2 border-slate-300">
+                            <tr>
+                                <th class="border border-slate-200 px-3 py-2 text-left font-semibold text-slate-700 w-1/6">Periode</th>
+                                <th class="border border-slate-200 px-3 py-2 text-left font-semibold text-slate-700">Analisis</th>
+                                <th class="border border-slate-200 px-3 py-2 text-left font-semibold text-slate-700">Rekomendasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($imut['data'] as $dataPoint)
+                            <tr class="hover:bg-slate-50 align-top">
+                                <td class="border border-slate-200 px-3 py-2">{{ $dataPoint['month_label'] }}</td>
+                                <td class="border border-slate-200 px-3 py-2">{{ $dataPoint['analysis'] ?? '-' }}</td>
+                                <td class="border border-slate-200 px-3 py-2">{{ $dataPoint['recommendations'] ?? '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         @endforeach

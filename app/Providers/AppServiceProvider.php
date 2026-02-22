@@ -41,6 +41,16 @@ class AppServiceProvider extends ServiceProvider
             'panels::body.end',
             fn(): string => Blade::render("@vite('resources/js/app.js')")
         );
+
+        // When SSO is enabled we want the Filament logout response to redirect
+        // the user through the IAM/SO logout flow instead of just returning to
+        // the Filament login page.  We bind our own implementation here so it
+        // can check the `iam.enabled`/`USE_SSO` flag and return the appropriate
+        // location.
+        $this->app->bind(
+            \Filament\Http\Responses\Auth\Contracts\LogoutResponse::class,
+            \App\Filament\Responses\Auth\LogoutResponse::class,
+        );
     }
 
     /**

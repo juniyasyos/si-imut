@@ -43,13 +43,29 @@
             </div>
         </div>
 
-        <form action="{{ filament()->getLogoutUrl() }}" method="post" class="my-auto flex justify-end">
-            @csrf
+        @php
+            $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+        @endphp
 
-            <x-filament::button color="gray" icon="heroicon-m-arrow-left-on-rectangle"
-                icon-alias="panels::widgets.account.logout-button" labeled-from="sm" tag="button" type="submit">
-                {{ trans('filament-panels::widgets/account-widget.actions.logout.label') }}
-            </x-filament::button>
-        </form>
+        @if ($ssoEnabled)
+            {{-- when SSO is active there is no need to post to Filament; send the
+                 user straight to the IAM logout endpoint (GET /iam/logout) which
+                 will take care of the provider sign‑out and then redirect back. --}}
+            <a href="{{ route('iam.iam.logout') }}" class="my-auto flex justify-end">
+                <x-filament::button color="gray" icon="heroicon-m-arrow-left-on-rectangle"
+                    icon-alias="panels::widgets.account.logout-button" labeled-from="sm" tag="a">
+                    {{ trans('filament-panels::widgets/account-widget.actions.logout.label') }}
+                </x-filament::button>
+            </a>
+        @else
+            <form action="{{ filament()->getLogoutUrl() }}" method="post" class="my-auto flex justify-end">
+                @csrf
+
+                <x-filament::button color="gray" icon="heroicon-m-arrow-left-on-rectangle"
+                    icon-alias="panels::widgets.account.logout-button" labeled-from="sm" tag="button" type="submit">
+                    {{ trans('filament-panels::widgets/account-widget.actions.logout.label') }}
+                </x-filament::button>
+            </form>
+        @endif
     </x-filament::section>
 </x-filament-widgets::widget>

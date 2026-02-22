@@ -128,6 +128,8 @@ class UnitKerjaLaporanController extends Controller
                             'denominator' => $penilaian->denominator_value ?? 0,
                             'percentage' => round($percentage, 2),
                             'status' => $status,
+                            'analysis' => $penilaian->analysis ?? '',
+                            'recommendations' => $penilaian->recommendations ?? '',
                         ];
                     } else {
                         $imutDetail['data'][] = [
@@ -137,6 +139,8 @@ class UnitKerjaLaporanController extends Controller
                             'denominator' => 0,
                             'percentage' => 0,
                             'status' => 'no-data',
+                            'analysis' => '',
+                            'recommendations' => '',
                         ];
                     }
                 } else {
@@ -147,6 +151,8 @@ class UnitKerjaLaporanController extends Controller
                         'denominator' => 0,
                         'percentage' => 0,
                         'status' => 'no-data',
+                        'analysis' => '',
+                        'recommendations' => '',
                     ];
                 }
             }
