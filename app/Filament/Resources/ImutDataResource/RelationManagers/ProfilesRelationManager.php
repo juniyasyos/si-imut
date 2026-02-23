@@ -149,7 +149,7 @@ class ProfilesRelationManager extends RelationManager
                             'imutDataSlug' => $livewire->ownerRecord->slug,
                             'record' => $record->slug,
                         ]))
-                        ->visible(fn($record) => $record->formTemplates()->exists()),
+                        ->visible(fn($record) => $record->imutData->is_monthly),
                 ])
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->tooltip('Lainnya'),

@@ -117,6 +117,16 @@ class ImutDataSchema extends ImutDataResource
                                     ->default(true)
                                     ->columnSpan(1),
 
+                                Toggle::make('is_monthly')
+                                    ->label('Pengisian Bulanan')
+                                    ->helperText('Centang jika indikator ini dinilai setiap bulan')
+                                    ->inline(true)
+                                    ->columnSpan(1)
+                                    ->onColor('success')
+                                    ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
+                                    ->required()
+                                    ->default(true),
+
                                 RichEditor::make('description')
                                     ->label(__('filament-forms::imut-data.fields.description'))
                                     ->placeholder(__('filament-forms::imut-data.form.main.description_placeholder'))

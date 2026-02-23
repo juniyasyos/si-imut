@@ -306,7 +306,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->placeholder('0.00')
                 ->nullable()
                 ->debounce(1000)
-                ->readOnly()
+                ->readOnly($shouldLock)
+                ->disabled(fn($record) => $record->profile->imutData->is_monthly)
                 ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
 
             TextInput::make('denominator_value')
@@ -315,7 +316,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->placeholder('0.00')
                 ->nullable()
                 ->debounce(1000)
-                ->readOnly()
+                ->readOnly($shouldLock)
+                ->disabled(fn($record) => $record->profile->imutData->is_monthly)
                 ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
 
             TextInput::make('result_operation')
@@ -358,7 +360,20 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     public function isLaporanPeriodClosed(): bool
     {
-        return ! $this->isLaporanEditable();
+        // Ensure laporan is loaded
+        if (!$this->laporan && !$this->loadLaporan()) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        $endDate = Carbon::parse($this->laporan->assessment_period_end);
+
+        // During assessment period (including end date): not editable for analysis
+        if ($today->lte($endDate)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

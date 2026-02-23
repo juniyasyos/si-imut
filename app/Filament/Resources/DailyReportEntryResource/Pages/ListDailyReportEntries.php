@@ -200,6 +200,9 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                                 ->orWhere('valid_until', '>=', now());
                         });
                 })
+                ->whereHas('imutProfile.imutData', function ($query) {
+                    $query->where('is_monthly', true);
+                })
                 ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
                     $query->whereBetween('report_date', [$startDate, $endDate]);
 
@@ -209,7 +212,6 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                     }
                 }])
                 ->get();
-
 
             // Get first unit kerja ID for URL (or null for all units)
             $firstUnitKerjaId = !empty($unitKerjaIds) ? $unitKerjaIds[0] : null;

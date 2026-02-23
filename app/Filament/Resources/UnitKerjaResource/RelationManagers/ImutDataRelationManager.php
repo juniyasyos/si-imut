@@ -69,6 +69,14 @@ class ImutDataRelationManager extends RelationManager
                     ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
                     ->sortable(),
 
+                \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_monthly')
+                    ->label('Bulanan')
+                    ->translateLabel()
+                    ->alignCenter()
+                    ->size('xl')
+                    ->tooltip(fn(Model $record) => $record->is_monthly ? 'Ya' : 'Tidak')
+                    ->sortable()
+                    ->disabled(),
             ])
             ->filters([
                 SelectFilter::make('imut_kategori_id')
@@ -76,6 +84,10 @@ class ImutDataRelationManager extends RelationManager
                     ->multiple()
                     ->preload()
                     ->relationship('categories', 'short_name'),
+                SelectFilter::make('is_monthly')
+                    ->label('Pengisian Bulanan')
+                    ->options([1 => 'Ya', 0 => 'Tidak'])
+                    ->preload(),
             ])
             ->headerActions([
                 Tables\Actions\AttachAction::make()

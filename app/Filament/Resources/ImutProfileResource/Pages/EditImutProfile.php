@@ -83,17 +83,19 @@ class EditImutProfile extends EditRecord
                     'imutDataSlug' => $record->imutData->slug,
                     'record' => $record->slug,
                 ]))
+                ->tooltip('Kelola form laporan harian untuk profil ini, hanya aktif jika indikator diisi secara bulanan')
+                ->disabled(fn($record) => !$record->imutData->is_monthly)
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
-            Action::make('daily_reports')
-                ->label('Lihat Laporan Harian')
-                ->color('success')
-                ->icon('heroicon-s-document-chart-bar')
-                ->url(fn($record) => ImutDataResource::getUrl('list-daily-reports', [
-                    'imutDataSlug' => $record->imutData->slug,
-                    'record' => $record->slug,
-                ]))
-                ->visible(fn($record) => static::canEditProfilIndikator($record)),
+            // Action::make('daily_reports')
+            //     ->label('Lihat Laporan Harian')
+            //     ->color('success')
+            //     ->icon('heroicon-s-document-chart-bar')
+            //     ->url(fn($record) => ImutDataResource::getUrl('list-daily-reports', [
+            //         'imutDataSlug' => $record->imutData->slug,
+            //         'record' => $record->slug,
+            //     ]))
+            //     ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
             DeleteAction::make()
                 ->visible(fn() => static::canEditProfilIndikator($this->record)),

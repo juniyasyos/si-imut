@@ -21,6 +21,7 @@ class ImutDataFactory extends Factory
         return [
             'title' => $this->faker->unique()->sentence(3),
             'imut_kategori_id' => ImutCategory::factory(),
+            'is_monthly' => true, // default to monthly
             'created_by' => User::where('name', 'admin')->value('id') ?? User::factory()
         ];
     }

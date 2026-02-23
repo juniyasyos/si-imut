@@ -6,6 +6,7 @@ use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector as IlluminateRedirector;
+use Illuminate\Support\Facades\Log;
 use Livewire\Features\SupportRedirects\Redirector;
 
 class LogoutResponse implements LogoutResponseContract
@@ -29,6 +30,7 @@ class LogoutResponse implements LogoutResponseContract
 
         if ($ssoEnabled) {
             // the route name is defined by the IAM client package
+            Log::info('SSO logout: redirecting to IAM logout route');
             if (\Route::has('iam.iam.logout')) {
                 return redirect()->route('iam.iam.logout');
             }

@@ -60,17 +60,15 @@ trait BuildIsiPenilaian
                         ->columns(3),
 
                     Section::make('Unggah Bukti Pendukung')
-                        ->visible(function (callable $get) {
-                            // Show section only if there's media
-                            return !empty($get('document_upload'));
+                        ->visible(function ($record) {
+                            return ! $record->profile->imutData->is_monthly;
                         })
                         ->disabled(true)
                         ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
 
                     Section::make('Data Pendukung')
-                        ->visible(function (callable $get) {
-                            // Show this section only if there's NO media
-                            return empty($get('document_upload'));
+                        ->visible(function (callable $get, $record) {
+                            return $record->profile->imutData->is_monthly;
                         })
                         ->description('Tidak ada dokumen pendukung. Lihat data laporan harian untuk informasi lebih detail.')
                         ->schema([
@@ -93,40 +91,6 @@ trait BuildIsiPenilaian
             })
             ->successNotificationTitle('Penilaian berhasil disimpan')
             ->after(fn() => $this->dispatch('$refresh'));
-    }
-
-    protected function buildPerhitunganSchemaForAction($livewireComponent): array
-    {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
-
-        return [
-            TextInput::make('numerator_value')
-                ->label('Numerator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->debounce(1000)
-                ->readOnly()
-                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-
-            TextInput::make('denominator_value')
-                ->label('Denominator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->debounce(1000)
-                ->readOnly()
-                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-
-            TextInput::make('result_operation')
-                ->label('Result (%)')
-                ->numeric()
-                ->placeholder('0.00')
-                ->readOnly()
-                ->debounce(1000)
-                ->dehydrated(false)
-                ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-        ];
     }
 
     protected function buildAnalysisSchemaForAction($livewireComponent): array

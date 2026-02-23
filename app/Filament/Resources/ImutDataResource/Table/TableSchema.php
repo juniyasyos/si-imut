@@ -21,6 +21,7 @@ use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -79,6 +80,15 @@ class TableSchema extends ImutDataResource
                 ->formatStateUsing(fn(Model $record) => $record->status ? 'Aktif' : 'Nonaktif')
                 ->toggleable(isToggledHiddenByDefault: false)
                 ->sortable(),
+
+            \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_monthly')
+                ->label('Bulanan')
+                ->translateLabel()
+                ->alignCenter()
+                ->size('xl')
+                ->tooltip(fn(Model $record) => $record->is_monthly ? 'Ya' : 'Tidak')
+                ->sortable()
+                ->disabled(),
         ];
     }
 
@@ -144,6 +154,10 @@ class TableSchema extends ImutDataResource
                 ->multiple()
                 ->relationship('categories', 'short_name')
                 ->searchable(),
+            SelectFilter::make('is_monthly')
+                ->label('Pengisian Bulanan')
+                ->options([1 => 'Ya', 0 => 'Tidak'])
+                ->preload(),
         ];
     }
 

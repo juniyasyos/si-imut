@@ -32,6 +32,7 @@ class ImutData extends Model
         'imut_kategori_id',
         'description',
         'status',
+        'is_monthly',
         'created_by',
     ];
 
@@ -73,6 +74,7 @@ class ImutData extends Model
         return [
             'deleted_at' => 'datetime',
             'status' => 'boolean',
+            'is_monthly' => 'boolean',
         ];
     }
 
@@ -233,5 +235,25 @@ class ImutData extends Model
         return [
             'title' => ['required', 'string', 'max:255', $this->uniqueRule('title', $ignoreId)],
         ];
+    }
+
+    /**
+     * Scope helper to filter by monthly flag.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param bool $value
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeMonthly($query, bool $value = true)
+    {
+        return $query->where('is_monthly', $value);
+    }
+
+    /**
+     * Convenience accessor whether this indicator expects monthly input.
+     */
+    public function isMonthly(): bool
+    {
+        return $this->is_monthly === true;
     }
 }

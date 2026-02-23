@@ -62,6 +62,7 @@ class MatrixDataService
             ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
             ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
+            ->where('imut_data.is_monthly', true) // only monthly indicators
             ->where(function ($query) {
                 $now = now();
                 $query->where(function ($q) use ($now) {
