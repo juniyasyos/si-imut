@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Illuminate\Support\Facades\Hash;
 
 class Login extends BaseLogin
 {
@@ -63,17 +64,13 @@ class Login extends BaseLogin
 
         $data = $this->form->getState();
 
-        // Ganti pencarian user dari email ke nip
+        // build credentials once for reuse
+        $credentials = $this->getCredentialsFromFormData($data);
+
+        // lookup user by NIP so we can check status before attempting auth
         $user = User::where('nip', $data['nip'])->first();
 
-        // if ($user && is_null($user->password)) {
-        //     throw ValidationException::withMessages([
-        //         'data.nip' => 'This account was created using social login. Please login with Google.',
-        //     ]);
-        // }
-
         if ($user && in_array($user->status, ['inactive', 'suspended'])) {
-            // Tentukan isi pesan dan tipe notifikasi berdasarkan status
             $statusMessage = match ($user->status) {
                 'inactive' => 'Akun Anda belum diaktifkan. Silakan hubungi administrator.',
                 'suspended' => 'Akun Anda sedang ditangguhkan karena pelanggaran atau alasan lain.',
@@ -84,7 +81,6 @@ class Login extends BaseLogin
                 'suspended' => 'danger',
             };
 
-            // Tampilkan notifikasi sesuai status
             Notification::make()
                 ->title('Akses Ditolak')
                 ->body($statusMessage)
@@ -97,15 +93,27 @@ class Login extends BaseLogin
             ]);
         }
 
-        if (!Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
+        // attempt login once, password is verified internally by the guard
+        if (!Filament::auth()->attempt($credentials, $data['remember'] ?? false)) {
+            // Determine whether the problem is a non-existent NIP or a wrong password
+            if (! $user) {
+                $message = 'NIP tidak ditemukan. Silakan periksa kembali.';
+                $field = 'data.nip';
+            } else {
+                $message = 'Password salah. Silakan coba lagi.';
+                $field = 'data.password';
+            }
+
             Notification::make()
                 ->title('Login Gagal')
-                ->body('NIP atau password salah. Silakan coba lagi.')
+                ->body($message)
                 ->danger()
                 ->persistent()
                 ->send();
 
-            $this->throwFailureValidationException();
+            throw ValidationException::withMessages([
+                $field => $message,
+            ]);
         }
 
         $user = Filament::auth()->user();
