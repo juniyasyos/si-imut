@@ -67,7 +67,7 @@ class ProfilesRelationManager extends RelationManager
                     ->icon('heroicon-m-plus')
                     ->visible(function ($livewire) {
                         $owner = $livewire->ownerRecord;
-                        return Auth::user()?->can('create_imut::profile') && $owner->created_by === Auth::id();
+                        return (Auth::user()?->can('create_imut::profile') && $owner->created_by === Auth::id()) || Auth::user()?->can('force_editable_imut::profile');
                     })
                     ->url(fn($livewire) => ImutDataResource::getUrl('create-profile', [
                         'imutDataSlug' => $livewire->ownerRecord->slug,
