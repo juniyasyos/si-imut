@@ -42,14 +42,14 @@
                         class="font-extrabold tracking-tight
                                text-[#0b4b4b] dark:text-white
                                leading-tight
-                               text-[clamp(14px,2.5vw,28px)]">
+                               text-[clamp(12px,2.0vw,24px)]">
                         {{ $greeting }}, {{ $displayName }} <span>👋</span>
                     </h2>
 
                     <p
                         class="mt-2 text-slate-700/90 dark:text-slate-300
                                leading-snug
-                               text-[clamp(11px,2vw,16px)]">
+                               text-[clamp(8px,1.8vw,14px)]">
                         {{ $quote }}
                     </p>
 
