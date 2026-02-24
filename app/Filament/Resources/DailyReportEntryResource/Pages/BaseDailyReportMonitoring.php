@@ -33,6 +33,10 @@ abstract class BaseDailyReportMonitoring extends Page
     public array $daysInMonth = [];
     public array $monitoringTemplates = [];
 
+    // Category info pulled from database – used by the frontend to render
+    public array $imutCategories = [];
+    public array $categoryColors = [];
+
     // Loading states
     public bool $loadingMatrix = false;
     public bool $loadingSlideOver = false;
@@ -58,6 +62,25 @@ abstract class BaseDailyReportMonitoring extends Page
     {
         $this->matrixService = new MatrixDataService();
         $this->slideOverService = new SlideOverService();
+
+        // load category list and pre‑compute CSS classes for each
+        $this->imutCategories = \App\Models\ImutCategory::query()
+            ->orderBy('id')
+            ->get(['id', 'category_name'])
+            ->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'name' => $c->category_name,
+                ];
+            })
+            ->toArray();
+
+        $this->categoryColors = collect($this->imutCategories)
+            ->mapWithKeys(function ($c) {
+                return [
+                    $c['name'] => $this->getCategoryColorClass($c['id']),
+                ];
+            })->toArray();
     }
 
     public function bootBase(): void
@@ -88,6 +111,15 @@ abstract class BaseDailyReportMonitoring extends Page
         $this->indicators = $result['indicators'];
         $this->matrixData = $result['matrixData'];
         $this->daysInMonth = $result['daysInMonth'];
+
+        // ensure color map includes any categories returned by the service
+        foreach ($this->indicators as $indicator) {
+            if (!empty($indicator['category']) && !isset($this->categoryColors[$indicator['category']])) {
+                // compute color by id if available
+                $id = $indicator['category_id'] ?? null;
+                $this->categoryColors[$indicator['category']] = $this->getCategoryColorClass($id);
+            }
+        }
     }
 
     /**
@@ -156,6 +188,32 @@ abstract class BaseDailyReportMonitoring extends Page
     /**
      * Determine cell state based on score and compliance
      */
+
+    /**
+     * Helper used by frontend to assign a consistent tailwind badge class per
+     * category.  We mirror the simple palette that previously lived in the
+     * javascript so that both blade + livewire and alpine versions stay in
+     * sync.  If the color scheme ever needs to be customised per-category the
+     * logic can be extended here or the category table can gain a column.
+     *
+     * @param int|null $categoryId
+     * @return string
+     */
+    protected function getCategoryColorClass(?int $categoryId): string
+    {
+        $colors = [
+            'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+            'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
+            'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
+        ];
+        if (!is_numeric($categoryId)) {
+            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        }
+        return $colors[$categoryId % count($colors)];
+    }
     protected function determineCellState($report): string
     {
         if ($report->compliance_status || $report->total_score >= 100) {

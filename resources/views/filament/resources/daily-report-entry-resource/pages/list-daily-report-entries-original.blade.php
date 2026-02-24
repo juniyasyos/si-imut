@@ -1,9 +1,5 @@
 <x-filament-panels::page>
-    <div>
-        <!-- Full Screen Loading Overlay -->
-        <div x-show="isDateLoading" x-transition.opacity.duration.500ms class="fixed inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md z-[9999]" style="display: none;"></div>
-
-        <div class="space-y-6 relative" x-data="{
+    <div x-data="{
             selectedDate: '{{ now()->format('Y-m-d') }}',
             selectedMonth: '{{ $selectedMonth }}',
             currentDate: new Date('{{ $selectedMonth }}-01'),
@@ -14,6 +10,8 @@
             indicators: @js($indicators),
             matrixData: @js($matrixData),
             monitoringData: @js($monitoringTemplates),
+            // category palette generated on server based on ImutCategory model
+            categoryColors: @js($categoryColors),
             monitoringSearchQuery: '',
             monitoringMonth: '{{ $selectedMonth }}',
             isDateLoading: false,
@@ -135,20 +133,24 @@
             },
             
             getCategoryColor(category) {
-                const colors = {
-                    'Keselamatan Pasien': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-                    'Mutu Klinis': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-                    'Manajemen': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-                    'Sasaran Keselamatan': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-                    'Pencegahan Infeksi': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-                    'Akreditasi': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400'
-                };
-                return colors[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                // look up class generated from the database; fall back to gray if
+                // nothing matches (e.g. category was deleted but earlier indicator
+                // still kept the name)
+                return this.categoryColors[category] ||
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
             },
 
             formatImutVersion(version) {
                 if (!version) return '';
                 return version.replace('/version-', 'v');
+            },
+
+            // helper to get report count for an indicator and date (fallback using matrixData)
+            getReportCount(indicatorId, selectedDate) {
+                const date = new Date(selectedDate);
+                const day = date.getDate();
+                const cell = this.matrixData[indicatorId] && this.matrixData[indicatorId][day];
+                return cell ? cell.count : 0;
             },
             
             // Monitoring functions
@@ -206,6 +208,11 @@
                 return new Intl.NumberFormat('id-ID').format(num || 0);
             }
         }" x-cloak>
+
+        <!-- Full Screen Loading Overlay -->
+        <div x-show="isDateLoading" x-transition.opacity.duration.500ms class="fixed inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md z-[9999]" style="display: none;"></div>
+
+        <div class="space-y-6 relative">
 
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.header.header-section')
 

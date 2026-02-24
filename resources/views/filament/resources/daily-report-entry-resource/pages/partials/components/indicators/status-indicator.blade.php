@@ -4,7 +4,6 @@
     <div class="flex items-center gap-1 text-green-700 dark:text-green-400">
         @svg("heroicon-m-check-circle", "w-4 h-4")
         <span class="text-sm font-semibold">Ada Data</span>
-        <span class="text-xs text-gray-500" x-text="'(' + (getStatusForDate(indicator.id, selectedDate).summary?.numerator ?? 0) + ' laporan)'"></span>
     </div>
 </template>
 

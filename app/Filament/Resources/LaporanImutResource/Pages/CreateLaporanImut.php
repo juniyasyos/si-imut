@@ -334,23 +334,23 @@ class CreateLaporanImut extends CreateRecord
             // yang punya IMUT data tidak konsisten dengan relasi unit kerja
             $this->cleanupOrphanedPenilaian($this->record);
 
-            // 2. VALIDATE: Cek konsistensi data laporan
-            $validationResult = $this->validateLaporanDataConsistency($this->record);
+            // // 2. VALIDATE: Cek konsistensi data laporan
+            // $validationResult = $this->validateLaporanDataConsistency($this->record);
 
-            if (!$validationResult['valid']) {
-                Notification::make()
-                    ->title('⚠️ Peringatan Data Inconsistency')
-                    ->body($validationResult['message'])
-                    ->warning()
-                    ->persistent()
-                    ->send();
+            // if (!$validationResult['valid']) {
+            //     Notification::make()
+            //         ->title('⚠️ Peringatan Data Inconsistency')
+            //         ->body($validationResult['message'])
+            //         ->warning()
+            //         ->persistent()
+            //         ->send();
 
-                // Log untuk audit trail
-                \Log::warning("Laporan {$this->record->id} created with data inconsistency", [
-                    'issues' => $validationResult['issues'],
-                    'created_by' => Auth::id(),
-                ]);
-            }
+            //     // Log untuk audit trail
+            //     \Log::warning("Laporan {$this->record->id} created with data inconsistency", [
+            //         'issues' => $validationResult['issues'],
+            //         'created_by' => Auth::id(),
+            //     ]);
+            // }
 
             Notification::make()
                 ->title('Proses Penilaian Dimulai')

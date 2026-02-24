@@ -82,6 +82,7 @@
 
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base font-semibold text-gray-900 dark:text-white">List Laporan di Hari Ini</h3>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">({{ count($this->dailyReports) }} laporan)</span>
                         </div>
 
                         @if(!empty($this->dailyReports))

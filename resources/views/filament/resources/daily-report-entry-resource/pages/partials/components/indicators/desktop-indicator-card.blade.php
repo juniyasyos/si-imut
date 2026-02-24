@@ -1,7 +1,9 @@
 <!-- Desktop Indicator Card -->
 <div class="border border-slate-200 dark:border-slate-700 rounded-xl p-4 mt-2 hover:shadow-sm transition-all duration-200 indicator-card"
-     x-data="{
+    x-data="{
+         // status for refreshing the card
          refreshing: false,
+
          async refreshStatus() {
              if (this.refreshing) return;
              this.refreshing = true;
@@ -15,32 +17,17 @@
                  this.refreshing = false;
              }
          }
-     }"
-     x-init="
-         // Auto-refresh when data changes
-         $watch('matrixData', () => {
-             // Data has been updated, force re-render
-             $nextTick(() => {
-                 // Trigger a re-evaluation of status
-                 console.log('Matrix data updated for indicator:', indicator.id);
-             });
-         });
-         
-         // Listen for report created/updated events
-         $wire.on('reportCreated', () => refreshStatus());
-         $wire.on('reportUpdated', () => refreshStatus());
-         $wire.on('reportDeleted', () => refreshStatus());
-     ">
+     }">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <!-- Indicator Info -->
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white leading-snug" x-text="indicator.title"></h3>
                 <!-- Refresh indicator -->
-                <button @click="refreshStatus()" 
-                        :disabled="refreshing"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                        title="Refresh status">
+                <button @click="refreshStatus()"
+                    :disabled="refreshing"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title="Refresh status">
                     <svg :class="{ 'animate-spin': refreshing }" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
@@ -72,6 +59,21 @@
                         <span x-text="formatImutVersion(indicator.imut_profile_version)"></span>
                     </span>
                 </div>
+            </div>
+
+            <div class="mt-2">
+                <span
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md"
+                    :class="getReportCount(indicator.id, selectedDate) > 0 
+            ? 'bg-green-100 text-green-700' 
+            : 'bg-gray-100 text-gray-500'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6M7 8h10M5 3h14a2 2 0 012 2v14l-4-3H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                    </svg>
+
+                    <span x-text="getReportCount(indicator.id, selectedDate) + ' laporan'"></span>
+                </span>
             </div>
         </div>
 

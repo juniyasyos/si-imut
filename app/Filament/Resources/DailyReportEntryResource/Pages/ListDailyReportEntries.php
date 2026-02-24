@@ -505,6 +505,17 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     /**
      * Delete a daily report entry via API
      */
+    public function getReportCountForIndicatorDate(int $indicatorId, string $date): int
+    {
+        try {
+            $reports = $this->slideOverService->loadDailyReports($indicatorId, $date);
+            return count($reports);
+        } catch (\Exception $e) {
+            Log::error('Error fetching report count', ['indicator_id' => $indicatorId, 'date' => $date, 'error' => $e->getMessage()]);
+            return 0;
+        }
+    }
+
     public function deleteReport($recordId): void
     {
         try {

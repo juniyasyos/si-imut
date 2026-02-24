@@ -2,8 +2,7 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('dailyReportData', () => ({
-            selectedDate: '{{ now()->format('
-            Y - m - d ') }}',
+            selectedDate: '{{ now()->format('Y - m - d ') }}',
             selectedMonth: '{{ $selectedMonth }}',
             currentDate: new Date('{{ $selectedMonth }}-01'),
             isMobile: false,

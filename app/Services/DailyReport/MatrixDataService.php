@@ -54,6 +54,7 @@ class MatrixDataService
             'form_templates.id',
             'form_templates.title',
             'imut_data.title as imut_data_title',
+            'imut_kategori.id as category_id',
             'imut_kategori.category_name as category_title',
             'imut_profil.version as imut_profile_version',
         ])
@@ -80,7 +81,9 @@ class MatrixDataService
             return [
                 'id' => $formTemplate->id,
                 'title' => $formTemplate->imut_data_title ?? $formTemplate->title,
+                // include both name and id so front‑end can colour based on model data
                 'category' => $formTemplate->category_title,
+                'category_id' => $formTemplate->category_id,
                 'imut_profile_version' => $formTemplate->imut_profile_version,
             ];
         })->toArray();
@@ -120,7 +123,11 @@ class MatrixDataService
             ->get()
             ->groupBy('form_template_id')
             ->map(function ($dates) {
-                return $dates->keyBy('report_date');
+                // key by plain Y-m-d string to match buildMatrixData lookup
+                return $dates->keyBy(function ($item) {
+                    // item->report_date may be Carbon or string
+                    return Carbon::parse($item->report_date)->format('Y-m-d');
+                });
             });
     }
 
@@ -143,6 +150,20 @@ class MatrixDataService
                 $cellDate = $date->copy()->day($day)->startOfDay();
                 $today = now()->startOfDay();
                 $sixDaysAgo = now()->copy()->subDays(6)->startOfDay();
+
+                // debugging: log summary for today to confirm counts
+                // if ($today->isSameDay($cellDate)) {
+                //     dd('buildMatrixData today', [
+                //         'dateStr' => $dateStr,
+                //         'indicatorId' => $indicator['id'],
+                //         'indicatorTitle' => $indicator['title'],
+                //         'summary' => $summary,
+                //         'totalCount' => $totalCount,
+                //         'compliantCount' => $compliantCount,
+                //         'compliancePercentage' => $compliancePercentage,
+                //         'complianceSummaries' => $complianceSummaries->get($indicator['id']),
+                //     ]);
+                // }
 
                 $cellState = 'disabled';
                 if ($cellDate->lte($today)) {
