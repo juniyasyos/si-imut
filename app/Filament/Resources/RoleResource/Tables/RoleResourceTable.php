@@ -9,7 +9,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 
-class RoleResourceTable extends RoleResource
+class RoleResourceTable
 {
     public static function columns(): array
     {
@@ -29,7 +29,7 @@ class RoleResourceTable extends RoleResource
                 ->color(fn(mixed $state): string => str($state)->contains('Global') ? 'gray' : 'primary')
                 ->label(__('filament-shield::filament-shield.column.team'))
                 ->searchable()
-                ->visible(fn(): bool => static::shield()->isCentralApp() && Utils::isTenancyEnabled()),
+                ->visible(fn(): bool => RoleResource::shield()->isCentralApp() && Utils::isTenancyEnabled()),
             Tables\Columns\TextColumn::make('permissions_count')
                 ->badge()
                 ->label(__('filament-shield::filament-shield.column.permissions'))

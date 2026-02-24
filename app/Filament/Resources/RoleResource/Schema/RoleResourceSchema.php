@@ -10,7 +10,7 @@ use Illuminate\Support\HtmlString;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Forms\ShieldSelectAllToggle;
 
-class RoleResourceSchema extends RoleResource
+class RoleResourceSchema
 {
     public static function make(): array
     {
@@ -25,7 +25,7 @@ class RoleResourceSchema extends RoleResource
                                 ->required()
                                 ->maxLength(255),
 
-                                Forms\Components\TextInput::make('name')
+                            Forms\Components\TextInput::make('name')
                                 ->label(__('filament-shield::filament-shield.field.name'))
                                 ->unique(ignoreRecord: true)
                                 ->required()
@@ -43,8 +43,8 @@ class RoleResourceSchema extends RoleResource
                                 /** @phpstan-ignore-next-line */
                                 ->default([Filament::getTenant()?->id])
                                 ->options(fn(): Arrayable => Utils::getTenantModel() ? Utils::getTenantModel()::pluck('name', 'id') : collect())
-                                ->hidden(fn(): bool => !(static::shield()->isCentralApp() && Utils::isTenancyEnabled()))
-                                ->dehydrated(fn(): bool => !(static::shield()->isCentralApp() && Utils::isTenancyEnabled())),
+                                ->hidden(fn(): bool => !(RoleResource::shield()->isCentralApp() && Utils::isTenancyEnabled()))
+                                ->dehydrated(fn(): bool => !(RoleResource::shield()->isCentralApp() && Utils::isTenancyEnabled())),
 
                             ShieldSelectAllToggle::make('select_all')
                                 ->onIcon('heroicon-s-shield-check')
@@ -58,8 +58,7 @@ class RoleResourceSchema extends RoleResource
                             'lg' => 3,
                         ]),
                 ]),
-            static::getShieldFormComponents(),
+            RoleResource::getShieldFormComponents(),
         ];
     }
 }
-

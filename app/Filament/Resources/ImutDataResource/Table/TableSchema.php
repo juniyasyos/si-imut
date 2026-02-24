@@ -82,11 +82,11 @@ class TableSchema extends ImutDataResource
                 ->sortable(),
 
             \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_monthly')
-                ->label('Bulanan')
+                ->label('Pengisian')
                 ->translateLabel()
                 ->alignCenter()
                 ->size('xl')
-                ->tooltip(fn(Model $record) => $record->is_monthly ? 'Ya' : 'Tidak')
+                ->tooltip(fn(Model $record) => $record->is_monthly ? 'Bulanan' : 'Harian')
                 ->sortable()
                 ->disabled(),
         ];

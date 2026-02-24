@@ -73,7 +73,7 @@ class EditImutData extends EditRecord
     {
         $user = Auth::user();
 
-        return $record?->created_by === $user?->id;
+        return $record?->created_by === $user?->id || $user?->can('view_all_data_imut::data') ;
     }
 
     protected function getFormActions(): array
@@ -83,7 +83,7 @@ class EditImutData extends EditRecord
 
         $isCreator = $record?->created_by === $user?->id;
 
-        if (! $isCreator) {
+        if (! $isCreator && ! $user?->can('view_all_data_imut::data')) {
             return [];
         }
 

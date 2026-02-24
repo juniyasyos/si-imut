@@ -94,6 +94,12 @@ class ImutDataResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
+        // dd(
+        //     $user->getAllPermissions(),   // collection permission
+        //     $user->roles,                 // role-model(s)
+        //     $user->roles->pluck('name')   // nama-namanya saja
+        // );
+
         if ($user->can('view_all_data_imut::data')) {
             return (string) ImutData::count();
         }

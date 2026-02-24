@@ -26,6 +26,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Guava\FilamentModalRelationManagers\Actions\ModalRelationManagerAction;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Guava\FilamentModalRelationManagers\Actions\Action\RelationManagerAction;
 use Illuminate\Database\Eloquent\Model;
@@ -111,18 +112,20 @@ class ImutDataSchema extends ImutDataResource
                                     ->helperText(__('filament-forms::imut-data.form.main.status_helper'))
                                     ->inline(true)
                                     ->columnSpan(2)
-                                    ->onColor('success')
                                     ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->required()
                                     ->default(true)
                                     ->columnSpan(1),
 
-                                Toggle::make('is_monthly')
-                                    ->label('Pengisian Bulanan')
-                                    ->helperText('Centang jika indikator ini dinilai setiap bulan')
+                                ToggleButtons::make('is_monthly')
+                                    ->label('Pengisian')
+                                    ->helperText('Pilih frekuensi pengisian: harian atau bulanan')
+                                    ->options([
+                                        0 => 'Harian',
+                                        1 => 'Bulanan',
+                                    ])
                                     ->inline(true)
                                     ->columnSpan(1)
-                                    ->onColor('success')
                                     ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->required()
                                     ->default(true),
