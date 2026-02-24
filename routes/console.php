@@ -18,3 +18,7 @@ Schedule::command(NotifikasiDeadlineLaporan::class)->dailyAt('08:00');
 Schedule::command(GenerateMonthlyLaporanImut::class, ['--auto-calculate'])
     ->monthlyOn(1, '01:00')
     ->description('Auto-generate monthly IMUT report with daily report calculation');
+
+// Periodic sync of local/public files to S3 fallback
+Schedule::command('storage:sync-local-to-s3')->dailyAt('02:00')
+    ->description('Sync local/public disks to S3 (via queue)');
