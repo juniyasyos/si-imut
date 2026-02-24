@@ -86,7 +86,7 @@ class TableSchema extends ImutDataResource
                 ->translateLabel()
                 ->alignCenter()
                 ->size('xl')
-                ->tooltip(fn(Model $record) => $record->is_monthly ? 'Bulanan' : 'Harian')
+                ->tooltip(fn(Model $record) => $record->is_monthly ? 'Harian' : 'Bulanan')
                 ->sortable()
                 ->disabled(),
         ];

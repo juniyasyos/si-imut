@@ -121,8 +121,8 @@ class ImutDataSchema extends ImutDataResource
                                     ->label('Pengisian')
                                     ->helperText('Pilih frekuensi pengisian: harian atau bulanan')
                                     ->options([
-                                        0 => 'Harian',
-                                        1 => 'Bulanan',
+                                        0 => 'Bulanan',
+                                        1 => 'Harian',
                                     ])
                                     ->inline(true)
                                     ->columnSpan(1)
