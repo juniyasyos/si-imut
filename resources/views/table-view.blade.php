@@ -263,7 +263,8 @@
                 <!-- Text Content -->
                 <div class="flex-1 text-center">
                     <h1 class="text-lg md:text-xl font-bold text-gray-900 mb-1" style="letter-spacing: 1px;">RUMAH SAKIT CITRA HUSADA JEMBER</h1>
-                    <div class="text-xs text-gray-600 mb-2" style="letter-spacing: 0.5px;">Jl. Contoh No. 123, Jember, Jawa Timur 68100 | Telp: (0331) 123456</div>
+                    <div class="text-xs text-gray-600 mb-2" style="letter-spacing: 0.5px;">Jl. Teratai No. 22, Kab. Jember, Provinsi Jawa Timur</div>
+                    <div class="text-xs text-gray-600 mb-2" style="letter-spacing: 0.5px;">Telp. (0331) 486200 | Fax. (0331) 427088</div>
                     <div class="h-px bg-gray-400 my-2"></div>
                     <h2 class="text-sm md:text-base font-bold text-gray-800 uppercase" style="letter-spacing: 1.5px;" x-text="tableTitle"></h2>
                     <div class="text-xs text-gray-600 mt-1" style="letter-spacing: 0.5px;">Sistem Informasi Indikator Mutu (SI-IMUT)</div>

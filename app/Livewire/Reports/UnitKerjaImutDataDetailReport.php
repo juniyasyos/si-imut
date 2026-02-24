@@ -409,44 +409,13 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
 
 
-    public function openTableView(): void
+    public function openTableView($formTemplateId, $imutProfileId, $unitKerjaId, $period, $laporanId): void
     {
-        if (!$this->laporanId || !$this->unitKerjaId) {
-            return;
-        }
-
-        // Get first imut penilaian dengan relasi profile
-        $penilaian = ImutPenilaian::query()
-            ->whereHas('laporanUnitKerja', function ($query) {
-                $query->where('laporan_imut_id', $this->laporanId)
-                    ->where('unit_kerja_id', $this->unitKerjaId);
-            })
-            ->with(['profile.formTemplates', 'laporanUnitKerja.laporanImut'])
-            ->first();
-
-        if (!$penilaian || !$penilaian->profile) {
-            return;
-        }
-
-        // Get form template dari profile
-        $formTemplate = $penilaian->profile->formTemplates()->first();
-        if (!$formTemplate) {
-            return;
-        }
-
-        // Build period dari laporan
-        $laporan = $penilaian->laporanUnitKerja->laporanImut;
-        if (!$laporan) {
-            return;
-        }
-
-        $period = sprintf('%04d-%02d', $laporan->report_year, $laporan->report_month);
-
         // Build URL dengan parameter yang aman
         $params = [
-            'form_template_id' => $formTemplate->id,
-            'imut_profile_id' => $penilaian->profile->id,
-            'unit_kerja_id' => $this->unitKerjaId,
+            'form_template_id' => $formTemplateId,
+            'imut_profile_id' => $imutProfileId,
+            'unit_kerja_id' => $unitKerjaId,
             'period' => $period,
         ];
 

@@ -36,9 +36,8 @@ trait BuildIsiPenilaian
             ->mountUsing(function (Form $form, $record) {
                 $form->fill($this->getPenilaianFormFillData($record));
             })
-            ->form(function () use ($livewireComponent) {
+            ->form(function ($record) use ($livewireComponent) {
                 // Get record to build table view parameters
-                $record = $livewireComponent->record ?? null;
                 $formTemplateId = null;
                 $imutProfileId = null;
                 $unitKerjaId = null;
@@ -54,6 +53,13 @@ trait BuildIsiPenilaian
                     }
                 }
 
+                // dd([
+                //     'formTemplateId' => $formTemplateId,
+                //     'imutProfileId' => $imutProfileId,
+                //     'unitKerjaId' => $unitKerjaId,
+                //     'period' => $period,
+                //     'laporan' => $laporan,
+                // ]);
                 return [
                     Section::make('Perhitungan')
                         ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
@@ -74,11 +80,12 @@ trait BuildIsiPenilaian
                         ->schema([
                             \Filament\Forms\Components\View::make('filament.forms.components.alternative-data-section')
                                 ->columnSpanFull()
-                                ->viewData([
+                                ->viewData(fn($record) => [
                                     'formTemplateId' => $formTemplateId,
                                     'imutProfileId' => $imutProfileId,
                                     'unitKerjaId' => $unitKerjaId,
                                     'period' => $period,
+                                    'laporanId' => $laporan?->id,
                                 ]),
                         ]),
 

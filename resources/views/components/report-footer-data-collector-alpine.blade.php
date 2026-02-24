@@ -101,7 +101,7 @@
                 </div>
 
                 {{-- Placeholder when no image is available; reserves same vertical space and shows penanda --}}
-                <div x-show="!((typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url) || {{ $rightSignatureImage ? 'true' : 'false' }})" class="mb-1 h-32 flex items-end justify-center border-b border-gray-400"></div>
+                <div x-show="!((typeof {{ $rightUsersAlpine }} !== 'undefined' && {{ $rightUsersAlpine }}.length > 0 && {{ $rightUsersAlpine }}[0].ttd_url) || {{ $rightSignatureImage ? 'true' : 'false' }})" class="mb-1 h-32 flex items-end justify-center"></div>
 
                 {{-- Show signature text: if prop is default-placeholder, hide it when a TTD image exists; otherwise always show --}}
                 @if($rightSignature !== '(...........................)')
