@@ -1,6 +1,13 @@
 @import '/vendor/filament/filament/resources/css/theme.css';
 /* @import 'login.css'; */
 
+/* scale down everything by 20% using root font-size; most utility classes
+   (text, spacing, etc.) derive from rem so they shrink accordingly */
+:root {
+    font-size: 80%;
+}
+
+
 :root {
     --ds-dark-bg-primary-color: #1B2431;
     --ds-dark-bg-secondary-color: #273142;
