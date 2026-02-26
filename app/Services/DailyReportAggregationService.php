@@ -3,14 +3,9 @@
 namespace App\Services;
 
 use App\Models\DailyReportResponse;
-use App\Models\FormTemplate;
 use App\Models\ImutPenilaian;
-use App\Models\ImutProfile;
 use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
-use App\Models\UnitKerja;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -21,195 +16,62 @@ class DailyReportAggregationService
      */
     public function calculateForPenilaian(ImutPenilaian $penilaian): array
     {
+        // caller should eager load relationships to avoid N+1, but we load
+        // anything missing just in case.
         $penilaian->loadMissing([
             'laporanUnitKerja.laporanImut',
             'laporanUnitKerja.unitKerja',
             'profile.formTemplates',
-            'profile.imutData'
+            'profile.imutData',
         ]);
 
-        // Get period dari laporan
         $laporan = $penilaian->laporanUnitKerja->laporanImut;
-        $start = $laporan->assessment_period_start;
-        $end = $laporan->assessment_period_end;
+        $start = Carbon::parse($laporan->assessment_period_start);
+        $end = Carbon::parse($laporan->assessment_period_end);
 
-        // Get unit kerja & form template (indicator)
         $unitKerjaId = $penilaian->laporanUnitKerja->unit_kerja_id;
         $unitKerjaName = $penilaian->laporanUnitKerja->unitKerja->unit_name ?? 'Unknown';
 
-        // Get form template for this profile
-        // Profile sudah validated valid period, jadi ambil template pertama
         $formTemplate = $penilaian->profile->formTemplates()->first();
-
-        if (!$formTemplate) {
+        if (! $formTemplate) {
             Log::warning("No FormTemplate found for ImutProfile {$penilaian->imut_profil_id}");
             return $this->emptyResult($start, $end, 'No FormTemplate found');
         }
 
         $imutDataTitle = $penilaian->profile->imutData->title ?? 'Unknown';
 
-        // Query daily reports untuk indicator ini di unit kerja ini dalam periode ini
-        $reports = DailyReportResponse::query()
+        // build the base query once; clones will be used for each count so that
+        // additional where/selected columns do not leak between uses.
+        $baseQuery = DailyReportResponse::query()
             ->where('unit_kerja_id', $unitKerjaId)
             ->where('form_template_id', $formTemplate->id)
-            ->whereBetween('report_date', [$start, $end])
-            ->orderBy('report_date')
-            ->get();
+            ->whereBetween('report_date', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ]);
 
-        // DD khusus untuk IGD dan Kepatuhan Kebersihan Tangan
-        // if (stripos($unitKerjaName, 'igd') !== false && stripos($imutDataTitle, 'kepatuhan kebersihan tangan') !== false) {
-        //     dd([
-        //         'unit_kerja' => [
-        //             'id' => $unitKerjaId,
-        //             'name' => $unitKerjaName,
-        //         ],
-        //         'imut_data' => [
-        //             'id' => $penilaian->profile->imutData->id ?? null,
-        //             'title' => $imutDataTitle,
-        //         ],
-        //         'form_template' => [
-        //             'id' => $formTemplate->id,
-        //             'title' => $formTemplate->title,
-        //         ],
-        //         'periode' => [
-        //             'start' => $start->format('Y-m-d'),
-        //             'end' => $end->format('Y-m-d'),
-        //         ],
-        //         'penilaian_id' => $penilaian->id,
-        //         'query_params' => [
-        //             'unit_kerja_id' => $unitKerjaId,
-        //             'form_template_id' => $formTemplate->id,
-        //             'date_range' => [$start->format('Y-m-d'), $end->format('Y-m-d')],
-        //         ],
-        //         'daily_reports' => [
-        //             'total_count' => $reports->count(),
-        //             'reports' => $reports->map(function ($report) {
-        //                 return [
-        //                     'id' => $report->id,
-        //                     'report_date' => $report->report_date->format('Y-m-d'),
-        //                     'total_score' => $report->total_score,
-        //                     'compliance_status' => $report->compliance_status,
-        //                     'responses' => $report->responses,
-        //                     'calculation_details' => $report->calculation_details,
-        //                     'created_at' => $report->created_at?->format('Y-m-d H:i:s'),
-        //                 ];
-        //             })->toArray(),
-        //         ]
-        //     ]);
-        // }
+        // denominator is simply the total number of reported rows
+        $denominator = (clone $baseQuery)->count();
 
-        // Calculate
-        $denominator = $reports->count(); // Total laporan yang diinput
-        $numerator = 0; // Yang compliance 100%
-        $breakdown = [];
-        $calculationSteps = []; // Untuk debug
-
-        foreach ($reports as $report) {
-            // Ambil status dari calculation_details karena lebih akurat
-            $calculationDetails = $report->calculation_details ?? [];
-            $score = $calculationDetails['total_score'] ?? $report->total_score ?? 0;
-            $complianceStatus = $calculationDetails['compliance_status'] ?? $report->compliance_status ?? false;
-
-            // Perfect jika compliance_status true ATAU score >= 100
-            $isPerfect = $complianceStatus === true || $score >= 100;
-
-            $step = [
-                'report_id' => $report->id,
-                'date' => $report->report_date->format('Y-m-d'),
-                'raw_data' => [
-                    'total_score_field' => $report->total_score,
-                    'compliance_status_field' => $report->compliance_status,
-                    'calculation_details' => $calculationDetails,
-                ],
-                'used_values' => [
-                    'score' => $score,
-                    'compliance_status' => $complianceStatus,
-                ],
-                'logic' => [
-                    'compliance_status_is_true' => $complianceStatus === true,
-                    'score_gte_100' => $score >= 100,
-                    'formula' => sprintf(
-                        '(%s === true) || (%s >= 100)',
-                        var_export($complianceStatus, true),
-                        $score
-                    ),
-                ],
-                'result' => [
-                    'is_perfect' => $isPerfect,
-                    'numerator_before' => $numerator,
-                ],
-            ];
-
-            if ($isPerfect) {
-                $numerator++;
-                $step['result']['numerator_after'] = $numerator;
-                $step['result']['action'] = '✅ MASUK NUMERATOR';
-            } else {
-                $step['result']['numerator_after'] = $numerator;
-                $step['result']['action'] = '❌ TIDAK DIHITUNG';
-            }
-
-            $calculationSteps[] = $step;
-
-            $breakdown[] = [
-                'date' => $report->report_date->format('Y-m-d'),
-                'report_id' => $report->id,
-                'compliance_score' => round($score, 2),
-                'compliance_status_field' => $report->compliance_status,
-                'compliance_status_calculated' => $complianceStatus,
-                'is_perfect' => $isPerfect,
-            ];
-        }
+        // numerator – mimic the original PHP logic but perform the work in SQL
+        // so we don't have to hydrate a collection. the JSON checks are required
+        // because the definitive values come from calculation_details in many
+        // cases.
+        $numerator = (clone $baseQuery)
+            ->where(function ($q) {
+                $q->where('compliance_status', true)
+                    ->orWhereRaw("JSON_EXTRACT(calculation_details, '$.compliance_status') = true")
+                    ->orWhere('total_score', '>=', 100)
+                    ->orWhereRaw("JSON_EXTRACT(calculation_details, '$.total_score') >= 100");
+            })
+            ->count();
 
         $percentage = $denominator > 0
             ? round(($numerator / $denominator) * 100, 2)
             : 0;
 
-        // Find missing dates
-        $missingDates = $this->findMissingDates($reports, $start, $end);
+        $missingDates = $this->findMissingDates(clone $baseQuery, $start, $end);
         $totalDays = $start->diffInDays($end) + 1;
-
-        // // DD hasil perhitungan untuk IGD dan Kepatuhan Kebersihan Tangan
-        // if (stripos($unitKerjaName, 'igd') !== false && stripos($imutDataTitle, 'kepatuhan kebersihan tangan') !== false) {
-        //     dd([
-        //         'IDENTITAS' => [
-        //             'unit_kerja' => $unitKerjaName,
-        //             'imut_data' => $imutDataTitle,
-        //             'penilaian_id' => $penilaian->id,
-        //         ],
-        //         'PERIODE' => [
-        //             'start' => $start->format('Y-m-d'),
-        //             'end' => $end->format('Y-m-d'),
-        //             'total_days' => $totalDays,
-        //         ],
-        //         'DATA_INPUT' => [
-        //             'total_reports' => $reports->count(),
-        //             'reports_by_date' => $reports->groupBy(fn($r) => $r->report_date->format('Y-m-d'))
-        //                 ->map(fn($group) => $group->count())
-        //                 ->toArray(),
-        //         ],
-        //         'PROSES_KALKULASI' => $calculationSteps,
-        //         'HASIL_AKHIR' => [
-        //             'numerator' => $numerator,
-        //             'denominator' => $denominator,
-        //             'percentage' => $percentage,
-        //             'formula' => sprintf('(%d / %d) × 100 = %s%%', $numerator, $denominator, $percentage),
-        //         ],
-        //         'BREAKDOWN' => $breakdown,
-        //         'MISSING_DATES' => $missingDates,
-        //         'PERHATIAN' => [
-        //             'duplicate_dates' => $reports->groupBy(fn($r) => $r->report_date->format('Y-m-d'))
-        //                 ->filter(fn($group) => $group->count() > 1)
-        //                 ->map(fn($group) => [
-        //                     'date' => $group->first()->report_date->format('Y-m-d'),
-        //                     'count' => $group->count(),
-        //                     'ids' => $group->pluck('id')->toArray(),
-        //                 ])
-        //                 ->values()
-        //                 ->toArray(),
-        //         ]
-        //     ]);
-        // }
 
         return [
             'numerator' => $numerator,
@@ -221,7 +83,21 @@ class DailyReportAggregationService
                 'days_reported' => $denominator,
                 'days_perfect' => $numerator,
                 'missing_dates' => $missingDates,
-                'compliance_breakdown' => $breakdown,
+                'form_template_id' => $formTemplate->id,
+                'form_template_title' => $formTemplate->title,
+            ],
+        ];
+
+        return [
+            'numerator' => $numerator,
+            'denominator' => $denominator,
+            'percentage' => $percentage,
+            'calculation_metadata' => [
+                'calculated_at' => now()->toDateTimeString(),
+                'total_days_in_period' => $totalDays,
+                'days_reported' => $denominator,
+                'days_perfect' => $numerator,
+                'missing_dates' => $missingDates,
                 'form_template_id' => $formTemplate->id,
                 'form_template_title' => $formTemplate->title,
             ],
@@ -248,7 +124,15 @@ class DailyReportAggregationService
      */
     public function calculateForLaporan(LaporanImut $laporan): array
     {
-        $laporan->loadMissing('laporanUnitKerjas.imutPenilaians');
+        // load all related models that will be touched during calculation. the
+        // legacy implementation only fetched penilaians, which meant each
+        // updatePenilaian() call would run additional queries for unitKerja,
+        // formTemplates, etc.
+        $laporan->load([
+            'laporanUnitKerjas.unitKerja',
+            'laporanUnitKerjas.imutPenilaians.profile.formTemplates',
+            'laporanUnitKerjas.imutPenilaians.profile.imutData',
+        ]);
 
         $results = [
             'total_penilaians' => 0,
@@ -281,10 +165,20 @@ class DailyReportAggregationService
     /**
      * Find dates without reports in the period
      */
-    private function findMissingDates(Collection $reports, Carbon $start, Carbon $end): array
+    /**
+     * Find dates without reports in the period. Accepts an Eloquent query so
+     * that we avoid hydrating every row just to collect the dates.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     */
+    private function findMissingDates($query, Carbon $start, Carbon $end): array
     {
-        $reportedDates = $reports->pluck('report_date')
-            ->map(fn($d) => $d->format('Y-m-d'))
+        // clone to avoid modifying the original builder
+        $reportedDates = (clone $query)
+            ->select(DB::raw('DATE(report_date) as report_date'))
+            ->distinct()
+            ->pluck('report_date')
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
             ->toArray();
 
         $missingDates = [];
@@ -292,7 +186,7 @@ class DailyReportAggregationService
 
         while ($current <= $end) {
             $dateStr = $current->format('Y-m-d');
-            if (!in_array($dateStr, $reportedDates)) {
+            if (! in_array($dateStr, $reportedDates)) {
                 $missingDates[] = $dateStr;
             }
             $current->addDay();
@@ -318,7 +212,6 @@ class DailyReportAggregationService
                 'days_reported' => 0,
                 'days_perfect' => 0,
                 'missing_dates' => [],
-                'compliance_breakdown' => [],
                 'error' => $error,
             ],
         ];

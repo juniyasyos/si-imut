@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\DailyReportEntry;
+use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
@@ -55,27 +55,27 @@ class DailyReportAggregationServiceTest extends TestCase
         $imperfectDates = ['2025-01-03', '2025-01-04', '2025-01-07'];
 
         foreach ($perfectDates as $date) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse($date),
-                'responses' => ['compliance' => 100], // Mock 100% compliance
+                'total_score' => 100,
+                'compliance_status' => true,
+                'calculation_details' => ['total_score' => 100, 'compliance_status' => true],
             ]);
         }
 
         foreach ($imperfectDates as $date) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse($date),
-                'responses' => ['compliance' => 95], // Mock 95% compliance
+                'total_score' => 95,
+                'compliance_status' => false,
+                'calculation_details' => ['total_score' => 95, 'compliance_status' => false],
             ]);
         }
 
-        // Mock FormTemplate calculateCompliance
-        FormTemplate::macro('calculateCompliance', function ($responses) {
-            return ['total_score' => $responses['compliance'] ?? 0];
-        });
 
         // Act
         $result = $this->service->calculateForPenilaian($penilaian);
@@ -148,17 +148,15 @@ class DailyReportAggregationServiceTest extends TestCase
 
         // Create 5 daily reports, all 100%
         for ($i = 1; $i <= 5; $i++) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse("2025-01-0{$i}"),
-                'responses' => ['compliance' => 100],
+                'total_score' => 100,
+                'compliance_status' => true,
+                'calculation_details' => ['total_score' => 100, 'compliance_status' => true],
             ]);
         }
-
-        FormTemplate::macro('calculateCompliance', function ($responses) {
-            return ['total_score' => $responses['compliance'] ?? 0];
-        });
 
         // Act
         $result = $this->service->calculateForPenilaian($penilaian);
@@ -196,17 +194,16 @@ class DailyReportAggregationServiceTest extends TestCase
         // Create 5 daily reports, none 100%
         $scores = [95, 88, 92, 85, 97];
         for ($i = 0; $i < 5; $i++) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse("2025-01-0" . ($i + 1)),
-                'responses' => ['compliance' => $scores[$i]],
+                'total_score' => $scores[$i],
+                'compliance_status' => false,
+                'calculation_details' => ['total_score' => $scores[$i], 'compliance_status' => false],
             ]);
         }
 
-        FormTemplate::macro('calculateCompliance', function ($responses) {
-            return ['total_score' => $responses['compliance'] ?? 0];
-        });
 
         // Act
         $result = $this->service->calculateForPenilaian($penilaian);
@@ -244,17 +241,16 @@ class DailyReportAggregationServiceTest extends TestCase
         // Create reports only for: 01, 05, 10 (7 dates missing)
         $reportedDates = ['2025-01-01', '2025-01-05', '2025-01-10'];
         foreach ($reportedDates as $date) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse($date),
-                'responses' => ['compliance' => 100],
+                'total_score' => 100,
+                'compliance_status' => true,
+                'calculation_details' => ['total_score' => 100, 'compliance_status' => true],
             ]);
         }
 
-        FormTemplate::macro('calculateCompliance', function ($responses) {
-            return ['total_score' => $responses['compliance'] ?? 0];
-        });
 
         // Act
         $result = $this->service->calculateForPenilaian($penilaian);
@@ -301,17 +297,16 @@ class DailyReportAggregationServiceTest extends TestCase
 
         // Create 3 perfect days out of 5
         for ($i = 1; $i <= 5; $i++) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse("2025-01-0{$i}"),
-                'responses' => ['compliance' => $i <= 3 ? 100 : 90],
+                'total_score' => $i <= 3 ? 100 : 90,
+                'compliance_status' => $i <= 3,
+                'calculation_details' => ['total_score' => $i <= 3 ? 100 : 90, 'compliance_status' => $i <= 3],
             ]);
         }
 
-        FormTemplate::macro('calculateCompliance', function ($responses) {
-            return ['total_score' => $responses['compliance'] ?? 0];
-        });
 
         // Act
         $success = $this->service->updatePenilaian($penilaian);
@@ -362,23 +357,24 @@ class DailyReportAggregationServiceTest extends TestCase
 
         // Create daily reports for both
         for ($i = 1; $i <= 5; $i++) {
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja1->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse("2025-01-0{$i}"),
-                'responses' => ['compliance' => 100],
+                'total_score' => 100,
+                'compliance_status' => true,
+                'calculation_details' => ['total_score' => 100, 'compliance_status' => true],
             ]);
-            DailyReportEntry::factory()->create([
+            DailyReportResponse::create([
                 'unit_kerja_id' => $unitKerja2->id,
                 'form_template_id' => $formTemplate->id,
                 'report_date' => Carbon::parse("2025-01-0{$i}"),
-                'responses' => ['compliance' => 100],
+                'total_score' => 100,
+                'compliance_status' => true,
+                'calculation_details' => ['total_score' => 100, 'compliance_status' => true],
             ]);
         }
 
-        FormTemplate::macro('calculateCompliance', function ($responses) {
-            return ['total_score' => $responses['compliance'] ?? 0];
-        });
 
         // Act
         $result = $this->service->calculateForLaporan($laporan);

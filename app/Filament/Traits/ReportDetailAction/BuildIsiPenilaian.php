@@ -228,6 +228,21 @@ trait BuildIsiPenilaian
             'recommendations'   => $data['recommendations'] ?? null,
             'selected_collection' => $folder?->collection ?? 'default',
         ];
+        if ($record->profile->imutData->is_monthly) {
+            // For monthly data, we only update analysis and recommendations, not the numerator/denominator
+            $update = [
+                'analysis' => $data['analysis'] ?? null,
+                'recommendations' => $data['recommendations'] ?? null,
+            ];
+        } else {
+            $update = [
+                'numerator_value'   => $data['numerator_value'] ?? null,
+                'denominator_value' => $data['denominator_value'] ?? null,
+                'analysis'          => $data['analysis'] ?? null,
+                'recommendations'   => $data['recommendations'] ?? null,
+                'selected_collection' => $folder?->collection ?? 'default',
+            ];
+        }
 
         $penilaian->update($update);
     }

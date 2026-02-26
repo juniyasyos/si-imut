@@ -427,8 +427,6 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         return $today->lte($analysisDeadline);
     }
 
-
-
     public function openTableView($formTemplateId, $imutProfileId, $unitKerjaId, $period, $laporanId): void
     {
         // Build URL dengan parameter yang aman
