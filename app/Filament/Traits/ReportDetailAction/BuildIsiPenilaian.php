@@ -102,8 +102,8 @@ trait BuildIsiPenilaian
 
     protected function buildAnalysisSchemaForAction($livewireComponent): array
     {
-        $shouldLock = $livewireComponent->createAnalisistAndRecomendation();
-
+        $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
+     
         return [
             Textarea::make('analysis')
                 ->label('Analisis')

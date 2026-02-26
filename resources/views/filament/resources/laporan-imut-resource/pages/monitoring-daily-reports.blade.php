@@ -9,10 +9,10 @@
                             <x-heroicon-o-chart-bar-square class="w-8 h-8" />
                         </div>
                         <div>
-                            <h1 class="text-3xl font-bold">
+                            <h1 class="text-sm md:text-lg lg:text-3xl font-bold">
                                 {{ $laporan->name }}
                             </h1>
-                            <p class="text-primary-100 mt-1 flex items-center gap-2">
+                            <p class="text-xs md:text-sm lg:text-md text-primary-100 mt-1 flex items-center gap-2">
                                 <x-heroicon-o-calendar class="w-4 h-4" />
                                 {{ $laporan->assessment_period_start->format('d M Y') }} - {{ $laporan->assessment_period_end->format('d M Y') }}
                             </p>
@@ -48,7 +48,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             {{-- Total Unit Kerja --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 dark:border-gray-700">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Unit Kerja</p>
@@ -61,7 +61,7 @@
             </div>
 
             {{-- Aktif Hari Ini --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-green-200 dark:border-green-700">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-green-200 dark:border-green-700">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-green-600 dark:text-green-400">Aktif Hari Ini</p>
@@ -75,7 +75,7 @@
             </div>
 
             {{-- Rata-rata Completion --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-blue-200 dark:border-blue-700">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-blue-200 dark:border-blue-700">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Rata-rata Completion</p>
@@ -91,7 +91,7 @@
             </div>
 
             {{-- Rata-rata Compliance --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-purple-200 dark:border-purple-700">
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-purple-200 dark:border-purple-700">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-purple-600 dark:text-purple-400">Rata-rata Compliance</p>
@@ -119,7 +119,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 @foreach ($unitKerjaStats as $stat)
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden group">
                     {{-- Status Bar --}}
                     <div class="h-2 {{ 
                             match($stat['status']) {
@@ -240,7 +240,7 @@
                                     'unit' => $stat['id']
                                 ]) }}"
                                 class="block w-full">
-                                <x-filament::button color="primary" size="md" class="w-full justify-center group-hover:shadow-lg transition-all">
+                                <x-filament::button color="primary" size="md" class="w-full flex flex-row justify-center group-hover:shadow-lg transition-all">
                                     <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
                                     Lihat Detail Laporan
                                     <x-heroicon-o-arrow-right class="w-4 h-4 ml-2" />
@@ -262,7 +262,7 @@
         </div>
 
         @if (empty($unitKerjaStats))
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow p-12 text-center">
             <x-heroicon-o-inbox class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Tidak Ada Data</h3>
             <p class="text-gray-500 dark:text-gray-400">Belum ada unit kerja yang terdaftar di laporan ini.</p>
