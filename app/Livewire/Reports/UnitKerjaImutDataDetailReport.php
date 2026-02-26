@@ -376,6 +376,26 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
         return true;
     }
 
+    public function createAnalisistAndRecomendation(): bool
+    {
+        if (!$this->laporan && !$this->loadLaporan()) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        $endDate = Carbon::parse($this->laporan->assessment_period_end);
+        $endDateWithGrace = $endDate->copy()->addDays(
+            $this->laporan->recommendation_analysis_duration ?? 0
+        );
+
+        // True hanya jika di antara endDate dan endDateWithGrace
+        if ($today->gt($endDate) && $today->lte($endDateWithGrace)) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Check if the laporan is editable for analysis and recommendations.
      *

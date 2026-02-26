@@ -102,8 +102,7 @@ trait BuildIsiPenilaian
 
     protected function buildAnalysisSchemaForAction($livewireComponent): array
     {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
-        $canRecommend = Gate::allows('create_recommendation_penilaian_imut::penilaian') || Gate::allows('force_editable_imut::penilaian');
+        $shouldLock = $livewireComponent->createAnalisistAndRecomendation();
 
         return [
             Textarea::make('analysis')
@@ -131,7 +130,6 @@ trait BuildIsiPenilaian
                 ->minLength(20)
                 ->maxLength(100000)
                 ->readOnly($shouldLock)
-                ->disabled(!$canRecommend)
                 ->rows(4)
                 ->live(onBlur: true)
                 ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
