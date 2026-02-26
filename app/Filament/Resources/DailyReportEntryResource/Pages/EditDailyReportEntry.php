@@ -137,6 +137,7 @@ class EditDailyReportEntry extends EditRecord
                 $data[$fieldKey . '_end_time'] = $fieldValue['end_time'] ?? null;
                 $data[$fieldKey . '_valid_duration_setting'] = $fieldValue['valid_duration_setting'] ?? null;
                 $data[$fieldKey . '_valid_indicator'] = $fieldValue['valid_indicator'] ?? null;
+
             } elseif ($field->field_type === 'time_range' && is_array($fieldValue)) {
                 // Time range has input_value
                 $data[$fieldKey . '_input_value'] = $fieldValue['input_value'] ?? null;

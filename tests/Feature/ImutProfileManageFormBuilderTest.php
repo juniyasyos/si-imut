@@ -78,7 +78,7 @@ class ImutProfileManageFormBuilderTest extends TestCase
     }
 
     /** @test */
-    public function reset_action_deletes_responses_and_clears_form_fields()
+    public function reset_action_clears_form_fields_but_keeps_responses()
     {
         // Arrange
         $imutData = ImutData::factory()->create(['title' => 'Kepatuhan Kebersihan Tangan']);
@@ -133,9 +133,69 @@ class ImutProfileManageFormBuilderTest extends TestCase
 
         $page->performReset();
 
-        // Assert: responses removed and fields cleared for THIS template
+        // Assert: form fields cleared, responses still exist
+        $this->assertDatabaseCount('daily_report_responses', 1);
+        $this->assertDatabaseCount('field_responses', 1);
+        $this->assertEquals(0, EnhancedFormField::where('form_template_id', $template->id)->count());
+    }
+
+    /** @test */
+    public function delete_responses_action_removes_all_responses_but_keeps_fields()
+    {
+        // Arrange similar to previous but verify field preservation
+        $imutData = ImutData::factory()->create(['title' => 'Kepatuhan Kebersihan Tangan']);
+        $profile = ImutProfile::factory()->create(['imut_data_id' => $imutData->id, 'valid_from' => now()->subDay()->toDateString()]);
+
+        $template = FormTemplate::where('imut_profile_id', $profile->id)->first() ?: FormTemplate::create([
+            'imut_profile_id' => $profile->id,
+            'title' => 'Test template',
+            'description' => 'desc',
+            'compliance_method' => 'auto_calculate',
+        ]);
+
+        $f1 = EnhancedFormField::create([
+            'form_template_id' => $template->id,
+            'field_key' => 'a',
+            'field_label' => 'A',
+            'field_type' => 'text',
+        ]);
+        $f2 = EnhancedFormField::create([
+            'form_template_id' => $template->id,
+            'field_key' => 'b',
+            'field_label' => 'B',
+            'field_type' => 'text',
+        ]);
+
+        $unit = UnitKerja::factory()->create();
+        $user = User::factory()->create();
+
+        $report = DailyReportResponse::create([
+            'form_template_id' => $template->id,
+            'unit_kerja_id' => $unit->id,
+            'submitted_by' => $user->id,
+            'report_date' => now()->toDateString(),
+        ]);
+
+        FieldResponse::create([
+            'daily_report_response_id' => $report->id,
+            'form_field_id' => $f1->id,
+            'field_value' => ['x'],
+        ]);
+
+        $this->assertDatabaseCount('daily_report_responses', 1);
+        $this->assertDatabaseCount('field_responses', 1);
+        $this->assertEquals(2, EnhancedFormField::where('form_template_id', $template->id)->count());
+
+        // Act: mount page and call performDeleteResponses as super admin
+        $page = new ManageFormBuilder();
+        $page->mount($profile);
+        $page->canForceUpdate = true;
+
+        $page->performDeleteResponses();
+
+        // Assert: responses removed but fields still remain
         $this->assertDatabaseCount('daily_report_responses', 0);
         $this->assertDatabaseCount('field_responses', 0);
-        $this->assertEquals(0, EnhancedFormField::where('form_template_id', $template->id)->count());
+        $this->assertEquals(2, EnhancedFormField::where('form_template_id', $template->id)->count());
     }
 }

@@ -70,6 +70,11 @@ class TimeDurationFieldBuilder
             ->label($startTimeLabel)
             ->required($required)
             ->seconds(false)
+            ->format('H:i')
+            ->displayFormat('H:i')
+            ->hoursStep(1)
+            ->minutesStep(1)
+            ->suffix('Jam:menit')
             ->debounce(1000)
             ->live()
             ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
@@ -100,6 +105,11 @@ class TimeDurationFieldBuilder
             ->label($endTimeLabel)
             ->required($required)
             ->seconds(false)
+            ->format('H:i')
+            ->displayFormat('H:i')
+            ->hoursStep(1)
+            ->minutesStep(1)
+            ->suffix('Jam:menit')
             ->debounce(1000)
             ->live()
             ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {

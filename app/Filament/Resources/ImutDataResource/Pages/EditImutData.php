@@ -61,7 +61,7 @@ class EditImutData extends EditRecord
                     ->visible(fn($record) => $record->categories->is_benchmark_category === 1),
             ])
                 ->button()
-                ->label('🔧 Kelola Data')
+                ->label('Kelola Data')
                 ->icon('heroicon-s-cog-6-tooth')
                 ->color('gray'),
 

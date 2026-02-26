@@ -81,14 +81,26 @@ class TableSchema extends ImutDataResource
                 ->toggleable(isToggledHiddenByDefault: false)
                 ->sortable(),
 
-            \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_monthly')
-                ->label('Pengisian')
-                ->translateLabel()
+            TextColumn::make('is_monthly')
+                ->label('Tipe Pengisian Indikator')
+                ->badge()
+                ->icon('heroicon-o-calendar')
+                ->formatStateUsing(
+                    fn(bool $state) =>
+                    $state ? 'Bulanan' : 'Harian'
+                )
+                ->color(
+                    fn(bool $state) =>
+                    $state ? 'info' : 'success'
+                )
+                ->tooltip(
+                    fn($record) =>
+                    $record->is_monthly
+                        ? 'Pengisian dilakukan 1 kali setiap bulan'
+                        : 'Pengisian dilakukan setiap hari'
+                )
                 ->alignCenter()
-                ->size('xl')
-                ->tooltip(fn(Model $record) => $record->is_monthly ? 'Harian' : 'Bulanan')
                 ->sortable()
-                ->disabled(),
         ];
     }
 

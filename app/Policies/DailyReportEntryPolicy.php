@@ -19,6 +19,46 @@ class DailyReportEntryPolicy
     // }
 
     /**
+     * Determine whether the user can create models.
+     *
+     * Similar logic to the Filament resource's `canCreate` method –
+     * check for an `indicator` parameter (query or form input) and
+     * verify the associated IMUT data is assigned to one of the user’s
+     * units.  Global view permission bypasses the restriction.
+     */
+    public function create(User $user): bool
+    {
+        if (! $user->unitKerjas()->exists()) {
+            return false;
+        }
+
+        $indicatorId = request()->query('indicator') ?? request()->input('indicator');
+        if (! $indicatorId) {
+            return false;
+        }
+
+        $template = \App\Models\FormTemplate::with('imutProfile.imutData.unitKerja')
+            ->find($indicatorId);
+
+        if (! $template) {
+            return false;
+        }
+
+        if ($user->can('view_all_data_imut::data')) {
+            return true;
+        }
+
+        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        $hasAccess = $template->imutProfile
+            && $template->imutProfile->imutData
+            && $template->imutProfile->imutData->unitKerja()
+            ->whereIn('unit_kerja_id', $userUnitIds)
+            ->exists();
+
+        return $hasAccess && $user->can('view_by_unit_kerja_imut::data');
+    }
+
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, DailyReportEntry $dailyReportEntry): bool

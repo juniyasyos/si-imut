@@ -7,6 +7,7 @@ use App\Filament\Resources\DailyReportEntryResource\Pages;
 use App\Filament\Resources\DailyReportEntryResource\Schema\DailyReportEntrySchema;
 use App\Filament\Resources\DailyReportEntryResource\Table\DailyReportEntryTable;
 use App\Models\DailyReportResponse;
+use App\Models\FormTemplate;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
@@ -139,18 +140,47 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     }
 
     /**
-     * Check if user can create records
+     * Check if user can create records.  In addition to belonging to at
+     * least one unit, we also require that the indicator referenced by the
+     * `indicator` query parameter is part of an IMUT dataset assigned to
+     * one of the user's units.  This keeps the behaviour in sync with the
+     * page's `authorizeAccess` method.
      */
     public static function canCreate(): bool
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
-        /** @var \App\Models\User $user */
-        return $user->unitKerjas()->exists();
+        if (! $user->unitKerjas()->exists()) {
+            return false;
+        }
+
+        $indicatorId = request()->query('indicator') ?? request()->input('indicator');
+        if ($indicatorId) {
+            $template = FormTemplate::with('imutProfile.imutData.unitKerja')->find($indicatorId);
+
+            if (! $template) {
+                return false;
+            }
+
+            if ($user->can('view_all_data_imut::data')) {
+                return true;
+            }
+
+            $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+            $hasUnitAccess = $template->imutProfile
+                && $template->imutProfile->imutData
+                && $template->imutProfile->imutData->unitKerja()
+                ->whereIn('unit_kerja_id', $userUnitIds)
+                ->exists();
+
+            return $hasUnitAccess && $user->can('view_by_unit_kerja_imut::data');
+        }
+
+        return false;
     }
 
     /**

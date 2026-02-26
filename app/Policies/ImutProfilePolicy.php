@@ -103,7 +103,8 @@ class ImutProfilePolicy
     }
 
     /**
-     * Cek apakah user dapat update form template meskipun ada existing responses (akan menghapus responses).
+     * Cek apakah user dapat mengubah template form meskipun sudah ada responses.
+     * Permission ini juga membuka akses ke tombol-tombol reset/hapus respons.
      */
     public function updateFormWithExistingResponses(User $user, ImutProfile $imutProfile): bool
     {

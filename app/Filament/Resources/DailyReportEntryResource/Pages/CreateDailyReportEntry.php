@@ -33,12 +33,73 @@ class CreateDailyReportEntry extends CreateRecord
     public ?string $originalDate = null;
 
     /**
+     * Authorize access to the create page.
+     *
+     * We need to ensure the currently authenticated user is allowed to
+     * create a daily report for the indicator passed via the
+     * `indicator` query parameter.  The rule is:
+     *
+     * "only users whose unit kerja is attached to the IMUT data
+     * referenced by the form template may access the creation page."
+     *
+     * This mirrors the `FormTemplate::scopeForUserUnits` scope used in
+     * the resource table and the general permission logic used elsewhere.
+     *
+     * If the user has the global `view_all_data_imut::data` permission we
+     * skip the unit check.
+     */
+    protected function authorizeAccess(): void
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            abort(403);
+        }
+
+        // indicator parameter is required for creation; if missing we cannot
+        // decide so just forbid access (mount will redirect anyway).
+        $indicatorId = request()->query('indicator');
+        if (! $indicatorId) {
+            return;
+        }
+
+        // fetch with relations we need for the unit check
+        $template = FormTemplate::with('imutProfile.imutData.unitKerja')
+            ->find($indicatorId);
+
+        if (! $template) {
+            abort(404);
+        }
+
+        // global view permission bypasses unit restrictions
+        if ($user->can('view_all_data_imut::data')) {
+            return;
+        }
+
+        // compute whether the user's units appear in the IMUT data for
+        // the template's profile
+        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        $hasUnitAccess = $template->imutProfile
+            && $template->imutProfile->imutData
+            && $template->imutProfile->imutData->unitKerja()
+            ->whereIn('unit_kerja_id', $userUnitIds)
+            ->exists();
+
+        if ($user->can('view_by_unit_kerja_imut::data') && $hasUnitAccess) {
+            return;
+        }
+
+        abort(403);
+    }
+
+    /**
      * Mount the component
      */
     public function mount(): void
     {
         // Load form template first before parent mount
         $indicatorId = request()->query('indicator');
+
         $date = request()->query('date');
 
         // Store original parameters for redirect
@@ -46,12 +107,32 @@ class CreateDailyReportEntry extends CreateRecord
         $this->originalDate = $date ?? now()->format('Y-m-d');
 
         if ($indicatorId) {
-            $this->formTemplate = FormTemplate::with(['formFields.options', 'imutProfile'])->find($indicatorId);
+            $this->formTemplate = FormTemplate::with(['formFields.options', 'imutProfile.imutData.unitKerja'])->find($indicatorId);
 
             if (!$this->formTemplate) {
                 Notification::make()
                     ->title('Form Template Tidak Ditemukan')
                     ->body('Form template tidak ditemukan atau sudah dihapus.')
+                    ->danger()
+                    ->send();
+
+                $this->redirect($this->getResource()::getUrl('index'));
+                return;
+            }
+
+            // verify user has access to this template according to unit logic
+            $user = Auth::user();
+            $unitIds = $user?->unitKerjas()->pluck('unit_kerja.id')->toArray() ?? [];
+            $hasAccess = $this->formTemplate->imutProfile
+                && $this->formTemplate->imutProfile->imutData
+                && $this->formTemplate->imutProfile->imutData->unitKerja()
+                ->whereIn('unit_kerja_id', $unitIds)
+                ->exists();
+
+            if (! $hasAccess && ! $user->can('view_all_data_imut::data')) {
+                Notification::make()
+                    ->title('Akses Ditolak')
+                    ->body('Anda tidak memiliki akses untuk membuat laporan untuk indikator ini.')
                     ->danger()
                     ->send();
 
@@ -262,7 +343,8 @@ class CreateDailyReportEntry extends CreateRecord
                     $startTime = $responseData[$field->field_key . '_start_time'] ?? null;
                     $endTime = $responseData[$field->field_key . '_end_time'] ?? null;
                     $validDuration = $responseData[$field->field_key . '_valid_duration_setting'] ?? null;
-                    $validIndicator = TimeUtility::checkDurationValidity($startTime, $endTime, $validDuration ?? '00:15:00', 'less_than') ? '1' : '0';
+                    $thresholdType = $field->validation_config['threshold_type'] ?? 'less_than';
+                    $validIndicator = TimeUtility::checkDurationValidity($startTime, $endTime, $validDuration, $thresholdType) ? '1' : '0';
 
                     // Store all sub-fields in responses for compliance calculation
                     $responses[$field->field_key] = [

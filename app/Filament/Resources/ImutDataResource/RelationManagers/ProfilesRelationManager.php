@@ -77,6 +77,12 @@ class ProfilesRelationManager extends RelationManager
                 TrashedFilter::make(),
             ])
             ->actions([
+                DeleteAction::make()
+                    ->visible(function (Model $record) {
+                        return Auth::user()?->can('delete_imut::profile') && $record->imutData->created_by === Auth::id();
+                    }),
+                RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
+                ForceDeleteAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
                 ActionsActionGroup::make([
                     Action::make('edit')
                         ->label(fn($record) => (
@@ -153,12 +159,6 @@ class ProfilesRelationManager extends RelationManager
                 ])
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->tooltip('Lainnya'),
-                DeleteAction::make()
-                    ->visible(function (Model $record) {
-                        return Auth::user()?->can('delete_imut::profile') && $record->imutData->created_by === Auth::id();
-                    }),
-                RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
-                ForceDeleteAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

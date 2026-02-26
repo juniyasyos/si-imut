@@ -399,13 +399,17 @@ class FormSchemaBuilder
                     TimePicker::make('validation_config.threshold')
                         ->label('Threshold Durasi Valid')
                         ->seconds(false)
-                        ->suffix('JamMenit')
+                        ->format('H:i') 
+                        ->displayFormat('H:i')
+                        ->hoursStep(1)
+                        ->minutesStep(1)
+                        ->suffix('Jam:Menit')
                         ->afterStateHydrated(function ($state, callable $set) {
                             if (blank($state)) {
                                 $set('validation_config.threshold', '00:10');
                             }
                         })
-                        ->helperText('Durasi maksimal yang dianggap valid. Akan otomatis terisi di form pengisian.'),
+                        ->helperText('Durasi maksimal yang dianggap valid. Format 24 jam (contoh: 01:30 untuk 1 jam 30 menit).'),
                 ])
                 ->visible(fn($get) => $get('field_type') === 'time_duration')
                 ->collapsed(false)

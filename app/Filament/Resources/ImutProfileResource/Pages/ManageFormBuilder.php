@@ -9,6 +9,7 @@ use App\Services\FormBuilder\FormDataService;
 use App\Services\FormBuilder\FormSchemaBuilder;
 use App\Services\FormBuilder\FormPersistenceService;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -82,22 +83,39 @@ class ManageFormBuilder extends Page implements HasForms
             ->color('success')
             ->action('performSave');
 
-        // Explicit reset action for Super Admins (separate from Save)
-        $resetAction = Action::make('reset')
-            ->label('Reset Form & Hapus Responses')
-            ->icon('heroicon-o-trash')
-            ->color('danger')
-            ->visible(fn() => $this->canForceUpdate)
-            ->requiresConfirmation()
-            ->modalHeading('Reset Form dan Hapus Semua Data Respons')
-            ->modalDescription(fn() => "Aksi ini akan menghapus semua <strong>{$this->responseCount}</strong> data respons harian terkait dan mengosongkan struktur field pada template. Tindakan ini tidak dapat dibatalkan.")
-            ->action('performReset');
-
         return [
-            $saveAction,
 
-            // Show Reset only to users with explicit permission
-            $resetAction,
+            Action::make('reset')
+                ->label('Reset Form (Destruktif)')
+                ->icon('heroicon-o-arrow-path')
+                ->color('danger')
+                ->visible(fn() => $this->canForceUpdate)
+                ->requiresConfirmation()
+                ->modalIcon('heroicon-o-exclamation-triangle')
+                ->modalHeading('Reset Struktur Form?')
+                ->modalDescription('Apakah Anda yakin ingin mereset struktur form ini? Data yang sudah ada akan hilang.')
+                ->modalSubmitActionLabel('Ya, Reset Sekarang')
+                ->modalCancelActionLabel('Batal')
+                ->action(function () {
+                    $this->performReset();
+                }),
+
+            Action::make('deleteResponses')
+                ->label('Hapus Semua Responses')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->visible(fn() => $this->canForceUpdate && $this->hasExistingResponses)
+                ->requiresConfirmation()
+                ->modalIcon('heroicon-o-exclamation-triangle')
+                ->modalHeading('Hapus Semua Data Respons?')
+                ->modalDescription('Apakah Anda yakin ingin menghapus semua data respons dari form ini? Tindakan ini tidak dapat dibatalkan.')
+                ->modalSubmitActionLabel('Ya, Hapus Permanen')
+                ->modalCancelActionLabel('Batal')
+                ->action(function () {
+                    $this->performDeleteResponses();
+                }),
+
+            $saveAction,
 
             Action::make('preview')
                 ->label('Preview Form')
@@ -117,7 +135,8 @@ class ManageFormBuilder extends Page implements HasForms
             $formPersistenceService = new FormPersistenceService();
 
             // NOTE: Do NOT delete existing responses during a normal save.
-            // Reset/delete of responses must be done explicitly via the dedicated Reset action.
+            // Reset of the form template and deletion of responses are
+            // handled by separate explicit actions (Reset Form / Hapus Responses).
             $formPersistenceService->saveFormData($this->record, $data);
             $formPersistenceService->calculateAndUpdateCompliance($this->record);
 
@@ -164,7 +183,7 @@ class ManageFormBuilder extends Page implements HasForms
     }
 
     /**
-     * Perform a destructive reset: delete all responses and remove form fields.
+     * Perform a destructive reset: remove form fields only.
      * Visible only to users with permission (Super Admin).
      */
     public function performReset(): void
@@ -176,11 +195,6 @@ class ManageFormBuilder extends Page implements HasForms
 
         try {
             DB::beginTransaction();
-
-            $formPersistenceService = new FormPersistenceService();
-
-            // Delete all DailyReportResponse (and cascade FieldResponse)
-            $formPersistenceService->deleteResponses($this->record);
 
             // Remove form fields so the template becomes empty
             $formTemplate = \App\Models\FormTemplate::where('imut_profile_id', $this->record->id)->first();
@@ -194,8 +208,7 @@ class ManageFormBuilder extends Page implements HasForms
             // Refresh UI state
             $this->data = (new FormDataService())->loadFormData($this->record);
             $this->form->fill($this->data);
-            $this->hasExistingResponses = false;
-            $this->responseCount = 0;
+            // responses unaffected
 
             Notification::make()->title('Reset berhasil')->success()->send();
         } catch (\Exception $e) {
@@ -227,6 +240,35 @@ class ManageFormBuilder extends Page implements HasForms
     {
         $formDataService = new FormDataService();
         return $formDataService->getAvailableFields($this->data);
+    }
+
+    /**
+     * Delete all stored responses but keep the form template intact.
+     */
+    public function performDeleteResponses(): void
+    {
+        if (! $this->canForceUpdate) {
+            Notification::make()->title('Akses ditolak')->danger()->send();
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $formPersistenceService = new FormPersistenceService();
+            $formPersistenceService->deleteResponses($this->record);
+
+            DB::commit();
+
+            // Update UI state to reflect no responses
+            $this->hasExistingResponses = false;
+            $this->responseCount = 0;
+
+            Notification::make()->title('Semua respons dihapus')->success()->send();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Notification::make()->title('Penghapusan respons gagal')->body($e->getMessage())->danger()->send();
+        }
     }
 
     public function getFieldOptions(?string $fieldKey): array
