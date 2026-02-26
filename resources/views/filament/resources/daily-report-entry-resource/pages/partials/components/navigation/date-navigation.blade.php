@@ -15,7 +15,7 @@
     @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.month-navigation')
 
     <!-- Date Legend -->
-    <div class="mb-4 p-3 mt-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+    <div class="mb-4 p-3 mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
             @svg("heroicon-m-calendar", "w-4 h-4")
             <span>{{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->locale('id')->translatedFormat('F Y') }}</span>
@@ -37,7 +37,19 @@
     </div>
 
     <!-- Date List -->
-    <div class="space-y-1 max-h-[400px] overflow-y-auto">
+    <div class="
+    flex
+    flex-row lg:flex-col
+    flex-nowrap
+
+    overflow-x-auto lg:overflow-x-hidden
+    overflow-y-hidden lg:overflow-y-auto
+
+    space-x-2 lg:space-x-0
+    lg:space-y-1
+
+    max-h-none lg:max-h-[500px]
+    ">
         @foreach($daysInMonth as $day)
         @php
         $date = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->day($day);
@@ -61,10 +73,10 @@
         <button
             @click="isLoading = true; setTimeout(() => isLoading = false, 1500)"
             wire:click="selectDate('{{ $dateString }}')"
-            class="w-full flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 text-left group hover:scale-[1.02] transform
+            class="min-w-[150px] sm:min-w-[150px] lg:min-w-0 lg:w-full flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 text-left group hover:scale-[1.02] transform
                    {{ $isSelected 
-                       ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-800 text-primary-900 dark:text-primary-100 shadow-md shadow-primary-100 dark:shadow-primary-900/30' 
-                       : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent hover:shadow-sm' }}
+                       ? 'bg-primary-100 dark:bg-primary-600/30 border-primary-200 dark:border-primary-800 text-primary-900 dark:text-primary-100 shadow-md shadow-primary-100 dark:shadow-primary-900/30' 
+                       : 'hover:bg-slate-50 dark:hover:bg-slate-600 border-transparent hover:shadow-sm' }}
                    {{ $isWeekend ? 'bg-red-50/50 dark:bg-red-900/10' : '' }}
                    {{ $date->isFuture() ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}"
             @if($date->isFuture()) disabled @endif>
@@ -93,7 +105,12 @@
                         {{ $day }} {{ $date->format('M') }}
                     </span>
                     @endif
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 truncate transition-colors duration-200 group-hover:text-gray-600 dark:group-hover:text-gray-300">
+                    {{ $dayName }}
+                </div>
 
+                <div>
                     <!-- Status badges -->
                     @if($isToday)
                     <span class="text-xs px-1.5 py-0.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full font-medium shadow-sm animate-pulse">Today</span>
@@ -101,9 +118,6 @@
                     @if($isSelected && !$isToday)
                     <span class="text-xs px-1.5 py-0.5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full font-medium shadow-sm">Selected</span>
                     @endif
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 truncate transition-colors duration-200 group-hover:text-gray-600 dark:group-hover:text-gray-300">
-                    {{ $dayName }}
                 </div>
             </div>
 

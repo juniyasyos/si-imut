@@ -3,10 +3,9 @@
 <template x-if="getStatusForDate(indicator.id, selectedDate) && getStatusForDate(indicator.id, selectedDate).cell_state === 'done'">
     <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
         <div class="flex items-center gap-2">
-            @svg("heroicon-m-check-circle", "w-5 h-5 text-green-600")
+            @svg("heroicon-o-document", "w-5 h-5 text-green-600")
             <div>
-                <div class="text-sm font-semibold text-green-800 dark:text-green-400" x-text="(getStatusForDate(indicator.id, selectedDate).summary?.percentage ?? '0') + '%'"></div>
-                <div class="text-xs text-green-600 dark:text-green-500" x-text="'(' + (getStatusForDate(indicator.id, selectedDate).summary?.numerator ?? 0) + '/' + (getStatusForDate(indicator.id, selectedDate).summary?.denominator ?? 0) + ')'"></div>
+                <div class="text-xs text-green-600 dark:text-green-500" x-text="(getStatusForDate(indicator.id, selectedDate).summary?.denominator ?? 0) + ' laporan'"></div>
             </div>
         </div>
     </div>
@@ -17,7 +16,7 @@
     <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
         <div class="flex items-center gap-2">
             @svg("heroicon-m-exclamation-circle", "w-5 h-5 text-orange-600")
-            <div class="text-sm font-medium text-orange-800 dark:text-orange-400">Belum diisi</div>
+            <div class="text-sm font-medium text-orange-800 dark:text-orange-400">Belum ada laporan</div>
         </div>
     </div>
 </template>

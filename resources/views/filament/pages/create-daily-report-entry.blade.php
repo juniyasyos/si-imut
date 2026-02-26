@@ -128,29 +128,6 @@
         </div>
     </div>
 
-
-    {{-- Auto-save functionality --}}
-    @script
-    <script>
-        // Auto-save interval (optional - can be enabled if needed)
-        let autoSaveInterval;
-
-        document.addEventListener('livewire:navigated', () => {
-            // Could implement auto-save logic here if needed
-            // autoSaveInterval = setInterval(() => {
-            //     $wire.call('saveDraft');
-            // }, 30000);
-        });
-
-        // Cleanup on page leave
-        document.addEventListener('livewire:navigating', () => {
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-            }
-        });
-    </script>
-    @endscript
-
     <style>
         /* Safe area for mobile devices with notch/home indicator */
         .safe-bottom {

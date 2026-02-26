@@ -92,6 +92,8 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->sidebarCollapsibleOnDesktop(true)
+            // disable the built-in global search box completely
+            ->globalSearch(false)
             ->authMiddleware([
                 Authenticate::class,
             ])

@@ -84,67 +84,124 @@ class DynamicFormService
 
         $compliance = ComplianceCalculatorService::calculateCompliance($formTemplate, $currentData);
 
-        $html = '<div class="space-y-4">';
+        $html = '<div class="space-y-4 text-sm sm:text-base">';
 
-        // Overall Score
+        // ================= OVERALL SCORE =================
         $isCompliant = $compliance['score'] >= 100;
         $scoreColor = $isCompliant ? 'green' : 'red';
-        $complianceStatus = $isCompliant ? '✅ PATUH' : '❌ TIDAK PATUH';
+        $complianceStatus = $isCompliant ? 'PATUH' : 'TIDAK PATUH';
 
-        $html .= '<div class="p-4 rounded-lg' . ($isCompliant ? ' bg-green-50 dark:bg-green-900/20 border border-green-200' : ' bg-red-50 dark:bg-red-900/20 border border-red-200') . '">';
-        $html .= '<h3 class="text-lg font-semibold mb-2 text-' . $scoreColor . '-800">Overall Compliance Score</h3>';
-        $html .= '<div class="text-3xl font-bold text-' . $scoreColor . '-600 mb-2">' . number_format($compliance['score'], 1) . '%</div>';
-        $html .= '<div class="text-lg font-semibold text-' . $scoreColor . '-700">' . $complianceStatus . '</div>';
-        $html .= '<p class="text-sm text-' . $scoreColor . '-600 mt-2">Pertanyaannya harus dijawab dengan benar 100% untuk dianggap patuh</p>';
+        $html .= '<div class="p-3 sm:p-4 rounded-xl border ' .
+            ($isCompliant
+                ? 'bg-green-50 dark:bg-green-900/20 border-green-200'
+                : 'bg-red-50 dark:bg-red-900/20 border-red-200') .
+            '">';
+
+        $html .= '<h3 class="font-semibold text-sm sm:text-base lg:text-lg text-' . $scoreColor . '-800 mb-1">
+            Overall Compliance Score
+          </h3>';
+
+        $html .= '<div class="font-bold text-2xl sm:text-3xl lg:text-4xl text-' . $scoreColor . '-600 leading-tight">
+            ' . number_format($compliance['score'], 1) . '%
+          </div>';
+
+        $html .= '<div class="font-semibold text-sm sm:text-base text-' . $scoreColor . '-700 mt-1">
+            ' . $complianceStatus . '
+          </div>';
+
+        $html .= '<p class="text-xs sm:text-sm text-' . $scoreColor . '-600 mt-2">
+            Pertanyaannya harus dijawab dengan benar 100% untuk dianggap patuh
+          </p>';
+
         $html .= '</div>';
 
-        // Field Breakdown
-        $html .= '<div class="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-gray-700">';
-        $html .= '<h4 class="font-semibold mb-3 text-gray-800 dark:text-gray-200">Rincian Field</h4>';
-        $html .= '<div class="space-y-2 text-sm">';
+
+        // ================= FIELD BREAKDOWN =================
+        $html .= '<div class="p-3 sm:p-4 rounded-xl bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-gray-700">';
+        $html .= '<h4 class="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 mb-3">
+            Rincian Field
+          </h4>';
+
+        $html .= '<div class="space-y-2 text-xs sm:text-sm">';
 
         foreach ($compliance['fields'] as $fieldKey => $fieldData) {
+
             $field = $formTemplate->formFields->where('field_key', $fieldKey)->first();
             if ($field) {
+
                 $weight = $field->compliance_weight;
                 $score = $fieldData['score'];
-                $maxScore = $weight;
-                $percentage = $maxScore > 0 ? ($score / $maxScore) * 100 : 0;
+                $percentage = $weight > 0 ? ($score / $weight) * 100 : 0;
 
                 $fieldCompliant = $percentage >= 100;
-                $statusIcon = $fieldCompliant ? '✅' : '❌';
                 $statusColor = $fieldCompliant ? 'green' : 'red';
 
-                $html .= '<div class="p-3 rounded border' . ($fieldCompliant ? ' border-green-200 bg-green-50 dark:bg-green-900/20' : ' border-red-200 bg-red-50 dark:bg-red-900/20') . '">';
-                $html .= '<div class="flex justify-between items-center mb-1">';
-                $html .= '<span class="font-medium text-' . $statusColor . '-700 dark:text-' . $statusColor . '-300">' . $statusIcon . ' ' . $field->field_label . ($field->is_critical_field ? ' ⚠️' : '') . '</span>';
-                $html .= '<span class="text-sm font-semibold text-' . $statusColor . '-700">' . number_format($percentage, 1) . '%</span>';
+                $html .= '<div class="p-2 sm:p-3 rounded-lg border ' .
+                    ($fieldCompliant
+                        ? 'border-green-200 bg-green-50 dark:bg-green-900/20'
+                        : 'border-red-200 bg-red-50 dark:bg-red-900/20') .
+                    '">';
+
+                $html .= '<div class="flex justify-between items-start gap-2">';
+
+                $html .= '<span class="font-medium text-' . $statusColor . '-700 dark:text-' . $statusColor . '-300 text-xs sm:text-sm leading-snug">
+                    ' . $field->field_label .
+                    ($field->is_critical_field ? ' <span class=\"text-yellow-500\">⚠</span>' : '') .
+                    '</span>';
+
+                $html .= '<span class="font-semibold text-xs sm:text-sm text-' . $statusColor . '-700 whitespace-nowrap">
+                    ' . number_format($percentage, 1) . '%
+                  </span>';
+
                 $html .= '</div>';
-                $html .= '<div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">';
+
+                $html .= '<div class="flex flex-wrap items-center gap-2 mt-1 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400">';
+
                 $html .= '<span>Skor: ' . number_format($score, 1) . '/' . $weight . '</span>';
-                $html .= '<span class="text-' . $statusColor . '-600">' . ($fieldCompliant ? 'Benar' : 'Ada kesalahan') . '</span>';
+
+                $html .= '<span class="text-' . $statusColor . '-600">
+                    ' . ($fieldCompliant ? 'Benar' : 'Ada kesalahan') . '
+                  </span>';
+
                 $html .= '</div>';
+
                 $html .= '</div>';
             }
         }
 
         $html .= '</div></div>';
 
-        // Auto-fail warnings or Success message
+
+        // ================= STATUS MESSAGE =================
         if ($isCompliant) {
-            $html .= '<div class="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200">';
-            $html .= '<h4 class="font-semibold text-green-700 dark:text-green-300 mb-2">✅ Compliance Terpenuhi</h4>';
-            $html .= '<p class="text-sm text-green-700 dark:text-green-300">Semua pertanyaan dijawab dengan benar</p>';
+
+            $html .= '<div class="p-3 sm:p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200">';
+            $html .= '<h4 class="font-semibold text-sm sm:text-base text-green-700 dark:text-green-300 mb-1">
+                Compliance Terpenuhi
+              </h4>';
+            $html .= '<p class="text-xs sm:text-sm text-green-700 dark:text-green-300">
+                Semua pertanyaan dijawab dengan benar
+              </p>';
             $html .= '</div>';
         } else if (!empty($compliance['warnings'])) {
-            $html .= '<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200">';
-            $html .= '<h4 class="font-semibold text-red-800 mb-2">❌ Ketidaksesuaian Ditemukan</h4>';
-            $html .= '<ul class="text-sm text-red-700 dark:text-red-300 space-y-1">';
+
+            $html .= '<div class="p-3 sm:p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200">';
+            $html .= '<h4 class="font-semibold text-sm sm:text-base text-red-800 mb-2">
+                Ketidaksesuaian Ditemukan
+              </h4>';
+            $html .= '<ul class="text-xs sm:text-sm text-red-700 dark:text-red-300 space-y-1">';
+
             foreach ($compliance['warnings'] as $warning) {
-                $html .= '<li class="flex gap-2"><span class="flex-shrink-0">•</span><span>' . $warning . '</span></li>';
+                $html .= '<li class="flex gap-2">
+                    <span class="flex-shrink-0">•</span>
+                    <span>' . $warning . '</span>
+                  </li>';
             }
+
             $html .= '</ul>';
-            $html .= '<p class="text-xs text-red-600 dark:text-red-400 mt-2 italic">Silakan periksa kembali jawaban Anda untuk mencapai compliance 100%.</p>';
+            $html .= '<p class="text-[11px] sm:text-xs text-red-600 dark:text-red-400 mt-2 italic">
+                Silakan periksa kembali jawaban Anda untuk mencapai compliance 100%.
+              </p>';
             $html .= '</div>';
         }
 
