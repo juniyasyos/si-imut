@@ -99,6 +99,8 @@ class TableViewController extends Controller
                 'tableConfig' => null,
                 'tableData' => [],
                 'metadata' => $this->buildMetadata($unitKerjaId, $period, $startDate, $endDate),
+                'analysis' => '',
+                'recommendations' => '',
                 'user' => $this->getUserInfo($user),
             ]);
         }
@@ -125,6 +127,37 @@ class TableViewController extends Controller
         // Build summary (pass tableData which contains validation_status)
         $summary = $this->buildSummary($tableData, $entries, $formTemplate);
 
+        // ===== Analysis & recommendations from ImutPenilaian =====
+        $analysis = '';
+        $recommendations = '';
+        $profileId = $formTemplate->imut_profile_id;
+        if ($profileId) {
+            $penilaianQuery = \App\Models\ImutPenilaian::query()
+                ->where('imut_profil_id', $profileId)
+                ->whereHas('laporanUnitKerja.laporanImut', function ($q) use ($startDate, $endDate) {
+                    // match laporanImut period that overlaps the selected month
+                    $q->where(function ($q2) use ($startDate, $endDate) {
+                        $q2->whereBetween('assessment_period_start', [$startDate, $endDate])
+                            ->orWhereBetween('assessment_period_end', [$startDate, $endDate]);
+                    });
+                });
+
+            if ($unitKerjaId) {
+                $penilaianQuery->whereHas('laporanUnitKerja', fn($q) => $q->where('unit_kerja_id', $unitKerjaId));
+            } else {
+                // if no specific unit in filter, limit to unit of first entry
+                if ($entries->first()?->unitKerja?->id) {
+                    $penilaianQuery->whereHas('laporanUnitKerja', fn($q) => $q->where('unit_kerja_id', $entries->first()->unitKerja->id));
+                }
+            }
+
+            $penilaianRec = $penilaianQuery->latest('id')->first();
+            if ($penilaianRec) {
+                $analysis = $penilaianRec->analysis ?? '';
+                $recommendations = $penilaianRec->recommendations ?? '';
+            }
+        }
+
         // Get users (pengumpul data & validator) berdasarkan unit kerja laporan
         // Pass current entries so selection (top pengumpul) is computed for the active period
         $reportUnitKerja = $entries->first()->unitKerja;
@@ -142,6 +175,8 @@ class TableViewController extends Controller
             'tableData' => $tableData,
             'metadata' => $metadata,
             'summary' => $summary,
+            'analysis' => $analysis,
+            'recommendations' => $recommendations,
             'user' => $this->getUserInfo($user),
             'usersByUnit' => $usersByUnit,
         ]);
@@ -159,6 +194,8 @@ class TableViewController extends Controller
             'tableData' => $tableData,
             'metadata' => $metadata,
             'summary' => $summary,
+            'analysis' => $analysis,
+            'recommendations' => $recommendations,
             'user' => $this->getUserInfo($user),
             'usersByUnit' => $usersByUnit,
         ]);

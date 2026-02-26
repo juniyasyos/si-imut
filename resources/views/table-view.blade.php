@@ -190,37 +190,93 @@
             </div>
         </div>
 
-        <!-- Filter Toggles -->
-        <div class="flex flex-wrap justify-end gap-3">
-            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
-                <input type="checkbox" id="showReporter" x-model="showReporter" @change="calculateDisplayColumns()">
-                <label for="showReporter" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Pelapor</label>
-            </div>
-            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
-                <input type="checkbox" id="showValidator" x-model="showValidator" @change="calculateDisplayColumns()">
-                <label for="showValidator" class="text-sm text-gray-700 cursor-pointer">Tampilkan Kolom Validator</label>
-            </div>
-            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
-                <input type="checkbox" id="showLegend" x-model="showLegend">
-                <label for="showLegend" class="text-sm text-gray-700 cursor-pointer">Tampilkan Legenda</label>
-            </div>
-            <div class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm">
-                <input type="checkbox" id="useFullLabels" x-model="useFullLabels">
-                <label for="useFullLabels" class="text-sm text-gray-700 cursor-pointer">Label Lengkap</label>
+        <!-- Control Panel -->
+        <div class="flex flex-col gap-4">
+
+            <!-- Column Toggles -->
+            <template x-if="allColumns.length">
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-800 tracking-wide">
+                            Pengaturan Tampilan Kolom
+                        </h3>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <template x-for="col in allColumns" :key="col.key">
+                            <label
+                                :for="'col-' + col.key"
+                                class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer text-sm text-gray-700">
+                                <input type="checkbox"
+                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    :id="'col-' + col.key"
+                                    :value="col.key"
+                                    x-model="showColumns[col.key]"
+                                    @change="calculateDisplayColumns()">
+
+                                <span x-text="displayMode === 'full' && col.full_label ? col.full_label : col.label"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Bottom Action Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4">
+
+                <!-- Display Mode -->
+                <div class="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="displayMode" value="legend" x-model="displayMode" class="sr-only peer">
+                        <div class="px-4 py-2 text-sm font-medium text-gray-600 
+                            peer-checked:bg-blue-600 
+                            peer-checked:text-white 
+                            transition">
+                            Legenda
+                        </div>
+                    </label>
+
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="displayMode" value="full" x-model="displayMode" class="sr-only peer">
+                        <div class="px-4 py-2 text-sm font-medium text-gray-600 
+                            peer-checked:bg-blue-600 
+                            peer-checked:text-white 
+                            transition">
+                            Label Lengkap
+                        </div>
+                    </label>
+
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-3">
+
+                    <a href="{{ url('/siimut/daily-report-entries') }}"
+                        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 
+                       border border-gray-200 rounded-xl 
+                       hover:bg-gray-200 transition">
+                        Kembali
+                    </a>
+
+                    <button @click="fetchData()"
+                        class="px-5 py-2.5 text-sm font-medium text-white 
+                       bg-blue-600 rounded-xl 
+                       hover:bg-blue-700 transition shadow-sm">
+                        Refresh
+                    </button>
+
+                    <button @click="handlePrint()"
+                        class="px-5 py-2.5 text-sm font-medium text-white 
+                       bg-green-600 rounded-xl 
+                       hover:bg-green-700 transition shadow-sm">
+                        Cetak
+                    </button>
+
+                </div>
+
             </div>
 
-            <a href="{{ url('/siimut/daily-report-entries') }}"
-                class="px-5 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition shadow-sm text-sm">
-                ← Kembali
-            </a>
-            <button @click="fetchData()"
-                class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-sm text-sm">
-                🔄 Refresh
-            </button>
-            <button @click="handlePrint()"
-                class="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition shadow-sm text-sm">
-                🖨️ Cetak
-            </button>
         </div>
     </div>
 
@@ -334,8 +390,8 @@
                         <!-- Row 1: Parent Headers -->
                         <tr class="bg-blue-700">
                             <template x-for="(header, index) in tableConfig.headers" :key="'parent-' + index">
-                                <template x-if="!(header.key === 'submitted_by_name' && !showReporter) && !(header.key === 'validated_by_name' && !showValidator)">
-                                    <th :colspan="header.children ? header.children.length : 1"
+                                <template x-if="isColumnVisible(header)">
+                                    <th :colspan="header.children ? visibleChildCount(header) : 1"
                                         :rowspan="header.children ? 1 : (hasMultiLevelHeaders ? 2 : 1)"
                                         class="border border-gray-300 px-2 py-2 text-center font-semibold text-white text-xs"
                                         :class="header.bgColor || 'bg-blue-700'"
@@ -455,7 +511,8 @@
                                 Analisis
                             </td>
                             <td class="px-4 py-3 text-gray-800">
-                                <div x-show="summary.total_entries > 0" x-text="getAnalysisText()"></div>
+                                <div x-show="analysis && analysis.trim() !== ''" x-text="analysis"></div>
+                                <div x-show="!analysis && summary.total_entries > 0" x-text="getAnalysisText()"></div>
                                 <div x-show="summary.total_entries === 0">
                                     Tidak ada data untuk periode yang dipilih.
                                 </div>
@@ -468,7 +525,8 @@
                                 Rekomendasi
                             </td>
                             <td class="px-4 py-3 text-gray-800">
-                                <div x-text="getRecommendationText()"></div>
+                                <div x-show="recommendations && recommendations.trim() !== ''" x-text="recommendations"></div>
+                                <div x-show="!recommendations" x-text="getRecommendationText()"></div>
                             </td>
                         </tr>
                     </tbody>
@@ -501,15 +559,32 @@
                 flatChildHeaders: [], // Flatten array of {label, key, parent, bgColor, width, full_label}
                 metadata: {},
                 summary: {},
+                analysis: '',
+                recommendations: '',
                 userData: null,
                 usersByUnit: {},
-                showReporter: false,
-                showValidator: false,
+                // state for controlling column visibility
+                allColumns: [], // array of { key, label, parent_label?, full_label? }
+                showColumns: {}, // map key -> boolean
+
+                // dropdown for mutually-exclusive display modes (radio buttons)
+                displayMode: 'full', // '', 'legend', 'full'
+
                 showLegend: false,
                 useFullLabels: false,
                 printOrientation: 'landscape',
 
                 async init() {
+                    // react to radio button changes
+                    this.$watch('displayMode', value => {
+                        this.showLegend = value === 'legend';
+                        this.useFullLabels = value === 'full';
+                    });
+
+                    // ensure watchers pick up initial value
+                    this.showLegend = this.displayMode === 'legend';
+                    this.useFullLabels = this.displayMode === 'full';
+
                     await this.fetchData();
                 },
 
@@ -553,6 +628,8 @@
                         // Set metadata
                         this.metadata = jsonData.metadata || {};
                         this.summary = jsonData.summary || {};
+                        this.analysis = jsonData.analysis || '';
+                        this.recommendations = jsonData.recommendations || '';
                         this.userData = jsonData.user || null;
                         this.usersByUnit = jsonData.usersByUnit || {};
 
@@ -563,6 +640,7 @@
                         if (jsonData.tableConfig && jsonData.tableConfig.headers) {
                             this.tableConfig = jsonData.tableConfig;
                             this.hasMultiLevelHeaders = jsonData.tableConfig.headers.some(h => h.children && h.children.length > 0);
+                            this.updateAllColumns(); // compute allColumns + default showColumns
                             this.calculateDisplayColumns();
                             this.buildFlatChildHeaders(); // Build flat array untuk row 2
                         } else {
@@ -571,6 +649,8 @@
                             };
                             this.hasMultiLevelHeaders = false;
                             this.displayColumns = [];
+                            this.allColumns = [];
+                            this.showColumns = {};
                         }
 
                         // Set table data
@@ -632,6 +712,7 @@
                     }
                 },
 
+                // rebuild `displayColumns` array based on visibility toggles
                 calculateDisplayColumns() {
                     this.displayColumns = [];
                     if (!this.tableConfig || !this.tableConfig.headers) return;
@@ -639,18 +720,14 @@
                     this.tableConfig.headers.forEach(header => {
                         if (header.children && Array.isArray(header.children)) {
                             header.children.forEach(child => {
-                                this.displayColumns.push(child.key);
+                                if (this.showColumns[child.key]) {
+                                    this.displayColumns.push(child.key);
+                                }
                             });
                         } else if (header.key) {
-                            // Skip reporter column if not showing
-                            if (header.key === 'submitted_by_name' && !this.showReporter) {
-                                return;
+                            if (this.showColumns[header.key]) {
+                                this.displayColumns.push(header.key);
                             }
-                            // Skip validator column if not showing
-                            if (header.key === 'validated_by_name' && !this.showValidator) {
-                                return;
-                            }
-                            this.displayColumns.push(header.key);
                         }
                     });
                 },
@@ -660,7 +737,7 @@
                     if (!this.tableConfig || !this.tableConfig.headers) return;
 
                     // Loop semua headers dan flatten children-nya ke single array
-                    // Filter hanya children yang parent-nya ada di displayColumns
+                    // (visibility filtering done later in template)
                     this.tableConfig.headers.forEach(header => {
                         if (header.children && Array.isArray(header.children)) {
                             header.children.forEach(child => {
@@ -692,6 +769,53 @@
                         }
                     }
                     return {};
+                },
+
+                // generate list of all individual columns and ensure showColumns defaults
+                updateAllColumns() {
+                    this.allColumns = [];
+                    if (!this.tableConfig || !this.tableConfig.headers) return;
+
+                    this.tableConfig.headers.forEach(header => {
+                        if (header.children && Array.isArray(header.children)) {
+                            header.children.forEach(child => {
+                                this.allColumns.push({
+                                    key: child.key,
+                                    label: child.label,
+                                    full_label: child.full_label,
+                                    parent_label: header.label
+                                });
+                                if (this.showColumns[child.key] === undefined) {
+                                    this.showColumns[child.key] = true;
+                                }
+                            });
+                        } else if (header.key) {
+                            this.allColumns.push({
+                                key: header.key,
+                                label: header.label,
+                                full_label: header.full_label
+                            });
+                            if (this.showColumns[header.key] === undefined) {
+                                this.showColumns[header.key] = true;
+                            }
+                        }
+                    });
+                },
+
+                // visibility helper used in templates
+                isColumnVisible(header) {
+                    if (header.children && Array.isArray(header.children)) {
+                        return header.children.some(child => this.showColumns[child.key]);
+                    }
+                    if (header.key) {
+                        return this.showColumns[header.key];
+                    }
+                    return false;
+                },
+
+                visibleChildCount(header) {
+                    if (!header.children) return 0;
+                    return header.children.filter(child => this.showColumns[child.key]).length;
                 },
 
                 getCellAlignment(column, value) {
