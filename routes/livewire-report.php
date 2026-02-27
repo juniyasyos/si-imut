@@ -28,6 +28,10 @@ Route::prefix('laporan/indikator-mutu')->name('laporan.indikator-mutu.')->group(
             'catatan' => '[0-9]+'
         ]);
 
+    // Category-based indicator report
+    Route::get('kategori', [\App\Http\Controllers\CategoryReportController::class, 'show'])
+        ->name('by-category');
+
     // Unit Kerja Report dengan periode filter
     Route::prefix('unit-kerja')->name('unit-kerja.')->group(function () {
         // Show laporan unit kerja: /laporan/indikator-mutu/unit-kerja/{unitKerja}

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Filament\Resources\LaporanImutResource;
+use App\Models\ImutCategory;
 use App\Models\LaporanImutAutoGenerationSetting;
 use App\Models\UnitKerja;
 use Filament\Actions;
@@ -179,6 +180,143 @@ class ListLaporanImuts extends ListRecords
                         ->title('Pengaturan Berhasil Disimpan')
                         ->success()
                         ->send();
+                }),
+            Actions\Action::make('viewKategoriLaporan')
+                ->label('Laporan Kategori')
+                ->icon('heroicon-o-chart-bar-square')
+                ->color('success')
+                ->modalHeading('Laporan Indikator per Kategori')
+                ->modalDescription('Pilih kategori indikator dan periode untuk melihat laporan.')
+                ->modalWidth('2xl')
+                ->visible(fn() => Auth::check())
+                ->form([
+                    Forms\Components\Section::make('Pilih Kategori & Periode')
+                        ->schema([
+                            Forms\Components\Select::make('imut_category')
+                                ->label('Kategori Indikator')
+                                ->options(fn() => ImutCategory::orderBy('id')->pluck('category_name','id'))
+                                ->multiple()
+                                ->required()
+                                ->searchable()
+                                ->placeholder('Pilih kategori indikator...'),
+
+                            Forms\Components\Select::make('periode_tipe')
+                                ->label('Jenis Periode')
+                                ->options([
+                                    'yearly' => 'Tahunan',
+                                    'quarterly' => 'Triwulan',
+                                    'semester' => 'Semester',
+                                    'custom' => 'Custom (Range Bulan)',
+                                ])
+                                ->default('yearly')
+                                ->required()
+                                ->live(),
+
+                            Forms\Components\TextInput::make('periode_tahun')
+                                ->label('Tahun')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(9999)
+                                ->default(now()->year)
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') !== 'custom'),
+
+                            Forms\Components\Select::make('periode_quarter')
+                                ->label('Triwulan')
+                                ->options([
+                                    'Q1' => 'Triwulan I (Jan-Mar)',
+                                    'Q2' => 'Triwulan II (Apr-Jun)',
+                                    'Q3' => 'Triwulan III (Jul-Sep)',
+                                    'Q4' => 'Triwulan IV (Okt-Des)',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'quarterly'),
+
+                            Forms\Components\Select::make('periode_semester')
+                                ->label('Semester')
+                                ->options([
+                                    'S1' => 'Semester I (Jan-Jun)',
+                                    'S2' => 'Semester II (Jul-Des)',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'semester'),
+
+                            Forms\Components\Select::make('periode_start_month')
+                                ->label('Bulan Awal')
+                                ->options([
+                                    '01' => 'Januari',
+                                    '02' => 'Februari',
+                                    '03' => 'Maret',
+                                    '04' => 'April',
+                                    '05' => 'Mei',
+                                    '06' => 'Juni',
+                                    '07' => 'Juli',
+                                    '08' => 'Agustus',
+                                    '09' => 'September',
+                                    '10' => 'Oktober',
+                                    '11' => 'November',
+                                    '12' => 'Desember',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+
+                            Forms\Components\TextInput::make('periode_start_year')
+                                ->label('Tahun Awal')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(9999)
+                                ->default(now()->year)
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+
+                            Forms\Components\Select::make('periode_end_month')
+                                ->label('Bulan Akhir')
+                                ->options([
+                                    '01' => 'Januari',
+                                    '02' => 'Februari',
+                                    '03' => 'Maret',
+                                    '04' => 'April',
+                                    '05' => 'Mei',
+                                    '06' => 'Juni',
+                                    '07' => 'Juli',
+                                    '08' => 'Agustus',
+                                    '09' => 'September',
+                                    '10' => 'Oktober',
+                                    '11' => 'November',
+                                    '12' => 'Desember',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+
+                            Forms\Components\TextInput::make('periode_end_year')
+                                ->label('Tahun Akhir')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(9999)
+                                ->default(now()->year)
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+                        ])
+                        ->columns(2),
+                ])
+                ->openUrlInNewTab()
+                ->action(function(array $data) {
+                    $tipe = $data['periode_tipe'];
+                    $periode = '';
+                    if ($tipe === 'yearly') {
+                        $periode = $data['periode_tahun'];
+                    } elseif ($tipe === 'quarterly') {
+                        $periode = $data['periode_tahun'] . '-' . $data['periode_quarter'];
+                    } elseif ($tipe === 'semester') {
+                        $periode = $data['periode_tahun'] . '-' . $data['periode_semester'];
+                    } elseif ($tipe === 'custom') {
+                        $periode = $data['periode_start_year'] . '-' . $data['periode_start_month'] . ',' .
+                            $data['periode_end_year'] . '-' . $data['periode_end_month'];
+                    }
+                    $categories = implode(',', $data['imut_category'] ?? []);
+                    $url = route('laporan.indikator-mutu.by-category');
+                    $url .= '?categories=' . urlencode($categories) . '&periode=' . urlencode($periode);
+                    return redirect($url);
                 }),
 
             Actions\Action::make('viewUnitKerjaLaporan')

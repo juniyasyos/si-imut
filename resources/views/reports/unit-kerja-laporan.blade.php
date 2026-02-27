@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="{{ asset('css/print-report.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @vite(['resources/css/app.css'])
+    <script>
+        // ensure global Chart exists if service worker cached old page
+        if (typeof Chart === 'undefined') {
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            document.head.appendChild(s);
+        }
+    </script>
     <style>
         @media print {
             .no-print {
