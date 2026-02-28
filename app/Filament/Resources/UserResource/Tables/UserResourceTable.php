@@ -122,7 +122,7 @@ class UserResourceTable extends UserResource
                         ->searchable()
                         ->preload()
                         ->optionsLimit(10)
-                        ->getOptionLabelFromRecordUsing(fn($record) => $record->name),
+                        ->getOptionLabelFromRecordUsing(fn($record) => $record->label),
                 ])
                 ->visible(fn() => Gate::allows('setRole', User::class)),
 

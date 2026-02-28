@@ -35,8 +35,12 @@ class UnitKerjaLaporanController extends Controller
             abort(400, 'Invalid period format');
         }
 
-        // Get all IMUT data for this unit
-        $imutDataItems = $unit->imutData()->get();
+        // Get only active IMUT data for this unit
+        // `status` field on imut_data indicates whether the indicator is active.
+        // join through the pivot relation then filter by imut_data.status = true.
+        $imutDataItems = $unit->imutData()
+            ->where('status', true)
+            ->get();
 
         // Get laporan entries within date range that cover this unit
         $laporanList = LaporanImut::whereBetween('assessment_period_start', [

@@ -95,6 +95,7 @@
         </div>
     </div>
 
+
     <!-- Summary Section -->
     @if ($summary)
     <div class="bg-sky-50 border-l-4 border-sky-400 rounded-md p-5 mb-6">
@@ -116,6 +117,169 @@
                 <div class="text-xs text-gray-600 mb-1 font-medium">Target Tercapai</div>
                 <div class="text-2xl font-bold text-sky-900">{{ number_format($summary['achieved_count'] ?? 0) }} / {{ number_format($summary['total_data_points'] ?? 0) }}</div>
             </div>
+        </div>
+    </div>
+    @endif
+
+    @if(count($dataByImut) > 0)
+    <div class="mb-4 overflow-x-auto rounded-lg border border-slate-200">
+
+        <table class="min-w-full text-[11px] border-separate border-spacing-0">
+
+            <!-- HEADER -->
+            <thead class="bg-slate-50 text-slate-600 uppercase text-[9px] tracking-wide">
+                <tr>
+                    <th class="px-1.5 py-1.5 text-center border-b border-slate-200 w-8">No</th>
+                    <th class="px-2 py-1.5 text-left border-b border-slate-200 min-w-[180px]">Indikator</th>
+                    <th class="px-1.5 py-1.5 text-center border-b border-slate-200 w-20">Target</th>
+
+                    @foreach($allMonths as $month)
+                    <th class="px-1 py-1.5 text-center border-b border-slate-200" colspan="3">
+                        {{ $month['label'] }}
+                    </th>
+                    @endforeach
+                </tr>
+
+                <tr class="bg-white text-slate-400 text-[9px]">
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    @foreach($allMonths as $month)
+                    <th class="px-1 py-1 text-center border-b border-slate-100">N</th>
+                    <th class="px-1 py-1 text-center border-b border-slate-100">D</th>
+                    <th class="px-1 py-1 text-center border-b border-slate-100">%</th>
+                    @endforeach
+                </tr>
+            </thead>
+
+            <!-- BODY -->
+            <tbody class="text-slate-700">
+                @php
+                $lastMonth = last($allMonths)['label'] ?? null;
+                @endphp
+
+                @foreach($dataByImut as $idx => $imut)
+                @php
+                $map = collect($imut['data'] ?? [])->keyBy('month_label');
+
+                $operatorMap = [
+                '>=' => '≥',
+                '<='=> '≤',
+                    '==' => '=',
+                    '>' => '>',
+                    '<'=> '<', '!='=> '≠',
+                            ];
+
+                            $operator = $imut['target_operator'] ?? '>=';
+                            $symbol = $operatorMap[$operator] ?? $operator;
+                            $standard = $imut['standard'] ?? 0;
+                            @endphp
+
+                            <tr class="hover:bg-slate-50 transition">
+
+                                <!-- NO -->
+                                <td class="px-1.5 py-1.5 border-b border-slate-100 text-center font-medium">
+                                    {{ $idx + 1 }}
+                                </td>
+
+                                <!-- INDIKATOR -->
+                                <td class="px-2 py-1.5 border-b border-slate-100 truncate max-w-[220px]">
+                                    {{ $imut['title'] }}
+                                </td>
+
+                                <!-- TARGET -->
+                                <td class="px-1.5 py-1.5 border-b border-slate-100 text-center">
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[9px]">
+                                        {{ $symbol }} {{ $standard }}%
+                                    </span>
+                                </td>
+
+                                <!-- DATA BULAN -->
+                                @foreach($allMonths as $month)
+                                @php
+                                $label = $month['label'];
+                                $d = $map[$label] ?? null;
+                                $numerator = $d['numerator'] ?? 0;
+                                $denominator = $d['denominator'] ?? 0;
+                                $percent = $denominator > 0 ? ($numerator / $denominator) * 100 : 0;
+
+                                // Evaluasi target sesuai operator
+                                $isBelowTarget = false;
+
+                                switch ($operator) {
+                                case '>=':
+                                $isBelowTarget = $percent < $standard;
+                                    break;
+                                    case '<=' :
+                                    $isBelowTarget=$percent> $standard;
+                                    break;
+                                    case '>':
+                                    $isBelowTarget = $percent <= $standard;
+                                        break;
+                                        case '<' :
+                                        $isBelowTarget=$percent>= $standard;
+                                        break;
+                                        case '==':
+                                        $isBelowTarget = round($percent,2) != $standard;
+                                        break;
+                                        case '!=':
+                                        $isBelowTarget = round($percent,2) == $standard;
+                                        break;
+                                        }
+
+                                        $highlightPercent = $isBelowTarget ? 'bg-yellow-100' : '';
+                                        @endphp
+
+                                        <td class="px-1 py-1.5 border-b border-slate-100 text-center">
+                                            {{ number_format($numerator) }}
+                                        </td>
+
+                                        <td class="px-1 py-1.5 border-b border-slate-100 text-center">
+                                            {{ number_format($denominator) }}
+                                        </td>
+
+                                        <td class="px-1 py-1.5 border-b border-slate-100 text-right font-semibold tabular-nums {{ $highlightPercent }}">
+                                            {{ floor($percent) }}%
+                                        </td>
+
+                                        @endforeach
+                            </tr>
+                            @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endif
+
+    {{-- Interpretation Section --}}
+    @if(count($dataByImut) > 0)
+    <div class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+
+        <div class="font-semibold text-slate-800 mb-2 uppercase tracking-wide text-sm">
+            Interpretasi Hasil
+        </div>
+
+        <div class="space-y-2 leading-relaxed">
+
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-3 h-3 bg-yellow-200 rounded-sm border border-yellow-300"></span>
+                <span>Menunjukkan indikator yang <strong>belum mencapai target</strong>.</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-3 h-3 bg-white border border-slate-300 rounded-sm"></span>
+                <span>Menunjukkan indikator yang <strong>telah memenuhi target</strong>.</span>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200 mt-2">
+                Dari <strong>{{ count($dataByImut) }}</strong> indikator mutu nasional yang dinilai,
+                terdapat <strong class="text-yellow-700">
+                    {{ count($dataByImut) - ($summary['achieved_count'] ?? 0) }}
+                </strong> indikator yang belum mencapai target dan
+                <strong class="text-emerald-700">
+                    {{ $summary['achieved_count'] ?? 0 }}
+                </strong> indikator yang telah memenuhi target.
+            </div>
+
         </div>
     </div>
     @endif

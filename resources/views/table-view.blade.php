@@ -193,33 +193,76 @@
         <!-- Control Panel -->
         <div class="flex flex-col gap-4">
 
-            <!-- Column Toggles -->
-            <template x-if="allColumns.length">
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-800 tracking-wide">
-                            Pengaturan Tampilan Kolom
-                        </h3>
-                    </div>
+            <div x-data="{ open: false }" class="relative inline-block text-left">
 
-                    <div class="flex flex-wrap gap-3">
-                        <template x-for="col in allColumns" :key="col.key">
-                            <label
-                                :for="'col-' + col.key"
-                                class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer text-sm text-gray-700">
-                                <input type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    :id="'col-' + col.key"
-                                    :value="col.key"
-                                    x-model="showColumns[col.key]"
-                                    @change="calculateDisplayColumns()">
+                <!-- Trigger Button -->
+                <button @click="open = !open"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
 
-                                <span x-text="displayMode === 'full' && col.full_label ? col.full_label : col.label"></span>
-                            </label>
-                        </template>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1M4 8h16M4 12h16M4 16h16M4 20h16" />
+                    </svg>
+
+                    Pengaturan Kolom
+
+                    <svg class="w-4 h-4 transition-transform"
+                        :class="{ 'rotate-180': open }"
+                        fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown Panel -->
+                <div x-show="open"
+                    @click.outside="open = false"
+                    x-transition
+                    class="absolute left-10 mt-3 w-[520px] bg-white border border-gray-200 rounded-2xl shadow-xl z-50">
+
+                    <div class="p-6">
+
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="text-sm font-semibold text-gray-800">
+                                Pengaturan Tampilan Kolom
+                            </h3>
+                            <button @click="open = false"
+                                class="text-gray-400 hover:text-gray-600 text-sm">
+                                Tutup
+                            </button>
+                        </div>
+
+                        <!-- Scrollable Grid -->
+                        <div class="max-h-72 overflow-y-auto pr-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                                <template x-for="col in allColumns" :key="col.key">
+                                    <label
+                                        :for="'col-' + col.key"
+                                        class="flex items-start gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition cursor-pointer text-sm">
+
+                                        <input type="checkbox"
+                                            class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            :id="'col-' + col.key"
+                                            :value="col.key"
+                                            x-model="showColumns[col.key]"
+                                            @change="calculateDisplayColumns()">
+
+                                        <span class="text-gray-700 leading-snug"
+                                            x-text="displayMode === 'full' && col.full_label ? col.full_label : col.label">
+                                        </span>
+                                    </label>
+                                </template>
+
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            </template>
+            </div>
 
             <!-- Bottom Action Bar -->
             <div class="flex flex-wrap items-center justify-between gap-4">
