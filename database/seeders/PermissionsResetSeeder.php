@@ -4,31 +4,29 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class RolesPermissionsResetSeeder extends Seeder
+class PermissionsResetSeeder extends Seeder
 {
     public function run(): void
     {
-        // matikan cek FK agar truncate tidak error
+        // non‑aktifkan cek FK supaya truncate tidak error
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
+        // tabel pivot yang merujuk ke permissions
         DB::table('role_has_permissions')->truncate();
         DB::table('model_has_permissions')->truncate();
-        DB::table('model_has_roles')->truncate();
 
-        Permission::truncate();
-        Role::truncate();
+        // tabel permission sendiri
+        Permission::truncate();              // atau ->query()->delete();
 
-        // hidupkan kembali cek FK
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        // kosongkan cache permission
+        // buang cache agar perubahan terlihat segera
         app()
             ->make(\Spatie\Permission\PermissionRegistrar::class)
             ->forgetCachedPermissions();
 
-        $this->command->info('Role & permission tables truncated.');
+        $this->command->info('Hanya permission dan pivot terkait telah dikosongkan.');
     }
 }
