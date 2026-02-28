@@ -46,21 +46,23 @@
     </style>
 </head>
 
-<body x-data="categoryReport()" class="bg-white text-gray-800 font-sans text-sm leading-relaxed">
+@php
+$periodLabel = $periode;
+$cats = $categoryNames ?: $categories;
 
-    @php
-    $periodLabel = $periode;
-    $cats = $categoryNames ?: $categories;
-    @endphp
+// build map of {imutId: [region type names]} for toggles per-indikator
+$imutBenchmarkTypes = [];
+if(!empty($dataByImut)) {
+foreach($dataByImut as $imut) {
+$types = collect($imut['regionTypesInfo'] ?? [])->pluck('type')->filter()->unique()->values()->all();
+if(count($types)) {
+$imutBenchmarkTypes[$imut['id']] = $types;
+}
+}
+}
+@endphp
 
-    <!-- HEADER -->
-    <x-basic-report-header
-        title="Laporan Kategori Indikator Mutu"
-        :additionalInfo="[
-        ['label' => 'Kategori', 'value' => implode(', ', $cats)],
-        ['label' => 'Periode', 'value' => $periodLabel],
-        ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
-    ]" />
+<body x-data='categoryReport(@json($imutBenchmarkTypes ?? []))' class="bg-white text-gray-800 font-sans text-sm leading-relaxed">
 
     <!-- Action Buttons -->
     <div class="no-print my-6 max-w-full mx-auto space-y-3">
@@ -81,34 +83,6 @@
 
         <!-- Control Panel -->
         <div class="flex flex-col gap-4">
-
-            <!-- Column Toggles -->
-            <template x-if="allColumns.length">
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-800 tracking-wide">
-                            Pengaturan Tampilan Kolom
-                        </h3>
-                    </div>
-
-                    <div class="flex flex-wrap gap-3">
-                        <template x-for="col in allColumns" :key="col.key">
-                            <label
-                                :for="'col-' + col.key"
-                                class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer text-sm text-gray-700">
-                                <input type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    :id="'col-' + col.key"
-                                    :value="col.key"
-                                    x-model="showColumns[col.key]"
-                                    @change="calculateDisplayColumns()">
-
-                                <span x-text="displayMode === 'full' && col.full_label ? col.full_label : col.label"></span>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-            </template>
 
             <!-- Bottom Action Bar -->
             <div class="flex flex-wrap items-center justify-end gap-4">
@@ -136,12 +110,12 @@
                         Cetak
                     </button>
 
-                    <button @click="downloadPdf()"
+                    <!-- <button @click="downloadPdf()"
                         class="px-5 py-2.5 text-sm font-medium text-white 
                        bg-indigo-600 rounded-xl 
                        hover:bg-indigo-700 transition shadow-sm">
                         PDF
-                    </button>
+                    </button> -->
 
                 </div>
 
@@ -149,6 +123,15 @@
 
         </div>
     </div>
+
+    <!-- HEADER -->
+    <x-basic-report-header
+        title="Laporan Kategori Indikator Mutu"
+        :additionalInfo="[
+        ['label' => 'Kategori', 'value' => implode(', ', $cats)],
+        ['label' => 'Periode', 'value' => $periodLabel],
+        ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
+    ]" />
 
     <!-- Loading State -->
     <div x-show="loading" x-cloak class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
@@ -299,11 +282,32 @@
 
                 <div class="grid grid-cols-1 gap-8">
 
+                    @php
+                    // list of region-type names for this imut (may be empty)
+                    $typesForThis = collect($imut['regionTypesInfo'] ?? [])->pluck('type')->filter()->unique()->values()->all();
+                    @endphp
+                    <div class="no-print">
+                        <h2>Filter Tampilan Benckmarking</h2>
+                        <div class="mb-4 bg-white border border-gray-200 rounded-lg p-4">
+                            <div class="flex flex-wrap gap-3">
+                                @foreach($typesForThis as $type)
+                                <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer text-sm text-gray-700">
+                                    <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        x-model="showBenchmarkCols['{{ $imut['id'] }}']['{{ $type }}']"
+                                        @change="updateCharts()">
+                                    <span>{{ $type }}</span>
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- ================= CHART ================= --}}
                     <div class="flex flex-col justify-center min-h-[260px]">
 
                         <canvas id="chart-{{ $imut['id'] }}"
                             data-chart
+                            data-imut-id="{{ $imut['id'] }}"
                             data-json='{{ json_encode(array_merge($chartData['chart-' . $imut['id']] ?? [], ['standard' => $imut['standard']])) }}'>
                         </canvas>
 
@@ -322,22 +326,22 @@
                         <table class="w-full text-sm border-collapse">
                             <thead>
                                 @php
-                                    // prepare mapping for region types so benchmark headers can be coloured
-                                    $rtMap = collect($imut['regionTypesInfo'] ?? [])->keyBy('id');
-                                    // default background for non-benchmark headers
-                                    $defaultBg = $rtMap->first()['color'] ?? '#1e40af';
-                                    $defaultText = '#ffffff';
-                                    $baseStyle = "background-color: $defaultBg; color: $defaultText;";
+                                // prepare mapping for region types so benchmark headers can be coloured
+                                $rtMap = collect($imut['regionTypesInfo'] ?? [])->keyBy('id');
+                                // default background for non-benchmark headers
+                                $defaultBg = $rtMap->first()['color'] ?? '#1e40af';
+                                $defaultText = '#ffffff';
+                                $baseStyle = "background-color: $defaultBg; color: $defaultText;";
 
-                                    // group benchmarks by region type to avoid duplicates
-                                    $benchmarkCols = collect($imut['benchmarks'] ?? [])->groupBy('region_type_id')->map(function($group, $rtid) use ($rtMap) {
-                                        return [
-                                            'region_type_id' => $rtid,
-                                            'type' => $rtMap[$rtid]['type'] ?? '',
-                                            'color' => $rtMap[$rtid]['color'] ?? '#000',
-                                            'records' => $group->all(),
-                                        ];
-                                    })->values();
+                                // group benchmarks by region type to avoid duplicates
+                                $benchmarkCols = collect($imut['benchmarks'] ?? [])->groupBy('region_type_id')->map(function($group, $rtid) use ($rtMap) {
+                                return [
+                                'region_type_id' => $rtid,
+                                'type' => $rtMap[$rtid]['type'] ?? '',
+                                'color' => $rtMap[$rtid]['color'] ?? '#000',
+                                'records' => $group->all(),
+                                ];
+                                })->values();
                                 @endphp
                                 <tr class="text-xs uppercase tracking-wider">
                                     <th class="px-4 py-3 text-left" style="{{ $defaultBg }}">Periode</th>
@@ -347,14 +351,14 @@
                                     <th class="px-4 py-3 text-right" style="{{ $defaultBg }}">Persentase</th>
                                     <th class="px-4 py-3 text-center" style="{{ $baseStyle }}">Status</th>
                                     @foreach($benchmarkCols as $col)
-                                        @php
-                                            $rtcol = $col['color'];
-                                            $bgcol = $rtcol . '33';
-                                            $thStyle = "background-color: $bgcol; color: $defaultText;";
-                                        @endphp
-                                        <th class="px-4 py-3 text-center" style="{{ $thStyle }}">
-                                            Benchmark {{ $col['type'] }}
-                                        </th>
+                                    @php
+                                    $rtcol = $col['color'];
+                                    $bgcol = $rtcol . '33';
+                                    $thStyle = "background-color: $bgcol; color: $defaultText;";
+                                    @endphp
+                                    <th x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']" class="px-4 py-3 text-center" style="{{ $thStyle }}">
+                                        Benchmark {{ $col['type'] }}
+                                    </th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -432,21 +436,21 @@
                                     </td>
                                     @foreach($benchmarkCols as $col)
                                     @php
-                                        // pick first non-null monthly value among group's records for this month
-                                        $bmVal = null;
-                                        foreach($col['records'] as $bm) {
-                                            $val = $bm['monthly'][$dataPoint['month_label']] ?? null;
-                                            if ($val !== null) {
-                                                $bmVal = $val;
-                                                break;
-                                            }
-                                        }
-                                        $rtcol = $col['color'];
-                                        $cellBg = $rtcol . '22';
-                                        $textCol = $rtcol;
-                                        $tdStyle = "background-color: $cellBg; color: $textCol;";
+                                    // pick first non-null monthly value among group's records for this month
+                                    $bmVal = null;
+                                    foreach($col['records'] as $bm) {
+                                    $val = $bm['monthly'][$dataPoint['month_label']] ?? null;
+                                    if ($val !== null) {
+                                    $bmVal = $val;
+                                    break;
+                                    }
+                                    }
+                                    $rtcol = $col['color'];
+                                    $cellBg = $rtcol . '22';
+                                    $textCol = $rtcol;
+                                    $tdStyle = "background-color: $cellBg; color: $textCol;";
                                     @endphp
-                                    <td class="px-4 py-3 text-center font-medium" style="{{ $tdStyle }}">
+                                    <td x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']" class="px-4 py-3 text-center font-medium" style="{{ $tdStyle }}">
                                         {{ $bmVal !== null ? number_format($bmVal,2) . '%' : '-' }}
                                     </td>
                                     @endforeach
@@ -502,18 +506,18 @@
                                         // from all records for this column, find last non-null value across months
                                         $last = null;
                                         foreach($col['records'] as $bm) {
-                                            $cand = collect($bm['monthly'])->filter()->last();
-                                            if ($cand !== null) {
-                                                $last = $cand;
-                                                break;
-                                            }
+                                        $cand = collect($bm['monthly'])->filter()->last();
+                                        if ($cand !== null) {
+                                        $last = $cand;
+                                        break;
+                                        }
                                         }
                                         $rtcol = $col['color'];
                                         $cellBg = $rtcol . '22';
                                         $textCol = $rtcol;
                                         $tdTotalStyle = "background-color: $cellBg; color: $textCol;";
                                         @endphp
-                                        <td class="px-4 py-4 text-center" style="{{ $tdTotalStyle }}">
+                                        <td x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']" class="px-4 py-4 text-center" style="{{ $tdTotalStyle }}">
                                             <span></span>
                                         </td>
                                         @endforeach
@@ -628,7 +632,17 @@
     </div>
 
     <script>
-        function categoryReport() {
+        // initialBenchmarkMap is an object mapping imutId -> array of region-type names
+        function categoryReport(initialBenchmarkMap = {}) {
+            // build initial visibility object so bindings won't fail
+            const initShow = {};
+            Object.entries(initialBenchmarkMap || {}).forEach(([imutId, types]) => {
+                initShow[imutId] = {};
+                types.forEach(t => {
+                    initShow[imutId][t] = true;
+                });
+            });
+
             return {
                 loading: false,
                 printOrientation: 'landscape',
@@ -638,13 +652,55 @@
                 showLegend: false,
                 useFullLabels: false,
 
+                // benchmark toggles by imut
+                benchmarkTypesByImut: initialBenchmarkMap || {},
+                showBenchmarkCols: initShow,
+
                 init() {
+                    // displayMode watcher
                     this.$watch('displayMode', value => {
                         this.showLegend = value === 'legend';
                         this.useFullLabels = value === 'full';
                     });
                     this.showLegend = this.displayMode === 'legend';
                     this.useFullLabels = this.displayMode === 'full';
+
+                    // ensure structure exists in case map changed dynamically
+                    Object.entries(this.benchmarkTypesByImut).forEach(([imutId, types]) => {
+                        if (!this.showBenchmarkCols[imutId]) {
+                            this.$set(this.showBenchmarkCols, imutId, {});
+                        }
+                        types.forEach(t => {
+                            if (this.showBenchmarkCols[imutId][t] === undefined) {
+                                this.$set(this.showBenchmarkCols[imutId], t, true);
+                            }
+                        });
+                    });
+
+                    // expose updateCharts globally
+                    window.categoryReportUpdate = this.updateCharts.bind(this);
+
+                    setTimeout(() => this.updateCharts(), 0);
+                },
+
+                updateCharts() {
+                    if (!window.categoryCharts || !window.categoryCharts.length) {
+                        return;
+                    }
+                    window.categoryCharts.forEach(chart => {
+                        const imutId = chart.imutId;
+                        chart.data.datasets.forEach(ds => {
+                            if (/^benchmark/i.test(ds.label || '')) {
+                                const type = (ds.label || '').replace(/^benchmark\s*/i, '');
+                                if (!this.showBenchmarkCols[imutId] || !this.showBenchmarkCols[imutId][type]) {
+                                    ds.hidden = true;
+                                } else {
+                                    ds.hidden = false;
+                                }
+                            }
+                        });
+                        chart.update();
+                    });
                 },
 
                 calculateDisplayColumns() {
@@ -740,8 +796,7 @@
                     const values = parsed.values || [];
                     const standard = parsed.standard || 0;
                     const standardData = labels.map(() => standard);
-                    datasets = [
-                        {
+                    datasets = [{
                             label: "Capaian (%)",
                             data: values,
                             borderColor: "#1d4ed8",
@@ -791,7 +846,7 @@
                         return Object.assign({}, ds, {
                             borderColor: color,
                             backgroundColor: color,
-                            borderDash: ds.borderDash || [8,6],
+                            borderDash: ds.borderDash || [8, 6],
                             tension: 0,
                             pointRadius: 3,
                             fill: false,
@@ -801,7 +856,7 @@
                     return ds;
                 });
 
-                new Chart(canvas, {
+                const chartInstance = new Chart(canvas, {
                     type: "line",
                     data: {
                         labels: labels,
@@ -870,7 +925,13 @@
                         }
                     }
                 });
-
+                // annotate with imutId and register chart
+                const imutId = canvas.getAttribute('data-imut-id');
+                if (imutId) {
+                    chartInstance.imutId = imutId;
+                }
+                window.categoryCharts = window.categoryCharts || [];
+                window.categoryCharts.push(chartInstance);
             });
 
         });
