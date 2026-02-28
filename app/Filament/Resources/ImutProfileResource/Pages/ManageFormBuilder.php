@@ -84,7 +84,6 @@ class ManageFormBuilder extends Page implements HasForms
             ->action('performSave');
 
         return [
-
             Action::make('reset')
                 ->label('Reset Form (Destruktif)')
                 ->icon('heroicon-o-arrow-path')
