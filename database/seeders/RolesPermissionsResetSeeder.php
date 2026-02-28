@@ -9,30 +9,22 @@ use Spatie\Permission\Models\Permission;
 
 class RolesPermissionsResetSeeder extends Seeder
 {
-    /**
-     * Jalankan seeder.
-     *
-     * Tabel-tabel yang dikosongkan:
-     *   - role_has_permissions
-     *   - model_has_permissions
-     *   - model_has_roles
-     *   - permissions
-     *   - roles
-     *
-     * Selebihnya tidak disentuh.
-     */
     public function run(): void
     {
-        DB::transaction(function () {
-            DB::table('role_has_permissions')->truncate();
-            DB::table('model_has_permissions')->truncate();
-            DB::table('model_has_roles')->truncate();
+        // matikan cek FK agar truncate tidak error
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
-            Permission::truncate();
-            Role::truncate();
-        });
+        DB::table('role_has_permissions')->truncate();
+        DB::table('model_has_permissions')->truncate();
+        DB::table('model_has_roles')->truncate();
 
-        // supaya cache permission tidak lagi menyimpan data lama
+        Permission::truncate();
+        Role::truncate();
+
+        // hidupkan kembali cek FK
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        // kosongkan cache permission
         app()
             ->make(\Spatie\Permission\PermissionRegistrar::class)
             ->forgetCachedPermissions();
