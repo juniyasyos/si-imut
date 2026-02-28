@@ -145,15 +145,55 @@ class CategoryReportController extends Controller
                 'denominator'  => $overallDenominator,
                 'percentage'   => $overallPercentage,
                 'category'     => $imutData->categories?->category_name,
-                // placeholders, will be filled later
-                'standard'     => null,
-                'target_operator' => null,
             ];
         }
 
         // prepare monthly breakdown array for view/chart
+        // fetch notes once per indicator to avoid N+1
+        $notesMap = [];
+        $imutIds = array_column($results, 'imut_data_id');
+        if (count($imutIds) > 0) {
+            $rawNotes = \App\Models\ImutDataNote::active()
+                ->whereIn('imut_data_id', $imutIds)
+                ->get(['id','imut_data_id','period_year','period_quarter','period_type','analysis','recommendation','note_name']);
+            foreach ($rawNotes as $n) {
+                $key = $n->imut_data_id;
+                $arr = $n->toArray();
+                // compute human period label for the note
+                if ($arr['period_type'] === 'tahunan') {
+                    $arr['period_label'] = "{$arr['period_year']}";
+                    // months: all months of year
+                    $arr['months'] = [];
+                    for ($i = 1; $i <= 12; $i++) {
+                        $arr['months'][] = sprintf('%04d-%02d', $arr['period_year'], $i);
+                    }
+                } else {
+                    $quarterNames = ['Q1'=>'Triwulan I','Q2'=>'Triwulan II','Q3'=>'Triwulan III','Q4'=>'Triwulan IV'];
+                    $arr['period_label'] = ($quarterNames[$arr['period_quarter']] ?? $arr['period_quarter']) . ' ' . $arr['period_year'];
+                    // compute quarter months
+                    $arr['months'] = [];
+                    switch ($arr['period_quarter']) {
+                        case 'Q1': $monthsRange = [1,2,3]; break;
+                        case 'Q2': $monthsRange = [4,5,6]; break;
+                        case 'Q3': $monthsRange = [7,8,9]; break;
+                        case 'Q4': $monthsRange = [10,11,12]; break;
+                        default: $monthsRange = [];
+                    }
+                    foreach ($monthsRange as $mth) {
+                        $arr['months'][] = sprintf('%04d-%02d', $arr['period_year'], $mth);
+                    }
+                }
+                $notesMap[$key][] = $arr;
+            }
+        }
+
         $dataByImut = [];
         foreach ($results as $row) {
+            $imutId = $row['imut_data_id'];
+            $imutItems = $grouped[$imutId] ?? [];
+            $monthly = [];
+            $lastStandard = null;
+            $lastOperator = null;
             $imutId = $row['imut_data_id'];
             $imutItems = $grouped[$imutId] ?? [];
             $monthly = [];
@@ -232,6 +272,7 @@ class CategoryReportController extends Controller
                 'target_operator' => $rowOperator,
                 'standard' => $rowStandard,
                 'data' => $monthly,
+                'notes' => $notesMap[$imutId] ?? [],
             ];
         }
 
@@ -285,6 +326,7 @@ class CategoryReportController extends Controller
             'categoryDetails' => $categoryDetails,
             'dataByImut' => $dataByImut,
             'chartData' => $chartData,
+            'notesMap' => $notesMap,
         ]);
     }
 }
