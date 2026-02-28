@@ -16,30 +16,30 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(
             [
-                ShieldSeeder::class,
-                UserSeeder::class,
-                AssignSuperAdminRoleSeeder::class,
+                // ShieldSeeder::class,
+                // UserSeeder::class,
+                // AssignSuperAdminRoleSeeder::class,
                 // KaidoSettingSeeder::class,
                 // UnitKerjaSeeder::class,
-                RoleUpgradeSeeder::class,
+                // RoleUpgradeSeeder::class,
                 // ImutCategorySeeder::class,
                 // RegionTypeSeeder::class,
                 // ImutDataOldSeeder::class,
 
                 // Step 1: Create FormTemplates with JSON configs for all profiles
-                CompleteFormTemplateSeeder::class,
+                // CompleteFormTemplateSeeder::class,
 
                 // Step 2: Replicate expired/future profiles to make them currently valid
-                ValidDailyReportProfileSeeder::class,
+                // ValidDailyReportProfileSeeder::class,
 
                 // Step 3: Create default FormTemplates for profiles without JSON configs
-                DefaultFormTemplateSeeder::class,
+                // DefaultFormTemplateSeeder::class,
 
                 // Step 4: Create simulation data for specific indicators
                 // HandwashingSimulationSeeder::class,
 
                 // Step 5: Create sample daily report entries for testing
-                SampleDailyReportSeeder::class,
+                // SampleDailyReportSeeder::class,
 
                 // Note: EnsureFormTemplateSeeder removed - redundant with CompleteFormTemplateSeeder
 

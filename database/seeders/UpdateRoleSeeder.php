@@ -17,10 +17,13 @@ class UpdateRoleSeeder extends Seeder
         ];
 
         foreach ($map as $slug => $label) {
-            Role::where('name', $label)->update([
-                'name'  => $slug,
-                'label' => $label,
-            ]);
+            // the original seeder incorrectly searched by label; we're migrating
+            // existing records that use the slug as both name and label so that
+            // the label becomes something human readable.
+            Role::where('name', $slug)
+                ->update([
+                    'label' => $label,
+                ]);
         }
     }
 }
