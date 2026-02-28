@@ -62,7 +62,6 @@
         ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
     ]" />
 
-
     <!-- Action Buttons -->
     <div class="no-print my-6 max-w-full mx-auto space-y-3">
         <!-- Print Options -->
@@ -295,23 +294,68 @@
                 </div>
             </div>
 
-
             {{-- ================= BODY ================= --}}
             <div class="p-6">
 
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 gap-8">
+
+                    {{-- ================= CHART ================= --}}
+                    <div class="flex flex-col justify-center min-h-[260px]">
+
+                        <canvas id="chart-{{ $imut['id'] }}"
+                            data-chart
+                            data-json='{{ json_encode(array_merge($chartData['chart-' . $imut['id']] ?? [], ['standard' => $imut['standard']])) }}'>
+                        </canvas>
+
+                        {{-- INFO STANDAR --}}
+                        <div class="mt-4 text-sm text-slate-600">
+                            Garis horizontal pada grafik menunjukkan standar
+                            <span class="font-semibold">
+                                {{ $imut['standard'] }}%
+                            </span>.
+                        </div>
+
+                    </div>
 
                     {{-- ================= TABEL ================= --}}
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm border-collapse">
                             <thead>
-                                <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                                    <th class="px-4 py-3 text-left">Periode</th>
-                                    <th class="px-4 py-3 text-center">N</th>
-                                    <th class="px-4 py-3 text-center">D</th>
-                                    <th class="px-4 py-3 text-center">Standar</th>
-                                    <th class="px-4 py-3 text-right">Persentase</th>
-                                    <th class="px-4 py-3 text-center">Status</th>
+                                @php
+                                    // prepare mapping for region types so benchmark headers can be coloured
+                                    $rtMap = collect($imut['regionTypesInfo'] ?? [])->keyBy('id');
+                                    // default background for non-benchmark headers
+                                    $defaultBg = $rtMap->first()['color'] ?? '#1e40af';
+                                    $defaultText = '#ffffff';
+                                    $baseStyle = "background-color: $defaultBg; color: $defaultText;";
+
+                                    // group benchmarks by region type to avoid duplicates
+                                    $benchmarkCols = collect($imut['benchmarks'] ?? [])->groupBy('region_type_id')->map(function($group, $rtid) use ($rtMap) {
+                                        return [
+                                            'region_type_id' => $rtid,
+                                            'type' => $rtMap[$rtid]['type'] ?? '',
+                                            'color' => $rtMap[$rtid]['color'] ?? '#000',
+                                            'records' => $group->all(),
+                                        ];
+                                    })->values();
+                                @endphp
+                                <tr class="text-xs uppercase tracking-wider">
+                                    <th class="px-4 py-3 text-left" style="{{ $defaultBg }}">Periode</th>
+                                    <th class="px-4 py-3 text-center" style="{{ $defaultBg }}">N</th>
+                                    <th class="px-4 py-3 text-center" style="{{ $defaultBg }}">D</th>
+                                    <th class="px-4 py-3 text-center" style="{{ $defaultBg }}">Standar</th>
+                                    <th class="px-4 py-3 text-right" style="{{ $defaultBg }}">Persentase</th>
+                                    <th class="px-4 py-3 text-center" style="{{ $baseStyle }}">Status</th>
+                                    @foreach($benchmarkCols as $col)
+                                        @php
+                                            $rtcol = $col['color'];
+                                            $bgcol = $rtcol . '33';
+                                            $thStyle = "background-color: $bgcol; color: $defaultText;";
+                                        @endphp
+                                        <th class="px-4 py-3 text-center" style="{{ $thStyle }}">
+                                            Benchmark {{ $col['type'] }}
+                                        </th>
+                                    @endforeach
                                 </tr>
                             </thead>
 
@@ -386,6 +430,26 @@
                                         </span>
                                         @endif
                                     </td>
+                                    @foreach($benchmarkCols as $col)
+                                    @php
+                                        // pick first non-null monthly value among group's records for this month
+                                        $bmVal = null;
+                                        foreach($col['records'] as $bm) {
+                                            $val = $bm['monthly'][$dataPoint['month_label']] ?? null;
+                                            if ($val !== null) {
+                                                $bmVal = $val;
+                                                break;
+                                            }
+                                        }
+                                        $rtcol = $col['color'];
+                                        $cellBg = $rtcol . '22';
+                                        $textCol = $rtcol;
+                                        $tdStyle = "background-color: $cellBg; color: $textCol;";
+                                    @endphp
+                                    <td class="px-4 py-3 text-center font-medium" style="{{ $tdStyle }}">
+                                        {{ $bmVal !== null ? number_format($bmVal,2) . '%' : '-' }}
+                                    </td>
+                                    @endforeach
 
                                     </tr>
                                     @endforeach
@@ -433,30 +497,31 @@
                                             </span>
                                             @endif
                                         </td>
+                                        @foreach($benchmarkCols as $col)
+                                        @php
+                                        // from all records for this column, find last non-null value across months
+                                        $last = null;
+                                        foreach($col['records'] as $bm) {
+                                            $cand = collect($bm['monthly'])->filter()->last();
+                                            if ($cand !== null) {
+                                                $last = $cand;
+                                                break;
+                                            }
+                                        }
+                                        $rtcol = $col['color'];
+                                        $cellBg = $rtcol . '22';
+                                        $textCol = $rtcol;
+                                        $tdTotalStyle = "background-color: $cellBg; color: $textCol;";
+                                        @endphp
+                                        <td class="px-4 py-4 text-center" style="{{ $tdTotalStyle }}">
+                                            <span></span>
+                                        </td>
+                                        @endforeach
 
                                     </tr>
                                     @endif
                             </tbody>
                         </table>
-                    </div>
-
-
-                    {{-- ================= CHART ================= --}}
-                    <div class="flex flex-col justify-center min-h-[260px]">
-
-                        <canvas id="chart-{{ $imut['id'] }}"
-                            data-chart
-                            data-json='{{ json_encode(array_merge($chartData['chart-' . $imut['id']] ?? [], ['standard' => $imut['standard']])) }}'>
-                        </canvas>
-
-                        {{-- INFO STANDAR --}}
-                        <div class="mt-4 text-sm text-slate-600">
-                            Garis horizontal pada grafik menunjukkan standar
-                            <span class="font-semibold">
-                                {{ $imut['standard'] }}%
-                            </span>.
-                        </div>
-
                     </div>
 
                 </div>
@@ -667,59 +732,80 @@
                 const parsed = JSON.parse(rawData);
 
                 const labels = parsed.labels || [];
-                let values = [];
-                let standardData = [];
-
+                // use provided datasets directly, or fall back to constructing one
+                let datasets = [];
                 if (parsed.datasets && parsed.datasets.length) {
-                    values = parsed.datasets[0].data || [];
-                    if (parsed.datasets[1]) {
-                        standardData = parsed.datasets[1].data || [];
-                    }
+                    datasets = parsed.datasets;
                 } else {
-                    values = parsed.values || [];
+                    const values = parsed.values || [];
                     const standard = parsed.standard || 0;
-                    standardData = labels.map(() => standard);
+                    const standardData = labels.map(() => standard);
+                    datasets = [
+                        {
+                            label: "Capaian (%)",
+                            data: values,
+                            borderColor: "#1d4ed8",
+                            backgroundColor: "rgba(29, 78, 216, 0.08)",
+                            fill: true,
+                            tension: 0.25,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: "#1d4ed8",
+                            pointBorderColor: "#ffffff",
+                            pointBorderWidth: 2,
+                        },
+                        {
+                            label: "Standar Target",
+                            data: standardData,
+                            borderColor: "#ed582f",
+                            backgroundColor: "#ed582f",
+                            borderDash: [8, 6],
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointBackgroundColor: "#ed582f",
+                            pointBorderWidth: 0,
+                            fill: false,
+                            tension: 0
+                        }
+                    ];
                 }
 
-                const standardValue = standardData.length ? standardData[0] : 0;
+                // post-process dataset styles
+                let standardValue = 0;
+                datasets = datasets.map(ds => {
+                    const label = (ds.label || '').toLowerCase();
+                    // Capaian should keep existing styling, leave tension moderate
+                    if (label.includes('benchmark')) {
+                        // straight solid line, no points
+                        return Object.assign({}, ds, {
+                            tension: 0,
+                            pointRadius: 0,
+                            borderDash: [],
+                        });
+                    }
+                    if (label.includes('standar')) {
+                        // orange/red line to indicate threshold
+                        const color = '#f97316'; // orange-500
+                        standardValue = (ds.data && ds.data.length) ? ds.data[0] : 0;
+                        return Object.assign({}, ds, {
+                            borderColor: color,
+                            backgroundColor: color,
+                            borderDash: ds.borderDash || [8,6],
+                            tension: 0,
+                            pointRadius: 3,
+                            fill: false,
+                        });
+                    }
+                    // default, return unchanged
+                    return ds;
+                });
 
                 new Chart(canvas, {
                     type: "line",
                     data: {
                         labels: labels,
-                        datasets: [
-
-                            // ===== CAPAIAN =====
-                            {
-                                label: "Capaian (%)",
-                                data: values,
-                                borderColor: "#1d4ed8",
-                                backgroundColor: "rgba(29, 78, 216, 0.08)",
-                                fill: true,
-                                tension: 0.25,
-                                borderWidth: 3,
-                                pointRadius: 5,
-                                pointHoverRadius: 6,
-                                pointBackgroundColor: "#1d4ed8",
-                                pointBorderColor: "#ffffff",
-                                pointBorderWidth: 2,
-                            },
-
-                            // ===== STANDAR =====
-                            {
-                                label: "Standar Target",
-                                data: standardData,
-                                borderColor: "#ed582f",
-                                backgroundColor: "#ed582f",
-                                borderDash: [8, 6],
-                                borderWidth: 2,
-                                pointRadius: 3,
-                                pointBackgroundColor: "#ed582f",
-                                pointBorderWidth: 0,
-                                fill: false,
-                                tension: 0
-                            }
-                        ]
+                        datasets: datasets
                     },
                     options: {
                         responsive: true,
@@ -766,7 +852,7 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                max: 100,
+                                max: 110,
                                 ticks: {
                                     callback: function(value) {
                                         return value + "%";

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
+use App\Models\RegionType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -155,7 +157,7 @@ class CategoryReportController extends Controller
         if (count($imutIds) > 0) {
             $rawNotes = \App\Models\ImutDataNote::active()
                 ->whereIn('imut_data_id', $imutIds)
-                ->get(['id','imut_data_id','period_year','period_quarter','period_type','analysis','recommendation','note_name']);
+                ->get(['id', 'imut_data_id', 'period_year', 'period_quarter', 'period_type', 'analysis', 'recommendation', 'note_name']);
             foreach ($rawNotes as $n) {
                 $key = $n->imut_data_id;
                 $arr = $n->toArray();
@@ -168,16 +170,25 @@ class CategoryReportController extends Controller
                         $arr['months'][] = sprintf('%04d-%02d', $arr['period_year'], $i);
                     }
                 } else {
-                    $quarterNames = ['Q1'=>'Triwulan I','Q2'=>'Triwulan II','Q3'=>'Triwulan III','Q4'=>'Triwulan IV'];
+                    $quarterNames = ['Q1' => 'Triwulan I', 'Q2' => 'Triwulan II', 'Q3' => 'Triwulan III', 'Q4' => 'Triwulan IV'];
                     $arr['period_label'] = ($quarterNames[$arr['period_quarter']] ?? $arr['period_quarter']) . ' ' . $arr['period_year'];
                     // compute quarter months
                     $arr['months'] = [];
                     switch ($arr['period_quarter']) {
-                        case 'Q1': $monthsRange = [1,2,3]; break;
-                        case 'Q2': $monthsRange = [4,5,6]; break;
-                        case 'Q3': $monthsRange = [7,8,9]; break;
-                        case 'Q4': $monthsRange = [10,11,12]; break;
-                        default: $monthsRange = [];
+                        case 'Q1':
+                            $monthsRange = [1, 2, 3];
+                            break;
+                        case 'Q2':
+                            $monthsRange = [4, 5, 6];
+                            break;
+                        case 'Q3':
+                            $monthsRange = [7, 8, 9];
+                            break;
+                        case 'Q4':
+                            $monthsRange = [10, 11, 12];
+                            break;
+                        default:
+                            $monthsRange = [];
                     }
                     foreach ($monthsRange as $mth) {
                         $arr['months'][] = sprintf('%04d-%02d', $arr['period_year'], $mth);
@@ -265,6 +276,46 @@ class CategoryReportController extends Controller
             $rowStandard = $lastStandard;
             $rowOperator = $lastOperator;
 
+            // collect region type metadata and benchmarking values so view can render them
+            $rtIds = RegionType::where('imut_data_id', $imutId)->pluck('id')->toArray();
+            $regionTypeInfo = RegionType::whereIn('id', $rtIds)
+                ->get(['id', 'type', 'chart_type', 'display_color'])
+                ->map(function ($rt) {
+                    return [
+                        'id' => $rt->id,
+                        'type' => $rt->type,
+                        'default_region_name' => $rt->getDefaultRegionName(),
+                        'chart_type' => $rt->getChartTypeWithFallback(),
+                        'color' => $rt->getDisplayColorWithFallback(),
+                    ];
+                })
+                ->toArray();
+
+            // when building benchmarks we also want a per-month series
+            $benchmarks = ImutBenchmarking::whereHas('regionType', fn($q) => $q->where('imut_data_id', $imutId))
+                ->get()
+                ->map(function ($b) use ($months) {
+                    $val = floatval($b->benchmark_value);
+                    // fill monthly values only for months within period range
+                    $series = [];
+                    foreach ($months as $m) {
+                        $carbon = Carbon::createFromFormat('Y-m', $m)->startOfMonth();
+                        $start = Carbon::parse($b->period_start)->startOfMonth();
+                        $end = Carbon::parse($b->period_end)->endOfMonth();
+                        $series[$m] = $carbon->betweenIncluded($start, $end) ? $val : null;
+                    }
+
+                    return [
+                        'id' => $b->id,
+                        'region_type_id' => $b->region_type_id,
+                        'value' => $val,
+                        'period_start' => $b->period_start,
+                        'period_end' => $b->period_end,
+                        'monthly' => $series,
+                    ];
+                })
+                ->toArray();
+
             $dataByImut[] = [
                 'id' => $imutId,
                 'title' => $row['title'],
@@ -272,6 +323,9 @@ class CategoryReportController extends Controller
                 'target_operator' => $rowOperator,
                 'standard' => $rowStandard,
                 'data' => $monthly,
+                'regionTypes' => $rtIds,
+                'regionTypesInfo' => $regionTypeInfo,
+                'benchmarks' => $benchmarks,
                 'notes' => $notesMap[$imutId] ?? [],
             ];
         }
@@ -279,24 +333,64 @@ class CategoryReportController extends Controller
         // prepare chart data for each indicator
         $chartData = [];
         foreach ($dataByImut as $imut) {
-            $chartData['chart-' . $imut['id']] = [
-                'labels' => array_column($imut['data'], 'month_label'),
-                'datasets' => [
-                    [
-                        'label' => 'Persentase',
-                        'data' => array_column($imut['data'], 'percentage'),
-                        'borderColor' => '#3b82f6',
-                        'backgroundColor' => 'rgba(59, 130, 246, 0.3)',
-                        'fill' => true,
-                    ],
-                    [
-                        'label' => 'Standar',
-                        'data' => array_column($imut['data'], 'standard'),
-                        'borderColor' => '#9ca3af',
-                        'borderDash' => [6, 6],
+            $labels = array_column($imut['data'], 'month_label');
+            $baseDataset = [
+                'label' => 'Persentase',
+                'data' => array_column($imut['data'], 'percentage'),
+                'borderColor' => '#3b82f6',
+                'backgroundColor' => 'rgba(59, 130, 246, 0.3)',
+                'fill' => true,
+            ];
+
+            $standardDataset = [
+                'label' => 'Standar',
+                'data' => array_column($imut['data'], 'standard'),
+                'borderColor' => '#9ca3af',
+                'borderDash' => [6, 6],
+                'fill' => false,
+            ];
+
+            $datasets = [$baseDataset, $standardDataset];
+
+            // add benchmark lines for each region type if available (merge multiple periods)
+            if (!empty($imut['benchmarks']) && !empty($imut['regionTypesInfo'])) {
+                $grouped = collect($imut['benchmarks'])->groupBy('region_type_id');
+                foreach ($grouped as $rtid => $items) {
+                    $rtInfo = collect($imut['regionTypesInfo'])->firstWhere('id', $rtid);
+                    $rtLabel = $rtInfo['type'] ?? 'Benchmark';
+                    $color = $rtInfo['color'] ?? '#6b7280';
+
+                    // build line data by picking first non-null monthly value within the group for each month
+                    $lineData = [];
+                    foreach ($labels as $m) {
+                        $val = null;
+                        foreach ($items as $bm) {
+                            if (isset($bm['monthly'][$m]) && $bm['monthly'][$m] !== null) {
+                                $val = $bm['monthly'][$m];
+                                break;
+                            }
+                        }
+                        if ($val === null) {
+                            // fallback to the group's first value
+                            $val = $items->first()['value'] ?? 0;
+                        }
+                        $lineData[] = $val;
+                    }
+
+                    $datasets[] = [
+                        'label' => 'Benchmark ' . $rtLabel,
+                        'rtid'  => $rtid,
+                        'data' => $lineData,
+                        'borderColor' => $color,
+                        'borderDash' => [4, 4],
                         'fill' => false,
-                    ],
-                ],
+                    ];
+                }
+            }
+
+            $chartData['chart-' . $imut['id']] = [
+                'labels' => $labels,
+                'datasets' => $datasets,
             ];
         }
 
