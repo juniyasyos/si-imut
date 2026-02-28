@@ -16,12 +16,13 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(
             [
-                // ShieldSeeder::class,
+                RolesPermissionsResetSeeder::class,
+                ShieldSeeder::class,
                 // UserSeeder::class,
-                // AssignSuperAdminRoleSeeder::class,
+                AssignSuperAdminRoleSeeder::class,
                 // KaidoSettingSeeder::class,
                 // UnitKerjaSeeder::class,
-                // RoleUpgradeSeeder::class,
+                RoleUpgradeSeeder::class,
                 // ImutCategorySeeder::class,
                 // RegionTypeSeeder::class,
                 // ImutDataOldSeeder::class,

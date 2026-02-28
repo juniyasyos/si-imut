@@ -158,7 +158,9 @@ class ProfilesRelationManager extends RelationManager
                         ->visible(fn($record) => $record->imutData->is_monthly),
                 ])
                     ->icon('heroicon-o-ellipsis-vertical')
-                    ->tooltip('Lainnya'),
+                    ->tooltip('Lainnya')
+                    ->button()
+                    ->label('Aksi'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
