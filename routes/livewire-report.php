@@ -32,6 +32,10 @@ Route::prefix('laporan/indikator-mutu')->name('laporan.indikator-mutu.')->group(
     Route::get('kategori', [\App\Http\Controllers\CategoryReportController::class, 'show'])
         ->name('by-category');
 
+    // PDF export for category report using Browsershot
+    Route::get('kategori/pdf', [\App\Http\Controllers\CategoryReportPdfController::class, 'download'])
+        ->name('by-category.pdf');
+
     // Unit Kerja Report dengan periode filter
     Route::prefix('unit-kerja')->name('unit-kerja.')->group(function () {
         // Show laporan unit kerja: /laporan/indikator-mutu/unit-kerja/{unitKerja}

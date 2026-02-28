@@ -46,7 +46,7 @@
     </style>
 </head>
 
-<body class="bg-white text-gray-800 font-sans text-sm leading-relaxed">
+<body x-data="categoryReport()" class="bg-white text-gray-800 font-sans text-sm leading-relaxed">
 
     @php
     $periodLabel = $periode;
@@ -62,6 +62,102 @@
         ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
     ]" />
 
+
+    <!-- Action Buttons -->
+    <div class="no-print my-6 max-w-full mx-auto space-y-3">
+        <!-- Print Options -->
+        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-sm font-medium text-amber-900">🖨️ Opsi Print:</div>
+                <div class="flex items-center gap-2">
+                    <input type="radio" id="orientation-landscape" name="printOrientation" value="landscape" checked @change="printOrientation = $event.target.value">
+                    <label for="orientation-landscape" class="text-sm text-amber-800 cursor-pointer">Landscape</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="radio" id="orientation-portrait" name="printOrientation" value="portrait" @change="printOrientation = $event.target.value">
+                    <label for="orientation-portrait" class="text-sm text-amber-800 cursor-pointer">Portrait</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="flex flex-col gap-4">
+
+            <!-- Column Toggles -->
+            <template x-if="allColumns.length">
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-800 tracking-wide">
+                            Pengaturan Tampilan Kolom
+                        </h3>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <template x-for="col in allColumns" :key="col.key">
+                            <label
+                                :for="'col-' + col.key"
+                                class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer text-sm text-gray-700">
+                                <input type="checkbox"
+                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    :id="'col-' + col.key"
+                                    :value="col.key"
+                                    x-model="showColumns[col.key]"
+                                    @change="calculateDisplayColumns()">
+
+                                <span x-text="displayMode === 'full' && col.full_label ? col.full_label : col.label"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Bottom Action Bar -->
+            <div class="flex flex-wrap items-center justify-end gap-4">
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-3">
+
+                    <a href="{{ url('/siimut/daily-report-entries') }}"
+                        class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 
+                       border border-gray-200 rounded-xl 
+                       hover:bg-gray-200 transition">
+                        Kembali
+                    </a>
+
+                    <button @click="fetchData()"
+                        class="px-5 py-2.5 text-sm font-medium text-white 
+                       bg-blue-600 rounded-xl 
+                       hover:bg-blue-700 transition shadow-sm">
+                        Refresh
+                    </button>
+
+                    <button @click="handlePrint()"
+                        class="px-5 py-2.5 text-sm font-medium text-white 
+                       bg-green-600 rounded-xl 
+                       hover:bg-green-700 transition shadow-sm">
+                        Cetak
+                    </button>
+
+                    <button @click="downloadPdf()"
+                        class="px-5 py-2.5 text-sm font-medium text-white 
+                       bg-indigo-600 rounded-xl 
+                       hover:bg-indigo-700 transition shadow-sm">
+                        PDF
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div x-show="loading" x-cloak class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl">
+            <div class="rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4" style="animation: spin 1s linear infinite;"></div>
+            <p class="text-gray-700 font-medium">Memuat data...</p>
+        </div>
+    </div>
 
     <!-- debugging section: dump controller payload -->
     <div class="bg-gray-100 border border-gray-300 rounded p-4 mb-6 text-xs font-mono">
@@ -428,8 +524,6 @@
                             <table class="w-full text-xs border-collapse">
                                 <thead>
                                     <tr>
-                                        <th class="border px-2 py-1">ID Catatan</th>
-                                        <th class="border px-2 py-1">Nama Catatan</th>
                                         <th class="border px-2 py-1">Periode</th>
                                         <th class="border px-2 py-1">Analisis</th>
                                         <th class="border px-2 py-1">Rekomendasi</th>
@@ -438,8 +532,6 @@
                                 <tbody>
                                     <template x-for="note in notes" :key="note.id">
                                         <tr x-show="selected.includes(note.id)">
-                                            <td class="border px-2 py-1" x-text="note.id"></td>
-                                            <td class="border px-2 py-1" x-text="note.note_name"></td>
                                             <td class="border px-2 py-1" x-text="note.period_label || ''"></td>
                                             <td class="border px-2 py-1" x-text="note.analysis"></td>
                                             <td class="border px-2 py-1" x-text="note.recommendation"></td>
@@ -471,6 +563,69 @@
     </div>
 
     <script>
+        function categoryReport() {
+            return {
+                loading: false,
+                printOrientation: 'landscape',
+                allColumns: [],
+                showColumns: {},
+                displayMode: 'full',
+                showLegend: false,
+                useFullLabels: false,
+
+                init() {
+                    this.$watch('displayMode', value => {
+                        this.showLegend = value === 'legend';
+                        this.useFullLabels = value === 'full';
+                    });
+                    this.showLegend = this.displayMode === 'legend';
+                    this.useFullLabels = this.displayMode === 'full';
+                },
+
+                calculateDisplayColumns() {
+                    // placeholder in case dynamic column showing is needed
+                },
+
+                fetchData() {
+                    // for server-rendered report we don't actually reload,
+                    // but this method exists to satisfy the button.
+                    window.location.reload();
+                },
+
+                handlePrint() {
+                    let printStyle = document.getElementById('print-orientation-style');
+                    if (printStyle) {
+                        printStyle.remove();
+                    }
+                    printStyle = document.createElement('style');
+                    printStyle.id = 'print-orientation-style';
+                    if (this.printOrientation === 'landscape') {
+                        printStyle.textContent = '@page { size: A4 landscape; margin: 1cm; }';
+                        document.body.classList.add('print-landscape');
+                        document.body.classList.remove('print-portrait');
+                    } else {
+                        printStyle.textContent = '@page { size: A4 portrait; margin: 1cm; }';
+                        document.body.classList.add('print-portrait');
+                        document.body.classList.remove('print-landscape');
+                    }
+                    document.head.appendChild(printStyle);
+                    setTimeout(() => {
+                        window.print();
+                    }, 300);
+                },
+
+                downloadPdf() {
+                    // replicate current query parameters and orientation
+                    const params = new URLSearchParams(window.location.search);
+                    if (this.printOrientation) {
+                        params.set('orientation', this.printOrientation);
+                    }
+                    const url = `${window.location.pathname.replace(/\/kategori$/, '/kategori/pdf')}?${params.toString()}`;
+                    window.open(url, '_blank');
+                }
+            };
+        }
+
         function imutNotes(notes, dataPoints) {
             return {
                 notes: notes || [],
