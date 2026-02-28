@@ -35,11 +35,27 @@ class UnitKerjaLaporanController extends Controller
             abort(400, 'Invalid period format');
         }
 
-        // Get only active IMUT data for this unit
-        // `status` field on imut_data indicates whether the indicator is active.
-        // join through the pivot relation then filter by imut_data.status = true.
+        // Get only active IMUT data for this unit that have a profile
+        // valid during the requested period. The `status` field on imut_data
+        // indicates whether the indicator itself is currently active.
+        // The `validForPeriod` scope on the profile model checks for a profile
+        // whose validity range overlaps (or fully contains) the given range.
         $imutDataItems = $unit->imutData()
             ->where('status', true)
+            ->whereHas('profiles', function ($q) use ($dateRange) {
+                $start = is_string($dateRange['start']) ? \Carbon\Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
+                $end = is_string($dateRange['end']) ? \Carbon\Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
+
+                // Mirror the logic of scopeValidForPeriod:
+                $q->where(function ($q2) use ($end) {
+                    $q2->whereNull('valid_from')
+                        ->orWhere('valid_from', '<=', $end->toDateString());
+                })
+                    ->where(function ($q2) use ($start) {
+                        $q2->whereNull('valid_until')
+                            ->orWhere('valid_until', '>=', $start->toDateString());
+                    });
+            })
             ->get();
 
         // Get laporan entries within date range that cover this unit
@@ -60,9 +76,22 @@ class UnitKerjaLaporanController extends Controller
 
         foreach ($imutDataItems as $imutData) {
             // Get the active profile for this IMUT data
-            // First try to find profile valid for the entire period
+            // First try to find profile valid for the entire period.  (manual
+            // implementation instead of using the scope)
             $profile = $imutData->profiles()
-                ->validForPeriod($dateRange['start'], $dateRange['end'])
+                ->where(function ($q) use ($dateRange) {
+                    $start = is_string($dateRange['start']) ? \Carbon\Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
+                    $end = is_string($dateRange['end']) ? \Carbon\Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
+
+                    $q->where(function ($q2) use ($end) {
+                        $q2->whereNull('valid_from')
+                            ->orWhere('valid_from', '<=', $end->toDateString());
+                    })
+                        ->where(function ($q2) use ($start) {
+                            $q2->whereNull('valid_until')
+                                ->orWhere('valid_until', '>=', $start->toDateString());
+                        });
+                })
                 ->orderBy('valid_from', 'desc')
                 ->first();
 

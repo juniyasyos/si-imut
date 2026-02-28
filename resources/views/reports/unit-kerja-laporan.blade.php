@@ -121,6 +121,7 @@
     </div>
     @endif
 
+    <!-- Table Summary -->
     @if(count($dataByImut) > 0)
     <div class="mb-4 overflow-x-auto rounded-lg border border-slate-200">
 
@@ -156,10 +157,18 @@
             <tbody class="text-slate-700">
                 @php
                 $lastMonth = last($allMonths)['label'] ?? null;
+                $grouped = collect($dataByImut)->groupBy('category');
+                $colspan = 3 + count($allMonths) * 3;
+                $counter = 0;
                 @endphp
 
-                @foreach($dataByImut as $idx => $imut)
+                @foreach($grouped as $category => $items)
+                <tr class="bg-gray-100 font-semibold">
+                    <td colspan="{{ $colspan }}" class="px-2 py-1.5">{{ $category }}</td>
+                </tr>
+                @foreach($items as $idx => $imut)
                 @php
+                $counter++;
                 $map = collect($imut['data'] ?? [])->keyBy('month_label');
 
                 $operatorMap = [
@@ -179,7 +188,7 @@
 
                                 <!-- NO -->
                                 <td class="px-1.5 py-1.5 border-b border-slate-100 text-center font-medium">
-                                    {{ $idx + 1 }}
+                                    {{ $counter }}
                                 </td>
 
                                 <!-- INDIKATOR -->
@@ -245,6 +254,7 @@
                                         @endforeach
                             </tr>
                             @endforeach
+                            @endforeach
             </tbody>
         </table>
     </div>
@@ -288,11 +298,53 @@
     <div class="mt-8">
         @if ($dataByImut && count($dataByImut) > 0)
 
-        @foreach ($dataByImut as $index => $imut)
+        @php
+        $groupedByCategory = collect($dataByImut)->groupBy('category');
+        $globalIndex = 0;
+        @endphp
+
+        @foreach ($groupedByCategory as $category => $items)
+        @php
+        $categoryCount = count($items);
+        @endphp
+
+        <div class="mb-6 mt-10 first:mt-0">
+
+            <!-- Divider -->
+            <div class="flex items-center gap-3 mb-3">
+                <div class="h-px flex-1 bg-slate-300"></div>
+                <div class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">
+                    Kategori
+                </div>
+                <div class="h-px flex-1 bg-slate-300"></div>
+            </div>
+
+            <!-- Category Header Card -->
+            <div class="flex items-center justify-between bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-lg px-5 py-3 shadow-sm">
+
+                <div>
+                    <h2 class="text-sm font-semibold tracking-wide">
+                        {{ $category }}
+                    </h2>
+                    <p class="text-[10px] text-slate-200 mt-0.5">
+                        {{ $categoryCount }} Indikator Mutu
+                    </p>
+                </div>
+
+                <div class="text-[10px] bg-white/15 px-3 py-1 rounded-full tracking-wide">
+                    Section {{ $loop->iteration }}
+                </div>
+
+            </div>
+
+        </div>
+
+        @foreach ($items as $index => $imut)
+        @php $globalIndex++; @endphp
         <div class="mb-9 border border-slate-200 rounded-lg overflow-hidden bg-white break-inside-avoid">
             <!-- Header -->
             <div class="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-5 py-4 border-b-2 border-blue-900">
-                <h3 class="text-sm font-bold mb-1">{{ $index + 1 }}. {{ $imut['title'] }}</h3>
+                <h3 class="text-sm font-bold mb-1">{{ $globalIndex }}. {{ $imut['title'] }}</h3>
                 <p class="text-xs text-blue-100">Kategori: {{ $imut['category'] }} | Target Standar: {{ $imut['target_operator'] }} {{ $imut['standard'] }}%</p>
             </div>
 
@@ -430,7 +482,7 @@
             </div>
         </div>
         @endforeach
-
+        @endforeach
         @else
         <div class="p-8 text-center text-gray-500 bg-slate-50 rounded-md">
             Tidak ada data IMUT yang tersedia untuk unit kerja ini.

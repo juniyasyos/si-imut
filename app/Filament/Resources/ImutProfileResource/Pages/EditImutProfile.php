@@ -13,6 +13,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Js;
 
 class EditImutProfile extends EditRecord
@@ -125,6 +126,6 @@ class EditImutProfile extends EditRecord
     public static function canEditProfilIndikator(?Model $record = null): bool
     {
         $user = Auth::user();
-        return $record?->imutData->created_by === $user?->id;
+        return $record?->imutData->created_by === $user?->id || Gate::allows('force_editable_imut::profile');
     }
 }
