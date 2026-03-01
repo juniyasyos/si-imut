@@ -87,6 +87,14 @@ class CategoryReportController extends Controller
             $cursor->addMonth();
         }
 
+        // build same structure used elsewhere for views (value+label)
+        $allMonths = collect($months)->map(function ($m) {
+            return [
+                'value' => $m,
+                'label' => Carbon::parse($m . '-01')->translatedFormat('M Y'),
+            ];
+        })->toArray();
+
         // fetch penilaian records matching the categories and period
         // we rely on the laporan_imut.report_year/report_month fields instead of
         // the raw assessment_period dates; this is simpler and avoids the
@@ -95,14 +103,19 @@ class CategoryReportController extends Controller
 
         $penilaians = ImutPenilaian::with(['profile.imutData', 'laporanUnitKerja.laporanImut'])
             ->when(count($categories) > 0, fn($q) => $q->whereHas('profile.imutData.categories', fn($q2) => $q2->whereIn('id', $categories)))
-            ->when(count($yearMonthStrings) > 0, function ($q) use ($yearMonthStrings) {
-                $q->whereHas('laporanUnitKerja.laporanImut', function ($q2) use ($yearMonthStrings) {
+            ->when(count($yearMonthStrings) > 0, function ($q) use ($yearMonthStrings, $startDate, $endDate) {
+                $q->whereHas('laporanUnitKerja.laporanImut', function ($q2) use ($yearMonthStrings, $startDate, $endDate) {
                     $q2->whereIn(
-
-
                         \Illuminate\Support\Facades\DB::raw("CONCAT(report_year,'-',LPAD(report_month,2,'0'))"),
                         $yearMonthStrings
-                    );
+                    )
+                        // if report_year/month not populated, fall back to raw period range
+                        ->orWhereBetween('assessment_period_start', [$startDate, $endDate])
+                        ->orWhereBetween('assessment_period_end', [$startDate, $endDate])
+                        ->orWhere(function ($q3) use ($startDate, $endDate) {
+                            $q3->where('assessment_period_start', '<=', $startDate)
+                                ->where('assessment_period_end', '>=', $endDate);
+                        });
                 });
             })
             ->get();
@@ -394,11 +407,48 @@ class CategoryReportController extends Controller
             ];
         }
 
+        // compute achieved indicators based on final monthly values in dataByImut
+        $achievedCount = 0;
+        foreach ($dataByImut as $imut) {
+            $overall = 0;
+            $std = $imut['standard'] ?? null;
+            $op  = $imut['target_operator'] ?? '>=';
+            if ($std !== null) {
+                // calculate overall from data (sum N/D)
+                $totalN = array_sum(array_column($imut['data'], 'numerator'));
+                $totalD = array_sum(array_column($imut['data'], 'denominator'));
+                $overall = $totalD > 0 ? ($totalN / $totalD) * 100 : 0;
+                switch ($op) {
+                    case '<=':
+                        $ach = $overall <= $std;
+                        break;
+                    case '>':
+                        $ach = $overall > $std;
+                        break;
+                    case '<':
+                        $ach = $overall < $std;
+                        break;
+                    case '==':
+                    case '=':
+                        $ach = $overall == $std;
+                        break;
+                    case '>=':
+                    default:
+                        $ach = $overall >= $std;
+                        break;
+                }
+                if ($ach) {
+                    $achievedCount++;
+                }
+            }
+        }
+
         $summary = [
             'total_indicators'  => count($results),
             'total_numerator'   => array_sum(array_column($results, 'numerator')),
             'total_denominator' => array_sum(array_column($results, 'denominator')),
             'average_percentage' => count($results) ? array_sum(array_column($results, 'percentage')) / count($results) : 0,
+            'achieved_count' => $achievedCount,
         ];
 
 
@@ -421,6 +471,7 @@ class CategoryReportController extends Controller
             'dataByImut' => $dataByImut,
             'chartData' => $chartData,
             'notesMap' => $notesMap,
+            'allMonths' => $allMonths,
         ]);
     }
 }

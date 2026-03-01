@@ -100,7 +100,7 @@ class TableSchema extends ImutDataResource
                         : 'Pengisian dilakukan setiap hari'
                 )
                 ->alignCenter()
-                ->sortable()
+                ->sortable(),
         ];
     }
 
@@ -108,7 +108,7 @@ class TableSchema extends ImutDataResource
     {
         return [
             EditAction::make('edit')
-                ->label('')
+                ->label('edit')
                 ->tooltip('Edit')
                 ->icon('heroicon-o-pencil-square')
                 ->visible(fn($record) => !is_null($record)),
@@ -123,6 +123,7 @@ class TableSchema extends ImutDataResource
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja')
                     ->slideOver()
+                    ->modalWidth('7xl')
                     ->label('Unit Kerja')
                     ->icon('heroicon-o-building-office-2')
                     ->color('info')
@@ -131,6 +132,7 @@ class TableSchema extends ImutDataResource
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('profiles')
                     ->slideOver()
+                    ->modalWidth('7xl')
                     ->label('Profiles')
                     ->icon('heroicon-o-document-text')
                     ->color('')
@@ -151,6 +153,8 @@ class TableSchema extends ImutDataResource
                     ),
             ])
                 ->icon('heroicon-o-ellipsis-vertical')
+                ->button()
+                ->label('aksi')
                 ->tooltip('Lainnya'),
         ];
     }

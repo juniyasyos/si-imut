@@ -1,7 +1,7 @@
 const FILES_TO_CACHE = [
   "/offline",
   "/build/manifest.json",
-  "/build/assets/app-BbhppSjx.css",
+  "/build/assets/app-BfGdMbRk.css",
   "/build/assets/app-H1PJOR-A.js",
   "/build/assets/theme-DPjap-56.css",
   "/build/assets/vendor-xsH4HHeE.js",

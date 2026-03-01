@@ -513,9 +513,202 @@ class ListLaporanImuts extends ListRecords
                         return redirect($url);
                     }),
             ])
-            ->button()
-            ->icon('heroicon-m-chart-bar-square')
-            ->label('Rangkap Laporan'),
+                ->button()
+                ->visible(fn() => Gate::allows('update_laporan::imut'))
+                ->icon('heroicon-m-chart-bar-square')
+                ->label('Rangkap Laporan'),
+
+            Actions\Action::make('viewUnitKerjaLaporanOnly')
+                ->label('Laporan Unit Kerja')
+                ->icon('heroicon-o-chart-bar-square')
+                ->color('success')
+                ->modalHeading('Laporan IMUT Unit Kerja')
+                ->modalDescription('Pilih unit kerja dan periode untuk melihat laporan detail.')
+                ->modalWidth('2xl')
+                ->visible(fn() => Gate::denies('update_laporan::imut'))
+                ->form([
+                    Forms\Components\Section::make('Pilih Unit Kerja & Periode')
+                        ->schema([
+                            Forms\Components\Select::make('unit_kerja_id')
+                                ->label('Unit Kerja')
+                                ->options(function () {
+                                    $user = Auth::user();
+
+                                    // Check if user has admin or tim mutu roles
+                                    $isAdminOrTimMutu = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
+
+                                    if ($isAdminOrTimMutu) {
+                                        // Admin/Tim Mutu can see all unit kerja
+                                        return UnitKerja::orderBy('unit_name')->pluck('unit_name', 'id');
+                                    } else {
+                                        // PIC/Pengumpul Data can only see their assigned unit kerja
+                                        return $user->unitKerjas()->orderBy('unit_name')->pluck('unit_name', 'id');
+                                    }
+                                })
+                                ->default(function () {
+                                    $user = Auth::user();
+
+                                    if ($user->unitKerjas()->count() === 0) {
+                                        return null; // No default if user has no assigned unit kerja
+                                    } else {
+                                        return $user->unitKerjas()->orderBy('unit_name')->first()->id;
+                                    }
+                                })
+                                ->required()
+                                ->searchable()
+                                ->placeholder('Pilih unit kerja...'),
+
+                            Forms\Components\Select::make('periode_tipe')
+                                ->label('Jenis Periode')
+                                ->options([
+                                    'yearly' => 'Tahunan',
+                                    'quarterly' => 'Triwulan',
+                                    'semester' => 'Semester',
+                                    'custom' => 'Custom (Range Bulan)',
+                                ])
+                                ->default('yearly')
+                                ->required()
+                                ->live(),
+
+                            Forms\Components\TextInput::make('periode_tahun')
+                                ->label('Tahun')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(9999)
+                                ->default(now()->year)
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') !== 'custom'),
+
+                            Forms\Components\Select::make('periode_quarter')
+                                ->label('Triwulan')
+                                ->options([
+                                    'Q1' => 'Triwulan I (Jan-Mar)',
+                                    'Q2' => 'Triwulan II (Apr-Jun)',
+                                    'Q3' => 'Triwulan III (Jul-Sep)',
+                                    'Q4' => 'Triwulan IV (Okt-Des)',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'quarterly'),
+
+                            Forms\Components\Select::make('periode_semester')
+                                ->label('Semester')
+                                ->options([
+                                    'S1' => 'Semester I (Jan-Jun)',
+                                    'S2' => 'Semester II (Jul-Des)',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'semester'),
+
+                            Forms\Components\Select::make('periode_start_month')
+                                ->label('Bulan Awal')
+                                ->options([
+                                    '01' => 'Januari',
+                                    '02' => 'Februari',
+                                    '03' => 'Maret',
+                                    '04' => 'April',
+                                    '05' => 'Mei',
+                                    '06' => 'Juni',
+                                    '07' => 'Juli',
+                                    '08' => 'Agustus',
+                                    '09' => 'September',
+                                    '10' => 'Oktober',
+                                    '11' => 'November',
+                                    '12' => 'Desember',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+
+                            Forms\Components\TextInput::make('periode_start_year')
+                                ->label('Tahun Awal')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(9999)
+                                ->default(now()->year)
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+
+                            Forms\Components\Select::make('periode_end_month')
+                                ->label('Bulan Akhir')
+                                ->options([
+                                    '01' => 'Januari',
+                                    '02' => 'Februari',
+                                    '03' => 'Maret',
+                                    '04' => 'April',
+                                    '05' => 'Mei',
+                                    '06' => 'Juni',
+                                    '07' => 'Juli',
+                                    '08' => 'Agustus',
+                                    '09' => 'September',
+                                    '10' => 'Oktober',
+                                    '11' => 'November',
+                                    '12' => 'Desember',
+                                ])
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+
+                            Forms\Components\TextInput::make('periode_end_year')
+                                ->label('Tahun Akhir')
+                                ->numeric()
+                                ->minValue(2020)
+                                ->maxValue(9999)
+                                ->default(now()->year)
+                                ->required()
+                                ->visible(fn(Forms\Get $get) => $get('periode_tipe') === 'custom'),
+                        ])
+                        ->columns(2),
+                ])
+                ->openUrlInNewTab()
+                ->action(function (array $data) {
+                    $user = Auth::user();
+
+                    // Check if user has access to the selected unit kerja
+                    $isAdminOrTimMutu = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
+
+                    if (!$isAdminOrTimMutu) {
+                        // For PIC/Pengumpul Data, check if they have access to the selected unit kerja
+                        $hasAccess = $user->unitKerjas()->where('unit_kerja_id', $data['unit_kerja_id'])->exists();
+
+                        if (!$hasAccess) {
+                            Notification::make()
+                                ->title('Akses Ditolak')
+                                ->body('Anda tidak memiliki akses ke unit kerja yang dipilih.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+                    }
+
+                    $unitKerja = UnitKerja::find($data['unit_kerja_id']);
+                    if (!$unitKerja) {
+                        Notification::make()
+                            ->title('Unit Kerja tidak ditemukan')
+                            ->danger()
+                            ->send();
+                        return;
+                    }
+
+                    $tipe = $data['periode_tipe'];
+                    $periode = '';
+
+                    if ($tipe === 'yearly') {
+                        $periode = $data['periode_tahun'];
+                    } elseif ($tipe === 'quarterly') {
+                        $periode = $data['periode_tahun'] . '-' . $data['periode_quarter'];
+                    } elseif ($tipe === 'semester') {
+                        $periode = $data['periode_tahun'] . '-' . $data['periode_semester'];
+                    } elseif ($tipe === 'custom') {
+                        $periode = $data['periode_start_year'] . '-' . $data['periode_start_month'] . ','
+                            . $data['periode_end_year'] . '-' . $data['periode_end_month'];
+                    }
+
+                    $url = route('laporan.indikator-mutu.unit-kerja.show-with-period', [
+                        'unitKerja' => $unitKerja->slug,
+                        'tipe' => $tipe,
+                        'periode' => $periode,
+                    ]);
+
+                    return redirect($url);
+                }),
 
             Actions\CreateAction::make()
                 ->label('Tambah Data')

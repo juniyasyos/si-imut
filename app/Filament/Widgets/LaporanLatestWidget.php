@@ -16,7 +16,7 @@ class LaporanLatestWidget extends Widget
         return Auth::user()?->can('widget_LaporanLatestWidget');
     }
 
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 2;
 
     protected int|string|array $columnSpan = 'full';
 

@@ -116,7 +116,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                        hover:bg-indigo-700 transition shadow-sm">
                         PDF
                     </button> -->
-`
+                    `
                 </div>
 
             </div>
@@ -141,12 +141,316 @@ $imutBenchmarkTypes[$imut['id']] = $types;
         </div>
     </div>
 
-    <!-- debugging section: dump controller payload -->
+    <!-- Summary controller payload -->
     <div class="bg-gray-100 border border-gray-300 rounded p-4 mb-6 text-xs font-mono">
         <!-- DATA PER KATEGORI -->
         <div class="mt-10">
 
             @if($dataByImut && count($dataByImut) > 0)
+
+            <!-- =============================== -->
+            <!--        TABLE SUMMARY            -->
+            <!-- =============================== -->
+            <div class="mb-6 overflow-x-auto rounded-xl border border-gray-300 shadow-sm bg-white">
+                <table class="min-w-full text-[11px] border-separate border-spacing-0">
+
+                    @php
+                    $lastMonth = last($allMonths)['label'] ?? null;
+                    $grouped = collect($dataByImut)->groupBy('category');
+                    $colspan = 3 + count($allMonths) * 3;
+                    $counter = 0;
+                    @endphp
+
+                    <!-- ================= HEADER ================= -->
+                    <thead class="uppercase tracking-wide">
+
+                        <!-- Header utama -->
+                        <tr class="bg-slate-800 text-white text-[10px]">
+                            <th class="px-2 py-2 text-center w-8 border-gray-700">No</th>
+                            <th class="px-3 py-2 text-left w-[30%] whitespace-normal border-gray-700">Indikator Mutu</th>
+                            <th class="px-2 py-2 text-center w-24 border-gray-700">Target</th>
+
+                            @foreach($allMonths as $month)
+                            <th class="px-2 py-2 text-center border-l border-gray-700 bg-slate-600"
+                                colspan="3">
+                                {{ $month['label'] }}
+                            </th>
+                            @endforeach
+                        </tr>
+
+                        <!-- Sub header -->
+                        <tr class="bg-slate-100 text-slate-600 text-[9px] font-semibold">
+                            <th class="border-gray-300"></th>
+                            <th class="border-gray-300"></th>
+                            <th class="border-gray-300"></th>
+
+                            @foreach($allMonths as $month)
+                            <th class="px-1 py-1 text-center border-l border-gray-200">N</th>
+                            <th class="px-1 py-1 text-center border-gray-300">D</th>
+                            <th class="px-1 py-1 text-center border-gray-300">%</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+
+                    <!-- ================= BODY ================= -->
+                    <tbody class="text-slate-700">
+
+                        @foreach($grouped as $category => $items)
+
+                        <!-- CATEGORY HEADER -->
+                        <tr class="bg-slate-200 text-slate-800 font-semibold text-[11px]">
+                            <td colspan="{{ $colspan }}"
+                                class="px-3 py-2 border-y border-gray-300">
+                                {{ $category }}
+                            </td>
+                        </tr>
+
+                        @foreach($items as $imut)
+                        @php
+                        $counter++;
+                        $map = collect($imut['data'] ?? [])->keyBy('month_label');
+
+                        $operatorMap = [
+                        '>=' => '≥',
+                        '<='=> '≤',
+                            '==' => '=',
+                            '>' => '>',
+                            '<'=> '<', '!='=> '≠',
+                                    ];
+
+                                    $operator = $imut['target_operator'] ?? '>=';
+                                    $symbol = $operatorMap[$operator] ?? $operator;
+                                    $standard = $imut['standard'] ?? 0;
+                                    @endphp
+
+                                    <tr class="hover:bg-slate-50 transition">
+
+                                        <!-- NO -->
+                                        <td class="px-2 py-1.5 border-b border-gray-100 text-center font-medium">
+                                            {{ $counter }}
+                                        </td>
+
+                                        <!-- INDIKATOR -->
+                                        <td class="px-3 py-1.5 border-b border-gray-100 w-36 whitespace-normal">
+                                            {{ $imut['title'] }}
+                                        </td>
+
+                                        <!-- TARGET -->
+                                        <td class="px-2 py-1.5 border-b border-gray-100 text-center">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md
+                            bg-blue-50 text-blue-700 border border-blue-200
+                            font-semibold text-[10px]">
+                                                {{ $symbol }} {{ floor($standard) }}%
+                                            </span>
+                                        </td>
+
+                                        <!-- DATA BULAN -->
+                                        @foreach($allMonths as $month)
+
+                                        @php
+                                        $lookup = $month['value'];
+                                        $d = $map[$lookup] ?? null;
+
+                                        $numerator = $d['numerator'] ?? 0;
+                                        $denominator = $d['denominator'] ?? 0;
+                                        $percent = $d['percentage'] ?? 0;
+
+                                        // Evaluasi berdasarkan operator
+                                        $isBelowTarget = false;
+
+                                        switch ($operator) {
+                                        case '>=':
+                                        $isBelowTarget = $percent < $standard;
+                                            break;
+                                            case '<=' :
+                                            $isBelowTarget=$percent> $standard;
+                                            break;
+                                            case '>':
+                                            $isBelowTarget = $percent <= $standard;
+                                                break;
+                                                case '<' :
+                                                $isBelowTarget=$percent>= $standard;
+                                                break;
+                                                case '==':
+                                                $isBelowTarget = round($percent,2) != $standard;
+                                                break;
+                                                case '!=':
+                                                $isBelowTarget = round($percent,2) == $standard;
+                                                break;
+                                                }
+
+                                                $percentClass = $isBelowTarget
+                                                ? 'bg-amber-100 text-amber-800 font-bold'
+                                                : 'text-emerald-700 font-semibold';
+                                                @endphp
+
+                                                <td class="px-1 py-1.5 border-b border-gray-100 text-center border-l border-gray-100">
+                                                    {{ number_format($numerator) }}
+                                                </td>
+
+                                                <td class="px-1 py-1.5 border-b border-gray-100 text-center">
+                                                    {{ number_format($denominator) }}
+                                                </td>
+
+                                                <td class="px-1 py-1.5 border-b border-gray-100 text-right tabular-nums {{ $percentClass }}">
+                                                    {{ floor($percent) }}%
+                                                </td>
+
+                                                @endforeach
+                                    </tr>
+
+                                    @endforeach
+                                    @endforeach
+
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- ================= INTERPRETATION STRATEGIS ================= --}}
+            @if(count($dataByImut) > 0)
+            @php
+            $total = count($dataByImut);
+            $achieved = $summary['achieved_count'] ?? 0;
+            $notAchieved = $total - $achieved;
+
+            $complianceRate = $total > 0 ? ($achieved / $total) * 100 : 0;
+
+            $allData = collect($dataByImut);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Hitung deviasi HANYA jika di bawah standar
+            |--------------------------------------------------------------------------
+            */
+            $gapData = $allData->map(function ($imut) {
+            $standard = $imut['standard'] ?? 0;
+            $last = collect($imut['data'] ?? [])->pluck('percentage')->last() ?? 0;
+
+            $gap = $standard - $last;
+            $gap = $gap > 0 ? $gap : 0; // kalau sudah memenuhi target → gap 0
+
+            return [
+            'title' => $imut['title'],
+            'standard' => floor($standard),
+            'last' => floor($last),
+            'gap' => floor($gap),
+            ];
+            });
+
+            $avgGap = floor($gapData->where('gap', '>', 0)->avg('gap') ?? 0);
+            $maxGap = floor($gapData->max('gap') ?? 0);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Distribusi Risiko
+            |--------------------------------------------------------------------------
+            */
+            $highRisk = $gapData->where('gap', '>=', 20)->count();
+            $mediumRisk = $gapData->whereBetween('gap', [10,19])->count();
+            $lowRisk = $gapData->whereBetween('gap', [1,9])->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Ambil 5 terbesar (yang benar-benar ada gap)
+            |--------------------------------------------------------------------------
+            */
+            $critical = $gapData
+            ->where('gap', '>', 0)
+            ->sortByDesc('gap')
+            ->take(5);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Level Kinerja
+            |--------------------------------------------------------------------------
+            */
+            if ($complianceRate >= 85) {
+            $performanceLevel = "Sangat Baik";
+            $performanceColor = "text-emerald-700";
+            } elseif ($complianceRate >= 70) {
+            $performanceLevel = "Baik";
+            $performanceColor = "text-blue-700";
+            } elseif ($complianceRate >= 50) {
+            $performanceLevel = "Cukup";
+            $performanceColor = "text-amber-700";
+            } else {
+            $performanceLevel = "Perlu Perhatian Serius";
+            $performanceColor = "text-red-700";
+            }
+            @endphp
+
+            <section class="mt-6 rounded-lg border border-slate-300 bg-slate-50 p-5 text-sm text-slate-700">
+
+                <div class="font-semibold text-slate-800 mb-3 uppercase tracking-wide">
+                    Analisis Kinerja Mutu
+                </div>
+
+                {{-- Ringkasan Utama --}}
+                <p>
+                    Dari <strong>{{ $total }}</strong> indikator,
+                    <strong class="{{ $performanceColor }}">{{ $achieved }}</strong>
+                    indikator memenuhi standar ({{ floor($complianceRate) }}%).
+                    Tingkat kepatuhan mutu berada pada kategori
+                    <strong class="{{ $performanceColor }}">{{ $performanceLevel }}</strong>.
+                </p>
+
+                @if($notAchieved > 0)
+
+                <p class="mt-2">
+                    Sebanyak <strong>{{ $notAchieved }}</strong> indikator
+                    masih berada di bawah target, dengan rata-rata deviasi
+                    <strong>{{ $avgGap }}%</strong> dan deviasi maksimum
+                    <strong class="text-red-700">{{ $maxGap }}%</strong>.
+                </p>
+
+                {{-- Distribusi Risiko --}}
+                <div class="mt-4 pt-3 border-t border-slate-200">
+                    <div class="font-semibold mb-2">Distribusi Deviasi:</div>
+
+                    <div class="grid grid-cols-3 gap-4 text-center text-sm">
+                        <div class="bg-red-50 border border-red-200 rounded-md py-2">
+                            <div class="text-red-700 font-bold text-base">{{ $highRisk }}</div>
+                            <div class="text-xs text-red-600">Risiko Tinggi (≥20%)</div>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-200 rounded-md py-2">
+                            <div class="text-amber-700 font-bold text-base">{{ $mediumRisk }}</div>
+                            <div class="text-xs text-amber-600">Risiko Sedang (10–19%)</div>
+                        </div>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-md py-2">
+                            <div class="text-yellow-700 font-bold text-base">{{ $lowRisk }}</div>
+                            <div class="text-xs text-yellow-600">Deviasi Ringan (&lt;10%)</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Prioritas --}}
+                @if($critical->count() > 0)
+                <div class="mt-4 pt-3 border-t border-slate-200">
+                    <div class="font-semibold text-red-700 mb-2">
+                        Indikator Prioritas Perbaikan
+                    </div>
+
+                    <ul class="space-y-1 text-sm">
+                        @foreach($critical as $item)
+                        <li class="flex justify-between border-b border-slate-100 pb-1">
+                            <span class="truncate w-2/3">
+                                {{ $item['title'] }}
+                            </span>
+                            <span class="font-semibold text-red-700">
+                                -{{ $item['gap'] }}%
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                @endif
+
+            </section>
+            @endif
 
             @foreach($categoryDetails as $catIndex => $cat)
 
@@ -210,7 +514,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
             @foreach($subset as $index => $imut)
 
-            <div x-data='imutNotes(@json($imut['notes']), @json($imut['data']))' class="mt-8 rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden imut-section">
+            <div x-data="imutNotes(@json($imut['notes']), @json($imut['data']))" class="mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden imut-section">
 
                 {{-- ================= HEADER IMUT ================= --}}
                 <div class="px-6 py-5 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
@@ -624,7 +928,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
         @endforeach
 
         @else
-        <div class="p-6 text-center text-slate-500 border border-slate-300 mt-6">
+        <div class="p-6 text-center text-slate-500 border border-gray-300 mt-6">
             Tidak terdapat data yang sesuai dengan filter yang dipilih.
         </div>
         @endif

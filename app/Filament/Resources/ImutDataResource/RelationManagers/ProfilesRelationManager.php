@@ -50,6 +50,18 @@ class ProfilesRelationManager extends RelationManager
                     ->searchable()
                     ->limit(50),
 
+                TextColumn::make('valid_period')
+                    ->label('Periode Berlaku')
+                    ->getStateUsing(
+                        fn($record) =>
+                        $record->valid_from && $record->valid_until
+                            ? ($record->valid_from->year === $record->valid_until->year
+                                ? $record->valid_from->translatedFormat('d M') . ' - ' . $record->valid_until->translatedFormat('d M Y')
+                                : $record->valid_from->translatedFormat('d M Y') . ' - ' . $record->valid_until->translatedFormat('d M Y'))
+                            : '-'
+                    )
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('form_template_status')
                     ->label('Form Template')
