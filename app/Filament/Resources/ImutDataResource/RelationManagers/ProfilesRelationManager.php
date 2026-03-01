@@ -29,6 +29,8 @@ class ProfilesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('version')
+            ->defaultPaginationPageOption(10)
+            ->modifyQueryUsing(fn ($query) => $query->with(['formTemplates']))
             ->columns([
                 TextColumn::make('version')
                     ->label('Versi')
@@ -52,20 +54,23 @@ class ProfilesRelationManager extends RelationManager
 
                 TextColumn::make('valid_period')
                     ->label('Periode Berlaku')
-                    ->getStateUsing(
-                        fn($record) =>
-                        $record->valid_from && $record->valid_until
-                            ? ($record->valid_from->year === $record->valid_until->year
-                                ? $record->valid_from->translatedFormat('d M') . ' - ' . $record->valid_until->translatedFormat('d M Y')
-                                : $record->valid_from->translatedFormat('d M Y') . ' - ' . $record->valid_until->translatedFormat('d M Y'))
-                            : '-'
-                    )
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->valid_from || !$record->valid_until) return '-';
+                        
+                        $from = $record->valid_from;
+                        $until = $record->valid_until;
+                        
+                        if ($from->year === $until->year) {
+                            return $from->translatedFormat('d M') . ' - ' . $until->translatedFormat('d M Y');
+                        }
+                        
+                        return $from->translatedFormat('d M Y') . ' - ' . $until->translatedFormat('d M Y');
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('form_template_status')
                     ->label('Form Template')
-                    ->getStateUsing(fn($record) => $record->formTemplates()->exists() ? 'Ada' : 'Belum Ada')
+                    ->getStateUsing(fn($record) => $record->formTemplates->count() > 0 ? 'Ada' : 'Belum Ada')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Ada' => 'success',
@@ -160,14 +165,8 @@ class ProfilesRelationManager extends RelationManager
                         ->visible(fn(?Model $record) => $record->imutData->created_by === Auth::id())
                         ->successNotificationTitle('Imut Profile successfully replicated'),
 
-                    Action::make('view_form_templates')
-                        ->label('Lihat Form Templates')
-                        ->icon('heroicon-o-document-text')
-                        ->url(fn($record, $livewire) => ImutDataResource::getUrl('manage-form-builder', [
-                            'imutDataSlug' => $livewire->ownerRecord->slug,
-                            'record' => $record->slug,
-                        ]))
-                        ->visible(fn($record) => $record->imutData->is_monthly),
+
+
                 ])
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->tooltip('Lainnya')

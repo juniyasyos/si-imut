@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
+use App\Filament\Resources\ImutDataResource\RelationManagers\FormTemplateVersionsRelationManager;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutData;
 use App\Models\ImutProfile;
@@ -11,6 +12,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Guava\FilamentModalRelationManagers\Actions\Action\RelationManagerAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -76,16 +78,25 @@ class EditImutProfile extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('manage_form_builder')
-                ->label('Form Laporan Harian')
-                ->color('info')
+            // Action::make('manage_form_builder')
+            //     ->label('Form Laporan Harian')
+            //     ->color('info')
+            //     ->icon('heroicon-s-document-text')
+            //     ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', [
+            //         'imutDataSlug' => $record->imutData->slug,
+            //         'record' => $record->slug,
+            //     ]))
+            //     ->tooltip('Kelola form laporan harian untuk profil ini, hanya aktif jika indikator diisi secara bulanan')
+            //     ->disabled(fn($record) => !$record->imutData->is_monthly)
+            //     ->visible(fn($record) => static::canEditProfilIndikator($record)),
+
+            RelationManagerAction::make('form_templates')
+                ->slideOver()
+                ->label('Kelola Form Laporan Harian')
                 ->icon('heroicon-s-document-text')
-                ->url(fn($record) => ImutDataResource::getUrl('manage-form-builder', [
-                    'imutDataSlug' => $record->imutData->slug,
-                    'record' => $record->slug,
-                ]))
-                ->tooltip('Kelola form laporan harian untuk profil ini, hanya aktif jika indikator diisi secara bulanan')
-                ->disabled(fn($record) => !$record->imutData->is_monthly)
+                ->record($this->getRecord())
+                ->color('gray')
+                ->relationManager(FormTemplateVersionsRelationManager::make())
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
             // Action::make('daily_reports')
@@ -96,7 +107,6 @@ class EditImutProfile extends EditRecord
             //         'imutDataSlug' => $record->imutData->slug,
             //         'record' => $record->slug,
             //     ]))
-            //     ->visible(fn($record) => static::canEditProfilIndikator($record)),
 
             DeleteAction::make()
                 ->visible(fn() => static::canEditProfilIndikator($this->record)),

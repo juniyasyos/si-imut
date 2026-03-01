@@ -371,6 +371,30 @@ class ImutProfile extends Model
         return $this->hasMany(FormTemplate::class);
     }
 
+    /**
+     * Get the active form template for this profile.
+     */
+    public function activeFormTemplate()
+    {
+        return $this->hasOne(FormTemplate::class)->where('is_active', true);
+    }
+
+    /**
+     * Get all form template versions ordered by creation date.
+     */
+    public function formTemplateVersions()
+    {
+        return $this->hasMany(FormTemplate::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get the latest form template version.
+     */
+    public function latestFormTemplate()
+    {
+        return $this->hasOne(FormTemplate::class)->latest('created_at');
+    }
+
     public function penilaian()
     {
         return $this->hasMany(ImutPenilaian::class, 'imut_profil_id');
