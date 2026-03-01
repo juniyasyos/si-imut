@@ -82,7 +82,14 @@ self.addEventListener("fetch", function (event) {
                 console.log('PWA Fetching and caching:', url.pathname);
                 return fetch(event.request)
                     .then(function (networkResponse) {
-                        if (networkResponse && networkResponse.status === 200) {
+                        // Validate response exists and is successful
+                        if (!networkResponse || networkResponse.status !== 200) {
+                            console.warn('PWA Non-200 response for:', url.pathname, networkResponse?.status);
+                            return networkResponse;
+                        }
+
+                        // Ensure response is valid for cloning
+                        try {
                             const responseToCache = networkResponse.clone();
                             caches.open(RUNTIME_CACHE).then(function (cache) {
                                 // Cache both with and without query params
@@ -95,14 +102,29 @@ self.addEventListener("fetch", function (event) {
                                     credentials: event.request.credentials
                                 });
                                 cache.put(cleanRequest, responseToCache);
+                            }).catch(cacheErr => {
+                                console.error('PWA Cache write failed for:', url.pathname, cacheErr);
                             });
+                        } catch (cloneError) {
+                            console.error('PWA Response clone failed for:', url.pathname, cloneError);
                         }
                         return networkResponse;
                     })
                     .catch(function (error) {
-                        console.error('PWA Fetch failed for:', url.pathname, error);
+                        console.warn('PWA Network fetch failed for:', url.pathname, error?.message);
                         // Try to return from cache if available
-                        return caches.match(event.request, { ignoreSearch: true });
+                        return caches.match(event.request, { ignoreSearch: true })
+                            .then(cachedResponse => {
+                                if (cachedResponse) {
+                                    console.log('PWA Fallback to cache for:', url.pathname);
+                                    return cachedResponse;
+                                }
+                                // Asset not in cache, return empty response
+                                return new Response('Asset not available offline', {
+                                    status: 503,
+                                    statusText: 'Service Unavailable'
+                                });
+                            });
                     });
             })
         );

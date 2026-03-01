@@ -13,7 +13,14 @@ echo '  "/build/manifest.json",' >> "$OUTPUT_FILE"
 # Fungsi untuk menambahkan semua file js/css dari folder tertentu
 add_assets_from() {
     local folder="$1"
-    find "$folder" -type f \( -name "*.js" -o -name "*.css" -o -name "*.woff2" -o -name "*.svg" -o -name "*.json" -o -name "*.png" \) | while read -r file; do
+    
+    # Check if folder exists
+    if [ ! -d "$folder" ]; then
+        echo "⚠️  Skipping non-existent directory: $folder" >&2
+        return
+    fi
+    
+    find "$folder" -type f \( -name "*.js" -o -name "*.css" -o -name "*.woff2" -o -name "*.svg" -o -name "*.json" -o -name "*.png" \) 2>/dev/null | while read -r file; do
         filepath="/${file#public/}"
         echo "  \"$filepath\"," >> "$OUTPUT_FILE"
     done
@@ -49,5 +56,13 @@ done
 # Tutup array
 echo "];" >> "$OUTPUT_FILE"
 
+# Count files
+TOTAL_FILES=$(find public/build/assets public/images -type f 2>/dev/null | wc -l)
+CACHED_ENTRIES=$(grep -c "\"/" "$OUTPUT_FILE" || echo "0")
+
 # Info selesai
-echo "✅ Berhasil generate $OUTPUT_FILE"
+echo "✅ Generate $OUTPUT_FILE"
+echo "   - Total files in build: $TOTAL_FILES"
+echo "   - Cached entries: $CACHED_ENTRIES"
+echo "   - Manifest: $([ -f public/build/manifest.json ] && echo '✅ Found' || echo '❌ Missing')"
+

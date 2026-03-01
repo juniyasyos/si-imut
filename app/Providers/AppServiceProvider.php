@@ -64,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerTranslationNamespaces();
         $this->registerObservers();
         $this->ensureKaidoSettings();
+        $this->validateViteManifest();
 
         // Jika MinIO dulu tidak tersedia lalu sekarang tersedia — dispatch job untuk sync local -> s3
         try {
@@ -96,6 +97,21 @@ class AppServiceProvider extends ServiceProvider
         // if (config('app.env') === 'production') {
         //     URL::forceScheme('https');
         // }
+    }
+
+    /**
+     * Validate that Vite manifest exists when not in local environment
+     */
+    protected function validateViteManifest(): void
+    {
+        // In production environment, manifest must exist
+        if (!app()->environment('local')) {
+            $manifestPath = public_path('build/manifest.json');
+
+            if (!file_exists($manifestPath)) {
+                \Log::warning('Vite manifest not found at ' . $manifestPath . '. Run: npm run build');
+            }
+        }
     }
 
     /**
