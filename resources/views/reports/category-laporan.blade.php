@@ -558,7 +558,8 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                     $thStyle = "background-color: $bgcol; color: #fff;";
                                     @endphp
                                     <th
-                                        x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']"
+                                        x-show="showBenchmarkCols['{{ $imut['id'] }}'] !== undefined && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}'] === true"
+                                        x-cloak
                                         class="px-2 py-1 text-center border-l border-gray-300"
                                         style="{{ $baseStyle }}">
                                         Bm {{ $col['type'] }}
@@ -645,7 +646,8 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                             @endphp
 
                                             <td
-                                                x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']"
+                                                x-show="showBenchmarkCols['{{ $imut['id'] }}'] !== undefined && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}'] === true"
+                                                x-cloak
                                                 class="px-3 py-1 text-center font-medium"
                                                 style="{{ $tdStyle }}">
                                                 {{ $bmVal !== null ? number_format($bmVal,2).'%' : '-' }}
@@ -689,7 +691,10 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                             </td>
 
                                             @foreach($benchmarkCols as $col)
-                                            <td class="px-3 py-3"></td>
+                                            <td
+                                                x-show="showBenchmarkCols['{{ $imut['id'] }}'] !== undefined && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}'] === true"
+                                                x-cloak
+                                                class="px-3 py-3"></td>
                                             @endforeach
                                         </tr>
                                         @endif
