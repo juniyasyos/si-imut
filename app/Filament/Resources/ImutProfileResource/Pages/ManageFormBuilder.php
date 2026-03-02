@@ -34,6 +34,8 @@ class ManageFormBuilder extends Page implements HasForms
     public bool $hasExistingResponses = false;
     public int $responseCount = 0;
     public bool $canForceUpdate = false;
+    public ?string $currentVersion = null;
+    public int $totalVersions = 0;
 
     public function mount(ImutProfile $record): void
     {
@@ -44,10 +46,15 @@ class ManageFormBuilder extends Page implements HasForms
         $this->data = $formDataService->loadFormData($record);
         $this->form->fill($this->data);
 
-        // Check if form has existing responses
+        // Check if form has existing responses (only from active template)
         $formPersistenceService = new FormPersistenceService();
         $this->hasExistingResponses = $formPersistenceService->hasExistingResponses($record);
         $this->responseCount = $formPersistenceService->getResponseCount($record);
+        
+        // Get version information
+        $activeTemplate = $record->activeFormTemplate;
+        $this->currentVersion = $activeTemplate?->version ?? 'No Active Version';
+        $this->totalVersions = $record->formTemplateVersions()->count();
     }
 
     public function form(Form $form): Form
@@ -84,6 +91,12 @@ class ManageFormBuilder extends Page implements HasForms
             ->action('performSave');
 
         return [
+            Action::make('versionInfo')
+                ->label("Version: {$this->currentVersion} ({$this->totalVersions} total)")
+                ->icon('heroicon-o-information-circle')
+                ->color('gray')
+                ->disabled(),
+
             Action::make('reset')
                 ->label('Reset Form (Destruktif)')
                 ->icon('heroicon-o-arrow-path')
@@ -140,6 +153,9 @@ class ManageFormBuilder extends Page implements HasForms
             $formPersistenceService->calculateAndUpdateCompliance($this->record);
 
             DB::commit();
+            
+            // Refresh version information after save
+            $this->refreshVersionInfo();
 
             Notification::make()
                 ->title('Form berhasil disimpan!')
@@ -182,6 +198,22 @@ class ManageFormBuilder extends Page implements HasForms
     }
 
     /**
+     * Refresh version information after operations
+     */
+    private function refreshVersionInfo(): void
+    {
+        $this->record->refresh();
+        $activeTemplate = $this->record->activeFormTemplate;
+        $this->currentVersion = $activeTemplate?->version ?? 'No Active Version';
+        $this->totalVersions = $this->record->formTemplateVersions()->count();
+        
+        // Also refresh response count
+        $formPersistenceService = new FormPersistenceService();
+        $this->hasExistingResponses = $formPersistenceService->hasExistingResponses($this->record);
+        $this->responseCount = $formPersistenceService->getResponseCount($this->record);
+    }
+
+    /**
      * Perform a destructive reset: remove form fields only.
      * Visible only to users with permission (Super Admin).
      */
@@ -196,7 +228,7 @@ class ManageFormBuilder extends Page implements HasForms
             DB::beginTransaction();
 
             // Remove form fields so the template becomes empty
-            $formTemplate = \App\Models\FormTemplate::where('imut_profile_id', $this->record->id)->first();
+            $formTemplate = $this->record->activeFormTemplate;
             if ($formTemplate) {
                 $formTemplate->formFields()->delete();
                 $formTemplate->update(['scoring_config' => null]);
@@ -207,7 +239,7 @@ class ManageFormBuilder extends Page implements HasForms
             // Refresh UI state
             $this->data = (new FormDataService())->loadFormData($this->record);
             $this->form->fill($this->data);
-            // responses unaffected
+            $this->refreshVersionInfo();
 
             Notification::make()->title('Reset berhasil')->success()->send();
         } catch (\Exception $e) {
@@ -259,9 +291,8 @@ class ManageFormBuilder extends Page implements HasForms
 
             DB::commit();
 
-            // Update UI state to reflect no responses
-            $this->hasExistingResponses = false;
-            $this->responseCount = 0;
+            // Refresh version information
+            $this->refreshVersionInfo();
 
             Notification::make()->title('Semua respons dihapus')->success()->send();
         } catch (\Exception $e) {
@@ -284,7 +315,11 @@ class ManageFormBuilder extends Page implements HasForms
     protected function getViewData(): array
     {
         return array_merge(parent::getViewData(), [
-            // Auto-save disabled
+            'currentVersion' => $this->currentVersion,
+            'totalVersions' => $this->totalVersions,
+            'hasExistingResponses' => $this->hasExistingResponses,
+            'responseCount' => $this->responseCount,
+            'canForceUpdate' => $this->canForceUpdate,
         ]);
     }
 }

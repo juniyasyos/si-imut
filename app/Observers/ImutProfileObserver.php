@@ -69,10 +69,10 @@ class ImutProfileObserver
             return false;
         }
 
-        // Check if FormTemplate already exists for this profile
-        $existingTemplate = FormTemplate::where('imut_profile_id', $imutProfile->id)->exists();
+        // Check if FormTemplate already exists for this profile (active templates only)
+        $existingTemplate = $imutProfile->activeFormTemplate;
         if ($existingTemplate) {
-            Log::info("FormTemplate already exists for profile {$imutProfile->id}, skipping creation");
+            Log::info("Active FormTemplate already exists for profile {$imutProfile->id}, skipping creation");
             return false;
         }
 

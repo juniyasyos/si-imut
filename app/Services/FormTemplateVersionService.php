@@ -25,7 +25,7 @@ class FormTemplateVersionService
                     // Load current template with relationships
                     $baseTemplate->load('formFields.options');
 
-                    // Create new template
+                    // Create new template (response data is NOT duplicated)
                     $newTemplate = $baseTemplate->replicate();
                     $newTemplate->parent_template_id = $baseTemplate->id;
                     $newTemplate->version = $this->generateNextVersion($baseTemplate->imut_profile_id);
@@ -43,7 +43,7 @@ class FormTemplateVersionService
 
                     $newTemplate->save();
 
-                    // Replicate form fields and their options
+                    // Replicate form fields and their options ONLY (no response data)
                     $this->replicateFormFields($baseTemplate, $newTemplate);
 
                     return $newTemplate;

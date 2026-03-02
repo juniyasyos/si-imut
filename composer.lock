@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "104701e2ebede3ba901268abc77d48cc",
+    "content-hash": "7ab4bf1ead7dd6337671c29edd0bcb68",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3760,11 +3760,17 @@
         },
         {
             "name": "juniyasyos/filament-backup",
-            "version": "dev-filamen-v3",
+            "version": "v1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/juniyasyos/filament-backup-juniyasyos.git",
+                "reference": "0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9"
+            },
             "dist": {
-                "type": "path",
-                "url": "./packages/juniyasyos/filament-backup",
-                "reference": "c3f1cd940c4c8a92383d02c2c9425389b2bffed6"
+                "type": "zip",
+                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9",
+                "reference": "0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9",
+                "shasum": ""
             },
             "require": {
                 "calebporzio/sushi": "^2.4",
@@ -3798,22 +3804,7 @@
                     "Juniyasyos\\FilamentLaravelBackup\\": "src"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Juniyasyos\\FilamentLaravelBackup\\Tests\\": "tests"
-                }
-            },
-            "scripts": {
-                "analyse": [
-                    "vendor/bin/phpstan analyse"
-                ],
-                "test": [
-                    "vendor/bin/pest"
-                ],
-                "format": [
-                    "vendor/bin/pint"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -3834,9 +3825,11 @@
                 "filament-backup",
                 "laravel-backup"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/juniyasyos/filament-backup-juniyasyos/issues",
+                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v1.3.0"
+            },
+            "time": "2026-03-02T02:11:34+00:00"
         },
         {
             "name": "juniyasyos/filament-media-manager",
@@ -9207,16 +9200,16 @@
         },
         {
             "name": "spatie/image",
-            "version": "3.9.1",
+            "version": "3.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/image.git",
-                "reference": "9a8e02839897b236f37708d24bcb12381ba050ff"
+                "reference": "1ea40e429587df64b34139e6b18af34cb20ae5b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/image/zipball/9a8e02839897b236f37708d24bcb12381ba050ff",
-                "reference": "9a8e02839897b236f37708d24bcb12381ba050ff",
+                "url": "https://api.github.com/repos/spatie/image/zipball/1ea40e429587df64b34139e6b18af34cb20ae5b9",
+                "reference": "1ea40e429587df64b34139e6b18af34cb20ae5b9",
                 "shasum": ""
             },
             "require": {
@@ -9264,7 +9257,7 @@
                 "spatie"
             ],
             "support": {
-                "source": "https://github.com/spatie/image/tree/3.9.1"
+                "source": "https://github.com/spatie/image/tree/3.9.3"
             },
             "funding": [
                 {
@@ -9276,7 +9269,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-12T07:34:13+00:00"
+            "time": "2026-03-01T20:58:11+00:00"
         },
         {
             "name": "spatie/image-optimizer",
@@ -17210,7 +17203,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,

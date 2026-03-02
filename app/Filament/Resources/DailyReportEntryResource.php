@@ -320,11 +320,25 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     /**
      * Generate URL for creating report entry for specific indicator and date
      * Usage: DailyReportEntryResource::getCreateUrl($indicatorId, $date)
+     * 
+     * Note: $indicatorId can be any FormTemplate ID. This method will ensure 
+     * we use the active template from the same profile.
      */
     public static function getCreateUrl(int $indicatorId, ?string $date = null): string
     {
+        // Get profile from any template ID and use active template ID for URL
+        $template = FormTemplate::find($indicatorId);
+        $activeTemplateId = $indicatorId; // default fallback
+        
+        if ($template && $template->imutProfile) {
+            $activeTemplate = $template->imutProfile->activeFormTemplate;
+            if ($activeTemplate) {
+                $activeTemplateId = $activeTemplate->id;
+            }
+        }
+        
         return static::getUrl('create') . '?' . http_build_query([
-            'indicator' => $indicatorId,
+            'indicator' => $activeTemplateId,
             'date' => $date ?? now()->format('Y-m-d')
         ]);
     }

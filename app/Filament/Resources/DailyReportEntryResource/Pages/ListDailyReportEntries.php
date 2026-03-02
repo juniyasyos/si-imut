@@ -189,9 +189,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             // Get user's unit kerja IDs
             $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
 
-            // Build query - use same scope as list daily report
+            // Build query - use same scope as list daily report (active templates only)
             $templates = FormTemplate::query()
                 ->forUserUnits($user)
+                ->where('is_active', true)
                 ->with(['imutProfile.imutData.categories'])
                 ->whereHas('imutProfile', function ($query) {
                     $query->where('valid_from', '<=', now())
@@ -461,9 +462,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             // Get user's unit kerja IDs
             $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
 
-            // Build query - use same scope as list daily report
+            // Build query - use same scope as list daily report (active templates only)
             $templates = FormTemplate::query()
                 ->forUserUnits($user)
+                ->where('is_active', true)
                 ->with(['imutProfile.imutData.categories'])
                 ->whereHas('imutProfile', function ($query) {
                     $query->where('valid_from', '<=', now())

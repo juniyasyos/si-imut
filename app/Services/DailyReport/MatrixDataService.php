@@ -46,7 +46,7 @@ class MatrixDataService
     }
 
     /**
-     * Get indicators for user's units
+     * Get indicators for user's units (active templates only)
      */
     private function getIndicators(array $unitKerjaIds): array
     {
@@ -64,6 +64,7 @@ class MatrixDataService
             ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
             ->where('imut_data.is_monthly', true) // only monthly indicators
+            ->where('form_templates.is_active', true) // only active form templates
             ->where(function ($query) {
                 $now = now();
                 $query->where(function ($q) use ($now) {

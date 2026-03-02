@@ -14,20 +14,20 @@ class FormPersistenceService
 {
     public function saveFormData(ImutProfile $record, array $data): void
     {
-        // Clean up any duplicate templates first (safety measure)
-        $this->cleanupDuplicateTemplates($record);
-
+        // With versioning system, we don't cleanup duplicate templates
+        // Each version should be preserved for audit trail
+        
         // Update existing form template or create new one
         $this->saveToEnhancedFormat($record, $data);
     }
 
     private function saveToEnhancedFormat(ImutProfile $record, array $data): void
     {
-        // Ensure only one template per profile - find or create (defensive: handle duplicate-key races)
-        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        // With versioning: find active template or create new one
+        $formTemplate = $record->activeFormTemplate;
 
         if ($formTemplate) {
-            // Update existing form template
+            // Update existing active form template
             $formTemplate->update([
                 'title' => $data['title'],
                 'description' => $data['description'],
@@ -35,20 +35,24 @@ class FormPersistenceService
                 'auto_fail_on_critical' => $data['auto_fail_on_critical'],
             ]);
         } else {
-            // Try to create; if a duplicate-key is raised (concurrent/create-lookup race), re-fetch the existing record
+            // Create new active template (first version)
             try {
                 $formTemplate = FormTemplate::create([
                     'imut_profile_id' => $record->id,
+                    'version' => 'v1.0', // First version
+                    'is_active' => true, // Mark as active
+                    'valid_from' => now()->toDateString(),
+                    'created_by_user_id' => auth()->id(),
                     'title' => $data['title'],
                     'description' => $data['description'],
                     'compliance_method' => $data['compliance_method'],
                     'auto_fail_on_critical' => $data['auto_fail_on_critical'],
                 ]);
             } catch (\Illuminate\Database\QueryException $e) {
-                // MySQL duplicate key code is 23000 / 1062 — treat as retryable for our unique imut_profile_id index
-                if (str_contains($e->getMessage(), 'unique_form_template_per_profile') || str_contains($e->getMessage(), 'Duplicate entry')) {
-                    // Another template already exists for this profile; fetch and update it instead
-                    $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+                // Handle potential race condition - fetch active template
+                if (str_contains($e->getMessage(), 'unique_profile_version') || str_contains($e->getMessage(), 'Duplicate entry')) {
+                    // Another active template might exist; fetch and update it instead
+                    $formTemplate = $record->activeFormTemplate;
 
                     if (!$formTemplate) {
                         // Unexpected — rethrow to surface the original problem
@@ -276,13 +280,13 @@ class FormPersistenceService
 
     public function hasExistingResponses(ImutProfile $record): bool
     {
-        $existingTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        $existingTemplate = $record->activeFormTemplate;
         return $existingTemplate && $existingTemplate->dailyReportResponses()->exists();
     }
 
     public function getResponseCount(ImutProfile $record): int
     {
-        $existingTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        $existingTemplate = $record->activeFormTemplate;
         return $existingTemplate ? $existingTemplate->dailyReportResponses()->count() : 0;
     }
 
@@ -303,9 +307,19 @@ class FormPersistenceService
         }
     }
 
+    /**
+     * DEPRECATED: Cleanup method not used in versioning system
+     * Templates are preserved for audit trail and parent relationships
+     */
     private function cleanupDuplicateTemplates(ImutProfile $record): void
     {
+        // With versioning system, we preserve all template versions
+        // This method is now disabled to prevent foreign key constraint violations
+        return;
+        
+        // Old logic (commented out for safety):
         // Find all templates for this profile
+        /*
         $templates = FormTemplate::where('imut_profile_id', $record->id)
             ->orderBy('created_at')
             ->get();
@@ -319,6 +333,13 @@ class FormPersistenceService
         $templatesToDelete = $templates->where('id', '!=', $latestTemplate->id);
 
         foreach ($templatesToDelete as $template) {
+            // Check for parent relationships before deletion
+            $hasChildTemplates = FormTemplate::where('parent_template_id', $template->id)->exists();
+            
+            if ($hasChildTemplates) {
+                continue; // Skip deletion if this template is a parent
+            }
+            
             // Migrate any responses to the latest template
             DB::table('daily_report_responses')
                 ->where('form_template_id', $template->id)
@@ -326,11 +347,12 @@ class FormPersistenceService
 
             $template->delete();
         }
+        */
     }
 
     public function deleteResponses(ImutProfile $record): void
     {
-        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        $formTemplate = $record->activeFormTemplate;
         if ($formTemplate) {
             $formTemplate->dailyReportResponses()->delete();
         }

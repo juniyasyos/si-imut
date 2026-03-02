@@ -46,8 +46,8 @@ class FormBuilder extends Page implements HasForms
     {
         $this->record = $record;
 
-        // Load form template
-        $this->formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        // Load active form template
+        $this->formTemplate = $record->activeFormTemplate;
 
         if (!$this->formTemplate) {
             Notification::make()

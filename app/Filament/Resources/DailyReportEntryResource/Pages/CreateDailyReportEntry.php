@@ -64,12 +64,23 @@ class CreateDailyReportEntry extends CreateRecord
         }
 
         // fetch with relations we need for the unit check
-        $template = FormTemplate::with('imutProfile.imutData.unitKerja')
+        // First find the template, then ensure we use the active one from same profile
+        $requestedTemplate = FormTemplate::with('imutProfile.imutData.unitKerja')
             ->find($indicatorId);
 
-        if (! $template) {
+        if (! $requestedTemplate || ! $requestedTemplate->imutProfile) {
             abort(404);
         }
+
+        // Get active template from the same profile
+        $template = $requestedTemplate->imutProfile->activeFormTemplate;
+        
+        if (! $template) {
+            abort(404, 'No active template found for this profile');
+        }
+        
+        // Load required relationships for authorization check
+        $template->load('imutProfile.imutData.unitKerja');
 
         // global view permission bypasses unit restrictions
         if ($user->can('view_all_data_imut::data')) {
@@ -107,9 +118,10 @@ class CreateDailyReportEntry extends CreateRecord
         $this->originalDate = $date ?? now()->format('Y-m-d');
 
         if ($indicatorId) {
-            $this->formTemplate = FormTemplate::with(['formFields.options', 'imutProfile.imutData.unitKerja'])->find($indicatorId);
-
-            if (!$this->formTemplate) {
+            // First find requested template to get the profile
+            $requestedTemplate = FormTemplate::find($indicatorId);
+            
+            if (!$requestedTemplate || !$requestedTemplate->imutProfile) {
                 Notification::make()
                     ->title('Form Template Tidak Ditemukan')
                     ->body('Form template tidak ditemukan atau sudah dihapus.')
@@ -119,6 +131,23 @@ class CreateDailyReportEntry extends CreateRecord
                 $this->redirect($this->getResource()::getUrl('index'));
                 return;
             }
+            
+            // Get active template from the same profile
+            $this->formTemplate = $requestedTemplate->imutProfile->activeFormTemplate;
+            
+            if (!$this->formTemplate) {
+                Notification::make()
+                    ->title('No Active Template')
+                    ->body('Tidak ada template aktif untuk profil ini.')
+                    ->danger()
+                    ->send();
+
+                $this->redirect($this->getResource()::getUrl('index'));
+                return;
+            }
+            
+            // Load required relationships
+            $this->formTemplate->load(['formFields.options', 'imutProfile.imutData.unitKerja']);
 
             // verify user has access to this template according to unit logic
             $user = Auth::user();
