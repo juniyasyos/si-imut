@@ -123,7 +123,7 @@ class TableSchema extends ImutDataResource
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja')
                     ->slideOver()
-                    ->modalWidth('5xl')
+                    ->modalWidth('7xl')
                     ->label('Unit Kerja')
                     ->icon('heroicon-o-building-office-2')
                     ->color('info')
@@ -132,10 +132,10 @@ class TableSchema extends ImutDataResource
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('profiles')
                     ->slideOver()
-                    ->modalWidth('6xl')
+                    ->modalWidth('7xl')
                     ->label('Profiles')
                     ->icon('heroicon-o-document-text')
-                    ->color('info')
+                    ->color('')
                     ->relationManager(\App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager::make()),
 
                 RestoreAction::make('restore')

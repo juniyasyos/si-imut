@@ -31,9 +31,8 @@ class FormTemplateVersionsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('version')            ->defaultPaginationPageOption(10)
-            ->modifyQueryUsing(fn ($query) => $query->with(['createdByUser', 'parentTemplate']))
-            ->defaultSort('version', 'desc')            ->columns([
+            ->recordTitleAttribute('version')
+            ->columns([
                 TextColumn::make('version')
                     ->label('Version')
                     ->searchable()
@@ -73,30 +72,17 @@ class FormTemplateVersionsRelationManager extends RelationManager
 
                 TextColumn::make('valid_period')
                     ->label('Valid Period')
-                    ->formatStateUsing(function ($record) {
-                        if ($record->valid_from && $record->valid_until) {
-                            $from = $record->valid_from;
-                            $until = $record->valid_until;
-                            
-                            if ($from->year === $until->year) {
-                                return $from->translatedFormat('d M') . ' - ' . $until->translatedFormat('d M Y');
-                            }
-                            return $from->translatedFormat('d M Y') . ' - ' . $until->translatedFormat('d M Y');
-                        }
-                        
-                        if ($record->valid_from) {
-                            return $record->valid_from->translatedFormat('d M Y') . ' - Present';
-                        }
-                        
-                        return 'Not Set';
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('formFields_count')
-                    ->label('Fields Count')
-                    ->counts('formFields')
-                    ->badge()
-                    ->color('info'),
+                    ->getStateUsing(
+                        fn($record) =>
+                        $record->valid_from && $record->valid_until
+                            ? ($record->valid_from->year === $record->valid_until->year
+                                ? $record->valid_from->translatedFormat('d M') . ' - ' . $record->valid_until->translatedFormat('d M Y')
+                                : $record->valid_from->translatedFormat('d M Y') . ' - ' . $record->valid_until->translatedFormat('d M Y'))
+                            : ($record->valid_from
+                                ? $record->valid_from->translatedFormat('d M Y') . ' - Present'
+                                : 'Not Set')
+                    )
+                    ->sortable(['valid_from', 'valid_until']),
 
                 TextColumn::make('createdBy.name')
                     ->label('Created By')

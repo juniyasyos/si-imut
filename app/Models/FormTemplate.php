@@ -192,7 +192,7 @@ class FormTemplate extends Model
         if ($existingActive) {
             throw new \Exception(
                 'Only one form template can be active per profile at a time. ' .
-                'Please deactivate the current active template first.'
+                    'Please deactivate the current active template first.'
             );
         }
     }
@@ -207,7 +207,9 @@ class FormTemplate extends Model
         }
 
         $lastTemplate = static::where('imut_profile_id', $this->imut_profile_id)
-            ->orderBy('created_at', 'desc')
+            ->whereRaw('version REGEXP "^v[0-9]+\\.[0-9]+$"') // Only valid version formats
+            ->orderByRaw('CAST(SUBSTRING(version, 2, LOCATE(".", version) - 2) AS UNSIGNED) DESC') // Order by major version
+            ->orderByRaw('CAST(SUBSTRING(version, LOCATE(".", version) + 1) AS UNSIGNED) DESC') // Then by minor version
             ->first();
 
         if (!$lastTemplate) {
@@ -345,7 +347,7 @@ class FormTemplate extends Model
     private function buildChildHierarchy(FormTemplate $template, array &$hierarchy): void
     {
         $children = $template->childTemplates()->orderBy('created_at')->get();
-        
+
         foreach ($children as $child) {
             $hierarchy[] = $child;
             $this->buildChildHierarchy($child, $hierarchy);

@@ -15,33 +15,51 @@ class FormTemplateVersionService
      */
     public function createNewVersion(FormTemplate $baseTemplate, array $data = []): FormTemplate
     {
-        return DB::transaction(function () use ($baseTemplate, $data) {
-            // Load current template with relationships
-            $baseTemplate->load('formFields.options');
+        // Retry logic to handle potential race conditions with version generation
+        $maxAttempts = 3;
+        $attempt = 0;
 
-            // Create new template
-            $newTemplate = $baseTemplate->replicate();
-            $newTemplate->parent_template_id = $baseTemplate->id;
-            $newTemplate->version = $this->generateNextVersion($baseTemplate->imut_profile_id);
-            $newTemplate->is_active = false;
-            $newTemplate->created_by_user_id = Auth::id();
-            $newTemplate->valid_from = now()->toDateString();
-            $newTemplate->valid_until = null;
+        while ($attempt < $maxAttempts) {
+            try {
+                return DB::transaction(function () use ($baseTemplate, $data) {
+                    // Load current template with relationships
+                    $baseTemplate->load('formFields.options');
 
-            // Override with provided data
-            foreach ($data as $key => $value) {
-                if ($key !== 'id' && $key !== 'created_at' && $key !== 'updated_at') {
-                    $newTemplate->$key = $value;
+                    // Create new template
+                    $newTemplate = $baseTemplate->replicate();
+                    $newTemplate->parent_template_id = $baseTemplate->id;
+                    $newTemplate->version = $this->generateNextVersion($baseTemplate->imut_profile_id);
+                    $newTemplate->is_active = false;
+                    $newTemplate->created_by_user_id = Auth::id();
+                    $newTemplate->valid_from = now()->toDateString();
+                    $newTemplate->valid_until = null;
+
+                    // Override with provided data
+                    foreach ($data as $key => $value) {
+                        if ($key !== 'id' && $key !== 'created_at' && $key !== 'updated_at') {
+                            $newTemplate->$key = $value;
+                        }
+                    }
+
+                    $newTemplate->save();
+
+                    // Replicate form fields and their options
+                    $this->replicateFormFields($baseTemplate, $newTemplate);
+
+                    return $newTemplate;
+                });
+            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                $attempt++;
+
+                // If this is the last attempt, throw the exception
+                if ($attempt >= $maxAttempts) {
+                    throw $e;
                 }
+
+                // Wait a small random amount before retrying to avoid thundering herd
+                usleep(random_int(100, 500) * 1000); // 100-500ms
             }
-
-            $newTemplate->save();
-
-            // Replicate form fields and their options
-            $this->replicateFormFields($baseTemplate, $newTemplate);
-
-            return $newTemplate;
-        });
+        }
     }
 
     /**
@@ -213,7 +231,9 @@ class FormTemplateVersionService
     private function generateNextVersion(int $profileId): string
     {
         $lastTemplate = FormTemplate::where('imut_profile_id', $profileId)
-            ->orderBy('created_at', 'desc')
+            ->whereRaw('version REGEXP "^v[0-9]+\\.[0-9]+$"') // Only valid version formats
+            ->orderByRaw('CAST(SUBSTRING(version, 2, LOCATE(".", version) - 2) AS UNSIGNED) DESC') // Order by major version
+            ->orderByRaw('CAST(SUBSTRING(version, LOCATE(".", version) + 1) AS UNSIGNED) DESC') // Then by minor version
             ->first();
 
         if (!$lastTemplate) {

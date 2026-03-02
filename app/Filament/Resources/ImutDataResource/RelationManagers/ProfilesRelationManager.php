@@ -29,8 +29,9 @@ class ProfilesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('version')
-            ->defaultPaginationPageOption(10)
-            ->modifyQueryUsing(fn ($query) => $query->with(['formTemplates']))
+            ->defaultPaginationPageOption(5)
+            ->modifyQueryUsing(fn ($query) => $query->with(['formTemplates', 'imutData']))
+            ->poll('30s')
             ->columns([
                 TextColumn::make('version')
                     ->label('Versi')
@@ -70,7 +71,7 @@ class ProfilesRelationManager extends RelationManager
 
                 TextColumn::make('form_template_status')
                     ->label('Form Template')
-                    ->getStateUsing(fn($record) => $record->formTemplates->count() > 0 ? 'Ada' : 'Belum Ada')
+                    ->formatStateUsing(fn($record) => $record->formTemplates->count() > 0 ? 'Ada' : 'Belum Ada')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'Ada' => 'success',
@@ -164,9 +165,6 @@ class ProfilesRelationManager extends RelationManager
                         })
                         ->visible(fn(?Model $record) => $record->imutData->created_by === Auth::id())
                         ->successNotificationTitle('Imut Profile successfully replicated'),
-
-
-
                 ])
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->tooltip('Lainnya')
@@ -185,6 +183,6 @@ class ProfilesRelationManager extends RelationManager
                 ]),
             ])
             ->paginated(true)
-            ->defaultPaginationPageOption(10);
+            ->defaultPaginationPageOption(5);
     }
 }
