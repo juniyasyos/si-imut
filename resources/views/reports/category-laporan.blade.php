@@ -545,12 +545,12 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                 @endphp
 
                                 <tr class="text-[10px] uppercase tracking-wide">
-                                    <th class="px-2 py-1 text-left" style="{{ $baseStyle }}">Periode</th>
-                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">N</th>
-                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">D</th>
-                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">Standar</th>
-                                    <th class="px-2 py-1 text-right" style="{{ $baseStyle }}">%</th>
-                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">Status</th>
+                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}">Periode</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">N</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">D</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">Standar</th>
+                                    <th class="px-2 py-1 text-right" style="{{ $defaultBg }}">%</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">Status</th>
 
                                     @foreach($benchmarkCols as $col)
                                     @php
@@ -559,8 +559,8 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                     @endphp
                                     <th
                                         x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']"
-                                        class="px-2 py-1 text-center"
-                                        style="{{ $thStyle }}">
+                                        class="px-2 py-1 text-center border-l border-gray-300"
+                                        style="{{ $baseStyle }}">
                                         Bm {{ $col['type'] }}
                                     </th>
                                     @endforeach
