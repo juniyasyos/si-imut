@@ -142,7 +142,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
     </div>
 
     <!-- Summary controller payload -->
-    <div class="bg-gray-100 border border-gray-300 rounded p-4 mb-6 text-xs font-mono">
+    <div class="bg-gray-100 border border-gray-300 rounded p-4 mb-6 text-xs">
         <!-- DATA PER KATEGORI -->
         <div class="mt-10">
 
@@ -610,11 +610,11 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
                                             <td class="px-3 py-1 text-center bg-amber-50 text-amber-800 font-medium">
                                                 {!! $opSym !!}
-                                                {{ $dataPoint['standard'] !== null ? number_format($dataPoint['standard'],2).'%' : '-' }}
+                                                {{ $dataPoint['standard'] !== null ? floor($dataPoint['standard']).'%' : '-' }}
                                             </td>
 
                                             <td class="px-3 py-1 text-right bg-blue-50 text-blue-800 font-semibold">
-                                                {{ number_format($dataPoint['percentage'],2) }}%
+                                                {{ floor($dataPoint['percentage']) }}%
                                             </td>
 
                                             <td class="px-3 py-1 text-center">
@@ -669,7 +669,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                             <td class="px-3 py-3 text-center">{{ number_format($totalD) }}</td>
 
                                             <td class="px-3 py-3 text-center bg-amber-100 text-amber-900">
-                                                ≥ {{ number_format($imut['standard'],2) }}%
+                                                {!! $opSym !!} {{ floor($imut['standard']) }}%
                                             </td>
 
                                             <td class="px-3 py-3 text-right bg-blue-100 text-blue-900 font-bold">
@@ -707,7 +707,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                         </canvas>
 
                         <div class="mt-3 text-xs text-slate-600">
-                            Garis horizontal menunjukkan standar
+                            Garis horizontal menunjukkan nilai standar
                             <span class="font-semibold">{{ $imut['standard'] }}%</span>.
                         </div>
                     </div>

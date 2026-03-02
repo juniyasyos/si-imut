@@ -87,7 +87,7 @@ class TableSchema extends ImutDataResource
                 ->icon('heroicon-o-calendar')
                 ->formatStateUsing(
                     fn(bool $state) =>
-                    $state ? 'Bulanan' : 'Harian'
+                    $state ? 'Harian' : 'Bulanan'
                 )
                 ->color(
                     fn(bool $state) =>
