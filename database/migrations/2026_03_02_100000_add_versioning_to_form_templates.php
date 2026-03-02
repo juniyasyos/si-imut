@@ -21,9 +21,11 @@ return new class extends Migration
             $table->foreignId('created_by_user_id')->nullable()->constrained('users')->after('valid_until');
             $table->foreignId('parent_template_id')->nullable()->constrained('form_templates')->after('created_by_user_id');
 
-            // Add indexes for better query performance
+            // Tambah index performa dan unique constraint versi per profile
             $table->index(['imut_profile_id', 'is_active'], 'idx_profile_active');
-            $table->index(['imut_profile_id', 'version'], 'idx_profile_version');
+            // Unique constraint: satu versi unik per profile (menggantikan unique lama
+            // yang dihapus di migration fix_form_templates_versioning_constraints)
+            $table->unique(['imut_profile_id', 'version'], 'unique_profile_version');
             $table->index(['parent_template_id'], 'idx_parent_template');
         });
 
@@ -58,9 +60,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('form_templates', function (Blueprint $table) {
-            // Drop indexes first
+            // Hapus index dan unique constraint yang ditambahkan di up()
             $table->dropIndex('idx_profile_active');
-            $table->dropIndex('idx_profile_version');
+            $table->dropUnique('unique_profile_version');
             $table->dropIndex('idx_parent_template');
 
             // Drop foreign key constraints
