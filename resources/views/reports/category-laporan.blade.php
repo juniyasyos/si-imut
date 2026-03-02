@@ -306,150 +306,64 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                 </table>
             </div>
 
-            {{-- ================= INTERPRETATION STRATEGIS ================= --}}
+            {{-- ================= INTERPRETASI HASIL ================= --}}
             @if(count($dataByImut) > 0)
+
             @php
             $total = count($dataByImut);
             $achieved = $summary['achieved_count'] ?? 0;
             $notAchieved = $total - $achieved;
+            $rate = $total > 0 ? ($achieved / $total) * 100 : 0;
 
-            $complianceRate = $total > 0 ? ($achieved / $total) * 100 : 0;
-
-            $allData = collect($dataByImut);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Hitung deviasi HANYA jika di bawah standar
-            |--------------------------------------------------------------------------
-            */
-            $gapData = $allData->map(function ($imut) {
-            $standard = $imut['standard'] ?? 0;
-            $last = collect($imut['data'] ?? [])->pluck('percentage')->last() ?? 0;
-
-            $gap = $standard - $last;
-            $gap = $gap > 0 ? $gap : 0; // kalau sudah memenuhi target → gap 0
-
-            return [
-            'title' => $imut['title'],
-            'standard' => floor($standard),
-            'last' => floor($last),
-            'gap' => floor($gap),
-            ];
-            });
-
-            $avgGap = floor($gapData->where('gap', '>', 0)->avg('gap') ?? 0);
-            $maxGap = floor($gapData->max('gap') ?? 0);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Distribusi Risiko
-            |--------------------------------------------------------------------------
-            */
-            $highRisk = $gapData->where('gap', '>=', 20)->count();
-            $mediumRisk = $gapData->whereBetween('gap', [10,19])->count();
-            $lowRisk = $gapData->whereBetween('gap', [1,9])->count();
-
-            /*
-            |--------------------------------------------------------------------------
-            | Ambil 5 terbesar (yang benar-benar ada gap)
-            |--------------------------------------------------------------------------
-            */
-            $critical = $gapData
-            ->where('gap', '>', 0)
-            ->sortByDesc('gap')
-            ->take(5);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Level Kinerja
-            |--------------------------------------------------------------------------
-            */
-            if ($complianceRate >= 85) {
-            $performanceLevel = "Sangat Baik";
-            $performanceColor = "text-emerald-700";
-            } elseif ($complianceRate >= 70) {
-            $performanceLevel = "Baik";
-            $performanceColor = "text-blue-700";
-            } elseif ($complianceRate >= 50) {
-            $performanceLevel = "Cukup";
-            $performanceColor = "text-amber-700";
+            if ($rate >= 85) {
+            $level = "Sangat Baik";
+            $color = "text-emerald-700";
+            } elseif ($rate >= 70) {
+            $level = "Baik";
+            $color = "text-blue-700";
+            } elseif ($rate >= 50) {
+            $level = "Cukup";
+            $color = "text-amber-700";
             } else {
-            $performanceLevel = "Perlu Perhatian Serius";
-            $performanceColor = "text-red-700";
+            $level = "Perlu Perhatian";
+            $color = "text-red-700";
             }
             @endphp
 
-            <section class="mt-6 rounded-lg border border-slate-300 bg-slate-50 p-5 text-sm text-slate-700">
+            <div class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
 
                 <div class="font-semibold text-slate-800 mb-3 uppercase tracking-wide">
-                    Analisis Kinerja Mutu
+                    Interpretasi Kinerja Mutu
                 </div>
 
-                {{-- Ringkasan Utama --}}
-                <p>
-                    Dari <strong>{{ $total }}</strong> indikator,
-                    <strong class="{{ $performanceColor }}">{{ $achieved }}</strong>
-                    indikator memenuhi standar ({{ floor($complianceRate) }}%).
-                    Tingkat kepatuhan mutu berada pada kategori
-                    <strong class="{{ $performanceColor }}">{{ $performanceLevel }}</strong>.
-                </p>
+                <div class="space-y-3 leading-relaxed">
 
-                @if($notAchieved > 0)
-
-                <p class="mt-2">
-                    Sebanyak <strong>{{ $notAchieved }}</strong> indikator
-                    masih berada di bawah target, dengan rata-rata deviasi
-                    <strong>{{ $avgGap }}%</strong> dan deviasi maksimum
-                    <strong class="text-red-700">{{ $maxGap }}%</strong>.
-                </p>
-
-                {{-- Distribusi Risiko --}}
-                <div class="mt-4 pt-3 border-t border-slate-200">
-                    <div class="font-semibold mb-2">Distribusi Deviasi:</div>
-
-                    <div class="grid grid-cols-3 gap-4 text-center text-sm">
-                        <div class="bg-red-50 border border-red-200 rounded-md py-2">
-                            <div class="text-red-700 font-bold text-base">{{ $highRisk }}</div>
-                            <div class="text-xs text-red-600">Risiko Tinggi (≥20%)</div>
+                    {{-- Keterangan Warna --}}
+                    <div class="flex flex-wrap gap-6 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-3 h-3 bg-yellow-200 border border-yellow-300 rounded-sm"></span>
+                            <span>Indikator belum mencapai target</span>
                         </div>
 
-                        <div class="bg-amber-50 border border-amber-200 rounded-md py-2">
-                            <div class="text-amber-700 font-bold text-base">{{ $mediumRisk }}</div>
-                            <div class="text-xs text-amber-600">Risiko Sedang (10–19%)</div>
-                        </div>
-
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-md py-2">
-                            <div class="text-yellow-700 font-bold text-base">{{ $lowRisk }}</div>
-                            <div class="text-xs text-yellow-600">Deviasi Ringan (&lt;10%)</div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-3 h-3 bg-white border border-slate-300 rounded-sm"></span>
+                            <span>Indikator telah memenuhi target</span>
                         </div>
                     </div>
-                </div>
 
-                {{-- Prioritas --}}
-                @if($critical->count() > 0)
-                <div class="mt-4 pt-3 border-t border-slate-200">
-                    <div class="font-semibold text-red-700 mb-2">
-                        Indikator Prioritas Perbaikan
+                    {{-- Ringkasan Kinerja --}}
+                    <div class="pt-3 border-t border-slate-200">
+
+                        Dari <strong>{{ $total }}</strong> indikator mutu yang dinilai,
+                        <strong class="text-emerald-700">{{ $achieved }}</strong> indikator
+                        telah memenuhi standar dan
+                        <strong class="text-yellow-700">{{ $notAchieved }}</strong>
+                        indikator masih berada di bawah target.
+
                     </div>
-
-                    <ul class="space-y-1 text-sm">
-                        @foreach($critical as $item)
-                        <li class="flex justify-between border-b border-slate-100 pb-1">
-                            <span class="truncate w-2/3">
-                                {{ $item['title'] }}
-                            </span>
-                            <span class="font-semibold text-red-700">
-                                -{{ $item['gap'] }}%
-                            </span>
-                        </li>
-                        @endforeach
-                    </ul>
                 </div>
-                @endif
+            </div>
 
-                @endif
-
-            </section>
             @endif
 
             @foreach($categoryDetails as $catIndex => $cat)
