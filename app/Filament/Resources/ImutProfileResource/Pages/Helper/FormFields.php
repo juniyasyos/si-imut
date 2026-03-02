@@ -6,6 +6,7 @@ use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TextFi
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\NumberFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\BooleanFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\DateFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeDurationFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 
@@ -125,13 +126,6 @@ class FormFields
                 $threshold = $field->validation_config['threshold'] ?? '00:15';
                 $thresholdType = $field->validation_config['threshold_type'] ?? 'less_than';
                 $customLabels = $field->validation_config['custom_labels'] ?? [];
-                // dd([
-                //     'field_key' => $fieldKey,
-                //     'field_validation_config' => $field->validation_config,
-                //     'threshold_from_config' => $threshold,
-                //     'threshold_type_from_config' => $thresholdType,
-                //     'field_object' => $field
-                // ]);
                 return TimeDurationFieldBuilder::create(
                     $fieldKey,
                     $required,
@@ -154,7 +148,23 @@ class FormFields
                     $customLabels
                 );
 
+            case 'date':
+                $minDate = $field->validation_config['min_date'] ?? null;
+                $maxDate = $field->validation_config['max_date'] ?? null;
+                $defaultDate = $field->validation_config['default_date'] ?? null;
+                return DateFieldBuilder::create(
+                    $fieldKey,
+                    $label,
+                    $helperText,
+                    $required,
+                    $visibleCondition,
+                    $minDate,
+                    $maxDate,
+                    $defaultDate
+                );
+
             default:
+                // dd('test masuk default', $field->field_type);
                 return TextFieldBuilder::create(
                     $fieldKey,
                     $label,

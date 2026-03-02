@@ -49,13 +49,14 @@ class FormSchemaBuilder
                             'auto_calculate' => 'Kalkulasi Otomatis (Direkomendasikan)',
                             'manual_check' => 'Pemeriksaan Manual',
                         ])
-                        ->disabled(fn($record) => self::shouldBeReadonly($record))
+                        // ->disabled(fn($record) => self::shouldBeReadonly($record))
+                        ->disabled()
                         ->default('auto_calculate')
                         ->helperText('Kalkulasi otomatis akan menghitung compliance berdasarkan bobot field dan nilai kritikalitas.'),
 
                     Toggle::make('auto_fail_on_critical')
                         ->label('Auto Fail pada Field Kritical')
-                        ->disabled(fn($record) => self::shouldBeReadonly($record))
+                        ->disabled()
                         ->helperText('Jika diaktifkan, form akan langsung dianggap tidak compliant jika ada field kritical yang tidak terisi.')
                         ->default(true),
                 ])
@@ -161,7 +162,8 @@ class FormSchemaBuilder
                             '5' => 'Sangat Tinggi (5)',
                         ])
                         ->default('2')
-                        ->disabled(fn($get) => $get('field_type') === 'text')
+                        ->disabled()
+                        ->visible()
                         ->helperText(fn($get) => $get('field_type') === 'text'
                             ? 'Field teks tidak berkontribusi pada compliance score (otomatis 0)'
                             : 'Bobot untuk kalkulasi compliance score')

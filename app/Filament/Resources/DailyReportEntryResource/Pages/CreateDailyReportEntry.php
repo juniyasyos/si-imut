@@ -74,11 +74,11 @@ class CreateDailyReportEntry extends CreateRecord
 
         // Get active template from the same profile
         $template = $requestedTemplate->imutProfile->activeFormTemplate;
-        
+
         if (! $template) {
             abort(404, 'No active template found for this profile');
         }
-        
+
         // Load required relationships for authorization check
         $template->load('imutProfile.imutData.unitKerja');
 
@@ -120,7 +120,7 @@ class CreateDailyReportEntry extends CreateRecord
         if ($indicatorId) {
             // First find requested template to get the profile
             $requestedTemplate = FormTemplate::find($indicatorId);
-            
+
             if (!$requestedTemplate || !$requestedTemplate->imutProfile) {
                 Notification::make()
                     ->title('Form Template Tidak Ditemukan')
@@ -131,10 +131,10 @@ class CreateDailyReportEntry extends CreateRecord
                 $this->redirect($this->getResource()::getUrl('index'));
                 return;
             }
-            
+
             // Get active template from the same profile
             $this->formTemplate = $requestedTemplate->imutProfile->activeFormTemplate;
-            
+
             if (!$this->formTemplate) {
                 Notification::make()
                     ->title('No Active Template')
@@ -145,7 +145,7 @@ class CreateDailyReportEntry extends CreateRecord
                 $this->redirect($this->getResource()::getUrl('index'));
                 return;
             }
-            
+
             // Load required relationships
             $this->formTemplate->load(['formFields.options', 'imutProfile.imutData.unitKerja']);
 
@@ -364,6 +364,11 @@ class CreateDailyReportEntry extends CreateRecord
         if ($this->formTemplate) {
             $sortedFields = $this->formTemplate->formFields->sortBy('order_index');
 
+            dd([
+                'responseData' => $responseData,
+                'sortedFields' => $sortedFields->pluck('field_key'),
+            ]);
+
             foreach ($sortedFields as $field) {
                 $fieldValue = $responseData[$field->field_key] ?? null;
 
@@ -449,8 +454,8 @@ class CreateDailyReportEntry extends CreateRecord
                         'compliance_score' => $fieldValue !== null ? ($field->calculateFieldScore($fieldValue) ?? 0) : 0,
                     ]);
 
-                    // Update history suggestions for text fields
-                    if ($field->field_type === 'text' && is_string($fieldValue) && !empty(trim($fieldValue))) {
+                    // Update history suggestions for text fields (termasuk field_type kosong)
+                    if (in_array($field->field_type, ['text', '']) && is_string($fieldValue) && !empty(trim($fieldValue))) {
                         $this->updateHistorySuggestions($field, $fieldValue);
                     }
                 }

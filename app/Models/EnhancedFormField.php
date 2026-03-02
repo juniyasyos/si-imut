@@ -78,11 +78,16 @@ class EnhancedFormField extends Model
             case 'rating_scale':
                 return $this->scoreRatingScale($value);
 
+            case 'text':
+            case 'date':
+            case '': // field_type kosong dianggap text
+                // Text fields: 100% jika diisi, 0% jika kosong
+                return filled($value) ? 100 : 0;
+
             case 'short_text':
             case 'long_text':
-            case 'text':
             case 'number':
-                // Text and number fields are for supplementary data only
+                // These field types are for supplementary data only
                 // They don't contribute to compliance scoring
                 return 0;
 
