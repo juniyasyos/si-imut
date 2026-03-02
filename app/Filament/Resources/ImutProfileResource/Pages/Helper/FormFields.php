@@ -159,7 +159,7 @@ class FormFields
                     $fieldKey,
                     $label,
                     $helperText,
-                    255,
+                    100,
                     $required,
                     $visibleCondition
                 );

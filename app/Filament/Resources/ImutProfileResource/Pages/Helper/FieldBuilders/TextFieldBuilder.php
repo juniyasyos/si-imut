@@ -19,6 +19,7 @@ class TextFieldBuilder
      * @param bool $required Is required
      * @param mixed $visibleCondition Visibility condition
      * @param string|null $defaultValue Default value
+     * 
      * @param array $historySuggestions History suggestions for datalist
      * @return TextInput
      */

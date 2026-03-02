@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7ab4bf1ead7dd6337671c29edd0bcb68",
+    "content-hash": "261447fdf3fa1bf75e8080c48deb3629",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3760,17 +3760,11 @@
         },
         {
             "name": "juniyasyos/filament-backup",
-            "version": "v1.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/juniyasyos/filament-backup-juniyasyos.git",
-                "reference": "0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9"
-            },
+            "version": "1.3.0",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9",
-                "reference": "0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9",
-                "shasum": ""
+                "type": "path",
+                "url": "./packages/juniyasyos/filament-backup",
+                "reference": "0ee7ad37e9874faad4de8c9e89d8fa2b83c0fdf9"
             },
             "require": {
                 "calebporzio/sushi": "^2.4",
@@ -3804,7 +3798,22 @@
                     "Juniyasyos\\FilamentLaravelBackup\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Juniyasyos\\FilamentLaravelBackup\\Tests\\": "tests"
+                }
+            },
+            "scripts": {
+                "analyse": [
+                    "vendor/bin/phpstan analyse"
+                ],
+                "test": [
+                    "vendor/bin/pest"
+                ],
+                "format": [
+                    "vendor/bin/pint"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -3825,11 +3834,9 @@
                 "filament-backup",
                 "laravel-backup"
             ],
-            "support": {
-                "issues": "https://github.com/juniyasyos/filament-backup-juniyasyos/issues",
-                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v1.3.0"
-            },
-            "time": "2026-03-02T02:11:34+00:00"
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "juniyasyos/filament-media-manager",
@@ -17203,7 +17210,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
