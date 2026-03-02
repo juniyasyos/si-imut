@@ -584,61 +584,43 @@ $imutBenchmarkTypes[$imut['id']] = $types;
             {{-- ================= BODY ================= --}}
             <div class="p-6">
 
-                <div class="grid grid-cols-1 gap-8">
-
-                    @php
-                    // list of region-type names for this imut (may be empty)
-                    $typesForThis = collect($imut['regionTypesInfo'] ?? [])->pluck('type')->filter()->unique()->values()->all();
-                    @endphp
-                    <div class="no-print">
-                        <h2>Filter Tampilan Benckmarking</h2>
-                        <div class="mb-4 bg-white border border-gray-200 rounded-lg p-4">
-                            <div class="flex flex-wrap gap-3">
-                                @foreach($typesForThis as $type)
-                                <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer text-sm text-gray-700">
-                                    <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        x-model="showBenchmarkCols['{{ $imut['id'] }}']['{{ $type }}']"
-                                        @change="updateCharts()">
-                                    <span>{{ $type }}</span>
-                                </label>
-                                @endforeach
-                            </div>
+                @php
+                // list of region-type names for this imut (may be empty)
+                $typesForThis = collect($imut['regionTypesInfo'] ?? [])->pluck('type')->filter()->unique()->values()->all();
+                @endphp
+                <div class="no-print">
+                    <h2>Filter Tampilan Benckmarking</h2>
+                    <div class="mb-4 bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex flex-wrap gap-3">
+                            @foreach($typesForThis as $type)
+                            <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer text-sm text-gray-700">
+                                <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    x-model="showBenchmarkCols['{{ $imut['id'] }}']['{{ $type }}']"
+                                    @change="updateCharts()">
+                                <span>{{ $type }}</span>
+                            </label>
+                            @endforeach
                         </div>
                     </div>
+                </div>
 
-                    {{-- ================= CHART ================= --}}
-                    <div class="flex flex-col justify-center min-h-[260px]">
-
-                        <canvas id="chart-{{ $imut['id'] }}"
-                            data-chart
-                            data-imut-id="{{ $imut['id'] }}"
-                            data-json='{{ json_encode(array_merge($chartData['chart-' . $imut['id']] ?? [], ['standard' => $imut['standard']])) }}'>
-                        </canvas>
-
-                        {{-- INFO STANDAR --}}
-                        <div class="mt-4 text-sm text-slate-600">
-                            Garis horizontal pada grafik menunjukkan standar
-                            <span class="font-semibold">
-                                {{ $imut['standard'] }}%
-                            </span>.
-                        </div>
-
-                    </div>
+                <div class="grid grid-cols-2 gap-6">
 
                     {{-- ================= TABEL ================= --}}
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm border-collapse">
+                        <table class="w-full text-xs border-collapse">
+
+                            {{-- ================= HEADER ================= --}}
                             <thead>
                                 @php
-                                // prepare mapping for region types so benchmark headers can be coloured
                                 $rtMap = collect($imut['regionTypesInfo'] ?? [])->keyBy('id');
-                                // default background for non-benchmark headers
                                 $defaultBg = $rtMap->first()['color'] ?? '#1e40af';
                                 $defaultText = '#ffffff';
                                 $baseStyle = "background-color: $defaultBg; color: $defaultText;";
 
-                                // group benchmarks by region type to avoid duplicates
-                                $benchmarkCols = collect($imut['benchmarks'] ?? [])->groupBy('region_type_id')->map(function($group, $rtid) use ($rtMap) {
+                                $benchmarkCols = collect($imut['benchmarks'] ?? [])
+                                ->groupBy('region_type_id')
+                                ->map(function($group, $rtid) use ($rtMap) {
                                 return [
                                 'region_type_id' => $rtid,
                                 'type' => $rtMap[$rtid]['type'] ?? '',
@@ -647,27 +629,32 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                 ];
                                 })->values();
                                 @endphp
-                                <tr class="text-xs uppercase tracking-wider">
-                                    <th class="px-4 py-3 text-left" style="{{ $defaultBg }}">Periode</th>
-                                    <th class="px-4 py-3 text-center" style="{{ $defaultBg }}">N</th>
-                                    <th class="px-4 py-3 text-center" style="{{ $defaultBg }}">D</th>
-                                    <th class="px-4 py-3 text-center" style="{{ $defaultBg }}">Standar</th>
-                                    <th class="px-4 py-3 text-right" style="{{ $defaultBg }}">Persentase</th>
-                                    <th class="px-4 py-3 text-center" style="{{ $baseStyle }}">Status</th>
+
+                                <tr class="text-[10px] uppercase tracking-wide">
+                                    <th class="px-2 py-1 text-left" style="{{ $baseStyle }}">Periode</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">N</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">D</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">Standar</th>
+                                    <th class="px-2 py-1 text-right" style="{{ $baseStyle }}">%</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $baseStyle }}">Status</th>
+
                                     @foreach($benchmarkCols as $col)
                                     @php
-                                    $rtcol = $col['color'];
-                                    $bgcol = $rtcol . '33';
-                                    $thStyle = "background-color: $bgcol; color: $defaultText;";
+                                    $bgcol = $col['color'] . '33';
+                                    $thStyle = "background-color: $bgcol; color: #fff;";
                                     @endphp
-                                    <th x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']" class="px-4 py-3 text-center" style="{{ $thStyle }}">
-                                        Benchmark {{ $col['type'] }}
+                                    <th
+                                        x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']"
+                                        class="px-2 py-1 text-center"
+                                        style="{{ $thStyle }}">
+                                        Bm {{ $col['type'] }}
                                     </th>
                                     @endforeach
                                 </tr>
                             </thead>
 
-                            <tbody class="text-sm text-slate-700 divide-y divide-slate-200">
+                            {{-- ================= BODY ================= --}}
+                            <tbody class="text-xs text-slate-700 divide-y divide-slate-200">
 
                                 @php
                                 $totalN = 0;
@@ -683,157 +670,135 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                 $dataMonths++;
                                 }
 
-                                $opSym = '';
-                                switch($dataPoint['operator'] ?? '') {
-                                case '>=': $opSym='≥'; break;
-                                case '<=': $opSym='≤' ; break;
-                                    case '==' : $opSym='≡' ; break;
-                                    case '>' : $opSym='&gt;' ; break;
-                                    case '<' : $opSym='&lt;' ; break;
-                                    default: $opSym=$dataPoint['operator'] ?? '' ;
-                                    }
-                                    @endphp
-
-                                    <tr class="hover:bg-slate-50 transition">
-
-                                    <!-- Periode -->
-                                    <td class="px-4 py-3 font-medium text-slate-800">
-                                        {{ $dataPoint['month_label'] }}
-                                    </td>
-
-                                    <!-- N -->
-                                    <td class="px-4 py-3 text-center">
-                                        {{ number_format($dataPoint['numerator']) }}
-                                    </td>
-
-                                    <!-- D -->
-                                    <td class="px-4 py-3 text-center">
-                                        {{ number_format($dataPoint['denominator']) }}
-                                    </td>
-
-                                    <!-- Standar (Warna Amber Soft) -->
-                                    <td class="px-4 py-3 text-center bg-amber-50 text-amber-800 font-medium">
-                                        {!! $opSym !!}
-                                        {{ $dataPoint['standard'] !== null ? number_format($dataPoint['standard'],2) . '%' : '-' }}
-                                    </td>
-
-                                    <!-- Persentase (Warna Biru Soft) -->
-                                    <td class="px-4 py-3 text-right bg-blue-50 text-blue-800 font-semibold">
-                                        {{ number_format($dataPoint['percentage'],2) }}%
-                                    </td>
-
-                                    <!-- Status -->
-                                    <td class="px-4 py-3 text-center">
-                                        @if($dataPoint['status']==='achieved')
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
-                                            Tercapai
-                                        </span>
-                                        @elseif($dataPoint['status']==='no-data')
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">
-                                            Tidak Ada Data
-                                        </span>
-                                        @else
-                                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">
-                                            Belum
-                                        </span>
-                                        @endif
-                                    </td>
-                                    @foreach($benchmarkCols as $col)
-                                    @php
-                                    // pick first non-null monthly value among group's records for this month
-                                    $bmVal = null;
-                                    foreach($col['records'] as $bm) {
-                                    $val = $bm['monthly'][$dataPoint['month_label']] ?? null;
-                                    if ($val !== null) {
-                                    $bmVal = $val;
-                                    break;
-                                    }
-                                    }
-                                    $rtcol = $col['color'];
-                                    $cellBg = $rtcol . '22';
-                                    $textCol = $rtcol;
-                                    $tdStyle = "background-color: $cellBg; color: $textCol;";
-                                    @endphp
-                                    <td x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']" class="px-4 py-3 text-center font-medium" style="{{ $tdStyle }}">
-                                        {{ $bmVal !== null ? number_format($bmVal,2) . '%' : '-' }}
-                                    </td>
-                                    @endforeach
-
-                                    </tr>
-                                    @endforeach
-
-
-                                    {{-- ================= TOTAL ================= --}}
-                                    @if($dataMonths > 0)
-                                    @php
-                                    $overall = $totalD > 0 ? ($totalN / $totalD) * 100 : 0;
-                                    $isAchieved = $overall >= $imut['standard'];
-                                    @endphp
-
-                                    <tr class="bg-slate-100 font-semibold text-slate-900">
-
-                                        <td class="px-4 py-4">
-                                            Total / Rata-rata
-                                        </td>
-
-                                        <td class="px-4 py-4 text-center">
-                                            {{ number_format($totalN) }}
-                                        </td>
-
-                                        <td class="px-4 py-4 text-center">
-                                            {{ number_format($totalD) }}
-                                        </td>
-
-                                        <!-- Standar Total -->
-                                        <td class="px-4 py-4 text-center bg-amber-100 text-amber-900">
-                                            ≥ {{ number_format($imut['standard'],2) }}%
-                                        </td>
-
-                                        <!-- Overall -->
-                                        <td class="px-4 py-4 text-right bg-blue-100 text-blue-900 font-bold">
-                                            {{ number_format($overall,2) }}%
-                                        </td>
-
-                                        <td class="px-4 py-4 text-center">
-                                            @if($isAchieved)
-                                            <span class="px-3 py-1 text-xs font-bold rounded-full bg-emerald-200 text-emerald-800">
-                                                Tercapai
-                                            </span>
-                                            @else
-                                            <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-200 text-red-800">
-                                                Belum
-                                            </span>
-                                            @endif
-                                        </td>
-                                        @foreach($benchmarkCols as $col)
-                                        @php
-                                        // from all records for this column, find last non-null value across months
-                                        $last = null;
-                                        foreach($col['records'] as $bm) {
-                                        $cand = collect($bm['monthly'])->filter()->last();
-                                        if ($cand !== null) {
-                                        $last = $cand;
-                                        break;
-                                        }
-                                        }
-                                        $rtcol = $col['color'];
-                                        $cellBg = $rtcol . '22';
-                                        $textCol = $rtcol;
-                                        $tdTotalStyle = "background-color: $cellBg; color: $textCol;";
+                                $opSym = match($dataPoint['operator'] ?? '') {
+                                '>=' => '≥',
+                                '<='=> '≤',
+                                    '==' => '≡',
+                                    '>' => '&gt;',
+                                    '<'=> '&lt;',
+                                        default => $dataPoint['operator'] ?? ''
+                                        };
                                         @endphp
-                                        <td x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']" class="px-4 py-4 text-center" style="{{ $tdTotalStyle }}">
-                                            <span></span>
-                                        </td>
+
+                                        <tr class="hover:bg-slate-50 transition">
+
+                                            <td class="px-3 py-1 font-medium text-slate-800">
+                                                {{ $dataPoint['month_label'] }}
+                                            </td>
+
+                                            <td class="px-3 py-1 text-center">
+                                                {{ number_format($dataPoint['numerator']) }}
+                                            </td>
+
+                                            <td class="px-3 py-1 text-center">
+                                                {{ number_format($dataPoint['denominator']) }}
+                                            </td>
+
+                                            <td class="px-3 py-1 text-center bg-amber-50 text-amber-800 font-medium">
+                                                {!! $opSym !!}
+                                                {{ $dataPoint['standard'] !== null ? number_format($dataPoint['standard'],2).'%' : '-' }}
+                                            </td>
+
+                                            <td class="px-3 py-1 text-right bg-blue-50 text-blue-800 font-semibold">
+                                                {{ number_format($dataPoint['percentage'],2) }}%
+                                            </td>
+
+                                            <td class="px-3 py-1 text-center">
+                                                @if($dataPoint['status']==='achieved')
+                                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-700">
+                                                    Tercapai
+                                                </span>
+                                                @elseif($dataPoint['status']==='no-data')
+                                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-100 text-slate-600">
+                                                    No Data
+                                                </span>
+                                                @else
+                                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-100 text-red-700">
+                                                    Belum
+                                                </span>
+                                                @endif
+                                            </td>
+
+                                            @foreach($benchmarkCols as $col)
+                                            @php
+                                            $bmVal = null;
+                                            foreach($col['records'] as $bm) {
+                                            $val = $bm['monthly'][$dataPoint['month_label']] ?? null;
+                                            if ($val !== null) { $bmVal = $val; break; }
+                                            }
+                                            $cellBg = $col['color'] . '22';
+                                            $tdStyle = "background-color: $cellBg; color: {$col['color']};";
+                                            @endphp
+
+                                            <td
+                                                x-show="showBenchmarkCols['{{ $imut['id'] }}'] && showBenchmarkCols['{{ $imut['id'] }}']['{{ $col['type'] }}']"
+                                                class="px-3 py-1 text-center font-medium"
+                                                style="{{ $tdStyle }}">
+                                                {{ $bmVal !== null ? number_format($bmVal,2).'%' : '-' }}
+                                            </td>
+                                            @endforeach
+
+                                        </tr>
                                         @endforeach
 
-                                    </tr>
-                                    @endif
+                                        {{-- ================= TOTAL ================= --}}
+                                        @if($dataMonths > 0)
+                                        @php
+                                        $overall = $totalD > 0 ? ($totalN / $totalD) * 100 : 0;
+                                        $isAchieved = $overall >= $imut['standard'];
+                                        @endphp
+
+                                        <tr class="bg-slate-100 font-semibold text-slate-900">
+
+                                            <td class="px-3 py-3">Total / Rata-rata</td>
+                                            <td class="px-3 py-3 text-center">{{ number_format($totalN) }}</td>
+                                            <td class="px-3 py-3 text-center">{{ number_format($totalD) }}</td>
+
+                                            <td class="px-3 py-3 text-center bg-amber-100 text-amber-900">
+                                                ≥ {{ number_format($imut['standard'],2) }}%
+                                            </td>
+
+                                            <td class="px-3 py-3 text-right bg-blue-100 text-blue-900 font-bold">
+                                                {{ number_format($overall,2) }}%
+                                            </td>
+
+                                            <td class="px-3 py-3 text-center">
+                                                @if($isAchieved)
+                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-200 text-emerald-800">
+                                                    Tercapai
+                                                </span>
+                                                @else
+                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-200 text-red-800">
+                                                    Belum
+                                                </span>
+                                                @endif
+                                            </td>
+
+                                            @foreach($benchmarkCols as $col)
+                                            <td class="px-3 py-3"></td>
+                                            @endforeach
+                                        </tr>
+                                        @endif
+
                             </tbody>
                         </table>
                     </div>
 
-                </div>
+                    {{-- ================= CHART ================= --}}
+                    <div class="flex flex-col justify-center min-h-[240px]">
+                        <canvas id="chart-{{ $imut['id'] }}"
+                            data-chart
+                            data-imut-id="{{ $imut['id'] }}"
+                            data-json='{{ json_encode(array_merge($chartData['chart-' . $imut['id']] ?? [], ['standard' => $imut['standard']])) }}'>
+                        </canvas>
 
+                        <div class="mt-3 text-xs text-slate-600">
+                            Garis horizontal menunjukkan standar
+                            <span class="font-semibold">{{ $imut['standard'] }}%</span>.
+                        </div>
+                    </div>
+
+                </div>
 
                 {{-- ================= ANALISIS ================= --}}
                 @if(isset($overall))
