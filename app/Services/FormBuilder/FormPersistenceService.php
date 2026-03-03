@@ -171,8 +171,7 @@ class FormPersistenceService
         $processed = array_unique($processed);
         $processed = array_values($processed);
 
-        // Limit to 10 suggestions
-        return array_slice($processed, 0, 10);
+        return $processed;
     }
 
     private function saveFieldOptions(EnhancedFormField $field, array $options): void

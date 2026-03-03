@@ -531,9 +531,6 @@ class CreateDailyReportEntry extends CreateRecord
         if (!in_array($newValue, $currentSuggestions)) {
             array_unshift($currentSuggestions, $newValue);
 
-            // Keep only the most recent 10 suggestions
-            $currentSuggestions = array_slice($currentSuggestions, 0, 10);
-
             // Update the field
             $field->update(['history_suggestions' => $currentSuggestions]);
         }

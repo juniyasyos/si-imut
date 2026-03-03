@@ -77,9 +77,6 @@ class FormFields
                         if (!in_array($newValue, $currentHistory)) {
                             $currentHistory[] = $newValue;
 
-                            // Limit to 10 suggestions, keep most recent
-                            $currentHistory = array_slice($currentHistory, -10);
-
                             // Update field in database
                             $field->update([
                                 'history_suggestions' => $currentHistory

@@ -32,11 +32,8 @@ class FormFields
         $required = $field->validation_config['required'] ?? false;
         $visibleCondition = ConditionalLogicHandler::getVisibilityCondition($field->conditional_logic, $prefix);
 
-        // if ($field->field_key === 'six_steps_compliance') {
-        //     dd($field);
-        // }
-
         switch ($field->field_type) {
+            default:
             case 'text':
                 $historySuggestions = $field->history_suggestions ?? [];
 
@@ -50,7 +47,7 @@ class FormFields
                     ->helperText($helperText)
                     ->required($required)
                     ->visible($visibleCondition)
-                    ->live()
+                    ->lazy()
                     ->suggestions($historySuggestions)
                     ->previewMode($isPreview)
                     ->onNewValue($isPreview ? null : function ($newValue) use ($field) {
@@ -65,9 +62,6 @@ class FormFields
                         // Add new value if not already exists
                         if (!in_array($newValue, $currentHistory)) {
                             $currentHistory[] = $newValue;
-
-                            // Limit to 10 suggestions, keep most recent
-                            $currentHistory = array_slice($currentHistory, -10);
 
                             // Update field in database
                             $field->update([
@@ -161,16 +155,16 @@ class FormFields
                     $defaultDate
                 );
 
-            default:
-                // dd('test masuk default', $field->field_type);
-                return TextFieldBuilder::create(
-                    $fieldKey,
-                    $label,
-                    $helperText,
-                    255,
-                    $required,
-                    $visibleCondition
-                );
+                // default:
+                //     // dd('test masuk default', $field->field_type);
+                //     return TextFieldBuilder::create(
+                //         $fieldKey,
+                //         $label,
+                //         $helperText,
+                //         255,
+                //         $required,
+                //         $visibleCondition
+                //     );
         }
     }
 

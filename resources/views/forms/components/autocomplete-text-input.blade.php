@@ -36,8 +36,7 @@ $id = $getId();
             onInput() {
                 this.open = true;
                 this.activeIndex = -1;
-                // Langsung set value ke Livewire saat user ketik
-                this.value = this.query;
+                // TIDAK sync ke Livewire saat ketik — hanya filter dropdown lokal
             },
 
             onKeydown(e) {
