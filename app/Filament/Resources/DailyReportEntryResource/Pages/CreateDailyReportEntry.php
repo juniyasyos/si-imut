@@ -364,11 +364,6 @@ class CreateDailyReportEntry extends CreateRecord
         if ($this->formTemplate) {
             $sortedFields = $this->formTemplate->formFields->sortBy('order_index');
 
-            dd([
-                'responseData' => $responseData,
-                'sortedFields' => $sortedFields->pluck('field_key'),
-            ]);
-
             foreach ($sortedFields as $field) {
                 $fieldValue = $responseData[$field->field_key] ?? null;
 

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ImutProfileResource\Pages\Helper;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TextFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\NumberFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
+use App\Forms\Components\AutocompleteTextInput;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\BooleanFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\DateFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeDurationFieldBuilder;
@@ -44,18 +45,16 @@ class FormFields
                     $historySuggestions = json_decode($historySuggestions, true) ?? [];
                 }
 
-                // Always use Select field for text inputs to enable history building
-                $options = array_combine($historySuggestions, $historySuggestions); // value => label
-
-                return SelectFieldBuilder::createSearchableSelect(
-                    $fieldKey,
-                    $label,
-                    $helperText,
-                    $options,
-                    $required,
-                    $visibleCondition,
-                    $isPreview ? null : function ($newValue, $newLabel) use ($field) {
-                        // Auto-add to history suggestions when user enters new value (only in non-preview mode)
+                return AutocompleteTextInput::make($fieldKey)
+                    ->label($label)
+                    ->helperText($helperText)
+                    ->required($required)
+                    ->visible($visibleCondition)
+                    ->live()
+                    ->suggestions($historySuggestions)
+                    ->previewMode($isPreview)
+                    ->onNewValue($isPreview ? null : function ($newValue) use ($field) {
+                        // Auto-add to history suggestions when user enters new value
                         $currentHistory = $field->history_suggestions ?? [];
 
                         // Decode if it's a JSON string
@@ -75,8 +74,7 @@ class FormFields
                                 'history_suggestions' => $currentHistory
                             ]);
                         }
-                    }
-                );
+                    });
 
             case 'number':
                 return NumberFieldBuilder::create(

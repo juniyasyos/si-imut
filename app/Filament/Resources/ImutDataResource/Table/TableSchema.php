@@ -60,12 +60,17 @@ class TableSchema extends ImutDataResource
                 ->wrap()
                 ->weight('medium'),
 
-            TextColumn::make('categories.short_name')
+            TextColumn::make('categories.category_name')
                 ->label(__('filament-forms::imut-data.fields.imut_kategori_id'))
                 ->badge()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: false)
                 ->color(function ($record) {
+                    // dd([
+                    //     'record' => $record,
+                    //     'categories' => $record->categories,
+                    //     'id' => $record->categories->id ?? null,
+                    // ]);
                     $colors = ['primary', 'success', 'warning', 'danger', 'info', 'gray'];
                     $id = $record->categories->id ?? 0;
 

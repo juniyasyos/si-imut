@@ -91,7 +91,8 @@ class ImutDataSchema extends ImutDataResource
 
                                 Select::make('imut_kategori_id')
                                     ->label(__('Kategori'))
-                                    ->options(function () {
+                                    ->options(function (?Model $record) {
+
                                         $user = Auth::user();
 
                                         $query = \App\Models\ImutCategory::query();
@@ -100,7 +101,7 @@ class ImutDataSchema extends ImutDataResource
                                             $query->where('is_use_global', true);
                                         }
 
-                                        return $query->pluck('category_name');
+                                        return $query->pluck('category_name', 'id');
                                     })
                                     ->searchable()
                                     ->required()
