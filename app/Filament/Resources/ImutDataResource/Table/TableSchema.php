@@ -24,6 +24,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -167,18 +170,122 @@ class TableSchema extends ImutDataResource
     public static function filters(): array
     {
         return [
+            // Status & Basic Filters
             TrashedFilter::make('status')
+                ->label('Status Data')
+                ->columnSpanFull()
                 ->default('with'),
+
             SelectFilter::make('imut_kategori_id')
                 ->label('Kategori IMUT')
-                ->preload()
-                ->multiple()
                 ->relationship('categories', 'short_name')
-                ->searchable(),
+                ->multiple()
+                ->preload()
+                ->searchable()
+                ->placeholder('Pilih kategori IMUT'),
+
             SelectFilter::make('is_monthly')
-                ->label('Pengisian Bulanan')
-                ->options([1 => 'Ya', 0 => 'Tidak'])
+                ->label('Tipe Pengisian')
+                ->options([
+                    1 => 'Harian',
+                    0 => 'Bulanan'
+                ])
+                ->placeholder('Pilih tipe pengisian')
                 ->preload(),
+
+            // Period Filters
+            SelectFilter::make('active_year')
+                ->label('Aktif pada Tahun')
+                ->placeholder('Pilih tahun')
+                ->options(function () {
+                    $currentYear = now()->year;
+                    $years = [];
+                    for ($year = $currentYear - 3; $year <= $currentYear + 2; $year++) {
+                        $years[$year] = $year;
+                    }
+                    return $years;
+                })
+                ->query(function (Builder $query, array $data): Builder {
+                    if (!empty($data['value'])) {
+                        $year = $data['value'];
+                        $startOfYear = "$year-01-01";
+                        $endOfYear = "$year-12-31";
+
+                        return $query->whereHas('profiles', function (Builder $q) use ($startOfYear, $endOfYear) {
+                            $q->where('valid_from', '<=', $endOfYear)
+                                ->where(function (Builder $q2) use ($startOfYear) {
+                                    $q2->where('valid_until', '>=', $startOfYear)
+                                        ->orWhereNull('valid_until');
+                                });
+                        });
+                    }
+                    return $query;
+                }),
+
+            Filter::make('active_period')
+                ->label('Periode Aktif Kustom')
+                ->form([
+                    DatePicker::make('from')
+                        ->label('Mulai Tanggal')
+                        ->placeholder('Pilih tanggal mulai')
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->format('Y-m-d')
+                        ->closeOnDateSelection(),
+                    DatePicker::make('until')
+                        ->label('Sampai Tanggal')
+                        ->placeholder('Pilih tanggal akhir')
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->format('Y-m-d')
+                        ->closeOnDateSelection()
+                        ->after('from'),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query->when(
+                        $data['from'] || $data['until'],
+                        function (Builder $query) use ($data) {
+                            $query->whereHas('profiles', function (Builder $q) use ($data) {
+                                // Jika ada tanggal mulai dan akhir
+                                if ($data['from'] && $data['until']) {
+                                    $q->where('valid_from', '<=', $data['until'])
+                                        ->where(function (Builder $q2) use ($data) {
+                                            $q2->where('valid_until', '>=', $data['from'])
+                                                ->orWhereNull('valid_until');
+                                        });
+                                }
+                                // Jika hanya tanggal mulai
+                                elseif ($data['from']) {
+                                    $q->where(function (Builder $q2) use ($data) {
+                                        $q2->where('valid_until', '>=', $data['from'])
+                                            ->orWhereNull('valid_until');
+                                    });
+                                }
+                                // Jika hanya tanggal akhir
+                                elseif ($data['until']) {
+                                    $q->where('valid_from', '<=', $data['until']);
+                                }
+                            });
+                        }
+                    );
+                })
+                ->indicateUsing(function (array $data): array {
+                    $indicators = [];
+
+                    if ($data['from'] && $data['until']) {
+                        $indicators[] = 'Periode: ' .
+                            \Carbon\Carbon::parse($data['from'])->format('d/m/Y') .
+                            ' - ' .
+                            \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                    } elseif ($data['from']) {
+                        $indicators[] = 'Aktif dari: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                    } elseif ($data['until']) {
+                        $indicators[] = 'Aktif sampai: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                    }
+
+                    return $indicators;
+                })
+                ->columnSpanFull(),
         ];
     }
 
