@@ -102,6 +102,7 @@ class CategoryReportController extends Controller
         $yearMonthStrings = $months; // already in 'YYYY-MM' format
 
         $penilaians = ImutPenilaian::with(['profile.imutData', 'laporanUnitKerja.laporanImut'])
+            ->whereHas('profile.imutData', fn($q) => $q->where('status', true))
             ->when(count($categories) > 0, fn($q) => $q->whereHas('profile.imutData.categories', fn($q2) => $q2->whereIn('id', $categories)))
             ->when(count($yearMonthStrings) > 0, function ($q) use ($yearMonthStrings, $startDate, $endDate) {
                 $q->whereHas('laporanUnitKerja.laporanImut', function ($q2) use ($yearMonthStrings, $startDate, $endDate) {
