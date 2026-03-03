@@ -152,7 +152,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
             <!--        TABLE SUMMARY            -->
             <!-- =============================== -->
             <div class="mb-6 overflow-x-auto rounded-xl border border-gray-300 shadow-sm bg-white">
-                <table class="min-w-full text-[11px] border-separate border-spacing-0">
+                <table class="min-w-full text-[11px] border-separate border-spacing-0" style="table-layout: fixed;">
 
                     @php
                     $lastMonth = last($allMonths)['label'] ?? null;
@@ -169,9 +169,9 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
                         <!-- Header utama -->
                         <tr class="bg-slate-800 text-white text-[10px]">
-                            <th class="px-2 py-2 text-center w-8 border-gray-700">No</th>
-                            <th class="px-3 py-2 text-left w-[30%] whitespace-normal border-gray-700">Indikator Mutu</th>
-                            <th class="px-2 py-2 text-center w-24 border-gray-700">Target</th>
+                            <th class="px-2 py-2 text-center border-gray-700" style="width: 50px;">No</th>
+                            <th class="px-3 py-2 text-left border-gray-700" style="width: 300px; word-wrap: break-word;">Indikator Mutu</th>
+                            <th class="px-2 py-2 text-center border-gray-700" style="width: 100px;">Target</th>
                             @if($hasUnitScope)
                             <th class="px-2 py-2 text-left border-gray-700">Unit</th>
                             @endif
@@ -240,7 +240,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                         </td>
 
                                         <!-- INDIKATOR -->
-                                        <td class="px-3 py-1.5 border-b border-gray-100 w-36 whitespace-normal">
+                                        <td class="px-3 py-1.5 border-b border-gray-100" style="width: 300px; word-wrap: break-word; overflow-wrap: break-word; max-width: 300px;">
                                             {{ $imut['title'] }}
                                         </td>
 
@@ -547,7 +547,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
                     {{-- ================= TABEL ================= --}}
                     <div class="overflow-x-auto">
-                        <table class="w-full text-xs border-collapse">
+                        <table class="w-full text-xs border-collapse" style="table-layout: fixed;">
 
                             {{-- ================= HEADER ================= --}}
                             <thead>
@@ -570,11 +570,11 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                 @endphp
 
                                 <tr class="text-[10px] uppercase tracking-wide">
-                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}">Periode</th>
+                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}; width: 120px;">Periode</th>
                                     @if($hasUnitScope && !empty($imut['units']))
-                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}">Unit</th>
+                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}; width: 150px;">Unit</th>
                                     @endif
-                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">N</th>
+                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}; width: 60px;">N</th>
                                     <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">D</th>
                                     <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">Standar</th>
                                     <th class="px-2 py-1 text-right" style="{{ $defaultBg }}">%</th>
@@ -747,7 +747,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                     </div>
 
                     {{-- ================= CHART ================= --}}
-                    <div class="flex flex-col justify-center min-h-[240px]">
+                    <div class="flex flex-col justify-center min-h-[320px]">
                         <canvas id="chart-{{ $imut['id'] }}"
                             data-chart
                             data-imut-id="{{ $imut['id'] }}"
