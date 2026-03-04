@@ -336,6 +336,40 @@ class LaporanImut extends Model
         return $this->assessment_period_start->translatedFormat('F Y');
     }
 
+
+
+    /**
+     * Get periode folder name for media storage (sanitized for filesystem)
+     * Format: "Januari 2025" -> "Januari 2025"
+     */
+    public function getPeriodeFolderName(): string
+    {
+        return $this->period_name;
+    }
+
+    /**
+     * Static method untuk generate periode folder name dari month/year
+     */
+    public static function generatePeriodeFolderName(int $month, int $year): string
+    {
+        $monthNames = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+
+        return ($monthNames[$month] ?? $month) . ' ' . $year;
+    }
+
     /**
      * Scope untuk filter berdasarkan periode tertentu
      */

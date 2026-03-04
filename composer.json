@@ -17,6 +17,10 @@
             {
                 "type": "path",
                 "url": "./packages/juniyasyos/filament-backup"
+            },
+            {
+                "type": "path",
+                "url": "./packages/juniyasyos/filament-media-manager"
             }
         ],
     "require": {

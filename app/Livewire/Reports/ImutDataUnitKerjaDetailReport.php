@@ -157,8 +157,7 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                     ->label('Ekspor laporan IMUT Unit Kerja')
                     ->color('gray'),
             ])
-            ->actions([
-            ])
+            ->actions([])
             // ->recordAction('lihat')
             ->bulkActions([]);
     }
@@ -284,7 +283,7 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
             SpatieMediaLibraryFileUpload::make('document_upload')
                 ->label('Unggah Dokumen Pendukung')
                 ->collection(fn(callable $get) => $get('selected_collection') ?? 'default')
-                ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection') ?? 'default'))
+                ->directory(fn(callable $get) => $livewireComponent->getUploadDirectory($get('selected_collection') ?? 'default'))
                 ->openable()
                 ->downloadable()
                 ->maxSize(20480)
@@ -292,6 +291,9 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                 ->previewable(true)
                 ->columnSpanFull()
                 ->disabled($shouldLock)
+                ->customProperties(fn(callable $get) => [
+                    'directory' => $livewireComponent->getUploadDirectory($get('selected_collection') ?? 'default')
+                ])
                 ->acceptedFileTypes([
                     'application/pdf',
                     'image/*',
@@ -300,13 +302,30 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 ])
                 ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
+                ->hint(function (callable $get) use ($livewireComponent) {
+                    $collection = $get('selected_collection');
+                    $directory = $livewireComponent->getUploadDirectory($collection ?? 'default');
+                    return "📁 Folder tujuan: {$directory}";
+                })
         ];
     }
 
-    protected function updateResultForAction(callable $set, callable $get): void
+    /**
+     * Get upload directory dengan periode folder untuk laporan IMUT
+     */
+    protected function getUploadDirectory(string $collection): string
     {
-        $formCalculationService = app(FormCalculationService::class);
-        $formCalculationService->updatePenilaianResult($set, $get);
+        $baseDirectory = 'uploads/imut-documents/' . $collection;
+
+        // Jika collection adalah laporan-imut, tambah periode folder
+        if (str_ends_with($collection, '-laporan-imut')) {
+            if ($this->laporan) {
+                $periodFolder = $this->laporan->getPeriodeFolderName();
+                return $baseDirectory . '/' . $periodFolder;
+            }
+        }
+
+        // Untuk subfolder lain (dokumen-mutu, sop-panduan, etc.) langsung ke folder
     }
 
     public function isLaporanPeriodClosed(): bool

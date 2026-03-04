@@ -19,6 +19,17 @@ class UnitKerjaObserver
     public function created(UnitKerja $unitKerja): void
     {
         try {
+            // Additional safety check to prevent duplicates
+            $collection = \Illuminate\Support\Str::slug($unitKerja->unit_name);
+            $existingFolder = \Juniyasyos\FilamentMediaManager\Models\Folder::where('collection', $collection)
+                ->whereNull('parent_id')
+                ->exists();
+
+            if ($existingFolder) {
+                Log::warning("⚠️ Folder sudah ada untuk UnitKerja ID {$unitKerja->id} - {$unitKerja->unit_name}. Skip pembuatan untuk mencegah duplikat.");
+                return;
+            }
+
             $this->repository->createFolder($unitKerja);
             Log::info("✅ UnitKerja berhasil dibuat: ID {$unitKerja->id} - {$unitKerja->unit_name}");
         } catch (Throwable $e) {

@@ -69,7 +69,6 @@ trait BuildIsiPenilaian
                         ->visible(function ($record) {
                             return ! $record->profile->imutData->is_monthly;
                         })
-                        ->disabled(true)
                         ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
 
                     Section::make('Data Pendukung')
@@ -103,7 +102,7 @@ trait BuildIsiPenilaian
     protected function buildAnalysisSchemaForAction($livewireComponent): array
     {
         $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
-     
+
         return [
             Textarea::make('analysis')
                 ->label('Analisis')
@@ -153,14 +152,13 @@ trait BuildIsiPenilaian
             SpatieMediaLibraryFileUpload::make('document_upload')
                 ->label('Unggah Dokumen Pendukung')
                 ->collection(fn(callable $get) => $get('selected_collection'))
-                ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection')))
+                ->directory(fn(callable $get) => $livewireComponent->getUploadDirectory($get('selected_collection')))
                 ->openable()
                 ->downloadable()
                 ->maxSize(20480)
                 ->preserveFilenames()
                 ->previewable(true)
                 ->columnSpanFull()
-                ->disabled($shouldLock)
                 ->acceptedFileTypes([
                     'application/pdf',
                     'image/*',
@@ -169,6 +167,9 @@ trait BuildIsiPenilaian
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 ])
                 ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
+                ->customProperties(fn(callable $get) => [
+                    'directory' => $livewireComponent->getUploadDirectory($get('selected_collection'))
+                ])
         ];
     }
 
@@ -201,7 +202,11 @@ trait BuildIsiPenilaian
         if ($includeMedia && $penilaian) {
             $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
             $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
-            $fill['selected_collection'] = $folder?->collection ?? 'default';
+            // Ambil subfolder laporan-imut untuk collection yang benar
+            $laporanImutFolder = $folder ? Folder::where('parent_id', $folder->id)
+                ->where('collection', 'LIKE', '%-laporan-imut')
+                ->first() : null;
+            $fill['selected_collection'] = $laporanImutFolder?->collection ?? ($folder?->collection . '-laporan-imut') ?? 'default';
         }
 
         return $fill;
@@ -220,13 +225,17 @@ trait BuildIsiPenilaian
 
         $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
         $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+        // Ambil subfolder laporan-imut untuk collection yang benar
+        $laporanImutFolder = $folder ? Folder::where('parent_id', $folder->id)
+            ->where('collection', 'LIKE', '%-laporan-imut')
+            ->first() : null;
 
         $update = [
             'numerator_value'   => $data['numerator_value'] ?? null,
             'denominator_value' => $data['denominator_value'] ?? null,
             'analysis'          => $data['analysis'] ?? null,
             'recommendations'   => $data['recommendations'] ?? null,
-            'selected_collection' => $folder?->collection ?? 'default',
+            'selected_collection' => $laporanImutFolder?->collection ?? ($folder?->collection . '-laporan-imut') ?? 'default',
         ];
         if ($record->profile->imutData->is_monthly) {
             // For monthly data, we only update analysis and recommendations, not the numerator/denominator
@@ -240,7 +249,7 @@ trait BuildIsiPenilaian
                 'denominator_value' => $data['denominator_value'] ?? null,
                 'analysis'          => $data['analysis'] ?? null,
                 'recommendations'   => $data['recommendations'] ?? null,
-                'selected_collection' => $folder?->collection ?? 'default',
+                'selected_collection' => $laporanImutFolder?->collection ?? ($folder?->collection . '-laporan-imut') ?? 'default',
             ];
         }
 

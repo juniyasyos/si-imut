@@ -43,6 +43,12 @@ class FolderPathGenerator implements PathGenerator
             return (string) $media->id;
         }
 
+        // PRIORITY: Cek directory dari custom properties untuk periode folder
+        $customDirectory = $media->getCustomProperty('directory');
+        if ($customDirectory) {
+            return $customDirectory;
+        }
+
         // Cek apakah media attached ke Folder model
         if ($media->model_type === 'Juniyasyos\FilamentMediaManager\Models\Folder' && $media->model_id) {
             $folder = \Juniyasyos\FilamentMediaManager\Models\Folder::find($media->model_id);
