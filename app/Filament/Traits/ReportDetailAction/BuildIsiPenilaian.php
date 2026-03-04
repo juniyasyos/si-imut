@@ -5,6 +5,7 @@ namespace App\Filament\Traits\ReportDetailAction;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Services\Form\FormCalculationService;
+use Carbon\Carbon;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -53,13 +54,6 @@ trait BuildIsiPenilaian
                     }
                 }
 
-                // dd([
-                //     'formTemplateId' => $formTemplateId,
-                //     'imutProfileId' => $imutProfileId,
-                //     'unitKerjaId' => $unitKerjaId,
-                //     'period' => $period,
-                //     'laporan' => $laporan,
-                // ]);
                 return [
                     Section::make('Perhitungan')
                         ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))
@@ -67,14 +61,32 @@ trait BuildIsiPenilaian
 
                     Section::make('Unggah Bukti Pendukung')
                         ->visible(function ($record) {
-                            return ! $record->profile->imutData->is_monthly;
+                            // Show media upload if:
+                            // 1. Not monthly data (original logic) OR
+                            // 2. Has existing media files uploaded
+                            $hasExistingMedia = false;
+                            $penilaian = \App\Models\ImutPenilaian::find($record->id);
+                            if ($penilaian) {
+                                $hasExistingMedia = $penilaian->getMedia('*')->count() > 0;
+                            }
+
+                            return !$record->profile->imutData->is_monthly || $hasExistingMedia;
                         })
-                        ->disabled(true)
                         ->schema($this->getMediaUploadFieldForAction($livewireComponent)),
 
                     Section::make('Data Pendukung')
                         ->visible(function (callable $get, $record) {
-                            return $record->profile->imutData->is_monthly;
+                            // Show data pendukung if:
+                            // 1. Is monthly data (original logic) AND
+                            // 2. Has NO existing media files uploaded
+                            $hasExistingMedia = false;
+                            $penilaian = \App\Models\ImutPenilaian::find($record->id);
+                            if ($penilaian) {
+                                // dd($penilaian->getMedia('*'));
+                                $hasExistingMedia = $penilaian->getMedia('*')->count() > 0;
+                            }
+
+                            return $record->profile->imutData->is_monthly && !$hasExistingMedia;
                         })
                         ->description('Tidak ada dokumen pendukung. Lihat data laporan harian untuk informasi lebih detail.')
                         ->schema([
@@ -100,15 +112,51 @@ trait BuildIsiPenilaian
             ->after(fn() => $this->dispatch('$refresh'));
     }
 
+    protected function buildPerhitunganSchemaForAction($livewireComponent): array
+    {
+        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+
+        return [
+            TextInput::make('numerator_value')
+                ->label('Numerator')
+                ->numeric()
+                ->placeholder('0.00')
+                ->nullable()
+                ->debounce(1000)
+                ->readOnly($shouldLock)
+                ->disabled(fn($record) => $record->profile->imutData->is_monthly)
+                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+            TextInput::make('denominator_value')
+                ->label('Denominator')
+                ->numeric()
+                ->placeholder('0.00')
+                ->nullable()
+                ->debounce(1000)
+                ->readOnly($shouldLock)
+                ->disabled(fn($record) => $record->profile->imutData->is_monthly)
+                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+            TextInput::make('result_operation')
+                ->label('Result (%)')
+                ->numeric()
+                ->placeholder('0.00')
+                ->readOnly()
+                ->debounce(1000)
+                ->dehydrated(false)
+                ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+        ];
+    }
+
     protected function buildAnalysisSchemaForAction($livewireComponent): array
     {
         $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
-     
+
         return [
             Textarea::make('analysis')
                 ->label('Analisis')
                 ->rows(4)
-                ->required()
+                ->required(!$shouldLock)
                 ->minLength(20)
                 ->maxLength(100000)
                 ->readOnly($shouldLock)
@@ -126,7 +174,7 @@ trait BuildIsiPenilaian
 
             Textarea::make('recommendations')
                 ->label('Rekomendasi')
-                ->required()
+                ->required(!$shouldLock)
                 ->minLength(20)
                 ->maxLength(100000)
                 ->readOnly($shouldLock)
@@ -153,7 +201,28 @@ trait BuildIsiPenilaian
             SpatieMediaLibraryFileUpload::make('document_upload')
                 ->label('Unggah Dokumen Pendukung')
                 ->collection(fn(callable $get) => $get('selected_collection'))
-                ->directory(fn(callable $get) => 'uploads/imut-documents/' . ($get('selected_collection')))
+                ->disk(config('media-library.disk_name', 's3'))
+                ->directory(function (callable $get, $record) {
+                    if (!$record) {
+                        return '';
+                    }
+
+                    $penilaian = ImutPenilaian::find($record->id);
+                    $laporan = $penilaian?->laporanUnitKerja?->laporanImut;
+
+                    if ($laporan) {
+                        // Format: Maret 2026
+                        $bulanNama = Carbon::createFromDate(
+                            $laporan->report_year,
+                            $laporan->report_month,
+                            1
+                        )->locale('id')->translatedFormat('F Y');
+
+                        return $bulanNama;
+                    }
+
+                    return '';
+                })
                 ->openable()
                 ->downloadable()
                 ->maxSize(20480)
@@ -199,9 +268,8 @@ trait BuildIsiPenilaian
         ];
 
         if ($includeMedia && $penilaian) {
-            $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
-            $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
-            $fill['selected_collection'] = $folder?->collection ?? 'default';
+            $selected_collection = $this->getOrCreateLaporanImutFolder($penilaian);
+            $fill['selected_collection'] = $selected_collection;
         }
 
         return $fill;
@@ -218,15 +286,14 @@ trait BuildIsiPenilaian
             return;
         }
 
-        $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
-        $folder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+        $selected_collection = $this->getOrCreateLaporanImutFolder($penilaian);
 
         $update = [
             'numerator_value'   => $data['numerator_value'] ?? null,
             'denominator_value' => $data['denominator_value'] ?? null,
             'analysis'          => $data['analysis'] ?? null,
             'recommendations'   => $data['recommendations'] ?? null,
-            'selected_collection' => $folder?->collection ?? 'default',
+            'selected_collection' => $selected_collection,
         ];
         if ($record->profile->imutData->is_monthly) {
             // For monthly data, we only update analysis and recommendations, not the numerator/denominator
@@ -240,11 +307,49 @@ trait BuildIsiPenilaian
                 'denominator_value' => $data['denominator_value'] ?? null,
                 'analysis'          => $data['analysis'] ?? null,
                 'recommendations'   => $data['recommendations'] ?? null,
-                'selected_collection' => $folder?->collection ?? 'default',
+                'selected_collection' => $selected_collection,
             ];
         }
 
         $penilaian->update($update);
+
+        // Attach uploaded media to Folder model
+        $this->attachUploadedMediaToFolder($selected_collection);
+    }
+
+    /**
+     * Attach unattached media to Folder model
+     * This ensures that newly uploaded files via SpatieMediaLibraryFileUpload
+     * are properly associated with the Folder in the database
+     */
+    protected function attachUploadedMediaToFolder(string $folderCollection): void
+    {
+        // Get the folder by collection name
+        $folder = Folder::where('collection', $folderCollection)->first();
+
+        if (!$folder) {
+            return;
+        }
+
+        // Get the media model class
+        $mediaModel = class_exists('Spatie\MediaLibrary\MediaCollections\Models\Media')
+            ? 'Spatie\MediaLibrary\MediaCollections\Models\Media'
+            : 'Spatie\Permission\Models\Media';
+
+        // Find unattached media with this collection_name
+        // Unattached media will have NULL model_id and model_type
+        $unattachedMedia = $mediaModel::where('collection_name', $folderCollection)
+            ->whereNull('model_id')
+            ->whereNull('model_type')
+            ->get();
+
+        // Attach each unattached media file to the folder
+        foreach ($unattachedMedia as $media) {
+            $media->update([
+                'model_id' => $folder->id,
+                'model_type' => Folder::class,
+            ]);
+        }
     }
 
     /**
@@ -273,5 +378,113 @@ trait BuildIsiPenilaian
         }
 
         return $url;
+    }
+
+    public function isLaporanPeriodClosed(): bool
+    {
+        // Ensure laporan is loaded
+        if (!$this->laporan && !$this->loadLaporan()) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        $endDate = Carbon::parse($this->laporan->assessment_period_end);
+
+        // During assessment period (including end date): not editable for analysis
+        if ($today->lte($endDate)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function createAnalisistAndRecomendation(): bool
+    {
+        if (!$this->laporan && !$this->loadLaporan()) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        $endDate = Carbon::parse($this->laporan->assessment_period_end);
+        $endDateWithGrace = $endDate->copy()->addDays(
+            $this->laporan->recommendation_analysis_duration ?? 0
+        );
+
+        // True hanya jika di antara endDate dan endDateWithGrace
+        if ($today->gt($endDate) && $today->lte($endDateWithGrace)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the laporan is editable for analysis and recommendations.
+     *
+     * Logic:
+     * - During assessment period (up to end date): NOT editable
+     * - After end date: Editable within recommendation_analysis_duration days
+     *
+     * @return bool
+     */
+    public function isLaporanEditable(): bool
+    {
+        // Ensure laporan is loaded
+        if (!$this->laporan && !$this->loadLaporan()) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        $endDate = Carbon::parse($this->laporan->assessment_period_end);
+
+        // During assessment period (including end date): not editable for analysis
+        if ($today->lte($endDate)) {
+            return false;
+        }
+
+        // After assessment period: editable within analysis duration window
+        $analysisDuration = $this->laporan->recommendation_analysis_duration ?? 0;
+        $analysisDeadline = $endDate->copy()->addDays($analysisDuration);
+
+        return $today->lte($analysisDeadline);
+    }
+
+    /**
+     * Get or create "Laporan IMUT" folder under unit kerja folder
+     * Returns the UUID of the Laporan IMUT folder
+     */
+    protected function getOrCreateLaporanImutFolder($penilaian): string
+    {
+        $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+
+        if (!$unitKerja) {
+            return 'default';
+        }
+
+        // Find the unit kerja folder (parent folder)
+        $unitKerjaFolder = Folder::where('collection', Str::slug($unitKerja->unit_name))->first();
+
+        if (!$unitKerjaFolder) {
+            return 'default';
+        }
+
+        $subLaporan = $unitKerjaFolder->collection . '-laporan-imut';
+        // Look for "Laporan IMUT" subfolder inside unit kerja folder
+        $laporanImutFolder = Folder::where('parent_id', $unitKerjaFolder->id)
+            ->where('collection', $subLaporan) // or match by name
+            ->first();
+
+        // If not found, create it
+        if (!$laporanImutFolder) {
+            $laporanImutFolder = Folder::create([
+                'parent_id' => $unitKerjaFolder->id,
+                'name' => 'Laporan IMUT',
+                'collection' => $subLaporan,
+                'user_id' => auth()->id(),
+                'user_type' => auth()->check() ? get_class(auth()->user()) : null,
+            ]);
+        }
+
+        return $laporanImutFolder->collection;
     }
 }

@@ -58,12 +58,6 @@ class ImutPenilaian extends Model implements HasMedia
         'calculation_metadata' => 'array',
     ];
 
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('documents')
-            ->useDisk('public');
-    }
-
     /**
      * Boot model events
      */
