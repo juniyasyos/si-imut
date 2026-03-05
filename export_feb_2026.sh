@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 set -e  # Exit on error
 
 DB_USER="siimut"
@@ -13,7 +14,7 @@ echo "" >> "$OUTPUT_FILE"
 
 # Export laporan_imuts
 echo "-- ====== LAPORAN_IMUTS ======" >> "$OUTPUT_FILE"
-mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY1' >> "$OUTPUT_FILE"
+docker compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY1' >> "$OUTPUT_FILE"
 SELECT CONCAT(
     'INSERT INTO laporan_imuts (id, name, slug, status, assessment_period_start, assessment_period_end, report_month, report_year, recommendation_analysis_duration, created_by, is_auto_generated, created_at, updated_at) VALUES (',
     id, ', ',
