@@ -471,7 +471,7 @@ trait BuildIsiPenilaian
         $subLaporan = $unitKerjaFolder->collection . '-laporan-imut';
         // Look for "Laporan IMUT" subfolder inside unit kerja folder
         $laporanImutFolder = Folder::where('parent_id', $unitKerjaFolder->id)
-            ->where('collection', $subLaporan) // or match by name
+            ->where('collection', $subLaporan)
             ->first();
 
         // If not found, create it
@@ -485,6 +485,37 @@ trait BuildIsiPenilaian
             ]);
         }
 
-        return $laporanImutFolder->collection;
+        // Get laporan period from LaporanImut model, not ImutPenilaian
+        $laporan = $penilaian->laporanUnitKerja?->laporanImut;
+
+        if (!$laporan) {
+            return $laporanImutFolder->collection;
+        }
+
+        // Format: Maret 2026
+        $bulanNama = Carbon::createFromDate(
+            $laporan->report_year,
+            $laporan->report_month,
+            1
+        )->locale('id')->translatedFormat('F Y');
+
+        $penilaianPeriode = strtolower(str_replace(' ', '-', $bulanNama));
+
+        $folderLaporanImutPeriode = Folder::where('parent_id', $laporanImutFolder->id)
+            ->where('collection', $subLaporan . '-' . $penilaianPeriode)
+            ->first();
+
+        // If not found, create it
+        if (!$folderLaporanImutPeriode) {
+            $folderLaporanImutPeriode = Folder::create([
+                'parent_id' => $laporanImutFolder->id,
+                'name' => $bulanNama,
+                'collection' => $subLaporan . '-' . $penilaianPeriode,
+                'user_id' => auth()->id(),
+                'user_type' => auth()->check() ? get_class(auth()->user()) : null,
+            ]);
+        }
+
+        return $folderLaporanImutPeriode->collection;
     }
 }
