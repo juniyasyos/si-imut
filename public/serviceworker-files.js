@@ -1,8 +1,8 @@
 const FILES_TO_CACHE = [
   "/offline",
   "/build/manifest.json",
+  "/build/assets/app-Cqzt2GIU.css",
   "/build/assets/app-H1PJOR-A.js",
-  "/build/assets/app-pTRFL-_B.css",
   "/build/assets/theme-DPjap-56.css",
   "/build/assets/vendor-xsH4HHeE.js",
   "/images/assets/doctor-hero.png",

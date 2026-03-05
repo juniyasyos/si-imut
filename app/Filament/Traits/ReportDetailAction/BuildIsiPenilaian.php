@@ -202,6 +202,7 @@ trait BuildIsiPenilaian
                 ->label('Unggah Dokumen Pendukung')
                 ->collection(fn(callable $get) => $get('selected_collection'))
                 ->disk(config('media-library.disk_name', 's3'))
+                ->disabled($shouldLock)
                 ->directory(function (callable $get, $record) {
                     if (!$record) {
                         return '';
@@ -237,9 +238,9 @@ trait BuildIsiPenilaian
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 ])
                 ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
-                ->customProperties(fn(callable $get) => [
-                    'directory' => $livewireComponent->getUploadDirectory($get('selected_collection'))
-                ])
+                // ->customProperties(fn(callable $get) => [
+                //     'directory' => $livewireComponent->getUploadDirectory($get('selected_collection'))
+                // ])
         ];
     }
 
