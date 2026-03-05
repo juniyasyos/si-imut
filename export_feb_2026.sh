@@ -13,7 +13,7 @@ echo "" >> "$OUTPUT_FILE"
 
 # Export laporan_imuts
 echo "-- ====== LAPORAN_IMUTS ======" >> "$OUTPUT_FILE"
-docker compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY1' >> "$OUTPUT_FILE"
+mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY1' >> "$OUTPUT_FILE"
 SELECT CONCAT(
     'INSERT INTO laporan_imuts (id, name, slug, status, assessment_period_start, assessment_period_end, report_month, report_year, recommendation_analysis_duration, created_by, is_auto_generated, created_at, updated_at) VALUES (',
     id, ', ',
@@ -39,7 +39,7 @@ echo "" >> "$OUTPUT_FILE"
 echo "-- ====== LAPORAN_UNIT_KERJAS ======" >> "$OUTPUT_FILE"
 
 # Export laporan_unit_kerjas untuk laporan Februari 2026
-docker-compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY2' >> "$OUTPUT_FILE"
+docker compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY2' >> "$OUTPUT_FILE"
 SELECT CONCAT(
     'INSERT INTO laporan_unit_kerjas (id, laporan_imut_id, unit_kerja_id, created_at, updated_at) VALUES (',
     luk.id, ', ',
@@ -58,7 +58,7 @@ echo "" >> "$OUTPUT_FILE"
 echo "-- ====== IMUT_PENILAIANS ======" >> "$OUTPUT_FILE"
 
 # Export imut_penilaians untuk laporan Februari 2026
-docker-compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY3' >> "$OUTPUT_FILE"
+docker compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY3' >> "$OUTPUT_FILE"
 SELECT CONCAT(
     'INSERT INTO imut_penilaians (id, imut_profil_id, laporan_unit_kerja_id, analysis, recommendations, numerator_value, denominator_value, is_auto_calculated, calculation_metadata, created_at, updated_at) VALUES (',
     ip.id, ', ',
