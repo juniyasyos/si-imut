@@ -59,7 +59,7 @@ echo "-- ====== IMUT_PENILAIANS ======" >> "$OUTPUT_FILE"
 # Export imut_penilaians untuk laporan Februari 2026
 docker compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY3' >> "$OUTPUT_FILE"
 SELECT CONCAT(
-    'INSERT INTO imut_penilaians (id, imut_profil_id, laporan_unit_kerja_id, analysis, recommendations, numerator_value, denominator_value, is_auto_calculated, calculation_metadata, created_at, updated_at) VALUES (',
+    'INSERT INTO imut_penilaians (id, imut_profil_id, laporan_unit_kerja_id, analysis, recommendations, numerator_value, denominator_value, created_at, updated_at) VALUES (',
     ip.id, ', ',
     ip.imut_profil_id, ', ',
     ip.laporan_unit_kerja_id, ', ',
@@ -67,8 +67,6 @@ SELECT CONCAT(
     QUOTE(ip.recommendations), ', ',
     IFNULL(ip.numerator_value, 'NULL'), ', ',
     IFNULL(ip.denominator_value, 'NULL'), ', ',
-    ip.is_auto_calculated, ', ',
-    QUOTE(ip.calculation_metadata), ', ',
     QUOTE(ip.created_at), ', ',
     QUOTE(ip.updated_at),
     ');'
