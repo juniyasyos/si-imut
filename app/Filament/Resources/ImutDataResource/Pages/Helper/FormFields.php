@@ -45,6 +45,7 @@ class FormFields
         }
 
         switch ($field->field_type) {
+            default:
             case 'text':
                 $historySuggestions = $field->history_suggestions ?? [];
 
@@ -75,9 +76,6 @@ class FormFields
                         // Add new value if not already exists
                         if (!in_array($newValue, $currentHistory)) {
                             $currentHistory[] = $newValue;
-
-                            // Limit to 10 suggestions, keep most recent
-                            $currentHistory = array_slice($currentHistory, -10);
 
                             // Update field in database
                             $field->update([
@@ -156,12 +154,12 @@ class FormFields
                         ->live();
                 }
 
-            default:
-                return TextInput::make($field->field_key)
-                    ->label($baseConfig['label'])
-                    ->helperText($baseConfig['helperText'])
-                    ->required($field->validation_config['required'] ?? false)
-                    ->visible($visibleCondition);
+            // default:
+            //     return TextInput::make($field->field_key)
+            //         ->label($baseConfig['label'])
+            //         ->helperText($baseConfig['helperText'])
+            //         ->required($field->validation_config['required'] ?? false)
+            //         ->visible($visibleCondition);
         }
     }
 

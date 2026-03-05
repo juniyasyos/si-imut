@@ -5,7 +5,9 @@ namespace App\Filament\Resources\ImutProfileResource\Pages\Helper;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TextFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\NumberFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
+use App\Forms\Components\AutocompleteTextInput;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\BooleanFieldBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\DateFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeDurationFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 
@@ -30,11 +32,8 @@ class FormFields
         $required = $field->validation_config['required'] ?? false;
         $visibleCondition = ConditionalLogicHandler::getVisibilityCondition($field->conditional_logic, $prefix);
 
-        // if ($field->field_key === 'six_steps_compliance') {
-        //     dd($field);
-        // }
-
         switch ($field->field_type) {
+            default:
             case 'text':
                 $historySuggestions = $field->history_suggestions ?? [];
 
@@ -43,18 +42,16 @@ class FormFields
                     $historySuggestions = json_decode($historySuggestions, true) ?? [];
                 }
 
-                // Always use Select field for text inputs to enable history building
-                $options = array_combine($historySuggestions, $historySuggestions); // value => label
-
-                return SelectFieldBuilder::createSearchableSelect(
-                    $fieldKey,
-                    $label,
-                    $helperText,
-                    $options,
-                    $required,
-                    $visibleCondition,
-                    $isPreview ? null : function ($newValue, $newLabel) use ($field) {
-                        // Auto-add to history suggestions when user enters new value (only in non-preview mode)
+                return AutocompleteTextInput::make($fieldKey)
+                    ->label($label)
+                    ->helperText($helperText)
+                    ->required($required)
+                    ->visible($visibleCondition)
+                    ->lazy()
+                    ->suggestions($historySuggestions)
+                    ->previewMode($isPreview)
+                    ->onNewValue($isPreview ? null : function ($newValue) use ($field) {
+                        // Auto-add to history suggestions when user enters new value
                         $currentHistory = $field->history_suggestions ?? [];
 
                         // Decode if it's a JSON string
@@ -66,16 +63,12 @@ class FormFields
                         if (!in_array($newValue, $currentHistory)) {
                             $currentHistory[] = $newValue;
 
-                            // Limit to 10 suggestions, keep most recent
-                            $currentHistory = array_slice($currentHistory, -10);
-
                             // Update field in database
                             $field->update([
                                 'history_suggestions' => $currentHistory
                             ]);
                         }
-                    }
-                );
+                    });
 
             case 'number':
                 return NumberFieldBuilder::create(
@@ -125,13 +118,6 @@ class FormFields
                 $threshold = $field->validation_config['threshold'] ?? '00:15';
                 $thresholdType = $field->validation_config['threshold_type'] ?? 'less_than';
                 $customLabels = $field->validation_config['custom_labels'] ?? [];
-                // dd([
-                //     'field_key' => $fieldKey,
-                //     'field_validation_config' => $field->validation_config,
-                //     'threshold_from_config' => $threshold,
-                //     'threshold_type_from_config' => $thresholdType,
-                //     'field_object' => $field
-                // ]);
                 return TimeDurationFieldBuilder::create(
                     $fieldKey,
                     $required,
@@ -154,15 +140,31 @@ class FormFields
                     $customLabels
                 );
 
-            default:
-                return TextFieldBuilder::create(
+            case 'date':
+                $minDate = $field->validation_config['min_date'] ?? null;
+                $maxDate = $field->validation_config['max_date'] ?? null;
+                $defaultDate = $field->validation_config['default_date'] ?? null;
+                return DateFieldBuilder::create(
                     $fieldKey,
                     $label,
                     $helperText,
-                    100,
                     $required,
-                    $visibleCondition
+                    $visibleCondition,
+                    $minDate,
+                    $maxDate,
+                    $defaultDate
                 );
+
+                // default:
+                //     // dd('test masuk default', $field->field_type);
+                //     return TextFieldBuilder::create(
+                //         $fieldKey,
+                //         $label,
+                //         $helperText,
+                //         255,
+                //         $required,
+                //         $visibleCondition
+                //     );
         }
     }
 

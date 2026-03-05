@@ -14,6 +14,7 @@ use App\Models\ImutData;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -125,6 +126,8 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             ->columns(TableSchema::columns())
             ->headerActions(TableSchema::headerActions())
             ->filters(TableSchema::filters())
+            ->filtersLayout(FiltersLayout::Dropdown)
+            ->filtersFormColumns(2) // 🔥 bikin 3 kolom
             ->actions(TableSchema::actions())
             ->bulkActions(TableSchema::bulkActions());
     }

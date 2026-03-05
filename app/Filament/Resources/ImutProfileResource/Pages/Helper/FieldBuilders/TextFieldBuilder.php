@@ -11,7 +11,7 @@ class TextFieldBuilder
 {
     /**
      * Create a text input field
-     * 
+     *
      * @param string $fieldKey Field key
      * @param string $label Field label
      * @param string|null $helperText Helper text
@@ -21,6 +21,8 @@ class TextFieldBuilder
      * @param string|null $defaultValue Default value
      * 
      * @param array $historySuggestions History suggestions for datalist
+     * @param callable|null $onBlurCallback Callback dipanggil setelah user selesai mengetik (onBlur).
+     *                                      Signature: function(string $value): void
      * @return TextInput
      */
     public static function create(
@@ -31,7 +33,8 @@ class TextFieldBuilder
         bool $required = false,
         $visibleCondition = true,
         ?string $defaultValue = null,
-        array $historySuggestions = []
+        array $historySuggestions = [],
+        ?callable $onBlurCallback = null
     ): TextInput {
         $input = TextInput::make($fieldKey)
             ->label($label)
@@ -46,6 +49,15 @@ class TextFieldBuilder
 
         if (!empty($historySuggestions)) {
             $input->datalist($historySuggestions);
+        }
+
+        if ($onBlurCallback !== null) {
+            $input->live(onBlur: true)
+                ->afterStateUpdated(function (?string $state) use ($onBlurCallback) {
+                    if (filled($state)) {
+                        $onBlurCallback($state);
+                    }
+                });
         }
 
         return $input;

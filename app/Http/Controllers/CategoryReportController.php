@@ -102,6 +102,7 @@ class CategoryReportController extends Controller
         $yearMonthStrings = $months; // already in 'YYYY-MM' format
 
         $penilaians = ImutPenilaian::with(['profile.imutData', 'laporanUnitKerja.laporanImut'])
+            ->whereHas('profile.imutData', fn($q) => $q->where('status', true))
             ->when(count($categories) > 0, fn($q) => $q->whereHas('profile.imutData.categories', fn($q2) => $q2->whereIn('id', $categories)))
             ->when(count($yearMonthStrings) > 0, function ($q) use ($yearMonthStrings, $startDate, $endDate) {
                 $q->whereHas('laporanUnitKerja.laporanImut', function ($q2) use ($yearMonthStrings, $startDate, $endDate) {
@@ -218,11 +219,20 @@ class CategoryReportController extends Controller
             $monthly = [];
             $lastStandard = null;
             $lastOperator = null;
-            $imutId = $row['imut_data_id'];
-            $imutItems = $grouped[$imutId] ?? [];
-            $monthly = [];
-            $lastStandard = null;
-            $lastOperator = null;
+
+            // collect unique units for this imut from all penilaians
+            $units = [];
+            if (isset($grouped[$imutId])) {
+                foreach ($grouped[$imutId] as $monthItems) {
+                    foreach ($monthItems as $penilaian) {
+                        $unitKerja = $penilaian->laporanUnitKerja?->unitKerja;
+                        if ($unitKerja && !isset($units[$unitKerja->id])) {
+                            $units[$unitKerja->id] = $unitKerja->unit_name;
+                        }
+                    }
+                }
+            }
+            $units = array_values($units); // reset keys
 
             foreach ($months as $m) {
                 $items = collect($imutItems[$m] ?? []);
@@ -340,6 +350,7 @@ class CategoryReportController extends Controller
                 'regionTypesInfo' => $regionTypeInfo,
                 'benchmarks' => $benchmarks,
                 'notes' => $notesMap[$imutId] ?? [],
+                'units' => $units,
             ];
         }
 
@@ -457,7 +468,7 @@ class CategoryReportController extends Controller
         $categoryDetails = collect();
         if (count($categories) > 0) {
             $categoryDetails = \App\Models\ImutCategory::whereIn('id', $categories)
-                ->get(['category_name', 'description']);
+                ->get(['id', 'category_name', 'description', 'scope']);
             $categoryNames = $categoryDetails->pluck('category_name')->toArray();
         }
 

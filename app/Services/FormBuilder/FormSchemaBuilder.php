@@ -49,13 +49,15 @@ class FormSchemaBuilder
                             'auto_calculate' => 'Kalkulasi Otomatis (Direkomendasikan)',
                             'manual_check' => 'Pemeriksaan Manual',
                         ])
-                        ->disabled(fn($record) => self::shouldBeReadonly($record))
+                        ->disabled()
+                        ->dehydrated() // 🔥 ini penting
                         ->default('auto_calculate')
                         ->helperText('Kalkulasi otomatis akan menghitung compliance berdasarkan bobot field dan nilai kritikalitas.'),
 
                     Toggle::make('auto_fail_on_critical')
                         ->label('Auto Fail pada Field Kritical')
-                        ->disabled(fn($record) => self::shouldBeReadonly($record))
+                        ->disabled()
+                        ->dehydrated() // 🔥 tambahin ini juga
                         ->helperText('Jika diaktifkan, form akan langsung dianggap tidak compliant jika ada field kritical yang tidak terisi.')
                         ->default(true),
                 ])
@@ -161,7 +163,7 @@ class FormSchemaBuilder
                             '5' => 'Sangat Tinggi (5)',
                         ])
                         ->default('2')
-                        ->disabled(fn($get) => $get('field_type') === 'text')
+                        ->visible()
                         ->helperText(fn($get) => $get('field_type') === 'text'
                             ? 'Field teks tidak berkontribusi pada compliance score (otomatis 0)'
                             : 'Bobot untuk kalkulasi compliance score')
@@ -237,6 +239,20 @@ class FormSchemaBuilder
                                 ->placeholder('Masukkan saran input...'),
                         ])
                         ->defaultItems(0)
+
+                        ->deleteAction(
+                            fn(\Filament\Forms\Components\Actions\Action $action) => $action
+                                ->label('Hapus Saran')
+                                ->icon('heroicon-o-trash')
+                                ->color('danger')
+                                ->requiresConfirmation()
+                                ->modalHeading('Konfirmasi Hapus Saran')
+                                ->modalDescription(
+                                    'Apakah Anda yakin ingin menghapus saran input ini? ' .
+                                        'Saran yang dihapus akan hilang dari dropdown saat user mengetik.'
+                                )
+                                ->modalSubmitActionLabel('Ya, Hapus Saran')
+                        )
                         ->addActionLabel('Tambah Saran')
                         ->helperText('Saran input akan muncul sebagai dropdown saat user mengetik. Maksimal 10 saran akan disimpan.')
                         ->visible(fn($get) => $get('field_type') === 'text')
@@ -399,7 +415,7 @@ class FormSchemaBuilder
                     TimePicker::make('validation_config.threshold')
                         ->label('Threshold Durasi Valid')
                         ->seconds(false)
-                        ->format('H:i') 
+                        ->format('H:i')
                         ->displayFormat('H:i')
                         ->hoursStep(1)
                         ->minutesStep(1)

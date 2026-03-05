@@ -152,12 +152,15 @@ $imutBenchmarkTypes[$imut['id']] = $types;
             <!--        TABLE SUMMARY            -->
             <!-- =============================== -->
             <div class="mb-6 overflow-x-auto rounded-xl border border-gray-300 shadow-sm bg-white">
-                <table class="min-w-full text-[11px] border-separate border-spacing-0">
+                <table class="min-w-full text-[11px] border-separate border-spacing-0" style="table-layout: fixed;">
 
                     @php
                     $lastMonth = last($allMonths)['label'] ?? null;
                     $grouped = collect($dataByImut)->groupBy('category');
-                    $colspan = 3 + count($allMonths) * 3;
+                    // check if any category has scope = 'unit'
+                    $hasUnitScope = collect($categoryDetails)->contains(fn($cat) => $cat->scope === 'unit');
+                    $baseColspan = 3 + count($allMonths) * 3;
+                    $colspan = $hasUnitScope ? $baseColspan + 1 : $baseColspan;
                     $counter = 0;
                     @endphp
 
@@ -166,12 +169,15 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
                         <!-- Header utama -->
                         <tr class="bg-slate-800 text-white text-[10px]">
-                            <th class="px-2 py-2 text-center w-8 border-gray-700">No</th>
-                            <th class="px-3 py-2 text-left w-[30%] whitespace-normal border-gray-700">Indikator Mutu</th>
-                            <th class="px-2 py-2 text-center w-24 border-gray-700">Target</th>
+                            <th class="px-2 py-2 text-center border-gray-700" style="width: 50px;">No</th>
+                            <th class="px-3 py-2 text-left border-gray-700" style="width: 300px; word-wrap: break-word;">Indikator Mutu</th>
+                            <th class="px-2 py-2 text-center border-gray-700" style="width: 100px;">Target</th>
+                            @if($hasUnitScope)
+                            <th class="px-2 py-2 text-left border-gray-700">Unit</th>
+                            @endif
 
                             @foreach($allMonths as $month)
-                            <th class="px-2 py-2 text-center border-l border-gray-700 bg-slate-600"
+                            <th class="px-2 py-2 w-24 text-center border-l border-gray-700 bg-slate-600"
                                 colspan="3">
                                 {{ $month['label'] }}
                             </th>
@@ -183,6 +189,9 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                             <th class="border-gray-300"></th>
                             <th class="border-gray-300"></th>
                             <th class="border-gray-300"></th>
+                            @if($hasUnitScope)
+                            <th class="border-gray-300"></th>
+                            @endif
 
                             @foreach($allMonths as $month)
                             <th class="px-1 py-1 text-center border-l border-gray-200">N</th>
@@ -231,7 +240,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                         </td>
 
                                         <!-- INDIKATOR -->
-                                        <td class="px-3 py-1.5 border-b border-gray-100 w-36 whitespace-normal">
+                                        <td class="px-3 py-1.5 border-b border-gray-100" style="width: 300px; word-wrap: break-word; overflow-wrap: break-word; max-width: 300px;">
                                             {{ $imut['title'] }}
                                         </td>
 
@@ -243,6 +252,22 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                                 {{ $symbol }} {{ floor($standard) }}%
                                             </span>
                                         </td>
+
+                                        @if($hasUnitScope)
+                                        <td class="px-0.5 py-0.5 border-b border-gray-100 text-xs align-top max-w-xs">
+                                            @if(!empty($imut['units']))
+                                            <div class="flex flex-col gap-1">
+                                                @foreach($imut['units'] as $unit)
+                                                <span class="px-1 py-0 rounded text-[8px] font-medium whitespace-nowrap bg-purple-50 text-purple-700 border border-purple-200 truncate">
+                                                    {{ $unit }}
+                                                </span>
+                                                @endforeach
+                                            </div>
+                                            @else
+                                            <span class="text-gray-400 text-[10px]">-</span>
+                                            @endif
+                                        </td>
+                                        @endif
 
                                         <!-- DATA BULAN -->
                                         @foreach($allMonths as $month)
@@ -522,7 +547,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
                     {{-- ================= TABEL ================= --}}
                     <div class="overflow-x-auto">
-                        <table class="w-full text-xs border-collapse">
+                        <table class="w-full text-xs border-collapse" style="table-layout: fixed;">
 
                             {{-- ================= HEADER ================= --}}
                             <thead>
@@ -545,8 +570,11 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                 @endphp
 
                                 <tr class="text-[10px] uppercase tracking-wide">
-                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}">Periode</th>
-                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">N</th>
+                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}; width: 120px;">Periode</th>
+                                    @if($hasUnitScope && !empty($imut['units']))
+                                    <th class="px-2 py-1 text-left" style="{{ $defaultBg }}; width: 150px;">Unit</th>
+                                    @endif
+                                    <th class="px-2 py-1 text-center" style="{{ $defaultBg }}; width: 60px;">N</th>
                                     <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">D</th>
                                     <th class="px-2 py-1 text-center" style="{{ $defaultBg }}">Standar</th>
                                     <th class="px-2 py-1 text-right" style="{{ $defaultBg }}">%</th>
@@ -600,6 +628,18 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                             <td class="px-3 py-1 font-medium text-slate-800">
                                                 {{ $dataPoint['month_label'] }}
                                             </td>
+
+                                            @if($hasUnitScope && !empty($imut['units']))
+                                            <td class="px-0.5 py-0.5 text-xs max-w-xs">
+                                                <div class="flex flex-col gap-0.5">
+                                                    @foreach($imut['units'] as $unit)
+                                                    <span class="inline-flex items-center px-0.5 py-0 rounded text-[7px] font-medium bg-purple-50 text-purple-700 border border-purple-200 truncate">
+                                                        {{ $unit }}
+                                                    </span>
+                                                    @endforeach
+                                                </div>
+                                            </td>
+                                            @endif
 
                                             <td class="px-3 py-1 text-center">
                                                 {{ number_format($dataPoint['numerator']) }}
@@ -667,6 +707,9 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                         <tr class="bg-slate-100 font-semibold text-slate-900">
 
                                             <td class="px-3 py-3">Total / Rata-rata</td>
+                                            @if($hasUnitScope && !empty($imut['units']))
+                                            <td class="px-3 py-3"></td>
+                                            @endif
                                             <td class="px-3 py-3 text-center">{{ number_format($totalN) }}</td>
                                             <td class="px-3 py-3 text-center">{{ number_format($totalD) }}</td>
 
@@ -704,7 +747,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                     </div>
 
                     {{-- ================= CHART ================= --}}
-                    <div class="flex flex-col justify-center min-h-[240px]">
+                    <div class="flex flex-col justify-center min-h-[320px]">
                         <canvas id="chart-{{ $imut['id'] }}"
                             data-chart
                             data-imut-id="{{ $imut['id'] }}"
