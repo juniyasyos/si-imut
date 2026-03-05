@@ -16,7 +16,7 @@ echo "" >> "$OUTPUT_FILE"
 echo "-- ====== LAPORAN_IMUTS ======" >> "$OUTPUT_FILE"
 docker compose exec -T db mysql -u $DB_USER -p"$DB_PASS" $DB_NAME << 'QUERY1' >> "$OUTPUT_FILE"
 SELECT CONCAT(
-    'INSERT INTO laporan_imuts (id, name, slug, status, assessment_period_start, assessment_period_end, report_month, report_year, recommendation_analysis_duration, created_by, is_auto_generated, created_at, updated_at) VALUES (',
+    'INSERT INTO laporan_imuts (id, name, slug, status, assessment_period_start, assessment_period_end, report_month, report_year, created_by, created_at, updated_at) VALUES (',
     id, ', ',
     QUOTE(name), ', ',
     QUOTE(slug), ', ',
@@ -25,9 +25,7 @@ SELECT CONCAT(
     QUOTE(assessment_period_end), ', ',
     report_month, ', ',
     report_year, ', ',
-    IFNULL(recommendation_analysis_duration, 0), ', ',
     created_by, ', ',
-    is_auto_generated, ', ',
     QUOTE(created_at), ', ',
     QUOTE(updated_at),
     ');'
