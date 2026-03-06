@@ -4,7 +4,6 @@ namespace App\Filament\Resources\UnitKerjaResource\RelationManagers;
 
 use App\Models\User;
 use Filament\Tables;
-use App\Models\Position;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\FontWeight;
@@ -36,13 +35,6 @@ class UsersRelationManager extends RelationManager
                             ->label(__('filament-forms::users.fields.name'))
                             ->searchable()
                             ->weight(FontWeight::Bold),
-                        TextColumn::make('position.name')
-                            ->label(__('filament-forms::users.fields.position'))
-                            ->searchable()
-                            ->sortable()
-                            ->icon('heroicon-o-briefcase')
-                            ->badge()
-                            ->color(''),
                     ])->alignStart()->space(1),
                     Stack::make([
                         TextColumn::make('roles.name')
@@ -66,11 +58,10 @@ class UsersRelationManager extends RelationManager
                             ->options(function () {
                                 $relatedIds = $this->getRelationship()->pluck('id')->toArray();
 
-                                return User::with('position')
-                                    ->whereNotIn('id', $relatedIds)
+                                return User::whereNotIn('id', $relatedIds)
                                     ->get()
                                     ->mapWithKeys(fn($user) => [
-                                        $user->id => "{$user->name} - " . ($user->position->name ?? '-'),
+                                        $user->id => $user->name,
                                     ])
                                     ->toArray();
                             })
