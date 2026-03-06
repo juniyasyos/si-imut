@@ -10,7 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 
-class ImutCategoryResourceSchema extends ImutCategoryResource
+class ImutCategoryResourceSchema
 {
     public static function make(): array
     {

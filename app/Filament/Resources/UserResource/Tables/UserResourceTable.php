@@ -128,7 +128,11 @@ class UserResourceTable
 
             Impersonate::make()
                 ->label(__('filament-forms::users.actions.impersonate'))
-                ->visible(fn() => Gate::allows('impersonate', User::class)),
+                ->hidden(
+                    function () {
+                        return !auth()->user()?->can('impersonate_user');
+                    }
+                ),
 
             ActionGroup::make([
                 ViewAction::make(),

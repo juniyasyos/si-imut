@@ -27,8 +27,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ImutProfileForm
 {
-    use HasPermissionChecks;
-
     /**
      * Check if profile field should be disabled based on ImutData creator.
      * ImutProfile has relation to ImutData, so we check imutData->created_by

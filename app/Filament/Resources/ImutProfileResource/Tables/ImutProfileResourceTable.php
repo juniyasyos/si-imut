@@ -15,7 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Model;
 
-class ImutProfileResourceTable extends ImutProfileResource
+class ImutProfileResourceTable
 {
     public static function columns(): array
     {

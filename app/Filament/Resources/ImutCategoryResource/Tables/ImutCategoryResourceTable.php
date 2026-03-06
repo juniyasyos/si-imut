@@ -19,7 +19,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
-class ImutCategoryResourceTable extends ImutCategoryResource
+class ImutCategoryResourceTable
 {
     public static function columns(): array
     {

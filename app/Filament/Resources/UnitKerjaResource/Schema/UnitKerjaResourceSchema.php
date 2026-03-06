@@ -7,7 +7,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 
-class UnitKerjaResourceSchema extends UnitKerjaResource
+class UnitKerjaResourceSchema
 {
     public static function make(): array
     {

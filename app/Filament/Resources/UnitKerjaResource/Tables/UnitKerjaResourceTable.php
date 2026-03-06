@@ -23,7 +23,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
-class UnitKerjaResourceTable extends UnitKerjaResource
+class UnitKerjaResourceTable
 {
     public static function columns(): array
     {
