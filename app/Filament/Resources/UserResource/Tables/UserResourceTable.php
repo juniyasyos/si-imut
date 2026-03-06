@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Gate;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
-class UserResourceTable extends UserResource
+class UserResourceTable
 {
     public static function columns(): array
     {

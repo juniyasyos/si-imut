@@ -14,7 +14,7 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\CreateRecord;
 
-class UserResourceSchema extends UserResource
+class UserResourceSchema
 {
     public static function make(): array
     {
