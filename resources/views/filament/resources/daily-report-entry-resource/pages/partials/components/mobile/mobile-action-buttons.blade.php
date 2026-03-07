@@ -11,6 +11,12 @@
     </button>
 </template>
 
+<template x-if="getActionButton(indicator.id, selectedDate).state === 'done_locked'">
+    <button @click="$wire.openSlideOver(indicator.id, selectedDate || '{{ now()->format('Y-m-d') }}')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium py-3 rounded-lg transition">
+        Lihat Data
+    </button>
+</template>
+
 <template x-if="getActionButton(indicator.id, selectedDate).state === 'pending'">
     <button @click="$wire.openSlideOver(indicator.id, selectedDate || '{{ now()->format('Y-m-d') }}')" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium py-3 rounded-lg transition">
         Isi Data

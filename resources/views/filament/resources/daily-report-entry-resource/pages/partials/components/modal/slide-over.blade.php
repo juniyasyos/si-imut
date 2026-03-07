@@ -1,3 +1,11 @@
+@php
+$backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+$sixDaysAgo = now()->subDays($backDays)->startOfDay();
+$isLocked = ($this->selectedDate)
+? \Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo)
+: false;
+@endphp
+
 <!-- Slide Over -->
 <div class="!fixed !inset-0 !z-[9999] overflow-hidden"
     x-data="{ show: @entangle('slideOverOpen').live }"
@@ -54,6 +62,12 @@
                                 {{ $selectedIndicatorData['category'] }}
                             </div>
                             @endif
+                            @if($isLocked)
+                            <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/30 text-amber-100 border border-amber-300/40">
+                                @svg("heroicon-m-lock-closed", "w-3 h-3")
+                                Periode Entri Terkunci
+                            </div>
+                            @endif
                         </div>
                         <button wire:click="closeSlideOver"
                             type="button"
@@ -66,6 +80,18 @@
                 <!-- Content -->
                 <div class="flex-1 overflow-y-auto px-6 py-6 bg-gray-50 dark:bg-slate-800">
 
+                    @if($isLocked)
+                    <!-- Locked Notice -->
+                    <div class="mb-6 flex items-start gap-3 rounded-xl p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+                        <div class="flex-shrink-0 mt-0.5 w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                            @svg("heroicon-m-lock-closed", "w-5 h-5 text-amber-600 dark:text-amber-400")
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">Data Terkunci</p>
+                            <p class="mt-0.5 text-xs text-amber-700 dark:text-amber-300">Periode entri data untuk tanggal ini telah berakhir. Data hanya dapat dilihat, tidak dapat ditambah atau diubah.</p>
+                        </div>
+                    </div>
+                    @else
                     <!-- Add New Button -->
                     <div class="mb-6">
                         <button type="button"
@@ -75,6 +101,7 @@
                             <span>Buat Laporan Baru</span>
                         </button>
                     </div>
+                    @endif
 
                     @if($this->selectedIndicatorId && $this->selectedDate)
                     <!-- Existing Reports Section -->
@@ -86,155 +113,248 @@
                         </div>
 
                         @if(!empty($this->dailyReports))
+                        @if(!$isLocked)
+                        {{-- Bulk action bar --}}
+                        <div class="flex items-center justify-between mb-3 px-1" x-data>
+                            <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                                <input type="checkbox"
+                                    class="rounded border-gray-300 dark:border-slate-600 text-red-600 focus:ring-red-500"
+                                    @change="
+                                        const ids = [{{ implode(',', array_column($this->dailyReports, 'id')) }}];
+                                        $wire.set('selectedReports', $event.target.checked ? ids : []);
+                                    "
+                                    :checked="{{ count($this->selectedReports) }} > 0 && {{ count($this->selectedReports) }} === {{ count($this->dailyReports) }}">
+                                Pilih Semua
+                            </label>
+
+                            <button
+                                wire:click="bulkDeleteReports"
+                                wire:confirm="Hapus {{ count($this->selectedReports) }} laporan yang dipilih?"
+                                wire:loading.attr="disabled"
+                                wire:target="bulkDeleteReports"
+                                @class([ 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors' , 'bg-red-600 hover:bg-red-700 text-white cursor-pointer'=> count($this->selectedReports) > 0,
+                                'bg-gray-100 text-gray-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed' => count($this->selectedReports) === 0,
+                                ])
+                                @disabled(count($this->selectedReports) === 0)
+                                >
+                                <span wire:loading.remove wire:target="bulkDeleteReports">
+                                    @svg("heroicon-m-trash", "w-3.5 h-3.5")
+                                </span>
+                                <span wire:loading wire:target="bulkDeleteReports" class="inline-flex items-center gap-1">
+                                    <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                    </svg>
+                                </span>
+                                Hapus{{ count($this->selectedReports) > 0 ? ' (' . count($this->selectedReports) . ')' : '' }}
+                            </button>
+                        </div>
+                        @endif
+
                         <div class="space-y-4">
                             @foreach($this->dailyReports as $report)
-                            <div class="rounded-lg p-4 border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 hover:shadow-md transition-shadow">
-                                <!-- Report Header - Compact Version -->
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        @if($report['total_score'] >= 80)
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-2xl">🟢</span>
-                                            <span class="text-lg font-bold text-green-700 dark:text-green-400">Patuh</span>
-                                        </div>
-                                        @else
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-2xl">🔴</span>
-                                            <span class="text-lg font-bold text-red-700 dark:text-red-400">Tidak Patuh</span>
-                                        </div>
-                                        @endif
-                                        <div class="text-3xl font-bold {{ $report['total_score'] >= 80 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
-                                            {{ number_format($report['total_score'], 0) }}%
-                                        </div>
-                                    </div>
+                            <div class="rounded-lg border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 hover:shadow-md transition-shadow overflow-hidden
+                                {{ in_array($report['id'], $this->selectedReports) ? 'ring-2 ring-red-400 dark:ring-red-500' : '' }}">
+
+                                {{-- Checkbox row (only when not locked) --}}
+                                @if(!$isLocked)
+                                <div class="flex items-center gap-2 px-4 pt-3 pb-0">
+                                    <input
+                                        type="checkbox"
+                                        value="{{ $report['id'] }}"
+                                        wire:model.live="selectedReports"
+                                        class="rounded border-gray-300 dark:border-slate-600 text-red-600 focus:ring-red-500">
+                                    <span class="text-xs text-gray-400">Pilih laporan</span>
                                 </div>
+                                @endif
 
-                                <!-- Meta Info - Single Line -->
-                                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                    <span>{{ $report['unit_name'] }}</span>
-                                    <span>·</span>
-                                    <span>{{ $report['submitted_by_name'] }}</span>
-                                    <span>·</span>
-                                    <span>{{ \Carbon\Carbon::parse($report['created_at'])->format('H:i') }}</span>
-                                </div>
-
-                                <!-- Field Responses Dropdown -->
-                                <div class="mb-4" x-data="{ expanded: false }">
-                                    <button @click="expanded = !expanded"
-                                        type="button"
-                                        class="w-full flex items-center justify-between p-2 rounded text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">
-                                        <span class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 transition-transform duration-150"
-                                                :class="{ 'rotate-90': expanded }"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                            Detail Jawaban ({{ count($report['field_responses']) }} field)
-                                        </span>
-                                    </button>
-
-                                    <div x-show="expanded" x-collapse class="mt-3 space-y-3">
-                                        @foreach($report['field_responses'] as $response)
-                                        <div class="p-3 rounded border bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600">
-                                            <div class="flex items-start justify-between mb-2">
-                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {{ $response['field_label'] }}
-                                                </span>
-                                                <span class="text-xs px-2 py-1 rounded {{ $response['compliance_score'] >= 1 ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' }}">
-                                                    {{ number_format($response['compliance_score'] * 100, 0) }}%
-                                                </span>
+                                <div class="p-4">
+                                    <!-- Report Header - Compact Version -->
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-3">
+                                            @if($report['total_score'] >= 80)
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-2xl">🟢</span>
+                                                <span class="text-lg font-bold text-green-700 dark:text-green-400">Patuh</span>
                                             </div>
-                                            <div class="text-xs text-gray-600 dark:text-gray-400">
-                                                <span class="font-medium">Jawaban:</span>
-                                                @if(is_array($response['field_value']))
-                                                {{ implode(', ', $response['field_value']) }}
-                                                @else
-                                                {{ $response['field_value'] ?? 'Tidak ada jawaban' }}
-                                                @endif
+                                            @else
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-2xl">🔴</span>
+                                                <span class="text-lg font-bold text-red-700 dark:text-red-400">Tidak Patuh</span>
+                                            </div>
+                                            @endif
+                                            <div class="text-3xl font-bold {{ $report['total_score'] >= 80 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
+                                                {{ number_format($report['total_score'], 0) }}%
                                             </div>
                                         </div>
-                                        @endforeach
                                     </div>
-                                </div>
 
-                                <!-- Actions -->
-                                <div class="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-slate-600">
-                                    <button
-                                        wire:click="editReport({{ $report['id'] }})"
-                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-yellow-700 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-600">
-                                        @svg("heroicon-m-pencil", "w-4 h-4 mr-1.5")
-                                        Edit
-                                    </button>
+                                    <!-- Meta Info - Single Line -->
+                                    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                        <span>{{ $report['unit_name'] }}</span>
+                                        <span>·</span>
+                                        <span>{{ $report['submitted_by_name'] }}</span>
+                                        <span>·</span>
+                                        <span>{{ \Carbon\Carbon::parse($report['created_at'])->format('H:i') }}</span>
+                                    </div>
 
-                                    <button type="button"
-                                        wire:click="deleteReport({{ $report['id'] }})"
-                                        class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-600">
-                                        @svg("heroicon-m-trash", "w-4 h-4 mr-1.5")
-                                        Hapus
-                                    </button>
-
-                                    @if(auth()->user()->can('validate_reports'))
-                                    <div class="flex-1 relative" x-data="{ open: false }">
-                                        <button @click="open = !open" type="button"
-                                            class="w-full inline-flex items-center justify-between px-4 py-2 text-sm font-medium rounded border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border-gray-300 dark:border-slate-600 transition-colors">
-                                            <span class="flex items-center gap-2">
-                                                @if($report['is_validated'] === 'valid')
-                                                <span class="text-green-600 dark:text-green-400">✓</span>
-                                                <span>Valid</span>
-                                                @elseif($report['is_validated'] === 'invalid')
-                                                <span class="text-red-600 dark:text-red-400">✗</span>
-                                                <span>Invalid</span>
-                                                @else
-                                                <span class="text-gray-400">—</span>
-                                                <span class="text-gray-500">Tentukan Status</span>
-                                                @endif
+                                    <!-- Field Responses Dropdown -->
+                                    <div class="mb-4" x-data="{ expanded: false }">
+                                        <button @click="expanded = !expanded"
+                                            type="button"
+                                            class="w-full flex items-center justify-between p-2 rounded text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-2 transition-transform duration-150"
+                                                    :class="{ 'rotate-90': expanded }"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                                Detail Jawaban ({{ count($report['field_responses']) }} field)
                                             </span>
-                                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                            </svg>
                                         </button>
 
-                                        <!-- Dropdown Menu -->
-                                        <div x-show="open" @click.away="open = false"
-                                            x-transition:enter="transition ease-out duration-100"
-                                            x-transition:enter-start="opacity-0 scale-95"
-                                            x-transition:enter-end="opacity-100 scale-100"
-                                            x-transition:leave="transition ease-in duration-75"
-                                            x-transition:leave-start="opacity-100 scale-100"
-                                            x-transition:leave-end="opacity-0 scale-95"
-                                            class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg z-10">
-
-                                            <button type="button" wire:click="toggleValidation({{ $report['id'] }}, 'valid')" @click="open = false"
-                                                class="w-full text-left px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-3 {{ $report['is_validated'] === 'valid' ? 'bg-green-50 dark:bg-green-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
-                                                <span class="text-lg text-green-600">✓</span>
-                                                <div>
-                                                    <div class="font-medium text-gray-900 dark:text-white">Valid</div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">Laporan telah tervalidasi</div>
+                                        <div x-show="expanded" x-collapse class="mt-3 space-y-3">
+                                            @foreach($report['field_responses'] as $response)
+                                            <div class="p-3 rounded border bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600">
+                                                <div class="flex items-start justify-between mb-2">
+                                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        {{ $response['field_label'] }}
+                                                    </span>
+                                                    <span class="text-xs px-2 py-1 rounded {{ $response['compliance_score'] >= 1 ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' }}">
+                                                        {{ number_format($response['compliance_score'] * 100, 0) }}%
+                                                    </span>
                                                 </div>
-                                            </button>
-
-                                            <button type="button" wire:click="toggleValidation({{ $report['id'] }}, 'invalid')" @click="open = false"
-                                                class="w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 {{ $report['is_validated'] === 'invalid' ? 'bg-red-50 dark:bg-red-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
-                                                <span class="text-lg text-red-600">✗</span>
-                                                <div>
-                                                    <div class="font-medium text-gray-900 dark:text-white">Invalid</div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">Laporan tidak valid</div>
+                                                <div class="text-xs text-gray-600 dark:text-gray-400">
+                                                    <span class="font-medium">Jawaban:</span>
+                                                    @if(is_array($response['field_value']))
+                                                    {{ implode(', ', $response['field_value']) }}
+                                                    @else
+                                                    {{ $response['field_value'] ?? 'Tidak ada jawaban' }}
+                                                    @endif
                                                 </div>
-                                            </button>
-
-                                            <button type="button" wire:click="toggleValidation({{ $report['id'] }}, null)" @click="open = false"
-                                                class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/20 flex items-center gap-3 {{ $report['is_validated'] === null ? 'bg-gray-50 dark:bg-gray-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
-                                                <span class="text-lg text-gray-400">—</span>
-                                                <div>
-                                                    <div class="font-medium text-gray-900 dark:text-white">Hapus</div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">Batalkan validasi</div>
-                                                </div>
-                                            </button>
+                                            </div>
+                                            @endforeach
                                         </div>
                                     </div>
-                                    @endif
+
+                                    <!-- Actions -->
+                                    <div class="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-slate-600">
+                                        @if(!$isLocked)
+                                        <button
+                                            wire:click="editReport({{ $report['id'] }})"
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-60 cursor-not-allowed"
+                                            wire:target="editReport({{ $report['id'] }})"
+                                            class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-yellow-700 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-600 transition-opacity">
+                                            <span wire:loading.remove wire:target="editReport({{ $report['id'] }})">
+                                                @svg("heroicon-m-pencil", "w-4 h-4 mr-1.5")
+                                                Edit
+                                            </span>
+                                            <span wire:loading wire:target="editReport({{ $report['id'] }})" class="inline-flex items-center gap-1.5">
+                                                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                                </svg>
+                                                Membuka...
+                                            </span>
+                                        </button>
+
+                                        <button type="button"
+                                            wire:click="deleteReport({{ $report['id'] }})"
+                                            wire:confirm="Hapus laporan ini?"
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-60 cursor-not-allowed"
+                                            wire:target="deleteReport({{ $report['id'] }})"
+                                            class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-600 transition-opacity">
+                                            <span wire:loading.remove wire:target="deleteReport({{ $report['id'] }})">
+                                                @svg("heroicon-m-trash", "w-4 h-4 mr-1.5")
+                                                Hapus
+                                            </span>
+                                            <span wire:loading wire:target="deleteReport({{ $report['id'] }})" class="inline-flex items-center gap-1.5">
+                                                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                                </svg>
+                                                Menghapus...
+                                            </span>
+                                        </button>
+                                        @endif
+
+                                        @if(auth()->user()->can('validate_reports'))
+                                        <div class="{{ $isLocked ? 'w-full' : 'flex-1' }} relative" x-data="{ open: false }">
+                                            <button @click="open = !open" type="button"
+                                                wire:loading.attr="disabled"
+                                                wire:loading.class="opacity-60"
+                                                wire:target="toggleValidation"
+                                                class="w-full inline-flex items-center justify-between px-4 py-2 text-sm font-medium rounded border bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border-gray-300 dark:border-slate-600 transition-colors">
+                                                <span class="flex items-center gap-2">
+                                                    <span wire:loading.remove wire:target="toggleValidation({{ $report['id'] }})">
+                                                        @if($report['is_validated'] === 'valid')
+                                                        <span class="text-green-600 dark:text-green-400">✓</span>
+                                                        <span>Valid</span>
+                                                        @elseif($report['is_validated'] === 'invalid')
+                                                        <span class="text-red-600 dark:text-red-400">✗</span>
+                                                        <span>Invalid</span>
+                                                        @else
+                                                        <span class="text-gray-400">—</span>
+                                                        <span class="text-gray-500">Tentukan Status</span>
+                                                        @endif
+                                                    </span>
+                                                    <span wire:loading wire:target="toggleValidation({{ $report['id'] }})" class="inline-flex items-center gap-1.5 text-gray-500">
+                                                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                                        </svg>
+                                                        Menyimpan...
+                                                    </span>
+                                                </span>
+                                                <svg class="w-4 h-4 transition-transform flex-shrink-0" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                                </svg>
+                                            </button>
+
+                                            <!-- Dropdown Menu -->
+                                            <div x-show="open" @click.away="open = false"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="opacity-100 scale-100"
+                                                x-transition:leave-end="opacity-0 scale-95"
+                                                class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg z-10">
+
+                                                <button type="button" wire:click="toggleValidation({{ $report['id'] }}, 'valid')" @click="open = false"
+                                                    class="w-full text-left px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-3 {{ $report['is_validated'] === 'valid' ? 'bg-green-50 dark:bg-green-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                                    <span class="text-lg text-green-600">✓</span>
+                                                    <div>
+                                                        <div class="font-medium text-gray-900 dark:text-white">Valid</div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">Laporan telah tervalidasi</div>
+                                                    </div>
+                                                </button>
+
+                                                <button type="button" wire:click="toggleValidation({{ $report['id'] }}, 'invalid')" @click="open = false"
+                                                    class="w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 {{ $report['is_validated'] === 'invalid' ? 'bg-red-50 dark:bg-red-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                                    <span class="text-lg text-red-600">✗</span>
+                                                    <div>
+                                                        <div class="font-medium text-gray-900 dark:text-white">Invalid</div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">Laporan tidak valid</div>
+                                                    </div>
+                                                </button>
+
+                                                <button type="button" wire:click="toggleValidation({{ $report['id'] }}, null)" @click="open = false"
+                                                    class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/20 flex items-center gap-3 {{ $report['is_validated'] === null ? 'bg-gray-50 dark:bg-gray-900/20' : '' }} border-b border-gray-200 dark:border-slate-700 last:border-0">
+                                                    <span class="text-lg text-gray-400">—</span>
+                                                    <div>
+                                                        <div class="font-medium text-gray-900 dark:text-white">Hapus Status</div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">Batalkan validasi</div>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                             @endforeach

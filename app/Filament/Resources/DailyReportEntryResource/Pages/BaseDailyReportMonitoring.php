@@ -48,6 +48,9 @@ abstract class BaseDailyReportMonitoring extends Page
     public $dailyReports = [];
     public string $filterPeriod = 'today';
 
+    // Bulk selection
+    public array $selectedReports = [];
+
     // Form slide over properties
     public bool $formSlideOverOpen = false;
     public $formTemplate = null;
@@ -268,6 +271,7 @@ abstract class BaseDailyReportMonitoring extends Page
         $this->selectedIndicatorId = null;
         $this->selectedIndicatorData = [];
         $this->dailyReports = [];
+        $this->selectedReports = [];
     }
 
     /**

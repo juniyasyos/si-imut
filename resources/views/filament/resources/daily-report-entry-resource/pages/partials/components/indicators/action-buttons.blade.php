@@ -8,13 +8,23 @@
 </button>
 @else
 <!-- Regular Mode - Conditional Buttons -->
-<!-- Manage Data Button (When data exists) -->
+<!-- Manage Data Button (When data exists and within entry window) -->
 <template x-if="getActionButton(indicator.id, selectedDate).state === 'done'">
     <button
         @click="$wire.openSlideOver(indicator.id, selectedDate || '{{ now()->format('Y-m-d') }}')"
         class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
         @svg("heroicon-m-cog-6-tooth", "w-4 h-4")
         Kelola Data
+    </button>
+</template>
+
+<!-- View Only Button (Has data but outside entry window - locked) -->
+<template x-if="getActionButton(indicator.id, selectedDate).state === 'done_locked'">
+    <button
+        @click="$wire.openSlideOver(indicator.id, selectedDate || '{{ now()->format('Y-m-d') }}')"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors">
+        @svg("heroicon-m-eye", "w-4 h-4")
+        Lihat Data
     </button>
 </template>
 

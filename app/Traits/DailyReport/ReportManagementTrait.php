@@ -15,6 +15,20 @@ trait ReportManagementTrait
     public function createNewReport(): void
     {
         if ($this->selectedIndicatorId && $this->selectedDate) {
+            // Check if the selected date is within the back-entry window
+            $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+            $sixDaysAgo = now()->subDays($backDays)->startOfDay();
+            $isLocked = \Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo);
+
+            if ($isLocked) {
+                \Filament\Notifications\Notification::make()
+                    ->title('Data Terkunci')
+                    ->body('Periode entri data untuk tanggal ini telah berakhir.')
+                    ->danger()
+                    ->send();
+                return;
+            }
+
             Log::info('createNewReport: Redirecting to create page', [
                 'indicator_id' => $this->selectedIndicatorId,
                 'date' => $this->selectedDate
@@ -58,6 +72,20 @@ trait ReportManagementTrait
      */
     public function editReport(int $reportId): void
     {
+        // Guard: refuse edit on locked periods
+        if ($this->selectedDate) {
+            $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+            $sixDaysAgo = now()->subDays($backDays)->startOfDay();
+            if (\Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo)) {
+                \Filament\Notifications\Notification::make()
+                    ->title('Data Terkunci')
+                    ->body('Periode entri data untuk tanggal ini telah berakhir.')
+                    ->danger()
+                    ->send();
+                return;
+            }
+        }
+
         $url = DailyReportEntryResource::getEditUrl(
             $reportId,
             $this->selectedIndicatorId,
@@ -99,6 +127,57 @@ trait ReportManagementTrait
                 ->send();
         } catch (\Exception $e) {
             $this->addError('delete', 'Gagal menghapus laporan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk delete selected reports
+     */
+    public function bulkDeleteReports(): void
+    {
+        if (empty($this->selectedReports)) {
+            \Filament\Notifications\Notification::make()
+                ->title('Tidak ada laporan dipilih')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $user = Auth::user();
+        $deleted = 0;
+        $failed = 0;
+
+        foreach ($this->selectedReports as $reportId) {
+            try {
+                $report = \App\Models\DailyReportResponse::findOrFail($reportId);
+
+                if (!$user || !$user->can('delete', $report)) {
+                    $failed++;
+                    continue;
+                }
+
+                $report->delete();
+                $deleted++;
+            } catch (\Exception $e) {
+                $failed++;
+                Log::error('bulkDeleteReports: failed to delete report ' . $reportId, ['error' => $e->getMessage()]);
+            }
+        }
+
+        $this->selectedReports = [];
+        $this->loadMatrixData();
+        $this->loadDailyReports();
+
+        if ($failed > 0) {
+            \Filament\Notifications\Notification::make()
+                ->title("{$deleted} laporan dihapus, {$failed} gagal")
+                ->warning()
+                ->send();
+        } else {
+            \Filament\Notifications\Notification::make()
+                ->title("{$deleted} laporan berhasil dihapus")
+                ->success()
+                ->send();
         }
     }
 

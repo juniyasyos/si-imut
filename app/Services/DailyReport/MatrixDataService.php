@@ -172,9 +172,11 @@ class MatrixDataService
 
                 $cellState = 'disabled';
                 if ($cellDate->lte($today)) {
+                    $isWithinWindow = $cellDate->gte($sixDaysAgo);
                     if ($totalCount > 0) {
-                        $cellState = 'done';
-                    } elseif ($cellDate->gte($sixDaysAgo)) {
+                        // Has data: distinguishes between editable (within window) and locked (outside window)
+                        $cellState = $isWithinWindow ? 'done' : 'done_locked';
+                    } elseif ($isWithinWindow) {
                         $cellState = 'pending';
                     } else {
                         $cellState = 'overdue';

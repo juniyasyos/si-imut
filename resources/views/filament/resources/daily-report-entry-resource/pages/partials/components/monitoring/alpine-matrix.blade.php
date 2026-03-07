@@ -113,6 +113,19 @@
                     `;
                         break;
 
+                    case 'done_locked':
+                        classes += 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700';
+                        content = `
+                        <div class="p-1 h-full flex flex-col justify-center items-center relative">
+                            <div class="text-xs font-bold text-green-700 dark:text-green-300">${summary?.percentage || 0}%</div>
+                            <div class="text-[10px] text-green-600 dark:text-green-400">${summary?.numerator || 0}/${summary?.denominator || 0}</div>
+                            <div class="absolute top-0 right-0 p-0.5">
+                                <svg class="w-2.5 h-2.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+                            </div>
+                        </div>
+                    `;
+                        break;
+
                     case 'pending':
                         classes += isToday ?
                             'bg-gradient-to-br from-yellow-100 to-orange-200 dark:from-yellow-900/40 dark:to-orange-800/40 border-orange-300 dark:border-orange-600' :
@@ -167,7 +180,8 @@
                 let content = '';
 
                 if (cellData?.has_data) {
-                    statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700">${cellData.count}x</span>`;
+                    const lockIcon = state === 'done_locked' ? '<svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>' : '';
+                    statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 inline-flex items-center gap-0.5">${cellData.count}x${lockIcon}</span>`;
                     content = `
                     <div class="text-base font-bold text-green-700">${summary?.percentage || 0}%</div>
                     <div class="text-[11px] text-gray-500">${summary?.numerator || 0}/${summary?.denominator || 0}</div>
@@ -198,7 +212,7 @@
                     </div>
                     <div class="mb-3">${content}</div>
                     <div class="text-[10px] text-gray-400">
-                        ${state === 'disabled' ? 'Tidak tersedia' : (cellData?.has_data ? 'Sudah diisi' : 'Belum diisi')}
+                        ${state === 'disabled' ? 'Tidak tersedia' : (cellData?.has_data ? (state === 'done_locked' ? 'Terkunci' : 'Sudah diisi') : 'Belum diisi')}
                     </div>
                 </div>
             `;
