@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class DeleteDuplicateUsers extends Command
 {
@@ -13,96 +12,76 @@ class DeleteDuplicateUsers extends Command
      *
      * @var string
      */
-    protected $signature = 'users:delete-duplicates 
-                            {--force : Jalankan tanpa konfirmasi}
-                            {--dry-run : Preview tanpa benar-benar menghapus}';
+    protected $signature = 'users:delete-duplicates';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Hapus PERMANEN user duplicate (hard delete), prioritaskan keep yang punya NIP atau nama, skip admin';
+    protected $description = 'Hapus user duplicate (nama/nip) tanpa unit kerja - hard delete langsung';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $dryRun = $this->option('dry-run');
-        $force = $this->option('force');
+        $this->info('🔍 Scanning user duplicate berdasarkan nama/nip tanpa unit kerja...');
 
-        $this->info('🔍 Scanning untuk duplicate users berdasarkan nama+NIP...');
+        // Find duplicates: group by nama atau nip
+        $duplicates = $this->findDuplicates();
 
-        // Get duplicates grouped by name + NIP
-        $duplicatesByNameNip = $this->getDuplicatesByNameAndNip();
-
-        if (empty($duplicatesByNameNip)) {
-            $this->info('✅ Tidak ada user yang duplicate ditemukan.');
+        if (empty($duplicates)) {
+            $this->info('✅ Tidak ada user duplicate yang perlu dihapus.');
             return 0;
         }
 
-        // Filter: prioritize keep users with valid NIP+name, skip admin
-        $usersToDelete = $this->filterUsersToDelete($duplicatesByNameNip);
+        $count = count($duplicates);
+        $this->newLine();
+        $this->warn("⚠️  Ditemukan $count user yang akan dihapus PERMANEN (hard delete, tidak bisa di-undo!)");
+        $this->newLine();
 
-        if (empty($usersToDelete)) {
-            $this->info('✅ Tidak ada user yang memenuhi kriteria penghapusan.');
+        // Display users to delete
+        $this->displayUsers($duplicates);
+
+        // Confirm before delete
+        if (!$this->confirm('Lanjutkan hapus?')) {
+            $this->warn('Dibatalkan.');
             return 0;
         }
 
-        // Display summary
-        $this->displaySummary($duplicatesByNameNip, $usersToDelete);
+        // Hard delete
+        $ids = array_column($duplicates, 'id');
+        $deleted = User::withTrashed()->whereIn('id', $ids)->forceDelete();
 
-        // Show verbose: display all duplicate groups found
-        if ($this->option('dry-run')) {
-            $this->displayAllDuplicateGroups($duplicatesByNameNip);
-        }
-
-        // Ask for confirmation if not dry-run and not force
-        if (!$dryRun && !$force) {
-            if (!$this->confirm("Apakah Anda yakin untuk menghapus {$this->count($usersToDelete)} user?")) {
-                $this->warn('Dibatalkan.');
-                return 0;
-            }
-        }
-
-        // Perform deletion or dry run
-        if ($dryRun) {
-            $this->info("\n📋 DRY RUN MODE - Data tidak akan dihapus");
-            $this->displayUsersToDelete($usersToDelete);
-            return 0;
-        }
-
-        $deletedCount = $this->deleteUsers($usersToDelete);
-        $this->info("\n✅ Berhasil menghapus $deletedCount user.");
+        $this->newLine();
+        $this->info("✅ Berhasil menghapus PERMANEN $deleted user.");
 
         return 0;
     }
 
     /**
-     * Get duplicate users by name + NIP combination (OR logic)
+     * Find duplicate users by nama OR nip, then filter only those without unit kerja
+     * Keep strategy: prioritize users WITH unit kerja, delete extra copies
      */
-    private function getDuplicatesByNameAndNip(): array
+    private function findDuplicates(): array
     {
-        // Get all users with name or nip (include soft-deleted to see history)
+        // Get all users (including soft-deleted)
         $allUsers = User::withTrashed()
-            ->where(function ($query) {
-                $query->whereNotNull('name')
-                    ->orWhereNotNull('nip');
-            })
-            ->with('unitKerjas', 'roles')
-            ->select('id', 'name', 'email', 'nip', 'created_at', 'deleted_at')
+            ->with('unitKerjas')
+            ->select('id', 'name', 'email', 'nip', 'deleted_at')
+            ->orderBy('id', 'asc') // Keep older users, delete newer duplicates
             ->get();
 
         if ($allUsers->isEmpty()) {
             return [];
         }
 
-        // Group by name OR nip combination
+        // Group by name or nip
         $groups = [];
         foreach ($allUsers as $user) {
-            // Use name as key if available, otherwise nip
-            $key = !empty($user->name) ? $user->name : (!empty($user->nip) ? $user->nip : 'unknown');
+            $key = $user->name ?: $user->nip;
+            if (!$key) continue;
 
             if (!isset($groups[$key])) {
                 $groups[$key] = [];
@@ -113,73 +92,40 @@ class DeleteDuplicateUsers extends Command
                 'name' => $user->name,
                 'email' => $user->email,
                 'nip' => $user->nip,
-                'created_at' => $user->created_at,
-                'deleted_at' => $user->deleted_at,
                 'unit_kerja_count' => $user->unitKerjas->count(),
-                'is_admin' => $user->hasAnyRole(['admin', 'super_admin']),
             ];
         }
 
-        // Keep only groups with duplicates
-        $result = [];
-        foreach ($groups as $key => $group) {
-            if (count($group) > 1) {
-                $result[$key] = $group;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Filter users to delete:
-     * - Skip admin users
-     * - Skip users already deleted (soft delete)
-     * - Prioritize keeping users with valid NIP and name
-     * - Delete the rest (duplicates)
-     */
-    private function filterUsersToDelete(array $groups): array
-    {
+        // Find users to delete: keep strategy
         $toDelete = [];
 
         foreach ($groups as $group) {
-            // Remove admin users from consideration
-            $nonAdminUsers = array_filter($group, function ($user) {
-                return !$user['is_admin'];
-            });
+            if (count($group) > 1) {
+                // This group has duplicates
+                // Strategy: keep 1, delete rest (prefer keeping those with unit kerja)
 
-            if (empty($nonAdminUsers)) {
-                continue;
-            }
+                $withUnitKerja = array_filter($group, fn($u) => $u['unit_kerja_count'] > 0);
+                $withoutUnitKerja = array_filter($group, fn($u) => $u['unit_kerja_count'] == 0);
 
-            // Include both active and soft-deleted users
-            // Sort by created_at to keep newest, delete older ones (including soft-deleted)
-            // First, separate by data completeness
+                // Keep the first one WITH unit kerja if exists, otherwise keep first one
+                $keepId = null;
 
-            // Separate users with NIP or name vs those without both
-            $completeUsers = array_filter($nonAdminUsers, function ($user) {
-                return !empty($user['nip']) || !empty($user['name']);
-            });
-
-            $incompleteUsers = array_filter($nonAdminUsers, function ($user) {
-                return empty($user['nip']) && empty($user['name']);
-            });
-
-            // If all have complete data, keep the newest, delete the rest
-            if (!empty($completeUsers) && empty($incompleteUsers)) {
-                // Sort by created_at desc (newest first)
-                usort($completeUsers, function ($a, $b) {
-                    return strtotime($b['created_at']) - strtotime($a['created_at']);
-                });
-
-                // Keep first (newest), delete the rest
-                for ($i = 1; $i < count($completeUsers); $i++) {
-                    $toDelete[] = $completeUsers[$i];
+                if (!empty($withUnitKerja)) {
+                    // Keep user with unit kerja
+                    $keepUser = reset($withUnitKerja);
+                    $keepId = $keepUser['id'];
+                } else {
+                    // Keep the oldest (first) one
+                    $keepUser = reset($group);
+                    $keepId = $keepUser['id'];
                 }
-            }
-            // If there are incomplete users, delete them and keep complete ones
-            elseif (!empty($incompleteUsers)) {
-                $toDelete = array_merge($toDelete, $incompleteUsers);
+
+                // Delete all others that don't have unit kerja
+                foreach ($group as $user) {
+                    if ($user['id'] !== $keepId && $user['unit_kerja_count'] == 0) {
+                        $toDelete[] = $user;
+                    }
+                }
             }
         }
 
@@ -187,99 +133,20 @@ class DeleteDuplicateUsers extends Command
     }
 
     /**
-     * Display summary of duplicates found
+     * Display users to delete
      */
-    private function displaySummary(array $groups, array $toDelete): void
+    private function displayUsers(array $users): void
     {
-        $this->newLine();
-        $this->info('📊 SUMMARY:');
-        $this->info("   - Duplicate groups (nama+NIP): " . count($groups) . " group");
-        $this->info("   - Kriteria: Prioritaskan keep yang punya NIP atau nama, skip admin");
-        $this->info("   - Total user yang akan dihapus PERMANEN: " . count($toDelete));
-        $this->warn("   ⚠️  Penghapusan ini PERMANENT (hard delete), tidak ada undo!");
-        $this->newLine();
-
-        $this->displayUsersToDelete($toDelete);
-    }
-
-    /**
-     * Display users to be deleted
-     */
-    private function displayUsersToDelete(array $users): void
-    {
-        if (empty($users)) {
-            return;
-        }
-
         $rows = [];
         foreach ($users as $user) {
-            $status = $user['is_admin'] ? '✓ Admin' : (is_null($user['deleted_at'] ?? null) ? 'Active' : '🗑️  Deleted');
             $rows[] = [
                 $user['id'],
-                $user['name'],
+                $user['name'] ?? '-',
                 $user['email'] ?? '-',
                 $user['nip'] ?? '-',
-                $user['unit_kerja_count'] ?? 0,
-                $status,
             ];
         }
 
-        $this->table(
-            ['ID', 'Nama', 'Email', 'NIP', 'Unit Kerja', 'Status'],
-            $rows
-        );
-    }
-
-    /**
-     * Helper to count array elements
-     */
-    private function count(array $arr): int
-    {
-        return count($arr);
-    }
-
-    /**
-     * Display all duplicate groups found
-     */
-    private function displayAllDuplicateGroups(array $groups): void
-    {
-        $this->newLine();
-        $this->info('🔍 DETAIL - Semua Duplicate Groups:');
-        $this->newLine();
-
-        foreach ($groups as $key => $group) {
-            $this->info("📌 Group: <fg=yellow>$key</>");
-
-            $rows = [];
-            foreach ($group as $user) {
-                $status = $user['is_admin'] ? '✓ Admin' : (is_null($user['deleted_at'] ?? null) ? 'Active' : '🗑️  Deleted');
-                $rows[] = [
-                    $user['id'],
-                    $user['name'] ?? '-',
-                    $user['email'] ?? '-',
-                    $user['nip'] ?? '-',
-                    $user['unit_kerja_count'],
-                    $status,
-                ];
-            }
-
-            $this->table(
-                ['ID', 'Nama', 'Email', 'NIP', 'Unit Kerja', 'Status'],
-                $rows
-            );
-            $this->newLine();
-        }
-    }
-
-    /**
-     * Delete users permanently (hard delete) including soft-deleted ones
-     */
-    private function deleteUsers(array $users): int
-    {
-        $ids = array_column($users, 'id');
-        // Use forceDelete to hard delete (permanent deletion)
-        // withTrashed() to also delete soft-deleted records
-        $count = User::withTrashed()->whereIn('id', $ids)->forceDelete();
-        return $count;
+        $this->table(['ID', 'Nama', 'Email', 'NIP'], $rows);
     }
 }
