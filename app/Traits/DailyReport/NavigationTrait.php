@@ -19,7 +19,8 @@ trait NavigationTrait
     public function isInWeek(int $day): bool
     {
         $realToday = now();
-        $start = $realToday->copy()->subDays(6)->startOfDay();
+        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $start = $realToday->copy()->subDays($backDays)->startOfDay();
         $cellDate = Carbon::createFromFormat('Y-m', $this->selectedMonth)->day($day)->startOfDay();
 
         $inRange = $cellDate->between($start, $realToday->copy()->endOfDay());
@@ -33,7 +34,7 @@ trait NavigationTrait
 
         if ($cellDate->lt($realToday)) {
             $daysDiff = $realToday->diffInDays($cellDate);
-            return $daysDiff <= 6;
+            return $daysDiff <= $backDays;
         }
 
         return false;

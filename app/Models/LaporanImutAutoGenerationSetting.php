@@ -15,7 +15,7 @@ class LaporanImutAutoGenerationSetting extends Model
         'is_enabled',
         'frequency',
         'report_month_based_on',
-        'data_entry_duration',
+        'back_data_entry_duration',
         'recommendation_analysis_duration',
         'auto_calculate',
         'auto_publish',
@@ -35,7 +35,7 @@ class LaporanImutAutoGenerationSetting extends Model
         'default_unit_kerjas' => 'array',
         'reminder_schedule' => 'array',
         'notification_targets' => 'array',
-        'data_entry_duration' => 'integer',
+        'back_data_entry_duration' => 'integer',
         'recommendation_analysis_duration' => 'integer',
     ];
 
@@ -66,7 +66,7 @@ class LaporanImutAutoGenerationSetting extends Model
             'is_enabled' => false,
             'frequency' => 'monthly',
             'report_month_based_on' => 'start',
-            'data_entry_duration' => 7,
+            'back_data_entry_duration' => 6,
             'recommendation_analysis_duration' => 2,
             'auto_calculate' => true,
             'auto_publish' => false,
@@ -82,7 +82,7 @@ class LaporanImutAutoGenerationSetting extends Model
      */
     public function getTotalDeadlineDaysAttribute(): int
     {
-        return $this->data_entry_duration + $this->recommendation_analysis_duration;
+        return $this->back_data_entry_duration + $this->recommendation_analysis_duration;
     }
 
     /**
@@ -117,6 +117,14 @@ class LaporanImutAutoGenerationSetting extends Model
     public function getDefaultUnitKerjaIds(): array
     {
         return $this->default_unit_kerjas ?? [];
+    }
+
+    /**
+     * Get back data entry duration (days allowed to input past data)
+     */
+    public function getBackDataEntryDays(): int
+    {
+        return $this->back_data_entry_duration ?? 6;
     }
 
     /**

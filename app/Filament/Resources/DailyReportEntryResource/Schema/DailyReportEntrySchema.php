@@ -69,14 +69,16 @@ class DailyReportEntrySchema extends DailyReportEntryResource
                 ->hidden();
         }
 
+        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+
         $fields[] = DatePicker::make('report_date')
             ->label('Tanggal Laporan')
             ->required()
             ->native(false)
             ->displayFormat('d/m/Y')
             ->maxDate(now())
-            ->minDate(now()->subDays(6))
-            ->helperText('💡 Data dapat diinput maksimal 6 hari yang lalu')
+            ->minDate(now()->subDays($backDays))
+            ->helperText('💡 Data dapat diinput maksimal ' . $backDays . ' hari yang lalu')
             ->default(function () {
                 $dateParam = request()->query('date');
                 if ($dateParam) {

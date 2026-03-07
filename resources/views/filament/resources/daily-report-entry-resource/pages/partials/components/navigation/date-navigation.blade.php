@@ -20,18 +20,26 @@
             @svg("heroicon-m-calendar", "w-4 h-4")
             <span>{{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->locale('id')->translatedFormat('F Y') }}</span>
         </h3>
-        <div class="space-y-2 text-xs">
-            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <span class="w-3 h-3 rounded-full bg-green-500 shadow-sm"></span>
-                <span>● = Lengkap</span>
+        <div class="space-y-1.5 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="flex-shrink-0 w-3 h-3 rounded-full bg-green-500 shadow-sm"></span>
+                <span class="font-medium text-green-700 dark:text-green-400">Sudah diisi</span>
             </div>
-            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <span class="w-3 h-3 rounded-full border-2 border-orange-400"></span>
-                <span>○ = Kosong</span>
+            <div class="flex items-center gap-2">
+                <span class="flex-shrink-0 w-3 h-3 rounded-full border-2 border-orange-400"></span>
+                <span class="font-medium text-orange-600 dark:text-orange-400">Belum diisi</span>
             </div>
-            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <span class="w-3 h-3 rounded border border-gray-400"></span>
-                <span>▢ = Future</span>
+            <div class="flex items-center gap-2">
+                <span class="flex-shrink-0 w-3 h-3 rounded border border-red-400 bg-red-50 dark:bg-red-900/20"></span>
+                <span class="font-medium text-red-600 dark:text-red-400">Terkunci</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="flex-shrink-0 w-3 h-3 rounded border border-gray-400 opacity-50"></span>
+                <span class="font-medium text-gray-500 dark:text-gray-400">Masa depan</span>
+            </div>
+            <div class="flex items-center gap-2 mt-1 pt-1.5 border-t border-slate-200 dark:border-slate-700">
+                <span class="flex-shrink-0 w-3 h-3 rounded-full bg-primary-500 ring-2 ring-primary-300 dark:ring-primary-700"></span>
+                <span class="font-medium text-primary-600 dark:text-primary-400">Hari ini</span>
             </div>
         </div>
     </div>
@@ -68,6 +76,10 @@
         break;
         }
         }
+
+        // Locked = past date beyond the allowed input window
+        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $isLocked = !$date->isFuture() && !$hasAnyData && $date->lt(now()->startOfDay()->subDays($backDays));
         @endphp
 
         <button
@@ -85,8 +97,14 @@
             <div class="flex-shrink-0 transition-all duration-200 group-hover:scale-110">
                 @if($date->isFuture())
                 <div class="w-3 h-3 rounded border border-gray-400 opacity-50"></div>
+                @elseif($hasAnyData && $isToday)
+                <div class="w-3 h-3 rounded-full bg-green-500 shadow-sm ring-2 ring-primary-300 dark:ring-primary-700"></div>
                 @elseif($hasAnyData)
                 <div class="w-3 h-3 rounded-full bg-green-500 shadow-sm group-hover:shadow-green-200 ring-0 group-hover:ring-2 ring-green-200"></div>
+                @elseif($isToday)
+                <div class="w-3 h-3 rounded-full bg-primary-500 ring-2 ring-primary-300 dark:ring-primary-700"></div>
+                @elseif($isLocked)
+                <div class="w-3 h-3 rounded border border-red-400 bg-red-50 dark:bg-red-900/20"></div>
                 @else
                 <div class="w-3 h-3 rounded-full border-2 border-orange-400 group-hover:shadow-orange-200 ring-0 group-hover:ring-2 ring-orange-100"></div>
                 @endif

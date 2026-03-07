@@ -23,8 +23,8 @@ class LaporanImutSchema extends LaporanImutResource
         // Load setting untuk auto-generate period dan duration
         $settings = LaporanImutAutoGenerationSetting::getInstance();
 
-        // Hitung assessment period dari setting (data entry duration)
-        $assessmentStart = now()->addDays($settings->data_entry_duration);
+        // Hitung assessment period dari setting (back data entry duration)
+        $assessmentStart = now()->addDays($settings->back_data_entry_duration);
         $assessmentEnd = $assessmentStart->copy()->endOfMonth();
 
         return [

@@ -25,6 +25,8 @@ class MatrixDataService
             return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
         }
 
+        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+
         // Get indicators
         $indicators = $this->getIndicators($unitKerjaIds);
 
@@ -36,7 +38,7 @@ class MatrixDataService
         $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
 
         // Build matrix data
-        $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries);
+        $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
 
         return [
             'indicators' => $indicators,
@@ -137,7 +139,7 @@ class MatrixDataService
     /**
      * Build matrix data array
      */
-    private function buildMatrixData(array $indicators, array $daysInMonth, Carbon $date, $complianceSummaries): array
+    private function buildMatrixData(array $indicators, array $daysInMonth, Carbon $date, $complianceSummaries, int $backDays = 6): array
     {
         $matrixData = [];
 
@@ -152,7 +154,7 @@ class MatrixDataService
 
                 $cellDate = $date->copy()->day($day)->startOfDay();
                 $today = now()->startOfDay();
-                $sixDaysAgo = now()->copy()->subDays(6)->startOfDay();
+                $sixDaysAgo = now()->copy()->subDays($backDays)->startOfDay();
 
                 // debugging: log summary for today to confirm counts
                 // if ($today->isSameDay($cellDate)) {
@@ -237,7 +239,8 @@ class MatrixDataService
         $count = $reports->count();
         $cellDate = Carbon::parse($date)->startOfDay();
         $today = now()->startOfDay();
-        $sixDaysAgo = now()->copy()->subDays(6)->startOfDay();
+        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $sixDaysAgo = now()->copy()->subDays($backDays)->startOfDay();
 
         if ($count > 0) {
             $status = 'done';

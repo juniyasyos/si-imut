@@ -112,7 +112,7 @@ class ListLaporanImuts extends ListRecords
                     Forms\Components\Section::make('Timeline & Deadline')
                         ->description('Tentukan durasi waktu untuk setiap tahap pengisian laporan')
                         ->schema([
-                            Forms\Components\TextInput::make('data_entry_duration')
+                            Forms\Components\TextInput::make('back_data_entry_duration')
                                 ->label('Berapa Hari Sebelumnya Bisa Diisi (hari)')
                                 ->numeric()
                                 ->minValue(1)
@@ -169,7 +169,7 @@ class ListLaporanImuts extends ListRecords
                 })
                 ->action(function (array $data) {
                     // Ensure integer casting for numeric fields
-                    $data['data_entry_duration'] = isset($data['data_entry_duration']) && is_numeric($data['data_entry_duration']) ? (int)$data['data_entry_duration'] : 7;
+                    $data['back_data_entry_duration'] = isset($data['back_data_entry_duration']) && is_numeric($data['back_data_entry_duration']) ? (int)$data['back_data_entry_duration'] : 6;
                     $data['recommendation_analysis_duration'] = isset($data['recommendation_analysis_duration']) && is_numeric($data['recommendation_analysis_duration']) ? (int)$data['recommendation_analysis_duration'] : 2;
 
                     $settings = LaporanImutAutoGenerationSetting::getInstance();
