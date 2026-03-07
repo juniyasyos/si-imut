@@ -110,6 +110,7 @@ class MatrixDataService
             ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
             ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
             ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
+            ->whereIn('daily_report_responses.unit_kerja_id', $unitKerjaIds)
             ->where(function ($query) {
                 $now = now();
                 $query->where(function ($q) use ($now) {

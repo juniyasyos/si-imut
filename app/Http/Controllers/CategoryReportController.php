@@ -7,6 +7,7 @@ use App\Models\ImutData;
 use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
 use App\Models\RegionType;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -472,17 +473,51 @@ class CategoryReportController extends Controller
             $categoryNames = $categoryDetails->pluck('category_name')->toArray();
         }
 
+        // Resolve Tim Mutu users for left signer dropdown ("Mengetahui")
+        $signatoryService = app(\App\Services\SignatoryService::class);
+        $timMutuUsersData = [];
+        $defaultLeftSignerIndex = 0;
+        try {
+            if (class_exists(\Spatie\Permission\Models\Role::class) && \Spatie\Permission\Models\Role::where('name', 'tim_mutu')->exists()) {
+                $timMutuUsers = User::role('tim_mutu')->orderBy('name')->get();
+                $timMutuUsersData = $timMutuUsers->map(fn($u) => [
+                    'id'      => $u->id,
+                    'name'    => $u->name,
+                    'ttd_url' => $signatoryService->getTtdUrl($u),
+                ])->values()->toArray();
+                foreach ($timMutuUsersData as $i => $u) {
+                    if (stripos($u['name'], 'yogi') !== false) {
+                        $defaultLeftSignerIndex = $i;
+                        break;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            $timMutuUsersData = [];
+        }
+
+        // Right signer: currently logged-in user ("Penanggung Jawab")
+        $authUser = auth()->user();
+        $rightSignerData = [
+            'id'      => $authUser?->id,
+            'name'    => $authUser?->name ?? '(...........................)',
+            'ttd_url' => $authUser ? $signatoryService->getTtdUrl($authUser) : null,
+        ];
+
         return view('reports.category-laporan', [
-            'results' => $results,
-            'summary' => $summary,
-            'periode' => $periode,
-            'categories' => $categories,
-            'categoryNames' => $categoryNames,
-            'categoryDetails' => $categoryDetails,
-            'dataByImut' => $dataByImut,
-            'chartData' => $chartData,
-            'notesMap' => $notesMap,
-            'allMonths' => $allMonths,
+            'results'                => $results,
+            'summary'                => $summary,
+            'periode'                => $periode,
+            'categories'             => $categories,
+            'categoryNames'          => $categoryNames,
+            'categoryDetails'        => $categoryDetails,
+            'dataByImut'             => $dataByImut,
+            'chartData'              => $chartData,
+            'notesMap'               => $notesMap,
+            'allMonths'              => $allMonths,
+            'timMutuUsersData'       => $timMutuUsersData,
+            'defaultLeftSignerIndex' => $defaultLeftSignerIndex,
+            'rightSignerData'        => $rightSignerData,
         ]);
     }
 }

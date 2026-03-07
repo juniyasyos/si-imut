@@ -62,7 +62,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 }
 @endphp
 
-<body x-data='categoryReport(@json($imutBenchmarkTypes ?? []))' class="bg-white text-gray-800 font-sans text-sm leading-relaxed">
+<body x-data='categoryReport(@json($imutBenchmarkTypes ?? []), @json($timMutuUsersData), {{ $defaultLeftSignerIndex }}, @json($rightSignerData))' class="bg-white text-gray-800 font-sans text-sm leading-relaxed">
 
     <!-- Action Buttons -->
     <div class="no-print my-6 max-w-full mx-auto space-y-3">
@@ -78,6 +78,16 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                     <input type="radio" id="orientation-portrait" name="printOrientation" value="portrait" @change="printOrientation = $event.target.value">
                     <label for="orientation-portrait" class="text-sm text-amber-800 cursor-pointer">Portrait</label>
                 </div>
+            </div>
+            <!-- Dropdown penanda tangan Mengetahui -->
+            <div class="flex items-center gap-3" x-show="timMutuUsers.length > 0">
+                <span class="text-sm font-medium text-amber-900">✍️ Mengetahui:</span>
+                <select x-model.number="selectedLeftSignerIndex"
+                    class="text-sm border border-amber-300 rounded-lg px-3 py-1.5 bg-white text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <template x-for="(user, idx) in timMutuUsers" :key="user.id">
+                        <option :value="idx" x-text="user.name"></option>
+                    </template>
+                </select>
             </div>
         </div>
 
@@ -854,6 +864,56 @@ $imutBenchmarkTypes[$imut['id']] = $types;
         @endif
         @endforeach
 
+        <!-- Footer & Signature -->
+        <div class="mt-10 border-t-2 border-gray-300 pt-6">
+            <div class="mb-5 text-xs">
+                <strong>📝 Catatan:</strong>
+                <ul class="ml-5 mt-2 space-y-1">
+                    <li>N = Numerator (Pembilang): Jumlah kejadian yang memenuhi kriteria</li>
+                    <li>D = Denominator (Penyebut): Jumlah total kejadian yang diobservasi</li>
+                    <li>Persentase = (N / D) × 100%</li>
+                </ul>
+            </div>
+
+            <div class="flex justify-between mt-10">
+                <!-- Kiri: Mengetahui (Tim Mutu — dipilih via dropdown) -->
+                <div class="text-center w-56">
+                    <div class="text-sm mb-4">Mengetahui,<br><span class="font-medium">Tim Mutu</span></div>
+                    <div class="h-16 flex items-end justify-center mb-2">
+                        <template x-if="selectedLeftSigner && selectedLeftSigner.ttd_url">
+                            <img :src="selectedLeftSigner.ttd_url" alt="Tanda Tangan" class="h-14 w-auto mx-auto object-contain">
+                        </template>
+                        <template x-if="!selectedLeftSigner || !selectedLeftSigner.ttd_url">
+                            <div class="h-14"></div>
+                        </template>
+                    </div>
+                    <div class="text-sm font-bold border-t-2 border-black pt-2"
+                        x-text="selectedLeftSigner ? selectedLeftSigner.name : '(............................)'">
+                    </div>
+                </div>
+
+                <!-- Kanan: Penanggung Jawab (user yang login) -->
+                <div class="text-center w-56">
+                    <div class="text-sm mb-4">{{ now()->translatedFormat('d F Y') }},<br><span class="font-medium">Penanggung Jawab</span></div>
+                    <div class="h-16 flex items-end justify-center mb-2">
+                        <template x-if="rightSigner && rightSigner.ttd_url">
+                            <img :src="rightSigner.ttd_url" alt="Tanda Tangan" class="h-14 w-auto mx-auto object-contain">
+                        </template>
+                        <template x-if="!rightSigner || !rightSigner.ttd_url">
+                            <div class="h-14"></div>
+                        </template>
+                    </div>
+                    <div class="text-sm font-bold border-t-2 border-black pt-2"
+                        x-text="rightSigner ? rightSigner.name : '(............................)'">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-6 text-sm text-gray-500">
+                Dokumen ini dibuat secara otomatis oleh Sistem Informasi Indikator Mutu (SI-IMUT)
+            </div>
+        </div>
+
         @else
         <div class="p-6 text-center text-slate-500 border border-gray-300 mt-6">
             Tidak terdapat data yang sesuai dengan filter yang dipilih.
@@ -864,7 +924,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
     <script>
         // initialBenchmarkMap is an object mapping imutId -> array of region-type names
-        function categoryReport(initialBenchmarkMap = {}) {
+        function categoryReport(initialBenchmarkMap = {}, timMutuUsers = [], defaultLeftSignerIndex = 0, rightSigner = null) {
             // build initial visibility object so bindings won't fail
             const initShow = {};
             Object.entries(initialBenchmarkMap || {}).forEach(([imutId, types]) => {
@@ -886,6 +946,14 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                 // benchmark toggles by imut
                 benchmarkTypesByImut: initialBenchmarkMap || {},
                 showBenchmarkCols: initShow,
+
+                // TTD signers
+                timMutuUsers: timMutuUsers || [],
+                selectedLeftSignerIndex: defaultLeftSignerIndex || 0,
+                rightSigner: rightSigner,
+                get selectedLeftSigner() {
+                    return this.timMutuUsers[this.selectedLeftSignerIndex] ?? null;
+                },
 
                 init() {
                     // displayMode watcher
