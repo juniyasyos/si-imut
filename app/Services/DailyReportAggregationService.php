@@ -111,6 +111,20 @@ class DailyReportAggregationService
     {
         $result = $this->calculateForPenilaian($penilaian);
 
+        // Jangan timpa data yang sudah ada jika tidak ada daily reports untuk periode ini.
+        // Ini mencegah data lama (hasil migrasi) tertimpa nilai 0 ketika FieldResponse
+        // diinsert sementara DailyReportResponse untuk bulan lama belum di-migrasi.
+        if ($result['denominator'] === 0 && $penilaian->denominator_value !== null) {
+            Log::info(
+                "Skipping auto-calculation for ImutPenilaian {$penilaian->id}: "
+                . "tidak ada daily reports untuk periode ini dan data sudah ada "
+                . "(denominator_value={$penilaian->denominator_value}). "
+                . 'Kemungkinan sedang dalam proses migrasi data lama.'
+            );
+
+            return false;
+        }
+
         return $penilaian->update([
             'numerator_value' => $result['numerator'],
             'denominator_value' => $result['denominator'],

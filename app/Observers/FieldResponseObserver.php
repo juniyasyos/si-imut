@@ -30,7 +30,10 @@ class FieldResponseObserver
 
         // Cari LaporanImut yang rentang perubahannya mencakup tanggal laporan
         // dan memiliki unit kerja + profil/form template yang relevan.
+        // Hanya proses laporan yang masih aktif (STATUS_PROCESS) untuk menghindari
+        // perhitungan otomatis menimpa data lama saat migrasi database.
         $laporans = LaporanImut::query()
+            ->where('status', LaporanImut::STATUS_PROCESS)
             ->where('assessment_period_start', '<=', $reportDate)
             ->where('assessment_period_end', '>=', $reportDate)
             ->whereHas('laporanUnitKerjas', function ($q) use ($unitKerjaId, $formTemplateId) {
@@ -47,8 +50,10 @@ class FieldResponseObserver
 
         // Fallback: jika tidak ditemukan berdasarkan formTemplate, berarti
         // perhitungan mungkin masih relevan untuk laporan yang mencakup unit + tanggal.
+        // Tetap filter hanya laporan aktif (STATUS_PROCESS) agar data lama tidak tertimpa.
         if ($laporans->isEmpty()) {
             $laporans = LaporanImut::query()
+                ->where('status', LaporanImut::STATUS_PROCESS)
                 ->where('assessment_period_start', '<=', $reportDate)
                 ->where('assessment_period_end', '>=', $reportDate)
                 ->whereHas('laporanUnitKerjas', fn($q) => $q->where('unit_kerja_id', $unitKerjaId))
