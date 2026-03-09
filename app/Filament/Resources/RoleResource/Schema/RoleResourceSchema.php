@@ -9,15 +9,17 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\HtmlString;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Forms\ShieldSelectAllToggle;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 
 class RoleResourceSchema
 {
     public static function make(): array
     {
         return [
-            Forms\Components\Grid::make()
+            Grid::make()
                 ->schema([
-                    Forms\Components\Section::make()
+                    Section::make()
                         ->schema([
                             Forms\Components\TextInput::make('label')
                                 ->label(__('filament-shield::filament-shield.field.label'))
