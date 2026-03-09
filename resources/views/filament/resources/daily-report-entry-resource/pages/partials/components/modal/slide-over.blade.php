@@ -153,7 +153,7 @@ $isLocked = ($this->selectedDate)
 
                         <div class="space-y-4">
                             @foreach($this->dailyReports as $report)
-                            <div class="rounded-lg border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 hover:shadow-md transition-shadow overflow-hidden
+                            <div class="rounded-lg border bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 hover:shadow-md transition-shadow
                                 {{ in_array($report['id'], $this->selectedReports) ? 'ring-2 ring-red-400 dark:ring-red-500' : '' }}">
 
                                 {{-- Checkbox row (only when not locked) --}}
@@ -248,11 +248,11 @@ $isLocked = ($this->selectedDate)
                                             wire:loading.class="opacity-60 cursor-not-allowed"
                                             wire:target="editReport({{ $report['id'] }})"
                                             class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-yellow-700 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-600 transition-opacity">
-                                            <span wire:loading.remove wire:target="editReport({{ $report['id'] }})">
+                                            <span class="flex-1 inline-flex items-center justify-center" wire:loading.remove wire:target="editReport({{ $report['id'] }})">
                                                 @svg("heroicon-m-pencil", "w-4 h-4 mr-1.5")
                                                 Edit
                                             </span>
-                                            <span wire:loading wire:target="editReport({{ $report['id'] }})" class="inline-flex items-center gap-1.5">
+                                            <span class="flex-1 inline-flex items-center justify-center" wire:loading wire:target="editReport({{ $report['id'] }})" class="inline-flex items-center gap-1.5">
                                                 <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -268,11 +268,11 @@ $isLocked = ($this->selectedDate)
                                             wire:loading.class="opacity-60 cursor-not-allowed"
                                             wire:target="deleteReport({{ $report['id'] }})"
                                             class="flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-600 transition-opacity">
-                                            <span wire:loading.remove wire:target="deleteReport({{ $report['id'] }})">
+                                            <span class="flex-1 inline-flex items-center justify-center" wire:target="deleteReport({{ $report['id'] }})">
                                                 @svg("heroicon-m-trash", "w-4 h-4 mr-1.5")
                                                 Hapus
                                             </span>
-                                            <span wire:loading wire:target="deleteReport({{ $report['id'] }})" class="inline-flex items-center gap-1.5">
+                                            <span class="flex-1 inline-flex items-center justify-center"wire:loading wire:target="deleteReport({{ $report['id'] }})" class="inline-flex items-center gap-1.5">
                                                 <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />

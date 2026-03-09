@@ -41,7 +41,7 @@ class ImutProfileForm
         }
 
         return ($record->imutData->created_by !== Auth::id())
-            && ! static::userCan('force_editable_imut::profile');
+            && ! Auth::user()->can('force_editable_imut::profile');
     }
 
     /**
