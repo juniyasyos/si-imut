@@ -46,9 +46,8 @@ class ImutDataNotesReport extends BaseWidget
         $query = LaporanImut::query();
 
         if ($periodType === 'tahunan') {
-            // Untuk tahunan, ambil laporan yang periode assessmentnya di tahun tersebut
-            $query->whereYear('assessment_period_start', $year)
-                ->orWhereYear('assessment_period_end', $year);
+            // Untuk tahunan, ambil laporan berdasarkan report_year
+            $query->where('report_year', $year);
         } elseif ($periodType === 'semester' && $semester) {
             // Mapping semester ke bulan
             $semesterMonths = [
@@ -59,18 +58,9 @@ class ImutDataNotesReport extends BaseWidget
             $months = $semesterMonths[$semester] ?? [];
 
             if (!empty($months)) {
-                // Ambil laporan yang assessment period-nya overlap dengan semester
-                $query->where(function ($q) use ($year, $months) {
-                    foreach ($months as $month) {
-                        $q->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_start', $year)
-                                ->whereMonth('assessment_period_start', $month);
-                        })->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_end', $year)
-                                ->whereMonth('assessment_period_end', $month);
-                        });
-                    }
-                });
+                // Ambil laporan berdasarkan report_year + report_month semester terpilih
+                $query->where('report_year', $year)
+                    ->whereIn('report_month', $months);
             }
         } elseif ($periodType === 'triwulan' && $quarter) {
             // Mapping triwulan ke bulan
@@ -84,18 +74,9 @@ class ImutDataNotesReport extends BaseWidget
             $months = $quarterMonths[$quarter] ?? [];
 
             if (!empty($months)) {
-                // Ambil laporan yang assessment period-nya overlap dengan triwulan
-                $query->where(function ($q) use ($year, $months) {
-                    foreach ($months as $month) {
-                        $q->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_start', $year)
-                                ->whereMonth('assessment_period_start', $month);
-                        })->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_end', $year)
-                                ->whereMonth('assessment_period_end', $month);
-                        });
-                    }
-                });
+                // Ambil laporan berdasarkan report_year + report_month triwulan terpilih
+                $query->where('report_year', $year)
+                    ->whereIn('report_month', $months);
             }
         }
 
@@ -113,9 +94,8 @@ class ImutDataNotesReport extends BaseWidget
         $query = LaporanImut::query();
 
         if ($periodType === 'tahunan') {
-            // Untuk tahunan, ambil laporan yang periode assessmentnya di tahun tersebut
-            $query->whereYear('assessment_period_start', $year)
-                ->orWhereYear('assessment_period_end', $year);
+            // Untuk tahunan, ambil laporan berdasarkan report_year
+            $query->where('report_year', $year);
         } elseif ($periodType === 'semester' && $semester) {
             // Mapping semester ke bulan
             $semesterMonths = [
@@ -126,18 +106,9 @@ class ImutDataNotesReport extends BaseWidget
             $months = $semesterMonths[$semester] ?? [];
 
             if (!empty($months)) {
-                // Ambil laporan yang assessment period-nya overlap dengan semester
-                $query->where(function ($q) use ($year, $months) {
-                    foreach ($months as $month) {
-                        $q->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_start', $year)
-                                ->whereMonth('assessment_period_start', $month);
-                        })->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_end', $year)
-                                ->whereMonth('assessment_period_end', $month);
-                        });
-                    }
-                });
+                // Ambil laporan berdasarkan report_year + report_month semester terpilih
+                $query->where('report_year', $year)
+                    ->whereIn('report_month', $months);
             }
         } elseif ($periodType === 'triwulan' && $quarter) {
             // Mapping triwulan ke bulan
@@ -151,18 +122,9 @@ class ImutDataNotesReport extends BaseWidget
             $months = $quarterMonths[$quarter] ?? [];
 
             if (!empty($months)) {
-                // Ambil laporan yang assessment period-nya overlap dengan triwulan
-                $query->where(function ($q) use ($year, $months) {
-                    foreach ($months as $month) {
-                        $q->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_start', $year)
-                                ->whereMonth('assessment_period_start', $month);
-                        })->orWhere(function ($subQuery) use ($year, $month) {
-                            $subQuery->whereYear('assessment_period_end', $year)
-                                ->whereMonth('assessment_period_end', $month);
-                        });
-                    }
-                });
+                // Ambil laporan berdasarkan report_year + report_month triwulan terpilih
+                $query->where('report_year', $year)
+                    ->whereIn('report_month', $months);
             }
         }
 
