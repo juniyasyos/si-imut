@@ -882,6 +882,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                     <div class="text-sm mb-4"><br><span class="font-medium">Penanggung Jawab</span><br><span class="font-medium">Tim Mutu</span></div>
                     <div class="h-16 flex items-end justify-center mb-2">
                         <template x-if="selectedLeftSigner && selectedLeftSigner.ttd_url">
+                            <img :src="selectedLeftSigner.ttd_url" alt="Tanda Tangan" class="h-14 w-auto mx-auto object-contain">
                         </template>
                         <template x-if="!selectedLeftSigner || !selectedLeftSigner.ttd_url">
                             <div class="h-14"></div>
