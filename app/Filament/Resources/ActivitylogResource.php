@@ -9,7 +9,14 @@ use Rmsramos\Activitylog\Resources\ActivitylogResource as BaseActivitylogResourc
 class ActivitylogResource extends BaseActivitylogResource implements HasShieldPermissions
 {
     use HasActiveIcon;
+
     protected static ?int $navigationSort = 3;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function getPermissionPrefixes(): array
     {
         return [
