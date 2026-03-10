@@ -159,8 +159,6 @@ trait BuildsDynamicForm
             $historySuggestions = json_decode($historySuggestions, true) ?? [];
         }
 
-        dd($historySuggestions);
-
         // Always use Select field for text inputs to enable history building
         $historySuggestions = collect($historySuggestions)->map(fn($v) => is_array($v) ? implode(' ', $v) : $v)->toArray();
         $options = collect($historySuggestions)
