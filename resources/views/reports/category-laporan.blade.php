@@ -463,7 +463,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
             @foreach($subset as $index => $imut)
 
-            <div x-data="imutNotes(@json($imut['notes']), @json($imut['data']))" class="mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden imut-section">
+            <div x-data='imutNotes(@json($imut["notes"]), @json($imut["data"]))' class="mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white overflow-hidden imut-section">
 
                 {{-- ================= HEADER IMUT ================= --}}
                 <div class="px-6 py-5 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
@@ -875,13 +875,13 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                 </ul>
             </div>
 
-            <div class="flex justify-between mt-10">
-                <!-- Kiri: Mengetahui (Tim Mutu — dipilih via dropdown) -->
+            <div class="flex justify-end mt-10">
+                <!-- Kanan: Penanggung Jawab (user yang login) -->
                 <div class="text-center w-56">
-                    <div class="text-sm mb-4">Mengetahui,<br><span class="font-medium">Tim Mutu</span></div>
+                    <span class="text-sm text-end">{{ now()->translatedFormat('d F Y') }},</span>
+                    <div class="text-sm mb-4"><br><span class="font-medium">Penanggung Jawab</span><br><span class="font-medium">Tim Mutu</span></div>
                     <div class="h-16 flex items-end justify-center mb-2">
                         <template x-if="selectedLeftSigner && selectedLeftSigner.ttd_url">
-                            <img :src="selectedLeftSigner.ttd_url" alt="Tanda Tangan" class="h-14 w-auto mx-auto object-contain">
                         </template>
                         <template x-if="!selectedLeftSigner || !selectedLeftSigner.ttd_url">
                             <div class="h-14"></div>
@@ -891,22 +891,6 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                         x-text="selectedLeftSigner ? selectedLeftSigner.name : '(............................)'">
                     </div>
                 </div>
-
-                <!-- Kanan: Penanggung Jawab (user yang login) -->
-                <!-- <div class="text-center w-56">
-                    <div class="text-sm mb-4">{{ now()->translatedFormat('d F Y') }},<br><span class="font-medium">Penanggung Jawab</span></div>
-                    <div class="h-16 flex items-end justify-center mb-2">
-                        <template x-if="rightSigner && rightSigner.ttd_url">
-                            <img :src="rightSigner.ttd_url" alt="Tanda Tangan" class="h-14 w-auto mx-auto object-contain">
-                        </template>
-                        <template x-if="!rightSigner || !rightSigner.ttd_url">
-                            <div class="h-14"></div>
-                        </template>
-                    </div>
-                    <div class="text-sm font-bold border-t-2 border-black pt-2"
-                        x-text="rightSigner ? rightSigner.name : '(............................)'">
-                    </div>
-                </div> -->
             </div>
 
             <div class="text-center mt-6 text-sm text-gray-500">
@@ -967,11 +951,11 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                     // ensure structure exists in case map changed dynamically
                     Object.entries(this.benchmarkTypesByImut).forEach(([imutId, types]) => {
                         if (!this.showBenchmarkCols[imutId]) {
-                            this.$set(this.showBenchmarkCols, imutId, {});
+                            this.showBenchmarkCols[imutId] = {};
                         }
                         types.forEach(t => {
                             if (this.showBenchmarkCols[imutId][t] === undefined) {
-                                this.$set(this.showBenchmarkCols[imutId], t, true);
+                                this.showBenchmarkCols[imutId][t] = true;
                             }
                         });
                     });

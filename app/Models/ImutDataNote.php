@@ -28,6 +28,7 @@ class ImutDataNote extends Model
         'note_name',
         'period_year',
         'period_quarter',
+        'period_semester',
         'period_type',
         'related_laporan_ids',
         'recommendation',
@@ -114,6 +115,15 @@ class ImutDataNote extends Model
             return "Tahunan {$this->period_year}";
         }
 
+        if ($this->period_type === 'semester') {
+            $semesterNames = [
+                'S1' => 'Semester I (Jan-Jun)',
+                'S2' => 'Semester II (Jul-Des)',
+            ];
+            $semesterName = $semesterNames[$this->period_semester] ?? $this->period_semester;
+            return "{$semesterName} {$this->period_year}";
+        }
+
         // Triwulan
         $quarterNames = [
             'Q1' => 'Triwulan I (Jan-Mar)',
@@ -164,6 +174,14 @@ class ImutDataNote extends Model
     public function scopeByQuarter($query, string $quarter)
     {
         return $query->where('period_quarter', $quarter);
+    }
+
+    /**
+     * Scope untuk filter berdasarkan semester
+     */
+    public function scopeBySemester($query, string $semester)
+    {
+        return $query->where('period_semester', $semester);
     }
 
     /**

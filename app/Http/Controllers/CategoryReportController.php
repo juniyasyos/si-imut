@@ -170,9 +170,100 @@ class CategoryReportController extends Controller
         $notesMap = [];
         $imutIds = array_column($results, 'imut_data_id');
         if (count($imutIds) > 0) {
-            $rawNotes = \App\Models\ImutDataNote::active()
-                ->whereIn('imut_data_id', $imutIds)
-                ->get(['id', 'imut_data_id', 'period_year', 'period_quarter', 'period_type', 'analysis', 'recommendation', 'note_name']);
+            // Build filter criteria untuk notes berdasarkan periode yang sedang dilihat
+            $notesQuery = \App\Models\ImutDataNote::active()
+                ->whereIn('imut_data_id', $imutIds);
+
+            // Determine period filtering based on $periode format
+            $yearStart = $startDate->year;
+            $yearEnd = $endDate->year;
+            $monthStart = $startDate->month;
+            $monthEnd = $endDate->month;
+
+            // Get unique years involved in the period
+            $years = [];
+            for ($y = $yearStart; $y <= $yearEnd; $y++) {
+                $years[] = $y;
+            }
+
+            // Filter notes based on report period overlap
+            $notesQuery->where(function ($q) use ($years, $monthStart, $monthEnd, $yearStart, $yearEnd, $months) {
+                // Include annual notes that match any year in range
+                $q->orWhere(function ($sub) use ($years) {
+                    $sub->where('period_type', 'tahunan')
+                        ->whereIn('period_year', $years);
+                });
+
+                // Include semester notes that overlap with report months
+                $q->orWhere(function ($sub) use ($years, $months) {
+                    $sub->where('period_type', 'semester')
+                        ->whereIn('period_year', $years)
+                        ->where(function ($s) use ($months) {
+                            // S1: Jan-Jun (months 1-6)
+                            // S2: Jul-Des (months 7-12)
+                            $hasS1Month = false;
+                            $hasS2Month = false;
+                            foreach ($months as $m) {
+                                $monthNum = (int) Carbon::parse($m . '-01')->month;
+                                if ($monthNum >= 1 && $monthNum <= 6) {
+                                    $hasS1Month = true;
+                                }
+                                if ($monthNum >= 7 && $monthNum <= 12) {
+                                    $hasS2Month = true;
+                                }
+                            }
+                            if ($hasS1Month) {
+                                $s->orWhere('period_semester', 'S1');
+                            }
+                            if ($hasS2Month) {
+                                $s->orWhere('period_semester', 'S2');
+                            }
+                        });
+                });
+
+                // Include quarter notes that overlap with report months
+                $q->orWhere(function ($sub) use ($years, $months) {
+                    $sub->where('period_type', 'triwulan')
+                        ->whereIn('period_year', $years)
+                        ->where(function ($s) use ($months) {
+                            // Q1: Jan-Mar (1-3), Q2: Apr-Jun (4-6), Q3: Jul-Sep (7-9), Q4: Oct-Des (10-12)
+                            $quarterMap = [
+                                'Q1' => [1, 2, 3],
+                                'Q2' => [4, 5, 6],
+                                'Q3' => [7, 8, 9],
+                                'Q4' => [10, 11, 12],
+                            ];
+
+                            $overlappingQuarters = [];
+                            foreach ($months as $m) {
+                                $monthNum = (int) Carbon::parse($m . '-01')->month;
+                                foreach ($quarterMap as $qName => $qMonths) {
+                                    if (in_array($monthNum, $qMonths) && !in_array($qName, $overlappingQuarters)) {
+                                        $overlappingQuarters[] = $qName;
+                                    }
+                                }
+                            }
+
+                            if (!empty($overlappingQuarters)) {
+                                $s->whereIn('period_quarter', $overlappingQuarters);
+                            }
+                        });
+                });
+            });
+
+            // // Debug: lihat query dan hasil
+            // dd([
+            //     'imutIds' => $imutIds,
+            //     'years' => $years,
+            //     'months' => $months,
+            //     'sql' => $notesQuery->toSql(),
+            //     'bindings' => $notesQuery->getBindings(),
+            //     'rawNotes' => $notesQuery->get(['id', 'imut_data_id', 'period_year', 'period_quarter', 'period_semester', 'period_type', 'analysis', 'recommendation', 'note_name'])->toArray(),
+            //     'allData' => \App\Models\ImutDataNote::active()->whereIn('imut_data_id', $imutIds)->get(['id', 'imut_data_id', 'period_year', 'period_quarter', 'period_semester', 'period_type', 'analysis', 'recommendation', 'note_name'])->toArray(),
+            // ]);
+
+            $rawNotes = $notesQuery->get(['id', 'imut_data_id', 'period_year', 'period_quarter', 'period_semester', 'period_type', 'analysis', 'recommendation', 'note_name']);
+
             foreach ($rawNotes as $n) {
                 $key = $n->imut_data_id;
                 $arr = $n->toArray();
@@ -184,7 +275,22 @@ class CategoryReportController extends Controller
                     for ($i = 1; $i <= 12; $i++) {
                         $arr['months'][] = sprintf('%04d-%02d', $arr['period_year'], $i);
                     }
+                } elseif ($arr['period_type'] === 'semester') {
+                    $semesterNames = ['S1' => 'Semester I', 'S2' => 'Semester II'];
+                    $arr['period_label'] = ($semesterNames[$arr['period_semester']] ?? $arr['period_semester']) . ' ' . $arr['period_year'];
+                    // compute semester months
+                    $arr['months'] = [];
+                    $monthsRange = [];
+                    if ($arr['period_semester'] === 'S1') {
+                        $monthsRange = [1, 2, 3, 4, 5, 6];
+                    } elseif ($arr['period_semester'] === 'S2') {
+                        $monthsRange = [7, 8, 9, 10, 11, 12];
+                    }
+                    foreach ($monthsRange as $mth) {
+                        $arr['months'][] = sprintf('%04d-%02d', $arr['period_year'], $mth);
+                    }
                 } else {
+                    // triwulan
                     $quarterNames = ['Q1' => 'Triwulan I', 'Q2' => 'Triwulan II', 'Q3' => 'Triwulan III', 'Q4' => 'Triwulan IV'];
                     $arr['period_label'] = ($quarterNames[$arr['period_quarter']] ?? $arr['period_quarter']) . ' ' . $arr['period_year'];
                     // compute quarter months
@@ -353,6 +459,10 @@ class CategoryReportController extends Controller
                 'notes' => $notesMap[$imutId] ?? [],
                 'units' => $units,
             ];
+
+            if ($request->boolean('debug_notes')) {
+                dd($dataByImut);
+            }
         }
 
         // prepare chart data for each indicator
