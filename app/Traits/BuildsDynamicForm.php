@@ -160,7 +160,11 @@ trait BuildsDynamicForm
         }
 
         // Always use Select field for text inputs to enable history building
-        $options = array_combine($historySuggestions, $historySuggestions); // value => label
+        $historySuggestions = collect($historySuggestions)->map(fn($v) => is_array($v) ? implode(' ', $v) : $v)->toArray();
+        $options = collect($historySuggestions)
+            ->filter(fn($v) => is_string($v))
+            ->mapWithKeys(fn($v) => [$v => $v])
+            ->toArray();
 
         return SelectFieldBuilder::createSearchableSelect(
             "responses.{$field->field_key}",
