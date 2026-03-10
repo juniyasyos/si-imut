@@ -893,7 +893,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                 </div>
 
                 <!-- Kanan: Penanggung Jawab (user yang login) -->
-                <div class="text-center w-56">
+                <!-- <div class="text-center w-56">
                     <div class="text-sm mb-4">{{ now()->translatedFormat('d F Y') }},<br><span class="font-medium">Penanggung Jawab</span></div>
                     <div class="h-16 flex items-end justify-center mb-2">
                         <template x-if="rightSigner && rightSigner.ttd_url">
@@ -906,7 +906,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                     <div class="text-sm font-bold border-t-2 border-black pt-2"
                         x-text="rightSigner ? rightSigner.name : '(............................)'">
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div class="text-center mt-6 text-sm text-gray-500">
