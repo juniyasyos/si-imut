@@ -206,7 +206,8 @@ class FormPersistenceService
         // Extract values from repeater structure and filter out empty ones
         $processed = array_filter(array_map(function ($item) {
             if (is_array($item)) {
-                return trim($item['value'] ?? '');
+                // Convert value ke string dulu sebelum trim untuk menghindari error jika value adalah array
+                return trim((string) ($item['value'] ?? ''));
             }
             // Jika item bukan array, gunakan string representation
             return trim((string) $item);
