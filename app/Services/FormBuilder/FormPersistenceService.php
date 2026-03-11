@@ -16,7 +16,7 @@ class FormPersistenceService
     {
         // With versioning system, we don't cleanup duplicate templates
         // Each version should be preserved for audit trail
-        
+
         // Update existing form template or create new one
         $this->saveToEnhancedFormat($record, $data);
     }
@@ -88,6 +88,16 @@ class FormPersistenceService
         $incomingKeys = [];
 
         foreach ($fields as $index => $fieldData) {
+            // Ensure fieldData adalah array
+            if (!is_array($fieldData)) {
+                $fieldData = (array) $fieldData;
+            }
+
+            // Ensure history_suggestions adalah array
+            if (isset($fieldData['history_suggestions'])) {
+                $fieldData['history_suggestions'] = $this->ensureHistorySuggestionsArray($fieldData['history_suggestions']);
+            }
+
             $fieldKey = $this->generateFieldKey($fieldData);
             $incomingKeys[] = $fieldKey;
 
@@ -156,6 +166,37 @@ class FormPersistenceService
         }
     }
 
+    private function ensureHistorySuggestionsArray($suggestions): array
+    {
+        // Jika null atau kosong, return array kosong
+        if (empty($suggestions)) {
+            return [];
+        }
+
+        // Jika sudah array, return as-is
+        if (is_array($suggestions)) {
+            return $suggestions;
+        }
+
+        // Jika JSON string, decode dulu
+        if (is_string($suggestions)) {
+            $decoded = json_decode($suggestions, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+            // Jika bukan JSON string yang valid, return array kosong
+            return [];
+        }
+
+        // Jika object, convert ke array
+        if (is_object($suggestions)) {
+            return (array) $suggestions;
+        }
+
+        // Default: return empty array
+        return [];
+    }
+
     private function processHistorySuggestions(array $suggestions): ?array
     {
         if (empty($suggestions)) {
@@ -164,7 +205,11 @@ class FormPersistenceService
 
         // Extract values from repeater structure and filter out empty ones
         $processed = array_filter(array_map(function ($item) {
-            return trim($item['value'] ?? '');
+            if (is_array($item)) {
+                return trim($item['value'] ?? '');
+            }
+            // Jika item bukan array, gunakan string representation
+            return trim((string) $item);
         }, $suggestions));
 
         // Remove duplicates and re-index
@@ -315,7 +360,7 @@ class FormPersistenceService
         // With versioning system, we preserve all template versions
         // This method is now disabled to prevent foreign key constraint violations
         return;
-        
+
         // Old logic (commented out for safety):
         // Find all templates for this profile
         /*
