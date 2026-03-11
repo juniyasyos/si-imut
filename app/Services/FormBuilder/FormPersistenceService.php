@@ -16,7 +16,7 @@ class FormPersistenceService
     {
         // With versioning system, we don't cleanup duplicate templates
         // Each version should be preserved for audit trail
-        
+
         // Update existing form template or create new one
         $this->saveToEnhancedFormat($record, $data);
     }
@@ -162,12 +162,16 @@ class FormPersistenceService
             return null;
         }
 
-        // Extract values from repeater structure and filter out empty ones
         $processed = array_filter(array_map(function ($item) {
-            return trim($item['value'] ?? '');
+            $value = $item['value'] ?? null;
+
+            if (is_array($value)) {
+                return null;
+            }
+
+            return trim((string) $value);
         }, $suggestions));
 
-        // Remove duplicates and re-index
         $processed = array_unique($processed);
         $processed = array_values($processed);
 
@@ -315,7 +319,7 @@ class FormPersistenceService
         // With versioning system, we preserve all template versions
         // This method is now disabled to prevent foreign key constraint violations
         return;
-        
+
         // Old logic (commented out for safety):
         // Find all templates for this profile
         /*
