@@ -216,6 +216,7 @@ Route::get('/export/monitoring/{templateId}', function ($templateId) {
 
 Route::middleware(['web'])->group(function () {
     // Root route redirect
+
     Route::get('/', function () {
         // If authenticated, go to admin dashboard
         if (Auth::check()) {
@@ -227,7 +228,7 @@ Route::middleware(['web'])->group(function () {
 
         if ($ssoEnabled) {
             // Production: Redirect to SSO login
-            return redirect('/login');
+            return redirect()->route('iam.sso.login');
         } else {
             // Development: Redirect to custom login
             return redirect('/siimut/login');
