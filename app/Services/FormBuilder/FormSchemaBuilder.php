@@ -49,18 +49,19 @@ class FormSchemaBuilder
                             'auto_calculate' => 'Kalkulasi Otomatis (Direkomendasikan)',
                             'manual_check' => 'Pemeriksaan Manual',
                         ])
-                        ->disabled()
-                        ->dehydrated() // 🔥 ini penting
+                        ->hidden()
+                        ->dehydrated()
                         ->default('auto_calculate')
                         ->helperText('Kalkulasi otomatis akan menghitung compliance berdasarkan bobot field dan nilai kritikalitas.'),
 
                     Toggle::make('auto_fail_on_critical')
                         ->label('Auto Fail pada Field Kritical')
-                        ->disabled()
+                        ->hidden()
                         ->dehydrated() // 🔥 tambahin ini juga
                         ->helperText('Jika diaktifkan, form akan langsung dianggap tidak compliant jika ada field kritical yang tidak terisi.')
                         ->default(true),
                 ])
+                ->hidden() // Sembunyikan seluruh section ini untuk saat ini, karena compliance_method masih diset ke auto_calculate dan belum ada opsi lain
                 ->columns(2),
 
             Section::make('Field Builder - Sederhana untuk Pelaporan Mutu')

@@ -26,13 +26,30 @@ class FormPersistenceService
         // With versioning: find active template or create new one
         $formTemplate = $record->activeFormTemplate;
 
+        // If there is no active template (e.g. legacy data), fallback to the most recent template for the profile.
+        // This prevents duplicate version errors when the template exists but isn't marked as active.
+        if (!$formTemplate) {
+            $formTemplate = FormTemplate::where('imut_profile_id', $record->id)
+                ->orderByDesc('created_at')
+                ->first();
+        }
+
+        // Fail-safe (avoid undefined array key warnings when the form payload doesn't include these keys)
+        $complianceMethod = $data['compliance_method'] ?? 'auto_calculate';
+        $autoFailOnCritical = $data['auto_fail_on_critical'] ?? false;
+
         if ($formTemplate) {
-            // Update existing active form template
+            // If the payload doesn't include the values, keep existing template values
+            $complianceMethod = $data['compliance_method'] ?? $formTemplate->compliance_method ?? $complianceMethod;
+            $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
+
+            // Update existing active form template (or promote latest template to active)
             $formTemplate->update([
                 'title' => $data['title'],
                 'description' => $data['description'],
-                'compliance_method' => $data['compliance_method'],
-                'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+                'compliance_method' => $complianceMethod,
+                'auto_fail_on_critical' => $autoFailOnCritical,
+                'is_active' => true,
             ]);
         } else {
             // Create new active template (first version)
@@ -45,8 +62,8 @@ class FormPersistenceService
                     'created_by_user_id' => auth()->id(),
                     'title' => $data['title'],
                     'description' => $data['description'],
-                    'compliance_method' => $data['compliance_method'],
-                    'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+                    'compliance_method' => $complianceMethod,
+                    'auto_fail_on_critical' => $autoFailOnCritical,
                 ]);
             } catch (\Illuminate\Database\QueryException $e) {
                 // Handle potential race condition - fetch active template
@@ -59,11 +76,15 @@ class FormPersistenceService
                         throw $e;
                     }
 
+                    $complianceMethod = $data['compliance_method'] ?? $formTemplate->compliance_method ?? $complianceMethod;
+                    $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
+
                     $formTemplate->update([
                         'title' => $data['title'],
                         'description' => $data['description'],
-                        'compliance_method' => $data['compliance_method'],
-                        'auto_fail_on_critical' => $data['auto_fail_on_critical'],
+                        'compliance_method' => $complianceMethod,
+                        'auto_fail_on_critical' => $autoFailOnCritical,
+                        'is_active' => true,
                     ]);
                 } else {
                     throw $e;
