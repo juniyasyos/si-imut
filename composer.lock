@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bf0a9b9f61fc5f6cdcb6dec896b640fa",
+    "content-hash": "0894fb24357b50c40b6c0943077b91e7",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4113,15 +4113,22 @@
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
-            "version": "dev-master",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/juniyasyos/manage-unit-kerja.git",
+                "reference": "1efbac4b1ac2ba81edb27cb7e9b2ceaa676f6430"
+            },
             "dist": {
-                "type": "path",
-                "url": "packages/juniyasyos/manage-unit-kerja",
-                "reference": "031172aae7f5f9966a20125ad070bd4c1a1ffeaf"
+                "type": "zip",
+                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/1efbac4b1ac2ba81edb27cb7e9b2ceaa676f6430",
+                "reference": "1efbac4b1ac2ba81edb27cb7e9b2ceaa676f6430",
+                "shasum": ""
             },
             "require": {
                 "bezhansalleh/filament-shield": "^3.3",
                 "filament/filament": "^3.0",
+                "guava/filament-modal-relation-managers": "^1.4",
                 "illuminate/support": "^10.0|^11.0|^12.0",
                 "php": "^8.2"
             },
@@ -4142,6 +4149,7 @@
                     "Juniyasyos\\ManageUnitKerja\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -4152,10 +4160,11 @@
                 }
             ],
             "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/juniyasyos/manage-unit-kerja/issues",
+                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.0.0"
+            },
+            "time": "2026-03-21T21:53:10+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
