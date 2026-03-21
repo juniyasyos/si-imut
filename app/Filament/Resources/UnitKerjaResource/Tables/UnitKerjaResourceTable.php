@@ -68,6 +68,7 @@ class UnitKerjaResourceTable
                 ->label('Pegawai')
                 ->icon('heroicon-o-user-group')
                 ->color('success')
+                ->visible(UnitKerjaResource::isCrudAllowed())
                 ->relationManager(UsersRelationManager::make()),
 
             \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('imutData')
@@ -81,7 +82,7 @@ class UnitKerjaResourceTable
                 EditAction::make('edit')
                     ->label('Edit')
                     ->tooltip('Edit')
-                    ->visible(fn($record) => method_exists($record, 'trashed') && ! $record->trashed())
+                    ->visible(fn($record) => method_exists($record, 'trashed') && ! $record->trashed() && UnitKerjaResource::isCrudAllowed())
                     ->icon('heroicon-o-pencil-square'),
 
                 RestoreAction::make('restore')
@@ -89,7 +90,8 @@ class UnitKerjaResourceTable
                         fn($record) =>
                         Gate::allows('restore', $record) &&
                             method_exists($record, 'trashed') &&
-                            $record->trashed()
+                            $record->trashed() &&
+                            UnitKerjaResource::isCrudAllowed()
                     ),
 
                 ForceDeleteAction::make('forceDelete')
@@ -98,7 +100,8 @@ class UnitKerjaResourceTable
                         fn($record) =>
                         Gate::allows('forceDelete', $record) &&
                             method_exists($record, 'trashed') &&
-                            $record->trashed()
+                            $record->trashed() &&
+                            UnitKerjaResource::isCrudAllowed()
                     ),
             ]),
         ];
@@ -110,9 +113,11 @@ class UnitKerjaResourceTable
             // Keep bulk actions minimal: soft-delete and restore. Force delete remains but restricted.
             BulkActionGroup::make([
                 DeleteBulkAction::make()
+                    ->visible(UnitKerjaResource::isCrudAllowed())
                     ->label('Hapus'),
 
                 RestoreBulkAction::make()
+                    ->visible(UnitKerjaResource::isCrudAllowed())
                     ->label('Pulihkan'),
 
                 ForceDeleteBulkAction::make()
@@ -121,8 +126,8 @@ class UnitKerjaResourceTable
                     ->modalHeading('Hapus Permanen Data Terpilih')
                     ->modalDescription('Apakah Anda yakin ingin menghapus data ini secara permanen? Tindakan ini tidak dapat dibatalkan.')
                     ->modalSubmitActionLabel('Ya, Hapus Permanen')
-                    ->visible(fn() => Gate::allows('forceDelete', UnitKerja::class)),
-            ])->visible(fn() => Gate::any(['update_imut::category', 'create_imut::category'])),
+                    ->visible(fn() => Gate::allows('forceDelete', UnitKerja::class) && UnitKerjaResource::isCrudAllowed()),
+            ])->visible(fn() => Gate::any(['update_imut::category', 'create_imut::category']) && UnitKerjaResource::isCrudAllowed()),
         ];
     }
 }
