@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PrintReportController;
 use App\Http\Controllers\TableViewController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Juniyasyos\IamClient\Http\Controllers\LogoutController;
 use Juniyasyos\IamClient\Http\Controllers\SsoCallbackController;
 use Juniyasyos\IamClient\Http\Controllers\SsoLoginRedirectController;
@@ -181,7 +182,6 @@ Route::get('/export/monitoring/{templateId}', function ($templateId) {
             },
             $filename
         );
-
     } catch (\Exception $e) {
         \Log::error('Export monitoring data failed', [
             'template_id' => $templateId,
@@ -216,6 +216,7 @@ Route::get('/export/monitoring/{templateId}', function ($templateId) {
 
 Route::middleware(['web'])->group(function () {
     // Root route redirect
+
     Route::get('/', function () {
         // If authenticated, go to admin dashboard
         if (Auth::check()) {
@@ -227,15 +228,19 @@ Route::middleware(['web'])->group(function () {
 
         if ($ssoEnabled) {
             // Production: Redirect to SSO login
-            return redirect('/login');
+            return redirect()->route('iam.sso.login');
         } else {
             // Development: Redirect to custom login
             return redirect('/siimut/login');
         }
     })->name('home');
 
-    // SSO Routes - dengan middleware redirect untuk development mode
-    // Ketika SSO disabled (USE_SSO=false), routes ini akan redirect ke /login
+    // Unified login entrypoint (flexible between SSO and Filament login)
+    // - In SSO mode, redirects to SSO (IAM) login
+    // - In local/dev mode, redirects to Filament's login page
+    Route::get('/login', SsoLoginRedirectController::class)->name('login');
+
+    // SSO Routes - with middleware to redirect to Filament login when SSO is disabled
     Route::middleware([\App\Http\Middleware\RedirectIfSsoDisabled::class])->group(function () {
         Route::get('/sso/login', SsoLoginRedirectController::class)->name('sso.login');
         Route::get('/sso/callback', SsoCallbackController::class)->name('sso.callback');
@@ -243,6 +248,23 @@ Route::middleware(['web'])->group(function () {
     });
 
     Route::post('/logout', LogoutController::class)->name('logout');
+
+    // Fallback for legacy login URLs when SSO is enabled.
+    // This prevents 404 when users hit `/siimut/login` or `/admin/login` in production.
+    Route::fallback(function (Request $request) {
+        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
+        $path = trim($request->path(), '/');
+
+        if (in_array($path, ['siimut/login', 'admin/login'], true) && $ssoEnabled) {
+            return redirect('/login');
+        }
+
+        if ($path === 'login' && ! $ssoEnabled) {
+            return redirect(\Filament\Facades\Filament::getLoginUrl());
+        }
+
+        abort(404);
+    });
 
     // Debug routes - available in all modes
     Route::get('/debug-session', function () {
