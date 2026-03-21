@@ -3,10 +3,9 @@
 namespace App\Filament\Resources\UnitKerjaResource\Pages;
 
 use App\Filament\Resources\UnitKerjaResource;
-use Filament\Actions;
-use Filament\Resources\Pages\CreateRecord;
+use Juniyasyos\ManageUnitKerja\Filament\Resources\UnitKerjaResource\Pages\CreateUnitKerja as PagesCreateUnitKerja;
 
-class CreateUnitKerja extends CreateRecord
+class CreateUnitKerja extends PagesCreateUnitKerja
 {
     protected static string $resource = UnitKerjaResource::class;
     protected static bool $canCreateAnother = false;

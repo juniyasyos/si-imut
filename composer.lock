@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1f883e47a49f6c033d727df44cb61c9e",
+    "content-hash": "bf0a9b9f61fc5f6cdcb6dec896b640fa",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4108,6 +4108,52 @@
                 "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.4.7"
             },
             "time": "2026-03-15T18:43:08+00:00"
+        },
+        {
+            "name": "juniyasyos/manage-unit-kerja",
+            "version": "dev-unit-kerja-plugin",
+            "dist": {
+                "type": "path",
+                "url": "packages/juniyasyos/manage-unit-kerja",
+                "reference": "1bf4fe95f39386a88aeed7a52ab2c70d42d17731"
+            },
+            "require": {
+                "bezhansalleh/filament-shield": "^3.3",
+                "filament/filament": "^3.0",
+                "illuminate/support": "^10.0|^11.0|^12.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^8.0|^9.0",
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Juniyasyos\\ManageUnitKerja\\ManageUnitKerjaServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Juniyasyos\\ManageUnitKerja\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Juniyasyos",
+                    "email": "juniyasyos@gmail.com"
+                }
+            ],
+            "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",

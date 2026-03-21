@@ -273,6 +273,13 @@
       0 => 'Juniyasyos\\IamClient\\IamClientServiceProvider',
     ),
   ),
+  'juniyasyos/manage-unit-kerja' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Juniyasyos\\ManageUnitKerja\\ManageUnitKerjaServiceProvider',
+    ),
+  ),
   'kirschbaum-development/eloquent-power-joins' => 
   array (
     'providers' => 

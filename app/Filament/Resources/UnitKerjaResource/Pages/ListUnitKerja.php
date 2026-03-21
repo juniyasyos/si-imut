@@ -3,11 +3,10 @@
 namespace App\Filament\Resources\UnitKerjaResource\Pages;
 
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\UnitKerjaResource;
-use Illuminate\Support\Facades\Auth;
+use Juniyasyos\ManageUnitKerja\Filament\Resources\UnitKerjaResource\Pages\ListUnitKerja as PagesListUnitKerja;
 
-class ListUnitKerja extends ListRecords
+class ListUnitKerja extends PagesListUnitKerja
 {
     protected static string $resource = UnitKerjaResource::class;
 
