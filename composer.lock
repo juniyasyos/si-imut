@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0894fb24357b50c40b6c0943077b91e7",
+    "content-hash": "bf0a9b9f61fc5f6cdcb6dec896b640fa",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4113,17 +4113,11 @@
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/juniyasyos/manage-unit-kerja.git",
-                "reference": "1efbac4b1ac2ba81edb27cb7e9b2ceaa676f6430"
-            },
+            "version": "dev-master",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/1efbac4b1ac2ba81edb27cb7e9b2ceaa676f6430",
-                "reference": "1efbac4b1ac2ba81edb27cb7e9b2ceaa676f6430",
-                "shasum": ""
+                "type": "path",
+                "url": "packages/juniyasyos/manage-unit-kerja",
+                "reference": "785c7bea5fe2cc18fe491586b589920e5873ecb1"
             },
             "require": {
                 "bezhansalleh/filament-shield": "^3.3",
@@ -4149,7 +4143,6 @@
                     "Juniyasyos\\ManageUnitKerja\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -4160,11 +4153,10 @@
                 }
             ],
             "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
-            "support": {
-                "issues": "https://github.com/juniyasyos/manage-unit-kerja/issues",
-                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.0.0"
-            },
-            "time": "2026-03-21T21:53:10+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
@@ -8263,16 +8255,16 @@
         },
         {
             "name": "psy/psysh",
-            "version": "v0.12.21",
+            "version": "v0.12.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bobthecow/psysh.git",
-                "reference": "4821fab5b7cd8c49a673a9fd5754dc9162bb9e97"
+                "reference": "3be75d5b9244936dd4ac62ade2bfb004d13acf0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/4821fab5b7cd8c49a673a9fd5754dc9162bb9e97",
-                "reference": "4821fab5b7cd8c49a673a9fd5754dc9162bb9e97",
+                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/3be75d5b9244936dd4ac62ade2bfb004d13acf0f",
+                "reference": "3be75d5b9244936dd4ac62ade2bfb004d13acf0f",
                 "shasum": ""
             },
             "require": {
@@ -8336,9 +8328,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bobthecow/psysh/issues",
-                "source": "https://github.com/bobthecow/psysh/tree/v0.12.21"
+                "source": "https://github.com/bobthecow/psysh/tree/v0.12.22"
             },
-            "time": "2026-03-06T21:21:28+00:00"
+            "time": "2026-03-22T23:03:24+00:00"
         },
         {
             "name": "pxlrbt/filament-excel",
