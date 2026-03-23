@@ -23,6 +23,45 @@ SIIMUT dirancang untuk membantu rumah sakit dalam:
 
 Ringkasan analisis struktural dan alur kerja aplikasi disimpan di folder `docs/`:
 
+## 🖼️ Preview
+
+![Dashboard Admin](docs/images/dashboard/dashboard-admin.png)
+![Daily Report](docs/images/dashboard/dashboard-pic.png)
+![Laporan Triwulan](docs/images/report/laporan-triwulan.png)
+
+*Contoh screenshot: dashboard monitoring indikator mutu, laporan harian, dan grafik tren.*
+
+## 👤 Siapa yang Cocok Menggunakan SIIMUT
+
+- Manajemen rumah sakit (Direksi, MKA)
+- Tim mutu (Quality Assurance, Komite Mutu)
+- Tim IT / DevOps
+- Auditor internal maupun eksternal
+
+## 🏗️ Gambaran Arsitektur
+
+SIIMUT dibangun di atas stack berikut:
+- Backend: Laravel 12
+- UI/administrasi: Filament 3.2
+- Interaktivitas: Livewire + Blade
+- PWA/offline: service worker + caching (`generate-cache-pwa.sh`)
+- Data: MySQL (default) + Eloquent ORM
+- Eksternal: API service, Dynamic SSO
+
+## 🔒 Security
+
+- RBAC (role-based access control) lengkap via permission and policy.
+- Audit log: perubahan data, created_by/updated_by, LogsActivity.
+- API authentication: Sanctum / token-based API endpoint.
+- Protection: CSRF, input validation, dan modul upload file aman.
+
+## 🧪 Testing
+
+- Unit & feature tests tersedia di `tests/`.
+- Benchmarking tests (59 tests, 153 assertions) telah di-document di `docs/benchmarking-*`.
+- PWA test workflow: `PWA-PRODUCTION-TESTING.md` + `generate-cache-pwa.sh`.
+
+
 - `docs/ANALYSIS.md` — ringkasan analisis (gambaran umum, komponen, mapping ke LARS, aspek teknis).
 - `docs/flow.mmd` — diagram alur (Mermaid) yang menggambarkan lifecycle data indikator → laporan → eviden.
 - `docs/module-map.json` — peta modul aplikasi dan kaitannya ke elemen LARS (format JSON).
@@ -62,22 +101,38 @@ Untuk menginstal dan menjalankan **SIIMUT**, ikuti langkah-langkah berikut:
 
 ### 1️⃣ Clone Repository  
 ```sh
+# Clone repo dan masuk ke folder kerja
 git clone https://github.com/juniyasyos/si-imut.git SIIMUT
 cd SIIMUT
 ```  
 
 ### 2️⃣ Install Dependensi  
 ```sh
+# Install PHP dependencies dan frontend dependencies
 composer install && npm install
+# Tunggu hingga kedua proses selesai
 composer run post-root-package-install
 ```  
 
 ### 3️⃣ Konfigurasi Lingkungan  
 ```sh
+# Jalankan skrip konfigurasi project Laravel
 composer run post-update-cmd
 composer run post-create-project-cmd
+```
+Sesuaikan file `.env` untuk konfigurasi **database**, **s3/Minio**, dan integrasi lainnya.
+
+### 4️⃣ Migrasi Database  
+```sh
+# Migrasi skema basis data dan seeder default
+composer run setup
 ```  
-Sesuaikan file `.env` untuk konfigurasi **database** dan integrasi lainnya.  
+
+### 5️⃣ Jalankan Aplikasi  
+```sh
+# Jalankan mode development
+composer run dev
+```  
 
 ### 4️⃣ Migrasi Database  
 ```sh
@@ -91,27 +146,68 @@ composer run dev
 
 ---
 
-## ⚙️ Fitur Utama  
+## 🚀 Fitur Terbaru (2026)
 
-### 🏥 **Manajemen Indikator Mutu yang Efisien**  
-- Pemantauan indikator mutu berdasarkan **standar KARS & SNARS**.  
-- Penyimpanan data historis untuk **analisis tren dan evaluasi mutu**.  
+- ✅ PWA Production + Offline support (service worker + `generate-cache-pwa.sh` + cache monitoring via `Cache Storage`).
+- ✅ Daily Report Harian live (polling/Livewire) dengan auto-reporting terbaru secara real-time, direct update dashboard saat submit.
+- ✅ Form Builder canggih (mirip Google Form): template form versioning, field config, compliance scoring, pilihan versi form untuk dipakai per periode.
+- ✅ `Imut Data Notes` CRUD: catatan analisis, rekomendasi, prioritas, period tracking, related report relations, audit trail (SoftDeletes + LogsActivity).
+- ✅ Livewire Reporting (komponen `ImutIndicatorReport`) dengan reactive filtering, print-ready layout, unit kerja progress, benchmark comparisons.
+- ✅ Unit Kerja Media Enhancements: folder sync, media structure, migrasi data existing, backup/export support.
+- ✅ Benchmarking engine v1.2.0: period validity (start/end), cache invalidation, region/level keying, schema cleanup (year/month redundant removed), improved queries.
+- ✅ Export enhancements (Browsershot): PDF generation, Excel, dynamic report export, print/report route.
+- ✅ Dynamic SSO and API service support untuk integrasi identitas rumah sakit.
+- ✅ Improved performance nosql & livewire optimizations (fast-load query builder, Lazy loading data, Livewire caching support).
 
-### 📊 **Dashboard & Analitik Real-Time**  
-- **Visualisasi data indikator mutu** dalam bentuk grafik dan tabel interaktif.  
-- **Laporan otomatis** yang dapat diekspor ke berbagai format (PDF, Excel).  
+## 🔍 Perbandingan Fitur Lama vs Fitur Terbaru
 
-### 🔐 **Keamanan & Akses Kontrol**  
-- **Role-Based Access Control (RBAC)** untuk memastikan akses data hanya bagi pihak yang berwenang.  
-- **Audit log** untuk melacak perubahan dan aktivitas pengguna.  
+- Lama: fokus global (manajemen indikator, dashboard umum, RBAC, default export). 
+- Baru: fokus modul feature-specific (Imut Data Notes, Livewire report, PWA offline, Unit Kerja media, benchmarking period validity, service worker troubleshooting).
+- Lama: kata-kata umum; Baru: by-detail engineer with file path, migration, and widget implementations.
+- Lama: single reference `benchmarking` sebagai titik pusat; Baru: explain akses UI, live data/states, plus multiple enhancements (`docs/` spesifik cara pakai).
 
-### 🔄 **Integrasi & Skalabilitas**  
-- **Dukungan API** untuk menghubungkan SIIMUT dengan sistem lain di rumah sakit.  
-- **Struktur modular** yang dapat dikembangkan sesuai kebutuhan rumah sakit.  
+## 🗓️ Daily Report Harian (Breakthrough Feature)
 
-### ⚙️ **Kustomisasi & Kemudahan Penggunaan**  
-- **Antarmuka intuitif** untuk tenaga medis dan administrator.  
-- **Konfigurasi fleksibel** untuk menyesuaikan dengan kebijakan mutu masing-masing rumah sakit.  
+- Sistem menerima input harian (daily report) dengan mekanisme live update (Livewire/fullstack polling) sehingga laporan terbaru langsung muncul di dashboard.
+- Otomatis menjumlahkan numerator/denominator, menghitung persentase, dan menandai trend (uptick/downtick) pada tiap unit kerja.
+- Dilengkapi `Form Template Versioning`:
+  - `form_templates` menyimpan konfigurasi versi form.
+  - `enhanced_form_fields`, `form_field_options`, `field_responses` mendukung compliance scoring per field.
+  - Pengguna bisa pilih versi form (v1/v2/v3) untuk periode tertentu atau usecase unit kerja.
+- Komponen format input menyerupai Google Form:
+  - field type (text, number, radio, checkbox, select, date, time, long text)
+  - required/optional, validation rules, conditional fields, auto-calc scoring
+  - optional critical fields + auto-fail logic
+- Supported flows:
+  - create/edit template
+  - assign template ke unit kerja/periode
+  - submit daily data + realtime update total dashboard
+  - historical reporting + compare per version
+- Benefit utama:
+  - data entry terstandardisasi, minim human error
+  - report selalu up-to-date (inline live view)
+  - flexible adaptasi perubahan indikator tanpa rebuild code
+
+## ⚙️ Fitur Utama
+
+### 🔹 Core Features
+- Pemantauan indikator mutu berdasarkan **standar KARS & SNARS**.
+- Penyimpanan data historis untuk **analisis tren dan evaluasi mutu**.
+- Notes/analisis terhubung ke setiap `ImutData` dengan prioritas dan lifecycle management.
+- Livewire report untuk filtering real-time dan print-ready report.
+- PWA + offline support untuk deployment production (cache manifest, service worker).
+
+### 🔹 Technical Features
+- **Role-Based Access Control (RBAC)** untuk memastikan akses data hanya bagi pihak yang berwenang.
+- **Audit log** untuk melacak perubahan dan aktivitas pengguna (LogsActivity pada catatan data).
+- Dynamic SSO / API authentication integration.
+- **Dukungan API** untuk integrasi dengan sistem lain.
+- Struktur modular (Filament resources, Schema\*, Tables\*).
+- Export PDF/Excel dari Browsershot dan custom export pipeline.
+
+### 🔹 Live Reporting & Form Management
+- Daily Report Harian live (polling/Livewire) dengan auto-reporting realtime.
+- Form Builder canggih (mirip Google Form): template form versioning, field config, compliance scoring, pilihan versi form untuk setiap periode.
 
 ---
 
