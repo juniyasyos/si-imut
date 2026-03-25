@@ -1,4 +1,4 @@
-name: Laravel CI (SQLite)
+name: Laravel CI (Clean MySQL Only)
 
 on:
   push:
@@ -10,6 +10,22 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: siimut
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,16 +33,27 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
-          extensions: mbstring, sqlite, pdo_sqlite
+          extensions: mbstring, pdo, pdo_mysql
           tools: composer
 
+      # ✅ ENV LANGSUNG MYSQL (FIX)
       - name: Prepare environment
         run: |
           cp .env.example .env
-          mkdir -p database
-          touch database/database.sqlite
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+          echo "APP_ENV=testing" >> .env
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=siimut" >> .env
+          echo "DB_USERNAME=user" >> .env
+          echo "DB_PASSWORD=password" >> .env
+
+      # ✅ WAJIB: Tunggu MySQL sebelum composer
+      - name: Wait for MySQL
+        run: |
+          until mysql -h127.0.0.1 -uuser -ppassword -e "SELECT 1"; do
+            sleep 2
+          done
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
