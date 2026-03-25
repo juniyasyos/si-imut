@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Traits\HasUniqueWithSoftDeletes;
+use Juniyasyos\ManageUnitKerja\Models\UnitKerja as ModelsUnitKerja;
 
 /**
  * Class UnitKerja
@@ -23,7 +25,7 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * @property-read Folder|null $folder
  * @property-read \App\Models\LaporanImut|null $laporanImut
  */
-class UnitKerja extends Model
+class UnitKerja extends ModelsUnitKerja
 {
     use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
@@ -106,7 +108,7 @@ class UnitKerja extends Model
             ->withTimestamps();
     }
 
-    public function laporanUnitKerjas()
+    public function laporanUnitKerjas(): HasMany
     {
         return $this->hasMany(\App\Models\LaporanUnitKerja::class, 'unit_kerja_id');
     }
