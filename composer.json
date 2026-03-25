@@ -13,17 +13,8 @@
         "starter-kit"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "packages/juniyasyos/manage-unit-kerja",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "juniyasyos/manage-unit-kerja": "*",
         "archilex/filament-toggle-icon-column": "^3.2",
         "asmit/resized-column": "^1.0",
