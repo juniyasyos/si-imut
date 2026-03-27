@@ -13,7 +13,7 @@ class IAMLogin extends BaseLogin
         }
 
         // Redirect langsung ke IAM SSO
-        redirect()->route('iam.sso.login', [
+        redirect()->route('sso.login', [
             'intended' => filament()->getUrl()
         ]);
     }

@@ -228,7 +228,7 @@ Route::middleware(['web'])->group(function () {
 
         if ($ssoEnabled) {
             // Production: Redirect to SSO login
-            return redirect()->route('iam.sso.login');
+            return redirect()->route('sso.login');
         } else {
             // Development: Redirect to custom login
             return redirect('/siimut/login');
