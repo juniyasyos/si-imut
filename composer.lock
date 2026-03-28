@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63dd0a0e65dcf08a58a3b1421e41273f",
+    "content-hash": "7c7eb6bf3b7827c9683ad0da8b31b0a1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4052,16 +4052,16 @@
         },
         {
             "name": "juniyasyos/laravel-iam-client",
-            "version": "v1.4.8",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/laravel-iam-client.git",
-                "reference": "475071730f5b3eec19b566b954660ecf29276b89"
+                "reference": "37a8b623d970df70ad62f3ae356305d947b4533d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/475071730f5b3eec19b566b954660ecf29276b89",
-                "reference": "475071730f5b3eec19b566b954660ecf29276b89",
+                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/37a8b623d970df70ad62f3ae356305d947b4533d",
+                "reference": "37a8b623d970df70ad62f3ae356305d947b4533d",
                 "shasum": ""
             },
             "require": {
@@ -4107,9 +4107,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/laravel-iam-client/issues",
-                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.4.8"
+                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.5.0"
             },
-            "time": "2026-03-26T21:13:14+00:00"
+            "time": "2026-03-28T10:16:08+00:00"
         },
         {
             "name": "juniyasyos/manage-unit-kerja",

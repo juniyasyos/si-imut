@@ -157,6 +157,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Unit Kerja Synchronization
+    |--------------------------------------------------------------------------
+    |
+    | These settings ensure client-side user unit kerja is synchronized
+    | from IAM token payload.
+    */
+    'unit_kerja_field' => env('IAM_UNIT_KERJA_FIELD', 'unit_kerja'),
+    'require_unit_kerja' => env('IAM_REQUIRE_UNIT_KERJA', false),
+    'sync_unit_kerja' => env('IAM_SYNC_UNIT_KERJA', true),
+    'unit_kerja_model' => env('IAM_UNIT_KERJA_MODEL', App\Models\UnitKerja::class),
+    'roles_field' => env('IAM_ROLES_FIELD', 'roles'),
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Identifier Field
     |--------------------------------------------------------------------------
     |
