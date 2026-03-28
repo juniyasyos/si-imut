@@ -14,7 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Juniyasyos\ManageUnitKerja\Filament\Resources\UnitKerjaResource as ResourcesUnitKerjaResource;
 
-class UnitKerjaResource extends ResourcesUnitKerjaResource implements HasShieldPermissions
+class UnitKerjaResource extends ResourcesUnitKerjaResource
 {
     protected static ?string $model = UnitKerja::class;
 
