@@ -40,7 +40,7 @@
                 x-show="$store.sidebar.isOpen"
                 class="fi-topbar-close-sidebar-btn lg:hidden" />
 
-            <x-logo class="lg:hidden"/>
+            <x-logo class="lg:hidden" />
             @endif
 
             @if (filament()->hasTopNavigation() || (! filament()->hasNavigation()))
@@ -166,6 +166,8 @@
                 'lazy' => filament()->hasLazyLoadedDatabaseNotifications(),
                 ])
                 @endif
+
+                @livewire(\App\Livewire\IamAppSwitcher::class)
 
                 <x-filament-panels::user-menu />
                 @endif

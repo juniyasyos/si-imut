@@ -281,4 +281,64 @@ Route::middleware(['web'])->group(function () {
             'laravel_session_cookie' => request()->cookie('laravel_session'),
         ]);
     })->name('debug.session');
+
+    // API endpoint untuk app switcher - fetch aplikasi yang bisa diakses user
+    Route::get('/api/user-applications', function () {
+        try {
+            if (!auth()->check()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            if (!config('iam.enabled')) {
+                return response()->json([
+                    'error' => 'IAM Not Enabled',
+                    'applications' => []
+                ]);
+            }
+
+            $service = app(\Juniyasyos\IamClient\Services\UserApplicationsService::class);
+            $data = $service->getApplications();
+
+            if ($data === null || isset($data['error'])) {
+                return response()->json([
+                    'error' => 'Failed to fetch applications',
+                    'applications' => []
+                ]);
+            }
+
+            // Transform response untuk component
+            $applications = collect($data['applications'] ?? [])
+                ->filter(fn($app) => $app['enabled'] ?? true)
+                ->map(fn($app) => [
+                    'id' => $app['id'],
+                    'name' => $app['name'],
+                    'app_key' => $app['app_key'],
+                    'app_url' => $app['app_url'],
+                    'role' => collect($app['roles'] ?? [])
+                        ->first()['name'] ?? 'User',
+                    'enabled' => true
+                ])
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'applications' => $applications,
+                'total' => count($applications)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to fetch user applications', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'error' => 'Server error',
+                'applications' => []
+            ], 500);
+        }
+    })->middleware(['auth'])->name('api.user-applications');
 });

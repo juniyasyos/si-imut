@@ -474,4 +474,39 @@ return [
         'middleware' => ['web'],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | App Metadata Fallback
+    |--------------------------------------------------------------------------
+    |
+    | Fallback aplikasi metadata ketika session access token tidak tersedia.
+    | Digunakan oleh IamAppSwitcher component sebagai fallback untuk menampilkan
+    | nama lengkap aplikasi jika token hilang dari session.
+    |
+    | Struktur:
+    | 'apps' => [
+    |     'app_key' => [
+    |         'name' => 'Full Application Name',
+    |         'description' => 'Application description',
+    |         'url' => 'http://app.url',
+    |         'logo_url' => 'http://url/to/logo.png' (optional)
+    |     ]
+    | ]
+    |
+    */
+    'apps' => [
+        'siimut' => [
+            'name' => env('SIIMUT_NAME', 'SIIMUT - Sistem Informasi Manajemen Indikator Mutu Terpadu'),
+            'description' => env('SIIMUT_DESC', 'Aplikasi manajemen indikator kinerja mutu rumah sakit dan unit kerja dengan fitur monitoring real-time dan reporting komprehensif'),
+            'url' => env('SIIMUT_URL', env('APP_URL', 'http://127.0.0.1:8088')),
+            'logo_url' => env('SIIMUT_LOGO_URL', null),
+        ],
+        // Add more apps here if needed:
+        // 'another-app' => [
+        //     'name' => 'Another App - Full Name',
+        //     'description' => 'Description',
+        //     'url' => 'http://app.url',
+        // ]
+    ],
+
 ];
