@@ -114,7 +114,7 @@ trait BuildIsiPenilaian
 
     protected function buildPerhitunganSchemaForAction($livewireComponent): array
     {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+        $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
 
         return [
             TextInput::make('numerator_value')
@@ -195,7 +195,7 @@ trait BuildIsiPenilaian
 
     protected function getMediaUploadFieldForAction($livewireComponent): array
     {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
+        $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
 
         return [
             SpatieMediaLibraryFileUpload::make('document_upload')
@@ -238,9 +238,9 @@ trait BuildIsiPenilaian
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 ])
                 ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
-                // ->customProperties(fn(callable $get) => [
-                //     'directory' => $livewireComponent->getUploadDirectory($get('selected_collection'))
-                // ])
+            // ->customProperties(fn(callable $get) => [
+            //     'directory' => $livewireComponent->getUploadDirectory($get('selected_collection'))
+            // ])
         ];
     }
 
