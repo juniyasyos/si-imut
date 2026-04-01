@@ -205,6 +205,27 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->toggleable(isToggledHiddenByDefault: true)
                 ->sortable(),
 
+            TextColumn::make('is_monthly')
+                ->label('Tipe Pengisian Indikator')
+                ->badge()
+                ->icon('heroicon-o-calendar')
+                ->formatStateUsing(
+                    fn(bool $state) =>
+                    $state ? 'Harian' : 'Bulanan'
+                )
+                ->color(
+                    fn(bool $state) =>
+                    $state ? 'info' : 'success'
+                )
+                ->tooltip(
+                    fn($record) =>
+                    $record->is_monthly
+                        ? 'Pengisian dilakukan 1 kali setiap bulan'
+                        : 'Pengisian dilakukan setiap hari'
+                )
+                ->alignCenter()
+                ->sortable(),
+
             TextColumn::make('numerator_value')
                 ->label('N')
                 ->alignCenter()
@@ -294,7 +315,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             $this->buildIsiPenilaianAction(),
         ];
     }
-    
+
     public function openTableView($formTemplateId, $imutProfileId, $unitKerjaId, $period, $laporanId): void
     {
         // Build URL dengan parameter yang aman

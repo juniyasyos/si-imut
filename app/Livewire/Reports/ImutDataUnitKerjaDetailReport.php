@@ -177,7 +177,6 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
             ->modalSubmitActionLabel('Simpan')
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)
-            // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
             ->mountUsing(function (Form $form, $record) {
                 $form->fill([
                     'numerator_value'   => $record->numerator_value ?? null,
@@ -217,99 +216,6 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
             ->after(fn() => $this->dispatch('$refresh'));
     }
 
-    protected function buildPerhitunganSchemaForAction($livewireComponent): array
-    {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
-
-        return [
-            TextInput::make('numerator_value')
-                ->label('Numerator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->debounce(1000)
-                ->readOnly($shouldLock)
-                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-
-            TextInput::make('denominator_value')
-                ->label('Denominator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->debounce(1000)
-                ->readOnly($shouldLock)
-                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-
-            TextInput::make('result_operation')
-                ->label('Result (%)')
-                ->numeric()
-                ->placeholder('0.00')
-                ->readOnly()
-                ->debounce(1000)
-                ->dehydrated(false)
-                ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-        ];
-    }
-
-    protected function buildAnalysisSchemaForAction($livewireComponent): array
-    {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
-        $canRecommend = Gate::allows('create_recommendation_penilaian_imut::penilaian') || Gate::allows('force_editable_imut::penilaian');
-
-        return [
-            Textarea::make('analysis')
-                ->label('Analisis')
-                ->rows(4)
-                ->nullable()
-                ->readOnly($shouldLock)
-                ->placeholder('Tuliskan hasil analisis (opsional)...')
-                ->columnSpanFull(),
-
-            Textarea::make('recommendations')
-                ->label('Rekomendasi')
-                ->nullable()
-                ->disabled(!$canRecommend)
-                ->rows(4)
-                ->placeholder('Berikan saran atau rekomendasi (opsional)...')
-                ->columnSpanFull(),
-        ];
-    }
-
-    protected function getMediaUploadFieldForAction($livewireComponent): array
-    {
-        $shouldLock = $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian');
-
-        return [
-            SpatieMediaLibraryFileUpload::make('document_upload')
-                ->label('Unggah Dokumen Pendukung')
-                ->collection(fn(callable $get) => $get('selected_collection') ?? 'default')
-                ->directory(fn(callable $get) => $livewireComponent->getUploadDirectory($get('selected_collection') ?? 'default'))
-                ->openable()
-                ->downloadable()
-                ->maxSize(20480)
-                ->preserveFilenames()
-                ->previewable(true)
-                ->columnSpanFull()
-                ->disabled($shouldLock)
-                ->customProperties(fn(callable $get) => [
-                    'directory' => $livewireComponent->getUploadDirectory($get('selected_collection') ?? 'default')
-                ])
-                ->acceptedFileTypes([
-                    'application/pdf',
-                    'image/*',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'application/vnd.ms-excel',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                ])
-                ->helperText('File yang didukung: PDF, Word, Excel, Gambar. Maks. 20MB')
-                ->hint(function (callable $get) use ($livewireComponent) {
-                    $collection = $get('selected_collection');
-                    $directory = $livewireComponent->getUploadDirectory($collection ?? 'default');
-                    return "📁 Folder tujuan: {$directory}";
-                })
-        ];
-    }
-
     /**
      * Get upload directory dengan periode folder untuk laporan IMUT
      */
@@ -326,11 +232,6 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
         }
 
         // Untuk subfolder lain (dokumen-mutu, sop-panduan, etc.) langsung ke folder
-    }
-
-    public function isLaporanPeriodClosed(): bool
-    {
-        return ! $this->isLaporanEditable();
     }
 
     public function isLaporanEditable(): bool

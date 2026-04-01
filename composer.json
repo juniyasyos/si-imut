@@ -13,6 +13,15 @@
         "starter-kit"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../IAM/laravel-iam-client",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "require": {
         "php": "^8.3",
         "archilex/filament-toggle-icon-column": "^3.2",
@@ -37,7 +46,7 @@
         "juniyasyos/filament-media-manager": "3.0",
         "juniyasyos/filament-pwa-kaido": "^2.1",
         "juniyasyos/filament-settings-hub-kaido": "^4.0",
-        "juniyasyos/laravel-iam-client": "v1.5.0",
+        "juniyasyos/laravel-iam-client": "*",
         "juniyasyos/manage-unit-kerja": "*",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
@@ -109,7 +118,7 @@
         ],
         "iam": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --port=8088\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185\" \"php artisan serve --port=8088\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" --names=server,queue,logs"
         ],
         "dev-lara": [
             "Composer\\Config::disableProcessTimeout",

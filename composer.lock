@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c7eb6bf3b7827c9683ad0da8b31b0a1",
+    "content-hash": "8ee443d28ad6c9c1997414a7456d24aa",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4052,17 +4052,11 @@
         },
         {
             "name": "juniyasyos/laravel-iam-client",
-            "version": "v1.5.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/juniyasyos/laravel-iam-client.git",
-                "reference": "37a8b623d970df70ad62f3ae356305d947b4533d"
-            },
+            "version": "dev-master",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/37a8b623d970df70ad62f3ae356305d947b4533d",
-                "reference": "37a8b623d970df70ad62f3ae356305d947b4533d",
-                "shasum": ""
+                "type": "path",
+                "url": "../IAM/laravel-iam-client",
+                "reference": "e4c2602aa99581f9c0eeb71274629c2873dd549a"
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
@@ -4087,7 +4081,11 @@
                     "Juniyasyos\\IamClient\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Juniyasyos\\IamClient\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -4099,17 +4097,16 @@
             ],
             "description": "Laravel package for IAM SSO integration with JIT user provisioning",
             "keywords": [
-                "Authentication",
-                "SSO",
+                "authentication",
                 "iam",
                 "jwt",
-                "laravel"
+                "laravel",
+                "sso"
             ],
-            "support": {
-                "issues": "https://github.com/juniyasyos/laravel-iam-client/issues",
-                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.5.0"
-            },
-            "time": "2026-03-28T10:16:08+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
@@ -4168,16 +4165,16 @@
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
-            "version": "4.3.0",
+            "version": "4.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kirschbaum-development/eloquent-power-joins.git",
-                "reference": "dbf2dfaa1900152f2e3dc42b30b67f67a82e7c36"
+                "reference": "3f77b096c1e8b5aa1fc40d7080e55e795f3430ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kirschbaum-development/eloquent-power-joins/zipball/dbf2dfaa1900152f2e3dc42b30b67f67a82e7c36",
-                "reference": "dbf2dfaa1900152f2e3dc42b30b67f67a82e7c36",
+                "url": "https://api.github.com/repos/kirschbaum-development/eloquent-power-joins/zipball/3f77b096c1e8b5aa1fc40d7080e55e795f3430ae",
+                "reference": "3f77b096c1e8b5aa1fc40d7080e55e795f3430ae",
                 "shasum": ""
             },
             "require": {
@@ -4225,9 +4222,9 @@
             ],
             "support": {
                 "issues": "https://github.com/kirschbaum-development/eloquent-power-joins/issues",
-                "source": "https://github.com/kirschbaum-development/eloquent-power-joins/tree/4.3.0"
+                "source": "https://github.com/kirschbaum-development/eloquent-power-joins/tree/4.3.1"
             },
-            "time": "2026-03-17T16:43:01+00:00"
+            "time": "2026-03-29T12:05:03+00:00"
         },
         {
             "name": "lab404/laravel-impersonate",
@@ -13964,7 +13961,7 @@
         },
         {
             "name": "filament/upgrade",
-            "version": "v4.9.1",
+            "version": "v4.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/upgrade.git",

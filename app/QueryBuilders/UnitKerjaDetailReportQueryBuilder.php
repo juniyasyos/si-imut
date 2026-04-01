@@ -35,6 +35,7 @@ class UnitKerjaDetailReportQueryBuilder
                 'laporan_unit_kerjas.laporan_imut_id',
                 'unit_kerja.unit_name',
                 'imut_data.title as imut_data',
+                'imut_data.is_monthly',
                 'imut_kategori.short_name as imut_kategori',
                 'imut_kategori.id as imut_kategori_id',
                 'imut_profil.version as imut_profil',

@@ -51,7 +51,7 @@ class CreateLaporanImut extends CreateRecord
                         Forms\Components\TextInput::make('name')
                             ->label('Nama Laporan')
                             ->columnSpanFull()
-                            ->disabled()
+                            // ->disabled()
                             ->dehydrated()
                             ->default(function () {
                                 $now = Carbon::now();
@@ -113,19 +113,21 @@ class CreateLaporanImut extends CreateRecord
                                     ->schema([
                                         Forms\Components\TextInput::make('assessment_period_start')
                                             ->label('Dimulainya Periode Asesmen')
-                                            ->disabled()
+                                            // ->disabled()
                                             ->dehydrated()
                                             ->default($assessmentStart->format('Y-m-d'))
                                             ->helperText('Dihitung: Awal bulan ini (durasi pengisian data dari awal sampai akhir bulan)')
-                                            ->readOnly(),
+                                        // ->readOnly(),
+                                        ,
 
                                         Forms\Components\TextInput::make('assessment_period_end')
                                             ->label('Berakhirnya Periode Asesmen')
-                                            ->disabled()
+                                            // ->disabled()
                                             ->dehydrated()
                                             ->default($assessmentEnd->format('Y-m-d'))
                                             ->helperText('Dihitung: Akhir bulan dari start periode')
-                                            ->readOnly(),
+                                        // ->readOnly(),
+                                        ,
                                     ]),
                             ]),
 

@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SSO Shared Secret
+    |--------------------------------------------------------------------------
+    |
+    | Shared secret digunakan untuk verifikasi backchannel HMAC pada endpoint
+    | /api/iam/sync-* dan /api/iam/push-roles. Disarankan menyimpan raw secret
+    | di environment (IAM_SSO_SECRET) dan tidak menulis langsung ke repository.
+    |
+    */
+    'sso_secret' => env('IAM_SSO_SECRET', env('SSO_SECRET', env('APP_KEY'))),
+
+    /*
+    |--------------------------------------------------------------------------
     | JWT Secret Key
     |--------------------------------------------------------------------------
     |
@@ -72,6 +84,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User applications endpoint on IAM server
+    |--------------------------------------------------------------------------
+    |
+    | This URL is used by the client package to fetch the currently
+    | authenticated user's applications from IAM server.
+    |
+    */
+    'user_applications_endpoint' => env('IAM_USER_APPLICATIONS_ENDPOINT', null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Web Guard SSO Routes
     |--------------------------------------------------------------------------
     |
@@ -110,7 +133,7 @@ return [
     |
     */
     'user_model' => env('IAM_USER_MODEL', 'App\\Models\\User'),
-
+    'application_model' => env('IAM_APPLICATION_MODEL', 'App\Domain\Iam\Models\Application'),
     /*
     |--------------------------------------------------------------------------
     | Session Preservation
@@ -147,7 +170,7 @@ return [
     'user_fields' => [
         'iam_id' => 'sub',        // Required: JWT sub maps to iam_id
         'name' => 'name',
-        // 'email' => 'email',
+        'email' => 'email',
         // Add custom mappings:
         'nip' => 'nip',
         // 'nik' => 'nik',
@@ -158,7 +181,6 @@ return [
     /*
     |--------------------------------------------------------------------------
     | Unit Kerja Synchronization
-    |--------------------------------------------------------------------------
     |
     | These settings ensure client-side user unit kerja is synchronized
     | from IAM token payload.
@@ -168,7 +190,6 @@ return [
     'sync_unit_kerja' => env('IAM_SYNC_UNIT_KERJA', true),
     'unit_kerja_model' => env('IAM_UNIT_KERJA_MODEL', App\Models\UnitKerja::class),
     'roles_field' => env('IAM_ROLES_FIELD', 'roles'),
-
 
     /*
     |--------------------------------------------------------------------------
@@ -189,8 +210,27 @@ return [
     | Enable automatic role sync from IAM token to Spatie Permission
     |
     */
+    /*
+    |
+    | Role Synchronization
+    |
+    */
     'sync_roles' => env('IAM_SYNC_ROLES', true),
     'role_guard_name' => env('IAM_ROLE_GUARD_NAME', 'web'),
+
+    /*
+    |------------------------------------------------------------------------
+    | User Sync Endpoint
+    |------------------------------------------------------------------------
+    |
+    | Toggle whether the `/api/iam/sync-users` route should be exposed.  Set
+    | to `false` to disable the export endpoint entirely – requests from the
+    | IAM server will be rejected and the route will not be registered.  This
+    | can be used as a safety switch when you want to temporarily prevent
+    | automated user synchronisation without modifying server configuration.
+    |
+    */
+    'sync_users' => env('IAM_SYNC_USERS', true),
 
     /*
     |------------------------------------------------------------------------
@@ -203,8 +243,22 @@ return [
     | `sync_users`.
     |
     */
-    'backchannel_verify' => env('IAM_BACKCHANNEL_VERIFY', false),
+    'backchannel_verify' => env('IAM_BACKCHANNEL_VERIFY', true),
 
+    /*
+    |------------------------------------------------------------------------
+    | Back-channel authentication method
+    |------------------------------------------------------------------------
+    |
+    | Controls how requests originating from the IAM server are authenticated
+    | when they hit a client application's back‑channel endpoints (such as
+    | `/api/iam/sync-users`).  The preferred value is `jwt`, which requires a
+    | signed token to be included in the `Authorization: Bearer` header.
+    | The legacy option `hmac` continues to verify an HMAC/sha256 using the
+    | shared `sso.secret` value for compatibility with existing deployments.
+    |
+    */
+    'backchannel_method' => env('IAM_BACKCHANNEL_METHOD', 'hmac'),
 
     /*
     |--------------------------------------------------------------------------
@@ -219,6 +273,45 @@ return [
     |
     */
     'require_roles' => env('IAM_REQUIRE_ROLES', false),
+    'allow_roleless_sso' => env('IAM_ALLOW_ROLELESS_SSO', true),
+    'require_access_profile' => env('IAM_REQUIRE_ACCESS_PROFILE', true),
+
+    /*
+    |------------------------------------------------------------------------
+    | Role synchronization direction
+    |------------------------------------------------------------------------
+    |
+    | `pull`: IAM pulls roles from client (`GET /api/iam/sync-roles`) (default)
+    | `push`: IAM pushes roles into client (`POST /api/iam/push-roles`)
+    |
+    */
+    'role_sync_mode' => env('IAM_ROLE_SYNC_MODE', 'pull'),
+
+    /*
+    |------------------------------------------------------------------------
+    | User synchronization mode
+    |------------------------------------------------------------------------
+    |
+    | Mode determines direction of user sync between IAM and IAM server.
+    | * pull: IAM server pulls users from client (existing behavior)
+    | * push: IAM server pushes users to client using /api/iam/push-users.
+    */
+    'user_sync_mode' => env('IAM_USER_SYNC_MODE', 'push'),
+
+    'user_sync_from_iam_allow_create' => env('IAM_USER_SYNC_FROM_IAM_ALLOW_CREATE', true),
+    'user_sync_from_iam_delete_missing' => env('IAM_USER_SYNC_FROM_IAM_DELETE_MISSING', false),
+
+    /*
+    |------------------------------------------------------------------------
+    | Role creation policy for incoming IAM role updates
+    |------------------------------------------------------------------------
+    |
+    | When `role_sync_mode` is `push`, new roles are created only if this
+    | setting is true. Default is false (update-only).
+    |
+    */
+    'role_sync_from_iam_allow_create' => env('IAM_ROLE_SYNC_FROM_IAM_ALLOW_CREATE', false),
+
     'required_roles' => env('IAM_REQUIRED_ROLES') ? array_map('trim', explode(',', env('IAM_REQUIRED_ROLES'))) : [],
 
     /*
@@ -244,7 +337,16 @@ return [
     |
     */
     'verify_each_request' => env('IAM_VERIFY_EACH_REQUEST', true),
-
+    /*
+    --------------------------------------------------------------------------
+    | Remote verify token each request
+    --------------------------------------------------------------------------
+    |
+    | If true, after local JWT validation the client will call IAM `/api/sso/verify`
+    | to ensure server-side session/token state has not been revoked or expired.
+    |
+    */
+    'verify_remote_each_request' => env('IAM_VERIFY_REMOTE_EACH_REQUEST', true),
     /*    |--------------------------------------------------------------------------
     | Auto‑attach verify middleware
     |--------------------------------------------------------------------------
@@ -255,7 +357,48 @@ return [
     | to Kernel manually.
     |
     */
-    'attach_verify_middleware' => env('IAM_ATTACH_VERIFY_MIDDLEWARE', false),
+    'attach_verify_middleware' => env('IAM_ATTACH_VERIFY_MIDDLEWARE', true),
+
+    /*    |--------------------------------------------------------------------------
+    | Synchronize Session Lifetime with Token Expiry
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the client will automatically synchronize the session
+    | lifetime with the JWT token's expiration time. This ensures that:
+    | - Session expires before token is invalidated by IAM
+    | - No gap where token is expired but session still valid
+    | - Users logged out at the same time as token expires
+    |
+    | Benefits:
+    | - Better security: prevents usage of expired token
+    | - Consistency: session and token expiry aligned
+    | - Per-app configuration: each app can have different token TTL
+    |
+    | How it works:
+    | - Token expiry extracted from JWT 'exp' claim
+    | - Session lifetime set = token lifetime - buffer minutes (default 2 min)
+    | - Buffer prevents edge cases where token expires mid-request
+    |
+    */
+    'sync_session_lifetime' => env('IAM_SYNC_SESSION_LIFETIME', true),
+
+    /*    |--------------------------------------------------------------------------
+    | Session Lifetime Buffer (Minutes)
+    |--------------------------------------------------------------------------
+    |
+    | When synchronizing session lifetime with token expiry, this buffer
+    | is subtracted from token TTL to create the session timeout.
+    |
+    | Example:
+    | - Token TTL: 60 minutes
+    | - Buffer: 2 minutes
+    | - Session Lifetime: 58 minutes
+    |
+    | This prevents edge cases where token expires during a request.
+    | Minimum recommended: 1 minute, Maximum: 10 minutes
+    |
+    */
+    'session_lifetime_buffer_minutes' => env('IAM_SESSION_LIFETIME_BUFFER', 2),
 
     /*    |--------------------------------------------------------------------------
     | Logout Route Name
