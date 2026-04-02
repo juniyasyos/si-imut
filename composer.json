@@ -13,15 +13,6 @@
         "starter-kit"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "packages/juniyasyos/manage-unit-kerja",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "require": {
         "php": "^8.2",
         "juniyasyos/manage-unit-kerja": "*",
