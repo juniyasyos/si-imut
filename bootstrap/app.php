@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\EnsureUserIsActive::class);
         $middleware->append(\Bepsvpt\SecureHeaders\SecureHeadersMiddleware::class);
 
+        // IAM/SSO token verification middleware - check and refresh token on every web request
+        $middleware->web(\Juniyasyos\IamClient\Http\Middleware\VerifyIamToken::class);
+        $middleware->web(\Juniyasyos\IamClient\Http\Middleware\EnforceSessionTimeout::class);
+
         // Configure authentication redirects based on IAM/SSO mode
         $middleware->redirectGuestsTo(function () {
             // Check if IAM/SSO is enabled
