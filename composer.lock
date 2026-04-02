@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c1e40668b1d3a6512c1235268a0abd18",
+    "content-hash": "2ba7273bae453dc6239e1b4d5d7e1b31",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4113,16 +4113,16 @@
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
-            "version": "v2.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/manage-unit-kerja.git",
-                "reference": "37f1615a213053cf010659de088675eacabe346b"
+                "reference": "f8b6bf531e59b87941644c6d3404f048bd29bd35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/37f1615a213053cf010659de088675eacabe346b",
-                "reference": "37f1615a213053cf010659de088675eacabe346b",
+                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/f8b6bf531e59b87941644c6d3404f048bd29bd35",
+                "reference": "f8b6bf531e59b87941644c6d3404f048bd29bd35",
                 "shasum": ""
             },
             "require": {
@@ -4162,9 +4162,9 @@
             "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
             "support": {
                 "issues": "https://github.com/juniyasyos/manage-unit-kerja/issues",
-                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v2.0.0"
+                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.1.0"
             },
-            "time": "2026-03-23T04:58:01+00:00"
+            "time": "2026-03-23T01:52:24+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
