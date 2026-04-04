@@ -158,8 +158,8 @@
   array (
     'name' => 'SI-IMUT',
     'env' => 'production',
-    'debug' => true,
-    'url' => 'http://127.0.0.1:8088',
+    'debug' => false,
+    'url' => 'http://127.0.0.1:8000',
     'frontend_url' => 'http://localhost:3000',
     'asset_url' => NULL,
     'timezone' => 'Asia/Jakarta',
@@ -529,7 +529,7 @@
       array (
         'driver' => 'sqlite',
         'url' => NULL,
-        'database' => 'siimut',
+        'database' => 'siimut_prod26',
         'prefix' => '',
         'foreign_key_constraints' => true,
         'busy_timeout' => NULL,
@@ -542,7 +542,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'siimut',
+        'database' => 'siimut_prod26',
         'username' => 'juni',
         'password' => 'password',
         'unix_socket' => '',
@@ -562,7 +562,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'siimut',
+        'database' => 'siimut_prod26',
         'username' => 'juni',
         'password' => 'password',
         'unix_socket' => '',
@@ -582,7 +582,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'siimut',
+        'database' => 'siimut_prod26',
         'username' => 'juni',
         'password' => 'password',
         'charset' => 'utf8',
@@ -597,7 +597,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'siimut',
+        'database' => 'siimut_prod26',
         'username' => 'juni',
         'password' => 'password',
         'charset' => 'utf8',
@@ -866,7 +866,7 @@
       array (
         'driver' => 'local',
         'root' => '/home/juni/projects/siimut/storage/app/public',
-        'url' => 'http://127.0.0.1:8088/storage',
+        'url' => 'http://127.0.0.1:8000/storage',
         'visibility' => 'public',
         'throw' => false,
       ),
@@ -898,7 +898,7 @@
       array (
         'driver' => 'local',
         'root' => '/home/juni/projects/siimut/storage/app/filament-excel',
-        'url' => 'http://127.0.0.1:8088/filament-excel',
+        'url' => 'http://127.0.0.1:8000/filament-excel',
       ),
     ),
     'links' => 
@@ -1001,7 +1001,7 @@
       array (
         'name' => 'SIIMUT - Sistem Informasi Manajemen Indikator Mutu Terpadu',
         'description' => 'Aplikasi manajemen indikator kinerja mutu rumah sakit dan unit kerja dengan fitur monitoring real-time dan reporting komprehensif',
-        'url' => 'http://127.0.0.1:8088',
+        'url' => 'http://127.0.0.1:8000',
         'logo_url' => NULL,
       ),
     ),
@@ -1490,7 +1490,7 @@
       2 => '127.0.0.1',
       3 => '127.0.0.1:8000',
       4 => '::1',
-      5 => '127.0.0.1:8088',
+      5 => '127.0.0.1:8000',
     ),
     'guard' => 
     array (
