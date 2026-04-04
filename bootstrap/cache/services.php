@@ -27,7 +27,6 @@
     23 => 'Archilex\\ToggleIconColumn\\ToggleIconColumnServiceProvider',
     24 => 'Asmit\\ResizedColumn\\ResizedColumnServiceProvider',
     25 => 'Awcodes\\TableRepeater\\TableRepeaterServiceProvider',
-    27 => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
     28 => 'Bepsvpt\\SecureHeaders\\SecureHeadersServiceProvider',
     29 => 'BezhanSalleh\\FilamentLanguageSwitch\\FilamentLanguageSwitchServiceProvider',
     30 => 'BezhanSalleh\\FilamentShield\\FilamentShieldServiceProvider',
@@ -333,10 +332,6 @@
     'validator' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'Illuminate\\Contracts\\Validation\\UncompromisedVerifier' => 'Illuminate\\Validation\\ValidationServiceProvider',
-    'Barryvdh\\LaravelIdeHelper\\Console\\GeneratorCommand' => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
-    'Barryvdh\\LaravelIdeHelper\\Console\\ModelsCommand' => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
-    'Barryvdh\\LaravelIdeHelper\\Console\\MetaCommand' => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
-    'Barryvdh\\LaravelIdeHelper\\Console\\EloquentCommand' => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
     'command.blueprint.build' => 'Blueprint\\BlueprintServiceProvider',
     'command.blueprint.erase' => 'Blueprint\\BlueprintServiceProvider',
     'command.blueprint.trace' => 'Blueprint\\BlueprintServiceProvider',
@@ -387,9 +382,6 @@
     array (
     ),
     'Illuminate\\Validation\\ValidationServiceProvider' => 
-    array (
-    ),
-    'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider' => 
     array (
     ),
     'Blueprint\\BlueprintServiceProvider' => 

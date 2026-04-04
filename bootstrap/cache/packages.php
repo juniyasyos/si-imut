@@ -31,13 +31,6 @@
       0 => 'Awcodes\\TableRepeater\\TableRepeaterServiceProvider',
     ),
   ),
-  'barryvdh/laravel-ide-helper' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
-    ),
-  ),
   'bepsvpt/secure-headers' => 
   array (
     'providers' => 
