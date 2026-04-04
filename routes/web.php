@@ -6,7 +6,7 @@ use App\Http\Controllers\PrintReportController;
 use App\Http\Controllers\TableViewController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use Juniyasyos\IamClient\Http\Controllers\LogoutController;
+use App\Http\Controllers\Auth\LogoutController;
 use Juniyasyos\IamClient\Http\Controllers\SsoCallbackController;
 use Juniyasyos\IamClient\Http\Controllers\SsoLoginRedirectController;
 
