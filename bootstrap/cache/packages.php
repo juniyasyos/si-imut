@@ -31,17 +31,6 @@
       0 => 'Awcodes\\TableRepeater\\TableRepeaterServiceProvider',
     ),
   ),
-  'barryvdh/laravel-debugbar' => 
-  array (
-    'aliases' => 
-    array (
-      'Debugbar' => 'Barryvdh\\Debugbar\\Facades\\Debugbar',
-    ),
-    'providers' => 
-    array (
-      0 => 'Barryvdh\\Debugbar\\ServiceProvider',
-    ),
-  ),
   'barryvdh/laravel-ide-helper' => 
   array (
     'providers' => 
