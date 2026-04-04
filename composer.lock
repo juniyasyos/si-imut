@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8ee443d28ad6c9c1997414a7456d24aa",
+    "content-hash": "c191f1a5a962fc6ab34dc9154464939f",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4052,11 +4052,17 @@
         },
         {
             "name": "juniyasyos/laravel-iam-client",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "../IAM/laravel-iam-client",
+            "version": "v1.6.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/juniyasyos/laravel-iam-client.git",
                 "reference": "7582aeea26910768d246274d59768bc6705ca239"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/7582aeea26910768d246274d59768bc6705ca239",
+                "reference": "7582aeea26910768d246274d59768bc6705ca239",
+                "shasum": ""
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
@@ -4081,11 +4087,7 @@
                     "Juniyasyos\\IamClient\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Juniyasyos\\IamClient\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -4097,29 +4099,30 @@
             ],
             "description": "Laravel package for IAM SSO integration with JIT user provisioning",
             "keywords": [
-                "authentication",
+                "Authentication",
+                "SSO",
                 "iam",
                 "jwt",
-                "laravel",
-                "sso"
+                "laravel"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/juniyasyos/laravel-iam-client/issues",
+                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.6.3"
+            },
+            "time": "2026-04-03T13:04:14+00:00"
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
-            "version": "v2.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/manage-unit-kerja.git",
-                "reference": "37f1615a213053cf010659de088675eacabe346b"
+                "reference": "f8b6bf531e59b87941644c6d3404f048bd29bd35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/37f1615a213053cf010659de088675eacabe346b",
-                "reference": "37f1615a213053cf010659de088675eacabe346b",
+                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/f8b6bf531e59b87941644c6d3404f048bd29bd35",
+                "reference": "f8b6bf531e59b87941644c6d3404f048bd29bd35",
                 "shasum": ""
             },
             "require": {
@@ -4159,9 +4162,9 @@
             "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
             "support": {
                 "issues": "https://github.com/juniyasyos/manage-unit-kerja/issues",
-                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v2.0.0"
+                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.1.0"
             },
-            "time": "2026-03-23T04:58:01+00:00"
+            "time": "2026-03-23T01:52:24+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
