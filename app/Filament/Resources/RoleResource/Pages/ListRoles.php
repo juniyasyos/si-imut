@@ -15,6 +15,8 @@ class ListRoles extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Tambah Data')
+                ->disabled(config('iam.role_sync_mode') === 'pull')
+                ->visible(config('iam.role_sync_mode') !== 'pull')
                 ->icon('heroicon-m-plus'),
         ];
     }

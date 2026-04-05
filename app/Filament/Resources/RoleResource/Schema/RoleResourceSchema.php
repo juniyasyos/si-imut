@@ -9,8 +9,8 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\HtmlString;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Forms\ShieldSelectAllToggle;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
 
 class RoleResourceSchema
 {

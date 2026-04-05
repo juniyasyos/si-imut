@@ -52,7 +52,7 @@ class RoleResourceTable
     {
         return [
             EditAction::make(),
-            DeleteAction::make(),
+            DeleteAction::make()->visible(config('iam.role_sync_mode') !== 'pull'),
         ];
     }
 
