@@ -24,7 +24,7 @@ class LaporanUnitWidget extends Widget
         return  $user->unitKerjas()->exists();
     }
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 5;
 
     protected int|string|array $columnSpan = 'full';
 

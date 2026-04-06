@@ -25,7 +25,7 @@ class ImutCapaianWidget extends ApexChartWidget
 {
     protected static ?string $chartId = 'imutCapaianWidget';
     protected static ?string $heading = 'Analisis Capaian IMUT Per Kategori';
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 5;
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f240533b51768c97a0a0e462b18bba38",
+    "content-hash": "f775fd26a8d5c9d2de520de3456ee49c",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4052,17 +4052,11 @@
         },
         {
             "name": "juniyasyos/laravel-iam-client",
-            "version": "v1.6.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/juniyasyos/laravel-iam-client.git",
-                "reference": "10a002d3379418fe4bf4a384baac9b1d3c23e7c6"
-            },
+            "version": "dev-master",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/10a002d3379418fe4bf4a384baac9b1d3c23e7c6",
-                "reference": "10a002d3379418fe4bf4a384baac9b1d3c23e7c6",
-                "shasum": ""
+                "type": "path",
+                "url": "../IAM/laravel-iam-client",
+                "reference": "10a002d3379418fe4bf4a384baac9b1d3c23e7c6"
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
@@ -4087,7 +4081,11 @@
                     "Juniyasyos\\IamClient\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Juniyasyos\\IamClient\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -4099,17 +4097,16 @@
             ],
             "description": "Laravel package for IAM SSO integration with JIT user provisioning",
             "keywords": [
-                "Authentication",
-                "SSO",
+                "authentication",
                 "iam",
                 "jwt",
-                "laravel"
+                "laravel",
+                "sso"
             ],
-            "support": {
-                "issues": "https://github.com/juniyasyos/laravel-iam-client/issues",
-                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.6.6"
-            },
-            "time": "2026-04-06T08:26:14+00:00"
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
@@ -17266,7 +17263,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "juniyasyos/laravel-iam-client": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -169,6 +169,54 @@ final class CacheKey
     }
 
     /**
+     * Cache key untuk widget rekomendasi analisis Tim Mutu - ongoing reports
+     */
+    public static function recommendationAnalysisTimMutuOngoing(): string
+    {
+        return 'widget:recommendation_analysis:tim_mutu:ongoing_reports';
+    }
+
+    /**
+     * Cache key untuk widget rekomendasi analisis Tim Mutu - previous report
+     */
+    public static function recommendationAnalysisTimMutuPrevious(): string
+    {
+        return 'widget:recommendation_analysis:tim_mutu:previous_report';
+    }
+
+    /**
+     * Cache key untuk widget rekomendasi analisis Unit Kerja - ongoing reports
+     */
+    public static function recommendationAnalysisUnitKerjaOngoing(int $userId): string
+    {
+        return "widget:recommendation_analysis:unit_kerja:ongoing_reports:user:{$userId}";
+    }
+
+    /**
+     * Cache key untuk widget rekomendasi analisis Unit Kerja - previous report
+     */
+    public static function recommendationAnalysisUnitKerjaPrevious(int $userId): string
+    {
+        return "widget:recommendation_analysis:unit_kerja:previous_report:user:{$userId}";
+    }
+
+    /**
+     * Cache key untuk completion stats laporan
+     */
+    public static function recommendationAnalysisCompletionStats(int $laporanId): string
+    {
+        return "widget:recommendation_analysis:completion_stats:laporan:{$laporanId}";
+    }
+
+    /**
+     * Cache key untuk completion stats laporan per unit kerja
+     */
+    public static function recommendationAnalysisCompletionStatsUnitKerja(int $laporanId, int $unitKerjaId): string
+    {
+        return "widget:recommendation_analysis:completion_stats:laporan:{$laporanId}:unit:{$unitKerjaId}";
+    }
+
+    /**
      * Utility: menormalkan array (sort rekursif) supaya JSON/hash stabil.
      */
     private static function stableArray(array $array): array

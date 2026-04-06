@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Filament\Resources\LaporanImutResource;
+use App\Filament\Widgets\RecommendationAnalysisTimMutuWidget;
+use App\Filament\Widgets\RecommendationAnalysisUnitKerjaWidget;
 use App\Models\ImutCategory;
 use App\Models\LaporanImutAutoGenerationSetting;
 use App\Models\UnitKerja;
@@ -714,5 +716,58 @@ class ListLaporanImuts extends ListRecords
                 ->label('Tambah Data')
                 ->icon('heroicon-m-plus'),
         ];
+    }
+
+    /**
+     * Menampilkan recommendation analysis widget di header halaman
+     * - Widget untuk Tim Mutu: overview semua unit kerja
+     * - Widget untuk Unit Kerja: focus pada unit kerja user
+     */
+    protected function getHeaderWidgets(): array
+    {
+        try {
+            $user = Auth::user();
+
+            \Log::info('getHeaderWidgets called', [
+                'user_id' => $user?->id ?? null,
+                'user_roles' => $user?->roles()->pluck('name')->toArray() ?? [],
+                'has_unit_kerja' => $user?->unitKerjas()->exists() ?? false,
+            ]);
+
+            if (!$user) {
+                \Log::debug('No authenticated user, returning empty widgets');
+                return [];
+            }
+
+            // Check if user is Tim Mutu/Admin
+            $isTimMutu = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
+            if ($isTimMutu) {
+                \Log::debug('User is Tim Mutu/Admin, returning RecommendationAnalysisTimMutuWidget');
+                return [
+                    RecommendationAnalysisTimMutuWidget::class,
+                ];
+            }
+
+            // Check if user has unit kerja
+            $hasUnitKerja = $user->unitKerjas()->exists();
+            if ($hasUnitKerja) {
+                \Log::debug('User has unit kerja, returning RecommendationAnalysisUnitKerjaWidget');
+                return [
+                    RecommendationAnalysisUnitKerjaWidget::class,
+                ];
+            }
+
+            \Log::debug('User has no matching widget conditions, returning empty');
+            return [];
+        } catch (\Exception $e) {
+            // Log error but don't break the page
+            \Log::error('Error in getHeaderWidgets', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id() ?? null,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [];
+        }
     }
 }

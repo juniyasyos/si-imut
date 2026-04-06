@@ -85,6 +85,22 @@ class ImutPenilaian extends Model implements HasMedia
             Cache::forget(CacheKey::unitKerjaCompletionStats($laporanId));
             Cache::forget(CacheKey::imutDataCompletionStats($laporanId));
 
+            // Clear widget recommendation analysis cache
+            Cache::forget(CacheKey::recommendationAnalysisTimMutuOngoing());
+            Cache::forget(CacheKey::recommendationAnalysisTimMutuPrevious());
+            Cache::forget(CacheKey::recommendationAnalysisCompletionStats($laporanId));
+            Cache::forget(CacheKey::recommendationAnalysisCompletionStatsUnitKerja($laporanId, $unitKerjaId));
+
+            // Clear for all users' unit kerja widgets
+            $userIds = \App\Models\User::whereHas('unitKerjas', function ($q) use ($unitKerjaId) {
+                $q->where('unit_kerja.id', $unitKerjaId);
+            })->pluck('id')->toArray();
+
+            foreach ($userIds as $userId) {
+                Cache::forget(CacheKey::recommendationAnalysisUnitKerjaOngoing($userId));
+                Cache::forget(CacheKey::recommendationAnalysisUnitKerjaPrevious($userId));
+            }
+
             $laporanImut = $laporanUnitKerja->laporanImut;
 
             if ($laporanImut && $this->profile) {
