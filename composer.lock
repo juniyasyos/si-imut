@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f775fd26a8d5c9d2de520de3456ee49c",
+    "content-hash": "23d396dba240f0f2a945fe82fe8799b6",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -325,16 +325,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.376.3",
+            "version": "3.376.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "2081f8db174df4bb8842aed3b7b513590ee9d219"
+                "reference": "fe7773b1e069a45aa74e09cdd65219af6039ff6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2081f8db174df4bb8842aed3b7b513590ee9d219",
-                "reference": "2081f8db174df4bb8842aed3b7b513590ee9d219",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/fe7773b1e069a45aa74e09cdd65219af6039ff6b",
+                "reference": "fe7773b1e069a45aa74e09cdd65219af6039ff6b",
                 "shasum": ""
             },
             "require": {
@@ -416,9 +416,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.376.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.376.4"
             },
-            "time": "2026-04-03T18:07:33+00:00"
+            "time": "2026-04-06T18:18:41+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -4052,11 +4052,17 @@
         },
         {
             "name": "juniyasyos/laravel-iam-client",
-            "version": "dev-master",
+            "version": "v1.6.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/juniyasyos/laravel-iam-client.git",
+                "reference": "0e695afb6beb30301c2325f5bc059d6d3352c383"
+            },
             "dist": {
-                "type": "path",
-                "url": "../IAM/laravel-iam-client",
-                "reference": "10a002d3379418fe4bf4a384baac9b1d3c23e7c6"
+                "type": "zip",
+                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/0e695afb6beb30301c2325f5bc059d6d3352c383",
+                "reference": "0e695afb6beb30301c2325f5bc059d6d3352c383",
+                "shasum": ""
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
@@ -4081,11 +4087,7 @@
                     "Juniyasyos\\IamClient\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Juniyasyos\\IamClient\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -4097,16 +4099,17 @@
             ],
             "description": "Laravel package for IAM SSO integration with JIT user provisioning",
             "keywords": [
-                "authentication",
+                "Authentication",
+                "SSO",
                 "iam",
                 "jwt",
-                "laravel",
-                "sso"
+                "laravel"
             ],
-            "transport-options": {
-                "symlink": false,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/juniyasyos/laravel-iam-client/issues",
+                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.6.7"
+            },
+            "time": "2026-04-06T21:08:22+00:00"
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
@@ -14585,16 +14588,16 @@
         },
         {
             "name": "nunomaduro/collision",
-            "version": "v8.9.2",
+            "version": "v8.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nunomaduro/collision.git",
-                "reference": "6eb16883e74fd725ac64dbe81544c961ab448ba5"
+                "reference": "b0d8ab95b29c3189aeeb902d81215231df4c1b64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nunomaduro/collision/zipball/6eb16883e74fd725ac64dbe81544c961ab448ba5",
-                "reference": "6eb16883e74fd725ac64dbe81544c961ab448ba5",
+                "url": "https://api.github.com/repos/nunomaduro/collision/zipball/b0d8ab95b29c3189aeeb902d81215231df4c1b64",
+                "reference": "b0d8ab95b29c3189aeeb902d81215231df4c1b64",
                 "shasum": ""
             },
             "require": {
@@ -14677,7 +14680,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2026-03-31T21:51:27+00:00"
+            "time": "2026-04-06T19:25:53+00:00"
         },
         {
             "name": "pestphp/pest",
@@ -17263,9 +17266,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "juniyasyos/laravel-iam-client": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
