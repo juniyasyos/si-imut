@@ -74,11 +74,12 @@ class LaporanImutAutoGenerationService
     }
 
     /**
-     * Check if laporan already exists for the period
+     * Check if laporan already exists for the period (including soft deleted)
      */
     protected function laporanExists(int $month, int $year): bool
     {
-        return LaporanImut::where('report_month', $month)
+        return LaporanImut::withTrashed()
+            ->where('report_month', $month)
             ->where('report_year', $year)
             ->exists();
     }
@@ -90,23 +91,25 @@ class LaporanImutAutoGenerationService
     {
         $monthName = $this->getMonthName($month);
 
+        // Get system user for created_by
+        $systemUser = User::where('name', 'admin')->orWhere('email', 'admin@example.com')->first();
+        if (!$systemUser) {
+            $systemUser = User::first();
+        }
+
+        // Calculate assessment period
+        $assessmentStart = Carbon::create($year, $month, 1)->startOfMonth();
+        $assessmentEnd = Carbon::create($year, $month, 1)->endOfMonth();
+
         $laporan = new LaporanImut();
         $laporan->name = "Laporan IMUT {$monthName} {$year}";
-        $laporan->slug = Str::slug("laporan-imut-{$monthName}-{$year}");
         $laporan->report_month = $month;
         $laporan->report_year = $year;
-        $laporan->status = $settings->auto_publish ? 'published' : 'draft';
-        $laporan->description = "Laporan IMUT periode {$monthName} {$year} (dibuat otomatis oleh sistem)";
-
-        // Set templates if configured
-        if ($settings->analysis_template) {
-            $laporan->analysis = $settings->analysis_template;
-        }
-
-        if ($settings->recommendation_template) {
-            $laporan->recommendation = $settings->recommendation_template;
-        }
-
+        $laporan->status = LaporanImut::STATUS_PROCESS; // Use constant
+        $laporan->assessment_period_start = $assessmentStart;
+        $laporan->assessment_period_end = $assessmentEnd;
+        $laporan->is_auto_generated = true;
+        $laporan->created_by = $systemUser?->id ?? 1; // Fallback to user 1
         $laporan->save();
 
         return $laporan;

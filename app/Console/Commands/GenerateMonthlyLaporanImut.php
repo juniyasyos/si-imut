@@ -3,13 +3,16 @@
 namespace App\Console\Commands;
 
 use App\Models\LaporanImut;
+use App\Models\LaporanImutAutoGenerationSetting;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Jobs\ProsesPenilaianImut;
 use App\Services\DailyReportAggregationService;
+use App\Services\LaporanImutAutoGenerationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GenerateMonthlyLaporanImut extends Command
 {
@@ -31,11 +34,15 @@ class GenerateMonthlyLaporanImut extends Command
     protected $description = 'Generate monthly IMUT report automatically with optional daily report calculation';
 
     protected DailyReportAggregationService $aggregationService;
+    protected LaporanImutAutoGenerationService $autoGenerationService;
 
-    public function __construct(DailyReportAggregationService $aggregationService)
-    {
+    public function __construct(
+        DailyReportAggregationService $aggregationService,
+        LaporanImutAutoGenerationService $autoGenerationService
+    ) {
         parent::__construct();
         $this->aggregationService = $aggregationService;
+        $this->autoGenerationService = $autoGenerationService;
     }
 
     /**
@@ -44,6 +51,20 @@ class GenerateMonthlyLaporanImut extends Command
     public function handle()
     {
         $this->info('🚀 Starting Monthly Laporan IMUT Generation...');
+        $this->newLine();
+
+        // Check if auto-generation is enabled
+        $settings = LaporanImutAutoGenerationSetting::getInstance();
+
+        if (!$settings->is_enabled) {
+            $this->warn('⚠️  Auto-generation is currently DISABLED in system settings');
+            $this->warn('   To enable: Go to Laporan IMUT > Manajemen Otomasi Laporan > Toggle "Aktifkan Auto Generate"');
+            $this->newLine();
+            $this->info('💡 Tip: Scheduler will continue running but will skip generation until enabled');
+            return Command::SUCCESS;
+        }
+
+        $this->info('✅ Auto-generation is ENABLED');
         $this->newLine();
 
         // Determine month and year
@@ -60,82 +81,27 @@ class GenerateMonthlyLaporanImut extends Command
         $this->info("📅 Target Period: {$monthName} {$year}");
         $this->newLine();
 
-        // Check if report already exists
-        $existingReport = LaporanImut::where('report_month', $month)
-            ->where('report_year', $year)
-            ->first();
+        // Use the auto generation service
+        try {
+            $date = Carbon::create($year, $month, 1);
+            $laporan = $this->autoGenerationService->generateForMonth($date, $settings);
 
-        if ($existingReport) {
-            $this->warn("⚠️  Report for {$monthName} {$year} already exists: \"{$existingReport->name}\"");
-
-            if (!$this->confirm('Do you want to continue anyway (will create duplicate)?', false)) {
-                $this->info('Operation cancelled.');
+            if (!$laporan) {
+                $this->warn("⚠️  Report for {$monthName} {$year} already exists or generation was skipped");
                 return Command::SUCCESS;
             }
-        }
-
-        // Create the report
-        try {
-            DB::beginTransaction();
-
-            // Get all unit kerjas (no active scope, get all)
-            $allUnitKerjas = UnitKerja::pluck('id')->toArray();
-
-            if (empty($allUnitKerjas)) {
-                $this->error('❌ No Unit Kerja found!');
-                return Command::FAILURE;
-            }
-
-            $this->info("📊 Found " . count($allUnitKerjas) . " Unit Kerja");
-
-            // Calculate assessment period (same month)
-            $assessmentStart = Carbon::create($year, $month, 1)->startOfMonth();
-            $assessmentEnd = Carbon::create($year, $month, 1)->endOfMonth();
-
-            // Get system admin user for created_by
-            $systemUser = User::where('name', 'admin')->orWhere('email', 'admin@example.com')->first();
-            if (!$systemUser) {
-                $systemUser = User::first(); // Fallback to first user
-            }
-
-            if (!$systemUser) {
-                $this->error('❌ No user found in system!');
-                return Command::FAILURE;
-            }
-
-            // Create LaporanImut
-            $laporan = LaporanImut::create([
-                'name' => "Laporan IMUT {$monthName} {$year} (Auto-Generated)",
-                'report_month' => $month,
-                'report_year' => $year,
-                'assessment_period_start' => $assessmentStart,
-                'assessment_period_end' => $assessmentEnd,
-                'is_auto_generated' => true,
-                'created_by' => $systemUser->id,
-            ]);
-
-            // Attach all unit kerjas
-            $laporan->unitKerjas()->attach($allUnitKerjas);
-
-            DB::commit();
 
             $this->info("✅ Report created successfully!");
             $this->info("   ID: {$laporan->id}");
             $this->info("   Name: {$laporan->name}");
             $this->newLine();
 
-            // Dispatch job to create penilaian records
-            $this->info("🔄 Dispatching job to create penilaian records...");
-            ProsesPenilaianImut::dispatch($laporan->id);
-            $this->info("✅ Job dispatched successfully!");
-            $this->newLine();
-
             // Auto-calculate from daily reports if requested
-            if ($this->option('auto-calculate')) {
+            if ($this->option('auto-calculate') && $settings->auto_calculate) {
                 $this->info("🧮 Calculating from daily reports...");
                 $this->newLine();
 
-                // Wait a bit for the job to complete (in production, use queue monitoring)
+                // Wait a bit for the job to complete
                 $this->warn("⏳ Waiting 3 seconds for penilaian creation...");
                 sleep(3);
 
@@ -149,12 +115,12 @@ class GenerateMonthlyLaporanImut extends Command
             }
 
             $this->info("🎉 Monthly report generation completed successfully!");
+            Log::info("Auto-generated laporan for {$monthName} {$year}", ['laporan_id' => $laporan->id]);
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            DB::rollBack();
             $this->error("❌ Failed to create report: " . $e->getMessage());
-            $this->error("Stack trace: " . $e->getTraceAsString());
+            Log::error("Failed to auto-generate laporan: " . $e->getMessage(), ['exception' => $e]);
             return Command::FAILURE;
         }
     }
