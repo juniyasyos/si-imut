@@ -118,6 +118,7 @@ class UserResourceTable
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->relationship('roles', 'label')
+                        ->visible(!config('iam.role_sync_from_iam_allow_create'))
                         // ->multiple()
                         ->searchable()
                         ->preload()
@@ -137,17 +138,17 @@ class UserResourceTable
             ActionGroup::make([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()->visible(config('iam.user_sync_from_iam_allow_create')),
                 RestoreAction::make()
                     ->visible(
-                        fn($record) => Gate::allows('restore', $record) &&
+                        fn($record) => config('iam.user_sync_from_iam_allow_create') && Gate::allows('restore', $record) &&
                             method_exists($record, 'trashed') &&
                             $record->trashed()
                     ),
 
                 ForceDeleteAction::make()
                     ->visible(
-                        fn($record) => Gate::allows('forceDelete', $record) &&
+                        fn($record) => config('iam.user_sync_from_iam_allow_create') && Gate::allows('forceDelete', $record) &&
                             method_exists($record, 'trashed') &&
                             $record->trashed()
                     ),
@@ -160,14 +161,14 @@ class UserResourceTable
         return [
             BulkActionGroup::make([
                 DeleteBulkAction::make()
-                    ->visible(fn() => Gate::allows('deleteAny', User::class)),
+                    ->visible(fn() => config('iam.user_sync_from_iam_allow_create') && Gate::allows('deleteAny', User::class)),
                 RestoreBulkAction::make()
-                    ->visible(fn() => Gate::allows('restoreAny', User::class)),
+                    ->visible(fn() => config('iam.user_sync_from_iam_allow_create') && Gate::allows('restoreAny', User::class)),
                 ForceDeleteBulkAction::make()
-                    ->visible(fn() => Gate::allows('forceDeleteAny', User::class)),
+                    ->visible(fn() => config('iam.user_sync_from_iam_allow_create') && Gate::allows('forceDeleteAny', User::class)),
                 ExportBulkAction::make()
                     ->exporter(UserExporter::class)
-                    ->visible(fn() => Gate::allows('export', User::class)),
+                    ->visible(fn() => config('iam.user_sync_from_iam_allow_create') && Gate::allows('export', User::class)),
             ]),
         ];
     }
