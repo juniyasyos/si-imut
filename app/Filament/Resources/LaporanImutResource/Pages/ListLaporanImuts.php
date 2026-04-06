@@ -22,11 +22,11 @@ class ListLaporanImuts extends ListRecords
     {
         return [
             Actions\Action::make('autoGenerationSettings')
-                ->label('Pengaturan Auto Generate')
                 ->icon('heroicon-o-cog-6-tooth')
                 ->color('info')
-                ->modalHeading('Pengaturan Auto Generate Laporan IMUT')
-                ->modalDescription('Konfigurasikan pembuatan laporan IMUT secara otomatis sesuai jadwal yang ditentukan.')
+                ->label('Manajemen Otomasi Laporan')
+                ->modalHeading('Konfigurasi Otomasi Laporan IMUT')
+                ->modalDescription('Sesuaikan cara sistem membuat laporan IMUT secara otomatis setiap periode.')
                 ->modalWidth('5xl')
                 ->visible(fn() => Gate::allows('update_laporan::imut'))
                 ->form([
