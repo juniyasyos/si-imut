@@ -7,13 +7,16 @@ use App\Services\IamTokenManager;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Lazy;
 
 /**
  * IAM App Switcher Component
  * 
- * Menampilkan daftar aplikasi dari IAM API.
- * Tidak menggunakan fallback ke config lokal.
+ * Menampilkan daftar aplikasi dari IAM API dengan caching.
+ * Menggunakan lazy loading untuk performa optimal.
  */
+#[Lazy]
 class IamAppSwitcher extends Component
 {
     public $applications = [];
@@ -22,6 +25,9 @@ class IamAppSwitcher extends Component
     public $open = false;
 
     private ?IamTokenManager $tokenManager = null;
+
+    // Cache duration (5 minutes)
+    private const CACHE_DURATION = 300;
 
     public function boot()
     {
@@ -36,7 +42,15 @@ class IamAppSwitcher extends Component
     }
 
     /**
-     * Load aplikasi hanya dari IAM API.
+     * Generate cache key based on user
+     */
+    private function getCacheKey(): string
+    {
+        return 'iam.apps.user.' . Auth::id();
+    }
+
+    /**
+     * Load aplikasi dengan cache.
      */
     public function loadApplications()
     {
@@ -50,7 +64,17 @@ class IamAppSwitcher extends Component
                 return;
             }
 
-            // Ambil token JWT yang tersedia
+            $cacheKey = $this->getCacheKey();
+
+            // Try to get from cache first
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null) {
+                $this->applications = $cached;
+                $this->loading = false;
+                return;
+            }
+
+            // If not in cache, fetch from IAM API
             $token = $this->tokenManager->getValidToken();
 
             if (empty($token)) {
@@ -74,7 +98,12 @@ class IamAppSwitcher extends Component
                 return;
             }
 
-            $this->applications = $this->transformApplications($data['applications']);
+            $applications = $this->transformApplications($data['applications']);
+
+            // Cache the result
+            Cache::put($cacheKey, $applications, self::CACHE_DURATION);
+
+            $this->applications = $applications;
         } catch (\Exception $e) {
             Log::error('IamAppSwitcher: Exception during load', [
                 'error' => $e->getMessage(),
@@ -174,6 +203,15 @@ class IamAppSwitcher extends Component
     public function toggleOpen()
     {
         $this->open = !$this->open;
+    }
+
+    /**
+     * Force refresh cache
+     */
+    public function refreshCache()
+    {
+        Cache::forget($this->getCacheKey());
+        $this->loadApplications();
     }
 
     public function render()

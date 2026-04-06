@@ -310,7 +310,7 @@ return [
     | setting is true. Default is false (update-only).
     |
     */
-    'role_sync_from_iam_allow_create' => env('IAM_ROLE_SYNC_FROM_IAM_ALLOW_CREATE', false),
+    'role_sync_from_iam_allow_create' => env('IAM_ROLE_SYNC_FROM_IAM_ALLOW_CREATE', true),
 
     'required_roles' => env('IAM_REQUIRED_ROLES') ? array_map('trim', explode(',', env('IAM_REQUIRED_ROLES'))) : [],
 

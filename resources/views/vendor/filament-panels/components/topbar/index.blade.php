@@ -167,7 +167,7 @@
                 ])
                 @endif
 
-                @livewire(\App\Livewire\IamAppSwitcher::class)
+                @livewire(\App\Livewire\IamAppSwitcher::class, ['lazy' => true])
 
                 <x-filament-panels::user-menu />
                 @endif

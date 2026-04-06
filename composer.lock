@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1eeb7b7404bea518f3b7d4edd93b3bdc",
+    "content-hash": "f240533b51768c97a0a0e462b18bba38",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -422,16 +422,16 @@
         },
         {
             "name": "bacon/bacon-qr-code",
-            "version": "v3.1.0",
+            "version": "v3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Bacon/BaconQrCode.git",
-                "reference": "11485d8bd376f0ad8c58ab9c4ef72f6a53fef0b0"
+                "reference": "4da2233e72eeecd9be3b62e0dc2cc9ed8e2e31c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Bacon/BaconQrCode/zipball/11485d8bd376f0ad8c58ab9c4ef72f6a53fef0b0",
-                "reference": "11485d8bd376f0ad8c58ab9c4ef72f6a53fef0b0",
+                "url": "https://api.github.com/repos/Bacon/BaconQrCode/zipball/4da2233e72eeecd9be3b62e0dc2cc9ed8e2e31c2",
+                "reference": "4da2233e72eeecd9be3b62e0dc2cc9ed8e2e31c2",
                 "shasum": ""
             },
             "require": {
@@ -471,9 +471,9 @@
             "homepage": "https://github.com/Bacon/BaconQrCode",
             "support": {
                 "issues": "https://github.com/Bacon/BaconQrCode/issues",
-                "source": "https://github.com/Bacon/BaconQrCode/tree/v3.1.0"
+                "source": "https://github.com/Bacon/BaconQrCode/tree/v3.1.1"
             },
-            "time": "2026-04-05T20:05:37+00:00"
+            "time": "2026-04-05T21:06:35+00:00"
         },
         {
             "name": "bepsvpt/secure-headers",
@@ -4052,16 +4052,16 @@
         },
         {
             "name": "juniyasyos/laravel-iam-client",
-            "version": "v1.6.4",
+            "version": "v1.6.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/laravel-iam-client.git",
-                "reference": "1e098056dff9432d41b928496ac87eb4b99b2779"
+                "reference": "10a002d3379418fe4bf4a384baac9b1d3c23e7c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/1e098056dff9432d41b928496ac87eb4b99b2779",
-                "reference": "1e098056dff9432d41b928496ac87eb4b99b2779",
+                "url": "https://api.github.com/repos/juniyasyos/laravel-iam-client/zipball/10a002d3379418fe4bf4a384baac9b1d3c23e7c6",
+                "reference": "10a002d3379418fe4bf4a384baac9b1d3c23e7c6",
                 "shasum": ""
             },
             "require": {
@@ -4107,9 +4107,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/laravel-iam-client/issues",
-                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.6.4"
+                "source": "https://github.com/juniyasyos/laravel-iam-client/tree/v1.6.6"
             },
-            "time": "2026-04-05T20:29:54+00:00"
+            "time": "2026-04-06T08:26:14+00:00"
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
