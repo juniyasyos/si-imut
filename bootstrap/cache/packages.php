@@ -31,24 +31,6 @@
       0 => 'Awcodes\\TableRepeater\\TableRepeaterServiceProvider',
     ),
   ),
-  'barryvdh/laravel-debugbar' => 
-  array (
-    'aliases' => 
-    array (
-      'Debugbar' => 'Barryvdh\\Debugbar\\Facades\\Debugbar',
-    ),
-    'providers' => 
-    array (
-      0 => 'Barryvdh\\Debugbar\\ServiceProvider',
-    ),
-  ),
-  'barryvdh/laravel-ide-helper' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
-    ),
-  ),
   'bepsvpt/secure-headers' => 
   array (
     'providers' => 
@@ -173,13 +155,6 @@
       0 => 'Filament\\Tables\\TablesServiceProvider',
     ),
   ),
-  'filament/upgrade' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Filament\\Upgrade\\UpgradeServiceProvider',
-    ),
-  ),
   'filament/widgets' => 
   array (
     'providers' => 
@@ -294,27 +269,6 @@
       0 => 'Lab404\\Impersonate\\ImpersonateServiceProvider',
     ),
   ),
-  'laravel-shift/blueprint' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Blueprint\\BlueprintServiceProvider',
-    ),
-  ),
-  'laravel/pail' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Laravel\\Pail\\PailServiceProvider',
-    ),
-  ),
-  'laravel/sail' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Laravel\\Sail\\SailServiceProvider',
-    ),
-  ),
   'laravel/sanctum' => 
   array (
     'providers' => 
@@ -391,13 +345,6 @@
       0 => 'Njxqlus\\FilamentProgressbar\\FilamentProgressbarServiceProvider',
     ),
   ),
-  'nunomaduro/collision' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    ),
-  ),
   'nunomaduro/termwind' => 
   array (
     'providers' => 
@@ -421,13 +368,6 @@
     'providers' => 
     array (
       0 => 'OwenVoke\\BladeFontAwesome\\BladeFontAwesomeServiceProvider',
-    ),
-  ),
-  'pestphp/pest-plugin-laravel' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Pest\\Laravel\\PestServiceProvider',
     ),
   ),
   'pxlrbt/filament-excel' => 
