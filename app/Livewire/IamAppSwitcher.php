@@ -93,6 +93,13 @@ class IamAppSwitcher extends Component
             $data = $this->fetchApplicationsFromIam($token);
 
             if (!is_array($data) || !isset($data['applications']) || !is_array($data['applications'])) {
+                Log::warning('IamAppSwitcher: Invalid response format', [
+                    'is_array' => is_array($data),
+                    'has_applications_key' => is_array($data) ? isset($data['applications']) : false,
+                    'applications_is_array' => is_array($data) && isset($data['applications']) ? is_array($data['applications']) : false,
+                    'data' => $data,
+                    'user_id' => Auth::id(),
+                ]);
                 $this->applications = [];
                 $this->error = 'Gagal mengambil data aplikasi dari IAM server.';
                 return;
@@ -121,11 +128,25 @@ class IamAppSwitcher extends Component
 
     /**
      * Fetch data aplikasi detail dari IAM API.
+     * 
+     * Uses backchannel endpoint for server-to-server communication when available.
+     * Falls back to standard endpoint for backward compatibility.
      */
     private function fetchApplicationsFromIam(string $token): ?array
     {
-        $baseUrl = rtrim((string) config('iam.base_url'), '/');
-        $url = $baseUrl . '/api/users/applications/detail';
+        // Try backchannel endpoint first (optimized for internal communication)
+        $url = (string) config('iam.backchannel_user_applications_endpoint');
+
+        // Fallback to standard endpoint if backchannel not configured
+        if (empty($url)) {
+            $url = (string) config('iam.user_applications_endpoint');
+        }
+
+        // Final fallback: construct from base_url
+        if (empty($url)) {
+            $baseUrl = rtrim((string) config('iam.base_url'), '/');
+            $url = $baseUrl . '/api/users/applications/detail';
+        }
 
         $response = Http::withToken($token)
             ->acceptJson()
@@ -134,6 +155,7 @@ class IamAppSwitcher extends Component
 
         if (!$response->successful()) {
             Log::warning('IamAppSwitcher: IAM applications API failed', [
+                'url' => $url,
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'user_id' => Auth::id(),
@@ -141,7 +163,18 @@ class IamAppSwitcher extends Component
             return null;
         }
 
-        return $response->json();
+        $data = $response->json();
+
+        // Log the response structure for debugging
+        Log::debug('IamAppSwitcher: IAM applications API response', [
+            'url' => $url,
+            'status' => $response->status(),
+            'keys' => is_array($data) ? array_keys($data) : 'not-array',
+            'data_type' => gettype($data),
+            'user_id' => Auth::id(),
+        ]);
+
+        return $data;
     }
 
     /**

@@ -52,7 +52,8 @@ class RoleResourceTable
     {
         return [
             EditAction::make(),
-            DeleteAction::make()->visible(config('iam.role_sync_mode') !== 'pull'),
+            DeleteAction::make()
+                ->visible(!(env('USE_SSO') && env('IAM_ENABLED')) && config('iam.role_sync_mode') !== 'pull'),
         ];
     }
 

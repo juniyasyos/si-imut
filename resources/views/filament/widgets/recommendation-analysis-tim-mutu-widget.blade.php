@@ -36,17 +36,17 @@ $statusConfig = [
 ];
 @endphp
 
-<x-filament-widgets::widget class="dark:bg-slate-900">
+<x-filament-widgets::widget>
     <x-filament::section class="pt-6 pb-4 dark:bg-slate-900">
         <div class="mb-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     @svg('heroicon-m-clipboard-document-check', 'h-6 w-6 text-blue-600 dark:text-blue-300')
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-slate-50">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             Monitoring Pengisian Analisis & Rekomendasi
                         </h3>
-                        <p class="text-sm text-gray-500 dark:text-slate-400">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
                             @if($hasReports)
                             Overview status pengisian semua unit kerja
                             @elseif($showPrevious)
@@ -72,13 +72,13 @@ $statusConfig = [
         {{-- Empty State --}}
         <div class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 py-12 text-center dark:border-slate-700">
             <div class="mb-4 rounded-2xl bg-gray-100 p-4 dark:bg-slate-800">
-                @svg('heroicon-o-check-circle', 'h-10 w-10 text-gray-400 dark:text-slate-500')
+                @svg('heroicon-o-check-circle', 'h-10 w-10 text-gray-400 dark:text-gray-500')
             </div>
 
-            <h3 class="mb-1 text-base font-semibold text-gray-900 dark:text-slate-50">
+            <h3 class="mb-1 text-base font-semibold text-gray-900 dark:text-gray-50">
                 Tidak Ada Laporan Aktif
             </h3>
-            <p class="max-w-md text-sm text-gray-500 dark:text-slate-400">
+            <p class="max-w-md text-sm text-gray-500 dark:text-gray-400">
                 Tidak ada laporan yang sedang dalam fase pengisian analisis dan rekomendasi saat ini.
             </p>
         </div>
@@ -88,27 +88,27 @@ $statusConfig = [
         @php
         $stats = $previousReport['completion_stats'] ?? null;
         @endphp
-        <div class="mb-6 rounded-lg border-2 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/30 p-5">
+        <div class="mb-6 rounded-lg border-2 border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 p-5">
             <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-gray-200 dark:bg-slate-700/50 px-3 py-1">
-                <span class="text-xs font-semibold text-gray-700 dark:text-slate-300">
+                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
                     @svg('heroicon-m-archive-box', 'h-4 w-4 inline mr-1')
                     Laporan Sebelumnya
                 </span>
             </div>
             <div class="flex items-start justify-between gap-4">
                 <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900 dark:text-slate-50">
+                    <h4 class="font-semibold text-gray-900 dark:text-gray-50">
                         {{ $previousReport['name'] }}
                     </h4>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         Periode Penilaian: <strong>{{ $previousReport['period_end']->format('d M Y') }}</strong>
                     </p>
 
                     @if ($stats && $stats['total_units'] > 0)
                     <div class="mt-3 space-y-2">
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-600 dark:text-slate-400">Progres Pengisian Analisis Semua Unit</span>
-                            <span class="font-semibold text-gray-900 dark:text-slate-50">{{ $stats['completed_units'] }}/{{ $stats['total_units'] }} ({{ $stats['percentage'] }}%)</span>
+                            <span class="text-gray-600 dark:text-gray-400">Progres Pengisian Analisis Semua Unit</span>
+                            <span class="font-semibold text-gray-900 dark:text-gray-50">{{ $stats['completed_units'] }}/{{ $stats['total_units'] }} ({{ $stats['percentage'] }}%)</span>
                         </div>
                         <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700/50">
                             <div class="h-full rounded-full transition-all duration-300" style="width: {{ $stats['percentage'] }}%; background-color: {{ match($stats['percentage']) {
@@ -121,7 +121,7 @@ $statusConfig = [
                     @if (!empty($stats['unit_details']))
                     <div class="mt-4 space-y-2">
                         {{-- Toggle Button --}}
-                        <button type="button" wire:click="toggleExpandedDetails({{ $previousReport['id'] }})" class="flex w-full items-center justify-between rounded-lg bg-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-300 dark:bg-slate-700/70 dark:text-slate-200 dark:hover:bg-slate-600">
+                        <button type="button" wire:click="toggleExpandedDetails({{ $previousReport['id'] }})" class="flex w-full items-center justify-between rounded-lg bg-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-300 dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600">
                             <span>Detail Per Unit Kerja ({{ $stats['total_units'] }} units)</span>
                             <span class="transition-transform duration-200">
                                 @if ($this->isDetailExpanded($previousReport['id']))
@@ -134,14 +134,14 @@ $statusConfig = [
 
                         {{-- Expandable Content --}}
                         @if ($this->isDetailExpanded($previousReport['id']))
-                        <div class="space-y-2 rounded-lg bg-white/30 p-3 dark:bg-slate-800/20">
+                        <div class="space-y-2 rounded-lg bg-white/30 p-3 dark:bg-slate-700">
                             @foreach ($stats['unit_details'] as $detail)
-                            <div class="rounded-lg border border-gray-200 bg-white/80 p-3 text-xs dark:border-slate-700 dark:bg-slate-800/40">
+                            <div class="rounded-lg border border-gray-200 bg-white/80 p-3 text-xs dark:border-slate-700 dark:bg-slate-800">
                                 {{-- Header: Unit Name + Status --}}
                                 <div class="flex items-start justify-between gap-2 mb-2">
                                     <div class="flex-1">
-                                        <p class="font-semibold text-gray-900 dark:text-slate-50">{{ $detail['unit_name'] }}</p>
-                                        <p class="text-xs {{ $detail['is_completed'] ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-slate-400' }} font-medium mt-0.5">
+                                        <p class="font-semibold text-gray-900 dark:text-gray-50">{{ $detail['unit_name'] }}</p>
+                                        <p class="text-xs {{ $detail['is_completed'] ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400' }} font-medium mt-0.5">
                                             {{ $detail['status_text'] }}
                                         </p>
                                     </div>
@@ -150,8 +150,8 @@ $statusConfig = [
                                 {{-- Progress --}}
                                 <div class="mb-2">
                                     <div class="flex items-center justify-between text-xs mb-1">
-                                        <span class="text-gray-600 dark:text-slate-400">Pengisian Analisis</span>
-                                        <span class="font-semibold text-gray-900 dark:text-slate-50">{{ $detail['completed'] }}/{{ $detail['total'] }} ({{ $detail['percentage'] }}%)</span>
+                                        <span class="text-gray-600 dark:text-gray-400">Pengisian Analisis</span>
+                                        <span class="font-semibold text-gray-900 dark:text-gray-50">{{ $detail['completed'] }}/{{ $detail['total'] }} ({{ $detail['percentage'] }}%)</span>
                                     </div>
                                     <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700/50">
                                         <div class="h-full rounded-full transition-all duration-300" style="width: {{ $detail['percentage'] }}%; background-color: {{ $detail['is_completed'] ? '#16a34a' : '#f59e0b' }}"></div>
@@ -190,7 +190,7 @@ $statusConfig = [
                         @svg($config['icon'], 'h-5 w-5')
                     </div>
                     <div class="flex-1">
-                        <h4 class="font-semibold text-gray-900 dark:text-slate-50 mb-3">
+                        <h4 class="font-semibold text-gray-900 dark:text-gray-50 mb-3">
                             {{ $mostUrgent['name'] }}
                         </h4>
 
@@ -232,7 +232,7 @@ $statusConfig = [
 
                             {{-- Period Info --}}
                             <div class="mt-3 border-t {{ $config['border'] }} pt-3 dark:border-slate-700">
-                                <p class="text-xs {{ $config['text'] }} dark:text-slate-300">
+                                <p class="text-xs {{ $config['text'] }} dark:text-gray-300">
                                     <span class="font-semibold">Periode Laporan:</span> {{ $mostUrgent['period_end']->format('d M Y') }}
                                     <span class="mx-1">|</span>
                                     <span class="font-semibold">Status:</span> {{ $config['label'] }}
@@ -243,8 +243,8 @@ $statusConfig = [
                         @if ($stats && $stats['total_units'] > 0)
                         <div class="mt-3 space-y-2">
                             <div class="flex items-center justify-between text-xs">
-                                <span class="text-gray-600 dark:text-slate-400">Progres Pengisian Analisis Semua Unit</span>
-                                <span class="font-semibold text-gray-900 dark:text-slate-50">{{ $stats['completed_units'] }}/{{ $stats['total_units'] }} ({{ $stats['percentage'] }}%)</span>
+                                <span class="text-gray-600 dark:text-gray-400">Progres Pengisian Analisis Semua Unit</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-50">{{ $stats['completed_units'] }}/{{ $stats['total_units'] }} ({{ $stats['percentage'] }}%)</span>
                             </div>
                             <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700/50">
                                 <div class="h-full rounded-full transition-all duration-300" style="width: {{ $stats['percentage'] }}%; background-color: {{ match($stats['percentage']) {
@@ -257,7 +257,7 @@ $statusConfig = [
                         @if (!empty($stats['unit_details']))
                         <div class="mt-4 space-y-2">
                             {{-- Toggle Button --}}
-                            <button type="button" wire:click="toggleExpandedDetails({{ $mostUrgent['id'] }})" class="flex w-full items-center justify-between rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 dark:bg-slate-700/50 dark:text-slate-200 dark:hover:bg-slate-600">
+                            <button type="button" wire:click="toggleExpandedDetails({{ $mostUrgent['id'] }})" class="flex w-full items-center justify-between rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 dark:bg-slate-700/50 dark:text-gray-200 dark:hover:bg-slate-600">
                                 <span>Detail Per Unit Kerja ({{ $stats['total_units'] }} units)</span>
                                 <span class="transition-transform duration-200">
                                     @if ($this->isDetailExpanded($mostUrgent['id']))
@@ -270,14 +270,14 @@ $statusConfig = [
 
                             {{-- Expandable Content --}}
                             @if ($this->isDetailExpanded($mostUrgent['id']))
-                            <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-slate-800/20">
+                            <div class="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-slate-700">
                                 @foreach ($stats['unit_details'] as $detail)
-                                <div class="rounded-lg border border-gray-200 bg-white p-3 text-xs dark:border-slate-700 dark:bg-slate-800/40">
+                                <div class="rounded-lg border border-gray-200 bg-white p-3 text-xs dark:border-slate-800 dark:bg-slate-700">
                                     {{-- Header: Unit Name + Status --}}
                                     <div class="flex items-start justify-between gap-2 mb-2">
                                         <div class="flex-1">
-                                            <p class="font-semibold text-gray-900 dark:text-slate-50">{{ $detail['unit_name'] }}</p>
-                                            <p class="text-xs {{ $detail['is_completed'] ? 'text-green-600 dark:text-green-400' : ($detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-slate-400') }} font-medium mt-0.5">
+                                            <p class="font-semibold text-gray-900 dark:text-gray-50">{{ $detail['unit_name'] }}</p>
+                                            <p class="text-xs {{ $detail['is_completed'] ? 'text-green-600 dark:text-green-400' : ($detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400') }} font-medium mt-0.5">
                                                 {{ $detail['status_text'] }}
                                             </p>
                                         </div>
@@ -292,8 +292,8 @@ $statusConfig = [
                                     {{-- Progress --}}
                                     <div class="mb-2">
                                         <div class="flex items-center justify-between text-xs mb-1">
-                                            <span class="text-gray-600 dark:text-slate-400">Pengisian Analisis</span>
-                                            <span class="font-semibold text-gray-900 dark:text-slate-50">{{ $detail['completed'] }}/{{ $detail['total'] }} ({{ $detail['percentage'] }}%)</span>
+                                            <span class="text-gray-600 dark:text-gray-400">Pengisian Analisis</span>
+                                            <span class="font-semibold text-gray-900 dark:text-gray-50">{{ $detail['completed'] }}/{{ $detail['total'] }} ({{ $detail['percentage'] }}%)</span>
                                         </div>
                                         <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700/50">
                                             <div class="h-full rounded-full transition-all duration-300" style="width: {{ $detail['percentage'] }}%; background-color: {{ $detail['is_completed'] ? '#16a34a' : ($detail['is_overdue'] ? '#dc2626' : '#f59e0b') }}"></div>
@@ -303,14 +303,14 @@ $statusConfig = [
                                     {{-- Deadline Info --}}
                                     <div class="space-y-0.5 border-t border-gray-200 pt-2 dark:border-slate-700">
                                         <div class="flex justify-between items-center">
-                                            <span class="text-gray-600 dark:text-slate-400 font-semibold">📅 Deadline:</span>
+                                            <span class="text-gray-600 dark:text-gray-400 font-semibold">📅 Deadline:</span>
                                             <span class="font-bold {{ $detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-300' }}">
                                                 {{ $detail['analysis_deadline']->format('d M Y') }}
                                             </span>
                                         </div>
                                         @if (!$detail['is_completed'])
                                         <div class="flex justify-between items-center">
-                                            <span class="text-gray-600 dark:text-slate-400 font-semibold">⏱️ Sisa:</span>
+                                            <span class="text-gray-600 dark:text-gray-400 font-semibold">⏱️ Sisa:</span>
                                             <span class="font-bold {{ $detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
                                                 @if ($detail['is_overdue'])
                                                 {{ abs($detail['days_remaining']) }} hari terlewat
@@ -321,8 +321,8 @@ $statusConfig = [
                                         </div>
                                         @endif
                                         <div class="flex justify-between text-xs">
-                                            <span class="text-gray-600 dark:text-slate-400">Periode:</span>
-                                            <span class="text-gray-700 dark:text-slate-300">{{ $detail['period_end']->format('d M Y') }}</span>
+                                            <span class="text-gray-600 dark:text-gray-400">Periode:</span>
+                                            <span class="text-gray-700 dark:text-gray-300">{{ $detail['period_end']->format('d M Y') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -341,7 +341,7 @@ $statusConfig = [
         {{-- Reports List --}}
         @if (count($reports) > 1)
         <div class="space-y-3">
-            <p class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Laporan Lainnya:</p>
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Laporan Lainnya:</p>
             @foreach (array_slice($reports, 1) as $report)
             @php
             $config = $statusConfig[$report['status']];
@@ -354,10 +354,10 @@ $statusConfig = [
                             @svg($config['icon'], 'h-4 w-4')
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="font-medium text-gray-900 dark:text-slate-50">
+                            <p class="font-medium text-gray-900 dark:text-gray-50">
                                 {{ $report['name'] }}
                             </p>
-                            <p class="text-xs {{ $config['text'] }} font-semibold mt-1 dark:text-slate-300">
+                            <p class="text-xs {{ $config['text'] }} font-semibold mt-1 dark:text-gray-300">
                                 📅 <strong>{{ $report['analysis_deadline']->format('d M Y') }}</strong>
                                 @if (!$report['is_overdue'])
                                 <span class="mx-1">•</span>
@@ -389,8 +389,8 @@ $statusConfig = [
                 @if ($stats && $stats['total_units'] > 0)
                 <div class="space-y-2 border-t {{ $config['border'] }} pt-3 dark:border-slate-700">
                     <div class="flex items-center justify-between text-xs">
-                        <span class="text-gray-600 dark:text-slate-400">Pengisian: {{ $stats['completed_units'] }}/{{ $stats['total_units'] }} unit kerja</span>
-                        <span class="font-semibold text-gray-900 dark:text-slate-50">{{ $stats['percentage'] }}%</span>
+                        <span class="text-gray-600 dark:text-gray-400">Pengisian: {{ $stats['completed_units'] }}/{{ $stats['total_units'] }} unit kerja</span>
+                        <span class="font-semibold text-gray-900 dark:text-gray-50">{{ $stats['percentage'] }}%</span>
                     </div>
                     <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700/50">
                         <div class="h-full rounded-full transition-all duration-300" style="width: {{ $stats['percentage'] }}%; background-color: {{ match($stats['percentage']) {
@@ -401,7 +401,7 @@ $statusConfig = [
 
                     {{-- Expandable Unit Details --}}
                     @if (!empty($stats['unit_details']))
-                    <button type="button" wire:click="toggleExpandedDetails({{ $report['id'] }})" class="flex w-full items-center justify-between rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-slate-700/50 dark:text-slate-200 dark:hover:bg-slate-600 mt-2">
+                    <button type="button" wire:click="toggleExpandedDetails({{ $report['id'] }})" class="flex w-full items-center justify-between rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-slate-700/50 dark:text-gray-200 dark:hover:bg-slate-600 mt-2">
                         <span>{{ $stats['total_units'] }} Unit Kerja</span>
                         <span class="transition-transform duration-200">
                             @if ($this->isDetailExpanded($report['id']))
@@ -419,8 +419,8 @@ $statusConfig = [
                             {{-- Header: Unit Name + Status --}}
                             <div class="flex items-start justify-between gap-2 mb-1.5">
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-semibold text-gray-900 dark:text-slate-50 truncate">{{ $detail['unit_name'] }}</p>
-                                    <p class="text-xs {{ $detail['is_completed'] ? 'text-green-600 dark:text-green-400' : ($detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-slate-400') }} font-medium mt-0.5">
+                                    <p class="font-semibold text-gray-900 dark:text-gray-50 truncate">{{ $detail['unit_name'] }}</p>
+                                    <p class="text-xs {{ $detail['is_completed'] ? 'text-green-600 dark:text-green-400' : ($detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400') }} font-medium mt-0.5">
                                         {{ $detail['status_text'] }}
                                     </p>
                                 </div>
@@ -436,22 +436,22 @@ $statusConfig = [
                             @if ($detail['total'] > 0)
                             <div class="mb-1.5">
                                 <div class="flex items-center justify-between text-xs mb-0.5">
-                                    <span class="text-gray-600 dark:text-slate-400">{{ $detail['completed'] }}/{{ $detail['total'] }}</span>
-                                    <span class="font-semibold text-gray-900 dark:text-slate-50">{{ $detail['percentage'] }}%</span>
+                                    <span class="text-gray-600 dark:text-gray-400">{{ $detail['completed'] }}/{{ $detail['total'] }}</span>
+                                    <span class="font-semibold text-gray-900 dark:text-gray-50">{{ $detail['percentage'] }}%</span>
                                 </div>
                                 <div class="h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700/50">
                                     <div class="h-full rounded-full transition-all duration-300" style="width: {{ $detail['percentage'] }}%; background-color: {{ $detail['is_completed'] ? '#16a34a' : ($detail['is_overdue'] ? '#dc2626' : '#f59e0b') }}"></div>
                                 </div>
                             </div>
                             @else
-                            <p class="text-xs text-gray-500 dark:text-slate-400 italic mb-1.5">Tidak ada data penilaian</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-1.5">Tidak ada data penilaian</p>
                             @endif
 
                             {{-- Deadline Info (compact) --}}
                             <div class="space-y-0.5 border-t border-gray-200 pt-1.5 dark:border-slate-700 text-xs">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600 dark:text-slate-400">Deadline:</span>
-                                    <span class="font-medium {{ $detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-slate-50' }}">{{ $detail['analysis_deadline']->format('d M Y') }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Deadline:</span>
+                                    <span class="font-medium {{ $detail['is_overdue'] ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-50' }}">{{ $detail['analysis_deadline']->format('d M Y') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -468,7 +468,7 @@ $statusConfig = [
 
         {{-- Footer Info --}}
         <div class="mt-6 border-t border-gray-200 pt-4 dark:border-slate-700">
-            <p class="text-xs text-gray-500 dark:text-slate-400">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
                 <strong>Catatan:</strong> Pengisian analisis dan rekomendasi dimulai setelah periode penilaian berakhir.
                 Monitoring progress semua unit kerja dan follow-up yang belum menyelesaikan pengisian sebelum deadline.
             </p>

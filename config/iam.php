@@ -95,6 +95,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Backchannel User Applications Endpoint
+    |--------------------------------------------------------------------------
+    |
+    | Internal server-to-server endpoint for fetching user applications.
+    | Used for inter-container communication (e.g., in Docker, use service name).
+    | Falls back to user_applications_endpoint if not set.
+    |
+    | Examples:
+    | - Docker: http://web:8100/api/users/applications/detail
+    | - Production: https://iam.example.com/api/users/applications/detail
+    |
+    */
+    'backchannel_user_applications_endpoint' => env('IAM_BACKCHANNEL_USER_APPLICATIONS_ENDPOINT', null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Web Guard SSO Routes
     |--------------------------------------------------------------------------
     |

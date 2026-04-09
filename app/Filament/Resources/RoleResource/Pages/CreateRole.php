@@ -14,6 +14,15 @@ class CreateRole extends CreateRecord
 
     public Collection $permissions;
 
+    public function mount(): void
+    {
+        if (env('USE_SSO') && env('IAM_ENABLED')) {
+            abort(403, 'Wah, Anda Mau ngapan sih? Kok Akses ini (;_;)');
+        }
+
+        parent::mount();
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $this->permissions = collect($data)

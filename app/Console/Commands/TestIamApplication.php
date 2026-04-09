@@ -18,7 +18,7 @@ class TestIamApplication extends Command
         // Check config
         $this->info('Configuration:');
         $this->line('  IAM Enabled: ' . (config('iam.enabled') ? 'Yes' : 'No'));
-        $this->line('  Local Route: /iam/user-applications');
+        $this->line('  Local Route: /api/users/applications/detail');
         $this->newLine();
 
         // Check auth

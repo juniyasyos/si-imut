@@ -18,7 +18,9 @@ class EditRole extends EditRecord
     protected function getActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->visible(!(env('USE_SSO') && env('IAM_ENABLED')) && config('iam.role_sync_mode') !== 'pull')
+                ->icon('heroicon-m-trash'),
         ];
     }
 

@@ -110,6 +110,7 @@ class UserResourceTable
     {
         return [
             ActivityLogTimelineTableAction::make(__('filament-forms::users.actions.activities'))
+                ->disabled()
                 ->visible(fn() => Gate::allows('viewActivities', User::class)),
 
             Action::make(__('filament-forms::users.actions.set_role'))
@@ -118,14 +119,13 @@ class UserResourceTable
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->relationship('roles', 'label')
-                        ->visible(!config('iam.role_sync_from_iam_allow_create'))
                         // ->multiple()
                         ->searchable()
                         ->preload()
                         ->optionsLimit(10)
                         ->getOptionLabelFromRecordUsing(fn($record) => $record->label),
                 ])
-                ->visible(fn() => Gate::allows('setRole', User::class)),
+                ->visible(fn() => !Gate::allows('setRole', User::class) || !(env('USE_SSO') || env('IAM_ENABLED')) || config('iam.role_sync_mode') === 'pull'),
 
             Impersonate::make()
                 ->label(__('filament-forms::users.actions.impersonate'))

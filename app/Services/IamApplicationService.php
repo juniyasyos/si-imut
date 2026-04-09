@@ -31,7 +31,11 @@ class IamApplicationService
                 return null;
             }
 
-            $endpoint = rtrim($iamBaseUrl, '/') . '/iam/user-applications';
+            // Use configured endpoint or construct from base_url
+            $endpoint = (string) config('iam.user_applications_endpoint');
+            if (empty($endpoint)) {
+                $endpoint = rtrim($iamBaseUrl, '/') . '/api/users/applications/detail';
+            }
 
             // Get access token from session
             $token = session('iam.access_token') ?? session('iam.access_token_backup');

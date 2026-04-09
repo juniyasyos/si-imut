@@ -19,12 +19,12 @@ class ListUsers extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Tambah Data')
-                ->visible(fn() => Gate::allows('create', User::class))
+                ->visible(fn() => !Gate::allows('create', User::class) || !(env('USE_SSO') && env('IAM_ENABLED')) && config('iam.role_sync_mode') !== 'pull')
                 ->icon('heroicon-m-plus'),
             ExportAction::make()
                 ->exports([
                     ExcelExport::make()
-                        ->fromTable()
+                        ->fromTable() 
                         ->withFilename(fn($resource) => $resource::getModelLabel() . '-' . date('Y-m-d'))
                         ->withWriterType(\Maatwebsite\Excel\Excel::XLSX)
                         ->withColumns([
