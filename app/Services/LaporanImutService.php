@@ -265,7 +265,7 @@ class LaporanImutService
             return false;
         }
 
-        $result = round(($p->numerator_value / $p->denominator_value) * 100, 2);
+        $result = ceil(($p->numerator_value / $p->denominator_value) * 100 * 100) / 100;
 
         return match ($profile->target_operator) {
             '=' => $result == $profile->target_value,

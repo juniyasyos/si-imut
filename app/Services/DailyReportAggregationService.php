@@ -67,7 +67,7 @@ class DailyReportAggregationService
             ->count();
 
         $percentage = $denominator > 0
-            ? round(($numerator / $denominator) * 100, 2)
+            ? ceil(($numerator / $denominator) * 100 * 100) / 100
             : 0;
 
         $missingDates = $this->findMissingDates(clone $baseQuery, $start, $end);
@@ -117,9 +117,9 @@ class DailyReportAggregationService
         if ($result['denominator'] === 0 && $penilaian->denominator_value !== null) {
             Log::info(
                 "Skipping auto-calculation for ImutPenilaian {$penilaian->id}: "
-                . "tidak ada daily reports untuk periode ini dan data sudah ada "
-                . "(denominator_value={$penilaian->denominator_value}). "
-                . 'Kemungkinan sedang dalam proses migrasi data lama.'
+                    . "tidak ada daily reports untuk periode ini dan data sudah ada "
+                    . "(denominator_value={$penilaian->denominator_value}). "
+                    . 'Kemungkinan sedang dalam proses migrasi data lama.'
             );
 
             return false;

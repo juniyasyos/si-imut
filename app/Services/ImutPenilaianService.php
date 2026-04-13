@@ -10,7 +10,7 @@ class ImutPenilaianService
     public function getByLaporanId(int $laporanId): Collection
     {
         return ImutPenilaian::with(['profile', 'laporanUnitKerja'])
-            ->whereHas('laporanUnitKerja', fn ($q) => $q->where('laporan_imut_id', $laporanId))
+            ->whereHas('laporanUnitKerja', fn($q) => $q->where('laporan_imut_id', $laporanId))
             ->get();
     }
 
@@ -19,7 +19,7 @@ class ImutPenilaianService
         return ImutPenilaian::with(['profile', 'laporanUnitKerja'])
             ->whereNotNull('numerator_value')
             ->whereNotNull('denominator_value')
-            ->whereHas('laporanUnitKerja', fn ($q) => $q->where('laporan_imut_id', $laporanId))
+            ->whereHas('laporanUnitKerja', fn($q) => $q->where('laporan_imut_id', $laporanId))
             ->get();
     }
 
@@ -44,7 +44,7 @@ class ImutPenilaianService
 
     public function countBelumDinilai(int $laporanId): int
     {
-        return ImutPenilaian::whereHas('laporanUnitKerja', fn ($q) => $q->where('laporan_imut_id', $laporanId))
+        return ImutPenilaian::whereHas('laporanUnitKerja', fn($q) => $q->where('laporan_imut_id', $laporanId))
             ->where(function ($q) {
                 $q->whereNull('numerator_value')->orWhereNull('denominator_value');
             })
@@ -57,7 +57,7 @@ class ImutPenilaianService
 
         $numerator = $data->sum('numerator_value');
         $denominator = $data->sum('denominator_value');
-        $percentage = $denominator > 0 ? round(($numerator / $denominator) * 100, 2) : null;
+        $percentage = $denominator > 0 ? ceil(($numerator / $denominator) * 100 * 100) / 100 : null;
 
         return compact('numerator', 'denominator', 'percentage');
     }
@@ -67,7 +67,7 @@ class ImutPenilaianService
         return $this->groupByUnitKerja($laporanId)->map(function ($items, $unitKerjaId) {
             $numerator = $items->sum('numerator_value');
             $denominator = $items->sum('denominator_value');
-            $percentage = $denominator > 0 ? round(($numerator / $denominator) * 100, 2) : null;
+            $percentage = $denominator > 0 ? ceil(($numerator / $denominator) * 100 * 100) / 100 : null;
 
             return compact('unitKerjaId', 'numerator', 'denominator', 'percentage');
         })->values();
@@ -78,7 +78,7 @@ class ImutPenilaianService
         return $this->groupByProfileId($laporanId)->map(function ($items, $profileId) {
             $numerator = $items->sum('numerator_value');
             $denominator = $items->sum('denominator_value');
-            $percentage = $denominator > 0 ? round(($numerator / $denominator) * 100, 2) : null;
+            $percentage = $denominator > 0 ? ceil(($numerator / $denominator) * 100 * 100) / 100 : null;
 
             return compact('profileId', 'numerator', 'denominator', 'percentage');
         })->values();

@@ -22,9 +22,9 @@ class ImutCalculatorService
             return 0.0;
         }
 
-        $result = ($numerator / $denominator) * 100;
+        $percentage = ($numerator / $denominator) * 100;
 
-        return round($result, $precision);
+        return ceil($percentage * 100) / 100;
     }
 
     /**

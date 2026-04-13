@@ -22,13 +22,13 @@ class ImutCalculationService
         string $denominatorColumn,
         string $alias = 'percentage'
     ): string {
-        return "ROUND(
+        return "CEIL(
             CASE
                 WHEN {$denominatorColumn} > 0 THEN
-                    {$numeratorColumn} * 100.0 / NULLIF({$denominatorColumn}, 0)
+                    ({$numeratorColumn} * 100.0 / NULLIF({$denominatorColumn}, 0)) * 100
                 ELSE 0
-            END, 2
-        ) as {$alias}";
+            END
+        ) / 100 as {$alias}";
     }
 
     /**
@@ -93,7 +93,8 @@ class ImutCalculationService
             return 0.0;
         }
 
-        return round(($numerator / $denominator) * 100, $precision);
+        $percentage = ($numerator / $denominator) * 100;
+        return ceil($percentage * 100) / 100;
     }
 
     /**

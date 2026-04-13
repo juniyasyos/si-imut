@@ -86,7 +86,7 @@ class ImutChartSeriesService
                     }
 
                     $shortName = $category->short_name;
-                    $nilai = ($penilaian->numerator_value / $penilaian->denominator_value) * 100;
+                    $nilai = ceil(($penilaian->numerator_value / $penilaian->denominator_value) * 100 * 100) / 100;
 
                     if ($nilai >= $profile->target_value) {
                         $result[$shortName] = ($result[$shortName] ?? 0) + 1;

@@ -23,7 +23,7 @@ class UnitKerjaStatService
 
         $averagePercentage = $penilaians->avg(function ($penilaian) {
             return $penilaian->denominator_value > 0
-                ? ($penilaian->numerator_value * 100 / $penilaian->denominator_value)
+                ? ceil(($penilaian->numerator_value / $penilaian->denominator_value) * 100 * 100) / 100
                 : 0;
         });
 
@@ -33,7 +33,7 @@ class UnitKerjaStatService
                 return false;
             }
 
-            $value = $penilaian->numerator_value * 100 / $penilaian->denominator_value;
+            $value = ceil(($penilaian->numerator_value / $penilaian->denominator_value) * 100 * 100) / 100;
 
             return match ($profil->target_operator) {
                 '>=' => $value >= $profil->target_value,
