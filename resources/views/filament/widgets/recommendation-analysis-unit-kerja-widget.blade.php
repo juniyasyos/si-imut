@@ -102,7 +102,7 @@ $statusConfig = [
                         {{ $previousReport['name'] }}
                     </h4>
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Periode Penilaian: <strong>{{ $previousReport['period_end']->format('d M Y') }}</strong>
+                            Periode Pengisian Analis & Rekomendasi:  <strong>{{ $previousReport['period_end']->format('d M Y') }}</strong> - <strong>{{ $previousReport['analysis_deadline']->format('d M Y') }}</strong>
                     </p>
 
                     {{-- Unit Kerja Completion Status --}}

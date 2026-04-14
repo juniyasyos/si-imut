@@ -274,12 +274,17 @@ class RecommendationAnalysisTimMutuWidget extends Widget
         }
 
         $stats = $this->computeOverallCompletionStats($previousReport);
+        
+        $periodEnd = $previousReport->assessment_period_end;
+        $analysisDuration = $previousReport->recommendation_analysis_duration ?? 0;
+        $analysisDeadline = $periodEnd->copy()->addDays($analysisDuration);
 
         return [
             'id' => $previousReport->id,
             'name' => $previousReport->name,
             'slug' => $previousReport->slug,
             'period_end' => $previousReport->assessment_period_end,
+            'analysis_deadline' => $analysisDeadline,
             'laporan' => $previousReport,
             'completion_stats' => $stats,
             'is_previous' => true,

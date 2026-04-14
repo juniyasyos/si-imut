@@ -104,7 +104,7 @@ $statusConfig = [
                             {{ $mostUrgent['name'] }}
                         </h4>
                         <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">
-                            Periode Penilaian: <strong>{{ $mostUrgent['period_end']->format('d M Y') }}</strong> - Deadline: <strong>{{ $mostUrgent['analysis_deadline']->format('d M Y') }}</strong>
+                            Periode Pengisian Analis & Rekomendasi:  <strong>{{ $mostUrgent['period_end']->format('d M Y') }}</strong> - <strong>{{ $mostUrgent['analysis_deadline']->format('d M Y') }}</strong>
                         </p>
 
                         @if ($stats && $stats['total_units'] > 0)
