@@ -791,7 +791,7 @@
                             },
                             labels: {
                                 formatter: function(val) {
-                                    return val.toFixed(0) + '%';
+                                    return val.toFixed(2) + '%';
                                 }
                             },
                             min: 0,

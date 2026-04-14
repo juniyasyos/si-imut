@@ -174,7 +174,7 @@
                 </div>
                 <div class="bg-white p-4 rounded border border-sky-200 text-center">
                     <div class="text-xs text-gray-600 mb-1 font-medium">Rata-rata Pencapaian</div>
-                    <div class="text-2xl font-bold text-sky-900">{{ number_format($averagePercentage, 1) }}%</div>
+                    <div class="text-2xl font-bold text-sky-900">{{ number_format($averagePercentage, 2) }}%</div>
                 </div>
                 <div class="bg-white p-4 rounded border border-sky-200 text-center">
                     <div class="text-xs text-gray-600 mb-1 font-medium">Target Tercapai</div>
@@ -311,7 +311,7 @@
                                             </td>
 
                                             <td class="px-1 py-1.5 border-b border-slate-100 text-right font-semibold tabular-nums {{ $highlightPercent }}">
-                                                {{ floor($percent) }}%
+                                                {{ round($percent, 2) }}%
                                             </td>
 
                                             @endforeach

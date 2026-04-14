@@ -259,7 +259,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md
                             bg-blue-50 text-blue-700 border border-blue-200
                             font-semibold text-[10px]">
-                                                {{ $symbol }} {{ floor($standard) }}%
+                                                {{ $symbol }} {{ round($standard, 2) }}%
                                             </span>
                                         </td>
 
@@ -328,7 +328,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                                 </td>
 
                                                 <td class="px-1 py-1.5 border-b border-gray-100 text-right tabular-nums {{ $percentClass }}">
-                                                    {{ floor($percent) }}%
+                                                    {{ round($percent, 2) }}%
                                                 </td>
 
                                                 @endforeach
@@ -661,11 +661,11 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
                                             <td class="px-3 py-1 text-center bg-amber-50 text-amber-800 font-medium">
                                                 {!! $opSym !!}
-                                                {{ $dataPoint['standard'] !== null ? floor($dataPoint['standard']).'%' : '-' }}
+                                                {{ $dataPoint['standard'] !== null ? round($dataPoint['standard'], 2).'%' : '-' }}
                                             </td>
 
                                             <td class="px-3 py-1 text-right bg-blue-50 text-blue-800 font-semibold">
-                                                {{ floor($dataPoint['percentage']) }}%
+                                                {{ round($dataPoint['percentage'], 2) }}%
                                             </td>
 
                                             <td class="px-3 py-1 text-center">
@@ -724,7 +724,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                                             <td class="px-3 py-3 text-center">{{ number_format($totalD) }}</td>
 
                                             <td class="px-3 py-3 text-center bg-amber-100 text-amber-900">
-                                                {!! $opSym !!} {{ floor($imut['standard']) }}%
+                                                {!! $opSym !!} {{ round($imut['standard'], 2) }}%
                                             </td>
 
                                             <td class="px-3 py-3 text-right bg-blue-100 text-blue-900 font-bold">
