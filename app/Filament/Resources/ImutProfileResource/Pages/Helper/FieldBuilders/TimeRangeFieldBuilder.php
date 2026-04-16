@@ -39,13 +39,15 @@ class TimeRangeFieldBuilder
                     ->default($defaultStartTime)
                     ->dehydrated(false)
                     ->afterStateHydrated(function ($state, callable $set) use ($defaultStartTime, $fieldKey) {
-                        $set($fieldKey . '_start_time', $defaultStartTime);
+                        $value = blank($state) ? $defaultStartTime : $state;
+                        $set($fieldKey . '_start_time', self::normalizeTime($value));
                     }),
                 Hidden::make($fieldKey . '_end_time')
                     ->default($defaultEndTime)
                     ->dehydrated(false)
                     ->afterStateHydrated(function ($state, callable $set) use ($defaultEndTime, $fieldKey) {
-                        $set($fieldKey . '_end_time', $defaultEndTime);
+                        $value = blank($state) ? $defaultEndTime : $state;
+                        $set($fieldKey . '_end_time', self::normalizeTime($value));
                     }),
                 self::createInputValuePicker($fieldKey, $required),
                 self::createRangeDisplay($fieldKey, $customLabels),
@@ -68,6 +70,8 @@ class TimeRangeFieldBuilder
             ->label('Nilai Waktu Input')
             ->required($required)
             ->seconds(false)
+            ->format('H:i')
+            ->displayFormat('H:i')
             ->debounce(1000)
             ->live()
             ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
@@ -101,7 +105,10 @@ class TimeRangeFieldBuilder
                     return '⚠️ Rentang waktu belum diatur';
                 }
 
-                return "⏰ Rentang valid: {$startTimeLabel} ({$startTime}) - {$endTimeLabel} ({$endTime})";
+                $startTimeFormatted = self::normalizeTime($startTime);
+                $endTimeFormatted = self::normalizeTime($endTime);
+
+                return "⏰ Rentang valid: {$startTimeLabel} ({$startTimeFormatted}) - {$endTimeLabel} ({$endTimeFormatted})";
             })
             ->reactive()
             ->columnSpan(1);
@@ -130,6 +137,21 @@ class TimeRangeFieldBuilder
             })
             ->reactive()
             ->columnSpan(1);
+    }
+
+    /**
+     * Normalize a time string to H:i format
+     *
+     * @param string $time
+     * @return string
+     */
+    private static function normalizeTime(string $time): string
+    {
+        try {
+            return Carbon::parse($time)->format('H:i');
+        } catch (\Exception $e) {
+            return $time;
+        }
     }
 
     /**
