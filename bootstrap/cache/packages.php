@@ -231,6 +231,13 @@
       0 => 'Jenssegers\\Agent\\AgentServiceProvider',
     ),
   ),
+  'juniyasyos/auth-bridge-client' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Juniyasyos\\IamClient\\IamClientServiceProvider',
+    ),
+  ),
   'juniyasyos/dash-stack-theme-juniyasyos' => 
   array (
     'providers' => 
@@ -264,13 +271,6 @@
     'providers' => 
     array (
       0 => 'Juniyasyos\\FilamentSettingsHub\\FilamentSettingsHubServiceProvider',
-    ),
-  ),
-  'juniyasyos/laravel-iam-client' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Juniyasyos\\IamClient\\IamClientServiceProvider',
     ),
   ),
   'juniyasyos/manage-unit-kerja' => 
