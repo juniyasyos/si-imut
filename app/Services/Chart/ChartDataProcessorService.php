@@ -30,11 +30,62 @@ class ChartDataProcessorService
             $laporanResults = $this->processLaporanForCapaian($laporan);
 
             foreach ($categories as $shortName) {
-                $data[$shortName][$index] = $laporanResults[$shortName] ?? 0;
+                $categoryData = $laporanResults[$shortName] ?? ['total' => 0, 'achieved' => 0];
+
+                $data[$shortName][$index] = $categoryData['total'] > 0
+                    ? round(($categoryData['achieved'] / $categoryData['total']) * 100, 2)
+                    : 0;
             }
         }
 
         return $data;
+    }
+
+    /**
+     * Process single laporan untuk capaian per kategori
+     *
+     * @param mixed $laporan
+     * @param array $categories
+     * @return array
+     */
+    public function processCategoryAchievementData($laporan, array $categories): array
+    {
+        $results = array_fill_keys($categories, 0);
+        $categoryData = [];
+
+        foreach ($laporan->laporanUnitKerjas as $unitKerja) {
+            foreach ($unitKerja->imutPenilaians as $penilaian) {
+                $profile = $penilaian->profile;
+                $category = $profile?->imutData?->categories;
+
+                if (!$category || !$category->short_name) {
+                    continue;
+                }
+
+                $shortName = $category->short_name;
+                if (!in_array($shortName, $categories, true)) {
+                    continue;
+                }
+
+                $evaluation = $this->calculator->evaluatePenilaian(
+                    $penilaian->numerator_value ?? 0,
+                    $penilaian->denominator_value ?? 0,
+                    $profile->target_value ?? 0,
+                    $profile->target_operator ?? '>='
+                );
+
+                $categoryData[$shortName]['total'] = ($categoryData[$shortName]['total'] ?? 0) + 1;
+                $categoryData[$shortName]['achieved'] = ($categoryData[$shortName]['achieved'] ?? 0) + ($evaluation['is_achieved'] ? 1 : 0);
+            }
+        }
+
+        foreach ($categories as $shortName) {
+            if (isset($categoryData[$shortName]) && $categoryData[$shortName]['total'] > 0) {
+                $results[$shortName] = round(($categoryData[$shortName]['achieved'] / $categoryData[$shortName]['total']) * 100, 2);
+            }
+        }
+
+        return array_values($results);
     }
 
     /**
@@ -63,10 +114,9 @@ class ChartDataProcessorService
                     $profile->target_operator ?? '>='
                 );
 
-                if ($evaluation['is_achieved']) {
-                    $shortName = $category->short_name;
-                    $results[$shortName] = ($results[$shortName] ?? 0) + 1;
-                }
+                $shortName = $category->short_name;
+                $results[$shortName]['total'] = ($results[$shortName]['total'] ?? 0) + 1;
+                $results[$shortName]['achieved'] = ($results[$shortName]['achieved'] ?? 0) + ($evaluation['is_achieved'] ? 1 : 0);
             }
         }
 
@@ -155,9 +205,18 @@ class ChartDataProcessorService
         $labels = [];
 
         $monthNames = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
 
         foreach ($penilaianData as $row) {

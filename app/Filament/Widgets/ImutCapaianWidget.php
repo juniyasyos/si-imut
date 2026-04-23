@@ -2,29 +2,26 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\ImutCategory;
 use App\Models\LaporanImut;
 use App\Services\Chart\ChartDataProcessorService;
 use App\Services\ImutCalculationService;
 use App\Services\ImutChartSeriesService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
-use Carbon\Carbon;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
 class ImutCapaianWidget extends ApexChartWidget
 {
     protected static ?string $chartId = 'imutCapaianWidget';
-    protected static ?string $heading = 'Analisis Capaian IMUT Per Kategori';
+    protected static ?string $heading = 'Capaian IMUT Per Kategori (Persentase)';
+    protected static ?string $description = 'Grafik ini memperlihatkan persentase indikator IMUT yang berhasil memenuhi target untuk setiap kategori dalam satu laporan terpilih.';
     protected static ?int $sort = 5;
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
@@ -59,58 +56,25 @@ class ImutCapaianWidget extends ApexChartWidget
     protected function getFormSchema(): array
     {
         $categories = $this->getChartService()->getCategories();
-
-        // Generate tahun options dari data laporan yang ada
-        $years = LaporanImut::selectRaw('DISTINCT YEAR(assessment_period_start) as year')
-            ->orderBy('year', 'desc')
-            ->pluck('year', 'year')
-            ->toArray();
+        $laporanOptions = $this->getLaporanOptions();
 
         return [
             Section::make('Filter Data')
                 ->schema([
-                    Grid::make()
-                        ->schema([
-                            Select::make('categories')
-                                ->label('Kategori IMUT')
-                                ->multiple()
-                                ->options($categories)
-                                ->placeholder('Semua Kategori')
-                                ->helperText('Pilih kategori yang ingin ditampilkan')
-                                ->reactive(),
+                    Select::make('selectedLaporanId')
+                        ->label('Laporan IMUT')
+                        ->options($laporanOptions)
+                        ->searchable()
+                        ->required()
+                        ->default(array_key_first($laporanOptions))
+                        ->reactive(),
 
-                            Select::make('year')
-                                ->label('Tahun')
-                                ->options(['all' => 'Semua Tahun'] + $years)
-                                ->default('all')
-                                ->reactive(),
-
-                            Select::make('quarter')
-                                ->label('Kuartal')
-                                ->options([
-                                    'all' => 'Semua Kuartal',
-                                    'Q1' => 'Kuartal 1 (Jan-Mar)',
-                                    'Q2' => 'Kuartal 2 (Apr-Jun)',
-                                    'Q3' => 'Kuartal 3 (Jul-Sep)',
-                                    'Q4' => 'Kuartal 4 (Okt-Des)',
-                                ])
-                                ->default('all')
-                                ->visible(fn($get) => $get('year') !== 'all')
-                                ->reactive(),
-
-                        ])
-                        ->columns(2),
-                    Select::make('period_range')
-                        ->label('Rentang Periode')
-                        ->options([
-                            'all' => 'Semua Data',
-                            '3' => '3 Bulan Terakhir',
-                            '6' => '6 Bulan Terakhir',
-                            '12' => '1 Tahun Terakhir',
-                            '24' => '2 Tahun Terakhir',
-                        ])
-                        ->default('6')
-                        ->visible(fn($get) => $get('year') === 'all')
+                    Select::make('categories')
+                        ->label('Kategori IMUT')
+                        ->multiple()
+                        ->options($categories)
+                        ->placeholder('Semua Kategori')
+                        ->helperText('Pilih kategori yang ingin ditampilkan. Grafik akan menampilkan persentase capaian per kategori.')
                         ->reactive(),
 
                     Select::make('status')
@@ -122,7 +86,7 @@ class ImutCapaianWidget extends ApexChartWidget
                             LaporanImut::STATUS_COMINGSOON => 'Coming Soon',
                         ])
                         ->default([LaporanImut::STATUS_COMPLETE])
-                        ->helperText('Filter berdasarkan status laporan')
+                        ->helperText('Filter berdasarkan status laporan yang akan ditampilkan')
                         ->reactive(),
 
                     Checkbox::make('show_dataLabels')
@@ -137,7 +101,7 @@ class ImutCapaianWidget extends ApexChartWidget
     public function getOptions(): array
     {
         $selectedCategories = $this->filterFormData['categories'] ?? [];
-        $showDataLabels = $this->filterFormData['show_dataLabels'] ?? true;
+        $showDataLabels = $this->filterFormData['show_dataLabels'] ?? false;
 
         $laporans = $this->getCachedLaporans();
 
@@ -145,34 +109,51 @@ class ImutCapaianWidget extends ApexChartWidget
             return ApexChartConfig::noDataOptions();
         }
 
-        // Use service untuk processing data
-        $categories = $this->getChartService()->getCategories();
+        $selectedLaporanId = $this->filterFormData['selectedLaporanId'] ?? $this->selectedLaporanId;
+        $selectedLaporan = $laporans->firstWhere('id', $selectedLaporanId) ?? $laporans->first();
 
-        // Filter categories jika ada yang dipilih
-        if (!empty($selectedCategories)) {
-            $categories = collect($categories)->filter(function ($name, $id) use ($selectedCategories) {
-                return in_array($id, $selectedCategories);
-            })->toArray();
+        if (!$selectedLaporan) {
+            return ApexChartConfig::noDataOptions();
         }
 
-        // Hitung statistik detail
+        $this->selectedLaporanId = $selectedLaporan->id;
+
+        $categories = $this->getChartService()->getCategories();
+
+        if (!empty($selectedCategories)) {
+            $categories = collect($categories)
+                ->filter(fn($name) => in_array($name, $selectedCategories))
+                ->values()
+                ->toArray();
+        }
+
+        // Hitung statistik detail untuk laporan yang dipilih
         $this->statistikData = $this->calculateDetailedStatistics($laporans, $categories);
 
         $colors = $this->getChartService()->getDefaultColors();
 
-        $xLabels = $this->getChartProcessor()->generateTimeLabels($laporans);
-        $processedData = $this->getChartProcessor()->processCapaianData($laporans, $categories);
+        $xLabels = $categories;
+        $processedData = $this->getChartProcessor()->processCategoryAchievementData($selectedLaporan, $categories);
 
-        // Build series dengan default config (tanpa custom types/colors dari form)
-        $series = $this->getChartProcessor()->buildChartSeries($processedData, [], $colors);
+        $series = [[
+            'name' => 'Persentase Capaian',
+            'type' => 'bar',
+            'data' => $processedData,
+            'color' => $colors[0] ?? '#3b82f6',
+        ]];
 
-        return ApexChartConfig::defaultOptions(
+        $options = ApexChartConfig::defaultOptions(
             $series,
             $xLabels,
-            xLabelTitle: 'IMUT Kategori',
-            yLabelTitle: 'Capaian (%)',
-            showDataLabels: $showDataLabels
+            xLabelTitle: 'Kategori',
+            yLabelTitle: 'Persentase Capaian (%)',
+            yAxisMin: 0,
+            yAxisMax: 100,
+            showDataLabels: $showDataLabels,
+            chartType: 'bar'
         );
+
+        return $options;
     }
 
     protected function calculateDetailedStatistics($laporans, $categories): array
@@ -209,7 +190,7 @@ class ImutCapaianWidget extends ApexChartWidget
         $selectedLaporanCollection = collect([$selectedLaporan]);
 
         // Simpan daftar laporan yang tersedia untuk dropdown
-        $availableLaporans = $laporans->sortByDesc('assessment_period_start')->map(function($laporan) {
+        $availableLaporans = $laporans->sortByDesc('assessment_period_start')->map(function ($laporan) {
             return [
                 'id' => $laporan->id,
                 'name' => $laporan->name,
@@ -351,62 +332,35 @@ class ImutCapaianWidget extends ApexChartWidget
         ])->render();
     }
 
+    protected function getLaporanOptions(): array
+    {
+        $laporans = $this->getCachedLaporans();
+
+        return $laporans->mapWithKeys(function ($laporan) {
+            $period = $laporan->assessment_period_start
+                ? $laporan->assessment_period_start->format('F Y')
+                : ($laporan->report_year && $laporan->report_month ? sprintf('%04d-%02d', $laporan->report_year, $laporan->report_month) : 'Unknown');
+
+            return [$laporan->id => "{$laporan->name} - {$period}"];
+        })->toArray();
+    }
+
     protected function getCachedLaporans()
     {
-        $year = $this->filterFormData['year'] ?? 'all';
-        $quarter = $this->filterFormData['quarter'] ?? 'all';
-        $periodRange = $this->filterFormData['period_range'] ?? '6';
         $statuses = $this->filterFormData['status'] ?? [LaporanImut::STATUS_COMPLETE];
 
-        // Generate cache key
-        $cacheKey = CacheKey::imutLaporans() . "_{$year}_{$quarter}_{$periodRange}_" . implode('_', $statuses);
+        $cacheKey = CacheKey::imutLaporans() . '_' . implode('_', $statuses);
 
         return Cache::remember(
             $cacheKey,
             now()->addMinutes(5),
-            function () use ($year, $quarter, $periodRange, $statuses) {
-                $query = LaporanImut::with([
+            function () use ($statuses) {
+                return LaporanImut::with([
                     'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-                ]);
-
-                // Filter berdasarkan tahun dan kuartal jika dipilih
-                if ($year !== 'all') {
-                    $query->whereYear('assessment_period_start', $year);
-
-                    if ($quarter !== 'all') {
-                        // Filter berdasarkan kuartal
-                        $quarterMonths = [
-                            'Q1' => [1, 2, 3],
-                            'Q2' => [4, 5, 6],
-                            'Q3' => [7, 8, 9],
-                            'Q4' => [10, 11, 12],
-                        ];
-
-                        if (isset($quarterMonths[$quarter])) {
-                            $query->whereIn(
-                                DB::raw('MONTH(report_month)'),
-                                $quarterMonths[$quarter]
-                            );
-                        }
-                    }
-                } else {
-                    // Jika tidak filter per tahun, gunakan periode range
-                    $startDate = match ($periodRange) {
-                        '3' => now()->subMonths(3),
-                        '6' => now()->subMonths(6),
-                        '12' => now()->subMonths(12),
-                        '24' => now()->subMonths(24),
-                        'all' => now()->subYears(10),
-                        default => now()->subMonths(6),
-                    };
-
-                    $query->where('assessment_period_start', '>=', $startDate);
-                }
-
-                $query->whereIn('status', $statuses)
-                    ->orderBy('assessment_period_start');
-
-                return $query->get();
+                ])
+                    ->whereIn('status', $statuses)
+                    ->orderBy('assessment_period_start', 'desc')
+                    ->get();
             }
         );
     }

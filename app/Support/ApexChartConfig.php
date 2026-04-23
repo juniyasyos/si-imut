@@ -13,6 +13,7 @@ class ApexChartConfig
         ?int $yAxisMin = null,
         ?int $yAxisMax = null,
         bool $showDataLabels = true,
+        string $chartType = 'line',
     ): array {
         $maxValue = collect($series)
             ->pluck('data')
@@ -34,7 +35,7 @@ class ApexChartConfig
 
         return [
             'chart' => [
-                'type' => 'line',
+                'type' => $chartType,
                 'height' => 450,
                 'stacked' => false,
                 'background' => $backgroundchart ?: 'transparent',

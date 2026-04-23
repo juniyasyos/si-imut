@@ -48,6 +48,24 @@ class ChartDataProcessorServiceTest extends TestCase
         $this->assertArrayHasKey('KAT2', $result);
         $this->assertCount(2, $result['KAT1']); // 2 laporan
         $this->assertCount(2, $result['KAT2']); // 2 laporan
+        $this->assertEquals([100.0, 100.0], $result['KAT1']);
+        $this->assertEquals([0.0, 0.0], $result['KAT2']);
+    }
+
+    /** @test */
+    public function it_processes_category_achievement_data_for_single_report()
+    {
+        $categories = ['KAT1', 'KAT2'];
+        $laporan = $this->createMockLaporan();
+
+        $this->mockCalculator
+            ->shouldReceive('evaluatePenilaian')
+            ->once()
+            ->andReturn(['is_achieved' => true]);
+
+        $result = $this->processor->processCategoryAchievementData($laporan, $categories);
+
+        $this->assertEquals([100.0, 0.0], $result);
     }
 
     /** @test */
