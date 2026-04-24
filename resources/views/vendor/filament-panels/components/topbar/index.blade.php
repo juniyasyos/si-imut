@@ -167,7 +167,9 @@
                 ])
                 @endif
 
-                @livewire(\App\Livewire\IamAppSwitcher::class, ['lazy' => true])
+                @if (config('iam.enabled', false) || env('USE_SSO', false))
+                @livewire('iam-app-switcher', ['lazy' => true])
+                @endif
 
                 <x-filament-panels::user-menu />
                 @endif
