@@ -43,8 +43,6 @@ use Juniyasyos\FilamentLaravelBackup\FilamentLaravelBackupPlugin;
 use Juniyasyos\FilamentMediaManager\FilamentMediaManagerPlugin;
 use Juniyasyos\FilamentPWA\FilamentPWAPlugin;
 use Juniyasyos\FilamentSettingsHub\FilamentSettingsHubPlugin;
-use Juniyasyos\ManageUnitKerja\ManageUnitKerjaPlugin;
-use Laravel\Socialite\Contracts\User as SocialiteUserContract;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin;
 use Rmsramos\Activitylog\ActivitylogPlugin;
@@ -129,7 +127,6 @@ class AdminPanelProvider extends PanelProvider
             FilamentSettingsHubPlugin::make(),
             FilamentLaravelBackupPlugin::make(),
             FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
-            ManageUnitKerjaPlugin::make(),
             ActivitylogPlugin::make()
                 ->navigationIcon('heroicon-o-clock')
                 ->navigationItem()

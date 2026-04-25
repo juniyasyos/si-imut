@@ -5,13 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Traits\HasUniqueWithSoftDeletes;
-use Juniyasyos\ManageUnitKerja\Models\UnitKerja as ModelsUnitKerja;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class UnitKerja
@@ -25,7 +24,7 @@ use Juniyasyos\ManageUnitKerja\Models\UnitKerja as ModelsUnitKerja;
  * @property-read Folder|null $folder
  * @property-read \App\Models\LaporanImut|null $laporanImut
  */
-class UnitKerja extends ModelsUnitKerja
+class UnitKerja extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 

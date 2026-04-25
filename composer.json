@@ -37,8 +37,7 @@
         "juniyasyos/filament-media-manager": "3.0",
         "juniyasyos/filament-pwa-kaido": "^2.1",
         "juniyasyos/filament-settings-hub-kaido": "^4.0",
-        "juniyasyos/auth-bridge-client": "v1.1.1",
-        "juniyasyos/manage-unit-kerja": "v1.1.3",
+        "juniyasyos/auth-bridge-client": "v1.2.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
@@ -76,8 +75,7 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Juniyasyos\\FilamentMediaManager\\": "packages/juniyasyos/filament-media-manager/src/",
-            "Juniyasyos\\ManageUnitKerja\\": "packages/juniyasyos/manage-unit-kerja/src/"
+            "Juniyasyos\\FilamentMediaManager\\": "packages/juniyasyos/filament-media-manager/src/"
         }
     },
     "autoload-dev": {

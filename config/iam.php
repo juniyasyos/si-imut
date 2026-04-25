@@ -95,16 +95,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Backchannel User Applications Endpoint
+    | User applications detail endpoint on IAM server
     |--------------------------------------------------------------------------
     |
-    | Internal server-to-server endpoint for fetching user applications.
-    | Used for inter-container communication (e.g., in Docker, use service name).
-    | Falls back to user_applications_endpoint if not set.
+    | This URL is used by the client package to fetch detailed application
+    | metadata for the current user.
     |
-    | Examples:
-    | - Docker: http://web:8100/api/users/applications/detail
-    | - Production: https://iam.example.com/api/users/applications/detail
+    */
+    'user_applications_detail_endpoint' => env('IAM_USER_APPLICATIONS_DETAIL_ENDPOINT', null),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backchannel user applications endpoint
+    |--------------------------------------------------------------------------
+    |
+    | Optional internal endpoint for retrieving application metadata from
+    | IAM via a more secure or optimized backchannel route.
     |
     */
     'backchannel_user_applications_endpoint' => env('IAM_BACKCHANNEL_USER_APPLICATIONS_ENDPOINT', null),
@@ -204,8 +210,30 @@ return [
     'unit_kerja_field' => env('IAM_UNIT_KERJA_FIELD', 'unit_kerja'),
     'require_unit_kerja' => env('IAM_REQUIRE_UNIT_KERJA', false),
     'sync_unit_kerja' => env('IAM_SYNC_UNIT_KERJA', true),
-    'unit_kerja_model' => env('IAM_UNIT_KERJA_MODEL', App\Models\UnitKerja::class),
+    'unit_kerja_model' => env('IAM_UNIT_KERJA_MODEL', \Juniyasyos\IamClient\Models\UnitKerja::class),
     'roles_field' => env('IAM_ROLES_FIELD', 'roles'),
+
+    /*
+    |------------------------------------------------------------------------
+    | Unit Kerja Center / Client Sync
+    |------------------------------------------------------------------------
+    |
+    | These settings control the optional Unit Kerja provisioning endpoints
+    | and the client-side sync actions that integrate with an App Center.
+    |
+    */
+    'unit_kerja' => [
+        'center_application' => env('IAM_UNIT_KERJA_CENTER_APPLICATION', false),
+        'app_center_url' => env('IAM_UNIT_KERJA_APP_CENTER_URL', null),
+        'sync' => [
+            'active' => env('IAM_UNIT_KERJA_SYNC_ACTIVE', true),
+        ],
+        'push' => [
+            'active' => env('IAM_UNIT_KERJA_PUSH_ACTIVE', true),
+            'path' => env('IAM_UNIT_KERJA_PUSH_PATH', 'client/push'),
+            'middleware' => env('IAM_UNIT_KERJA_PUSH_MIDDLEWARE', 'api') ? explode(',', env('IAM_UNIT_KERJA_PUSH_MIDDLEWARE', 'api')) : ['api'],
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -326,7 +354,7 @@ return [
     | setting is true. Default is false (update-only).
     |
     */
-    'role_sync_from_iam_allow_create' => env('IAM_ROLE_SYNC_FROM_IAM_ALLOW_CREATE', true),
+    'role_sync_from_iam_allow_create' => env('IAM_ROLE_SYNC_FROM_IAM_ALLOW_CREATE', false),
 
     'required_roles' => env('IAM_REQUIRED_ROLES') ? array_map('trim', explode(',', env('IAM_REQUIRED_ROLES'))) : [],
 
@@ -363,7 +391,8 @@ return [
     |
     */
     'verify_remote_each_request' => env('IAM_VERIFY_REMOTE_EACH_REQUEST', true),
-    /*    |--------------------------------------------------------------------------
+    /*
+    |--------------------------------------------------------------------------
     | Auto‑attach verify middleware
     |--------------------------------------------------------------------------
     |
@@ -375,46 +404,41 @@ return [
     */
     'attach_verify_middleware' => env('IAM_ATTACH_VERIFY_MIDDLEWARE', true),
 
-    /*    |--------------------------------------------------------------------------
-    | Synchronize Session Lifetime with Token Expiry
+    /*
+    |--------------------------------------------------------------------------
+    | Sync Session Lifetime with Token Expiry
     |--------------------------------------------------------------------------
     |
-    | When enabled, the client will automatically synchronize the session
-    | lifetime with the JWT token's expiration time. This ensures that:
-    | - Session expires before token is invalidated by IAM
-    | - No gap where token is expired but session still valid
-    | - Users logged out at the same time as token expires
-    |
-    | Benefits:
-    | - Better security: prevents usage of expired token
-    | - Consistency: session and token expiry aligned
-    | - Per-app configuration: each app can have different token TTL
-    |
-    | How it works:
-    | - Token expiry extracted from JWT 'exp' claim
-    | - Session lifetime set = token lifetime - buffer minutes (default 2 min)
-    | - Buffer prevents edge cases where token expires mid-request
+    | When enabled, session lifetime will be synced with token expiry time.
+    | This ensures the session does not outlive the JWT token, preventing
+    | scenarios where an expired token is still "active" in session.
     |
     */
     'sync_session_lifetime' => env('IAM_SYNC_SESSION_LIFETIME', true),
 
-    /*    |--------------------------------------------------------------------------
+    /*
+    |--------------------------------------------------------------------------
     | Session Lifetime Buffer (Minutes)
     |--------------------------------------------------------------------------
     |
-    | When synchronizing session lifetime with token expiry, this buffer
-    | is subtracted from token TTL to create the session timeout.
-    |
-    | Example:
-    | - Token TTL: 60 minutes
-    | - Buffer: 2 minutes
-    | - Session Lifetime: 58 minutes
-    |
-    | This prevents edge cases where token expires during a request.
-    | Minimum recommended: 1 minute, Maximum: 10 minutes
+    | Buffer subtracted from token TTL when calculating session lifetime.
+    | Example: Token TTL 60 min - Buffer 2 min = Session lifetime 58 min.
+    | This prevents edge cases where token expires mid-request.
     |
     */
-    'session_lifetime_buffer_minutes' => env('IAM_SESSION_LIFETIME_BUFFER', 2),
+    'session_lifetime_buffer' => (int) env('IAM_SESSION_LIFETIME_BUFFER', 2),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auto‑attach session timeout enforcement middleware
+    |--------------------------------------------------------------------------
+    |
+    | When `true` the package will automatically push `EnforceSessionTimeout`
+    | middleware into the `web` group. This ensures sessions are forcefully
+    | invalidated when token expires, even if user is idle.
+    |
+    */
+    'attach_enforce_timeout_middleware' => env('IAM_ATTACH_ENFORCE_TIMEOUT_MIDDLEWARE', true),
 
     /*    |--------------------------------------------------------------------------
     | Logout Route Name
@@ -430,12 +454,12 @@ return [
     --------------------------------------------------------------------------
     |
     | Controls how the client responds to OP‑initiated (front‑channel) logout
-    | requests from the IAM server (`GET /iam/logout`). When true the client
-    | will perform a full `auth()->logout()` + session invalidation. If false
-    | the plugin will only remove IAM-related session keys (legacy behaviour).
+    | requests from the IAM server (`GET /iam/logout`). The package always
+    | performs a full `auth()->logout()` and invalidates the session on
+    | OP‑initiated logout. The legacy config key remains for compatibility.
     |
     */
-    'logout_on_op_initiated' => env('IAM_LOGOUT_ON_OP_INITIATED', true),
+    'logout_on_op_initiated' => true,
 
     /*
     --------------------------------------------------------------------------    | Login Route Name  
@@ -451,8 +475,8 @@ return [
     | Guard Specific Configuration
     |--------------------------------------------------------------------------
     |
-    | Allows overriding guard, redirect, and Filament specific settings per
-    | guard. Values fall back to the legacy keys above for backwards
+    | Allows overriding guard and redirect specific settings per guard.
+    | Values fall back to the legacy keys above for backwards
     | compatibility.
     |
     */
@@ -463,66 +487,8 @@ return [
             'login_route_name' => env('IAM_LOGIN_ROUTE_NAME', 'login'),
             'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', 'home'),
         ],
-        'filament' => [
-            'guard' => env('IAM_FILAMENT_GUARD', 'filament'),
-            'redirect_route' => env('IAM_FILAMENT_REDIRECT_ROUTE', null),
-            'login_route_name' => env('IAM_FILAMENT_LOGIN_ROUTE_NAME', 'filament.auth.login'),
-            'logout_redirect_route' => env('IAM_FILAMENT_LOGOUT_REDIRECT', null),
-        ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Filament Integration
-    |--------------------------------------------------------------------------
-    |
-    | When enabled, additional routes, hooks, and UI helpers for Filament will
-    | be registered. Disable to keep the package framework agnostic.
-    |
-    */
-    'filament' => [
-        'enabled' => env('IAM_FILAMENT_ENABLED', false),
-        'panel' => env('IAM_FILAMENT_PANEL', 'admin'),
-        'login_route' => env('IAM_FILAMENT_LOGIN_ROUTE', '/filament/sso/login'),
-        'callback_route' => env('IAM_FILAMENT_CALLBACK_ROUTE', '/filament/sso/callback'),
-        'login_button_text' => env('IAM_FILAMENT_LOGIN_BUTTON', 'Login via IAM'),
-        'logout_route' => env('IAM_FILAMENT_LOGOUT_ROUTE'),
-        'middleware' => ['web'],
-    ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | App Metadata Fallback
-    |--------------------------------------------------------------------------
-    |
-    | Fallback aplikasi metadata ketika session access token tidak tersedia.
-    | Digunakan oleh IamAppSwitcher component sebagai fallback untuk menampilkan
-    | nama lengkap aplikasi jika token hilang dari session.
-    |
-    | Struktur:
-    | 'apps' => [
-    |     'app_key' => [
-    |         'name' => 'Full Application Name',
-    |         'description' => 'Application description',
-    |         'url' => 'http://app.url',
-    |         'logo_url' => 'http://url/to/logo.png' (optional)
-    |     ]
-    | ]
-    |
-    */
-    'apps' => [
-        'siimut' => [
-            'name' => env('SIIMUT_NAME', 'SIIMUT - Sistem Informasi Manajemen Indikator Mutu Terpadu'),
-            'description' => env('SIIMUT_DESC', 'Aplikasi manajemen indikator kinerja mutu rumah sakit dan unit kerja dengan fitur monitoring real-time dan reporting komprehensif'),
-            'url' => env('SIIMUT_URL', env('APP_URL', 'http://127.0.0.1:8088')),
-            'logo_url' => env('SIIMUT_LOGO_URL', null),
-        ],
-        // Add more apps here if needed:
-        // 'another-app' => [
-        //     'name' => 'Another App - Full Name',
-        //     'description' => 'Description',
-        //     'url' => 'http://app.url',
-        // ]
-    ],
 
 ];

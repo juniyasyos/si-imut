@@ -12,9 +12,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Juniyasyos\ManageUnitKerja\Filament\Resources\UnitKerjaResource as ResourcesUnitKerjaResource;
 
-class UnitKerjaResource extends ResourcesUnitKerjaResource
+class UnitKerjaResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = UnitKerja::class;
 
@@ -70,6 +69,11 @@ class UnitKerjaResource extends ResourcesUnitKerjaResource
     public static function getNavigationGroup(): ?string
     {
         return __('filament-forms::unit-kerja.navigation.group');
+    }
+
+    public static function isCrudAllowed(): bool
+    {
+        return (bool) config('iam.sync_unit_kerja', true);
     }
 
     public static function form(Form $form): Form

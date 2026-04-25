@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9a3cefd404db10408b7dba0484ba04a4",
+    "content-hash": "6adb531d22914e029b27fd746df58da1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3691,16 +3691,16 @@
         },
         {
             "name": "juniyasyos/auth-bridge-client",
-            "version": "v1.1.1",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/auth-bridge-client.git",
-                "reference": "782ee4ba82bda6c624e52945b023151e137ce32f"
+                "reference": "c1e4a426e61c1a699fbdde2c109a4c237570c9b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/782ee4ba82bda6c624e52945b023151e137ce32f",
-                "reference": "782ee4ba82bda6c624e52945b023151e137ce32f",
+                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/c1e4a426e61c1a699fbdde2c109a4c237570c9b1",
+                "reference": "c1e4a426e61c1a699fbdde2c109a4c237570c9b1",
                 "shasum": ""
             },
             "require": {
@@ -3746,9 +3746,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/auth-bridge-client/issues",
-                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.1.1"
+                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.2.0"
             },
-            "time": "2026-04-24T22:14:29+00:00"
+            "time": "2026-04-25T10:38:35+00:00"
         },
         {
             "name": "juniyasyos/dash-stack-theme-juniyasyos",
@@ -4110,61 +4110,6 @@
                 "source": "https://github.com/juniyasyos/juniyasyos-filament-settings-hub/tree/v4.2.5"
             },
             "time": "2025-08-09T07:38:20+00:00"
-        },
-        {
-            "name": "juniyasyos/manage-unit-kerja",
-            "version": "v1.1.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/juniyasyos/manage-unit-kerja.git",
-                "reference": "4b250980d2a067e62af17cc4799e483557e5897e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/4b250980d2a067e62af17cc4799e483557e5897e",
-                "reference": "4b250980d2a067e62af17cc4799e483557e5897e",
-                "shasum": ""
-            },
-            "require": {
-                "bezhansalleh/filament-shield": "^3.3",
-                "filament/filament": "^3.0",
-                "guava/filament-modal-relation-managers": "^1.4",
-                "illuminate/support": "^10.0|^11.0|^12.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "orchestra/testbench": "^8.0|^9.0",
-                "phpunit/phpunit": "^10.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Juniyasyos\\ManageUnitKerja\\ManageUnitKerjaServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Juniyasyos\\ManageUnitKerja\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Juniyasyos",
-                    "email": "juniyasyos@gmail.com"
-                }
-            ],
-            "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
-            "support": {
-                "issues": "https://github.com/juniyasyos/manage-unit-kerja/issues",
-                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.1.3"
-            },
-            "time": "2026-04-24T22:14:33+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",

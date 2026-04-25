@@ -65,6 +65,7 @@ class UnitKerjaResourceTable
         return [
             \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('users')
                 ->slideOver()
+                ->modalWidth('7xl')
                 ->label('Pegawai')
                 ->icon('heroicon-o-user-group')
                 ->color('success')
@@ -73,6 +74,7 @@ class UnitKerjaResourceTable
 
             \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('imutData')
                 ->slideOver()
+                ->modalWidth('7xl')
                 ->label('Imut Data')
                 ->icon('heroicon-o-document-text')
                 ->color('primary')
