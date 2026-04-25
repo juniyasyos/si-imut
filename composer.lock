@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b35b2ad353fdd48f12d3864715b91ec",
+    "content-hash": "9a3cefd404db10408b7dba0484ba04a4",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -325,16 +325,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.379.6",
+            "version": "3.379.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "587f0bafd28a7dc3395b0c55f93f2474657767e2"
+                "reference": "2c338cb3f2bcb9e8616ffbac7a36d66034f2ceef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/587f0bafd28a7dc3395b0c55f93f2474657767e2",
-                "reference": "587f0bafd28a7dc3395b0c55f93f2474657767e2",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2c338cb3f2bcb9e8616ffbac7a36d66034f2ceef",
+                "reference": "2c338cb3f2bcb9e8616ffbac7a36d66034f2ceef",
                 "shasum": ""
             },
             "require": {
@@ -416,9 +416,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.379.6"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.379.7"
             },
-            "time": "2026-04-23T18:11:11+00:00"
+            "time": "2026-04-24T18:17:06+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -3691,16 +3691,16 @@
         },
         {
             "name": "juniyasyos/auth-bridge-client",
-            "version": "v1.1.0",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/auth-bridge-client.git",
-                "reference": "a9341ece29d8b0d3de8d1bee3e5c1ca4aceb5ea3"
+                "reference": "782ee4ba82bda6c624e52945b023151e137ce32f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/a9341ece29d8b0d3de8d1bee3e5c1ca4aceb5ea3",
-                "reference": "a9341ece29d8b0d3de8d1bee3e5c1ca4aceb5ea3",
+                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/782ee4ba82bda6c624e52945b023151e137ce32f",
+                "reference": "782ee4ba82bda6c624e52945b023151e137ce32f",
                 "shasum": ""
             },
             "require": {
@@ -3746,9 +3746,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/auth-bridge-client/issues",
-                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.1.0"
+                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.1.1"
             },
-            "time": "2026-04-24T09:02:16+00:00"
+            "time": "2026-04-24T22:14:29+00:00"
         },
         {
             "name": "juniyasyos/dash-stack-theme-juniyasyos",
@@ -4113,16 +4113,16 @@
         },
         {
             "name": "juniyasyos/manage-unit-kerja",
-            "version": "v1.1.1",
+            "version": "v1.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/manage-unit-kerja.git",
-                "reference": "ec426278dd82bb5ffd39bea920fca157b0038936"
+                "reference": "4b250980d2a067e62af17cc4799e483557e5897e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/ec426278dd82bb5ffd39bea920fca157b0038936",
-                "reference": "ec426278dd82bb5ffd39bea920fca157b0038936",
+                "url": "https://api.github.com/repos/juniyasyos/manage-unit-kerja/zipball/4b250980d2a067e62af17cc4799e483557e5897e",
+                "reference": "4b250980d2a067e62af17cc4799e483557e5897e",
                 "shasum": ""
             },
             "require": {
@@ -4162,9 +4162,9 @@
             "description": "Plugin manage Unit Kerja untuk Filament (modul terpisah)",
             "support": {
                 "issues": "https://github.com/juniyasyos/manage-unit-kerja/issues",
-                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.1.1"
+                "source": "https://github.com/juniyasyos/manage-unit-kerja/tree/v1.1.3"
             },
-            "time": "2026-04-24T10:49:03+00:00"
+            "time": "2026-04-24T22:14:33+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
