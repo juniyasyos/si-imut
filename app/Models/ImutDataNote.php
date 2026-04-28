@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\LaporanImut;
 
 class ImutDataNote extends Model
 {
@@ -16,7 +18,7 @@ class ImutDataNote extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'imut_data_notes';
+    protected $table = 'imut_data_notes'; 
 
     /**
      * The attributes that are mass assignable.
@@ -30,9 +32,9 @@ class ImutDataNote extends Model
         'period_quarter',
         'period_semester',
         'period_type',
-        'related_laporan_ids',
         'recommendation',
         'analysis',
+        'additional_notes',
         'priority',
         'is_active',
         'created_by',
@@ -56,7 +58,6 @@ class ImutDataNote extends Model
     protected function casts(): array
     {
         return [
-            'related_laporan_ids' => 'array',
             'is_active' => 'boolean',
             'deleted_at' => 'datetime',
         ];
@@ -87,17 +88,28 @@ class ImutDataNote extends Model
     }
 
     /**
-     * Get laporan names from related_laporan_ids
+     * Relasi ke LaporanImut (many-to-many)
+     */
+    public function laporanImuts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            LaporanImut::class,
+            'imut_data_note_laporan_imut',
+            'imut_data_note_id',
+            'laporan_imut_id'
+        );
+    }
+
+    /**
+     * Get laporan names from the related laporanImuts relationship.
      */
     public function getLaporanNamesAttribute(): string
     {
-        if (empty($this->related_laporan_ids)) {
+        $laporans = $this->laporanImuts->pluck('name')->toArray();
+
+        if (empty($laporans)) {
             return '-';
         }
-
-        $laporans = LaporanImut::whereIn('id', $this->related_laporan_ids)
-            ->pluck('name')
-            ->toArray();
 
         return implode(', ', $laporans);
     }

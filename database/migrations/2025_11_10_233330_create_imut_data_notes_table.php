@@ -25,8 +25,7 @@ return new class extends Migration
             $table->enum('period_type', ['tahunan', 'semester', 'triwulan'])->default('tahunan')->comment('Tipe periode: tahunan, semester atau triwulan');
             $table->index(['period_year', 'period_quarter']);
 
-            // Untuk laporan apa saja (multiple laporan)
-            $table->json('related_laporan_ids')->nullable()->comment('Array of laporan_imut IDs');
+            // Untuk laporan apa saja (multiple laporan) via pivot table
 
             // Rekomendasi dan analisis
             $table->text('recommendation')->nullable();

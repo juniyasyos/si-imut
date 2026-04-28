@@ -72,7 +72,7 @@ class ImutDataApiController extends Controller
     public function notes(Request $request, $imutDataId)
     {
         $notes = ImutDataNote::where('imut_data_id', $imutDataId)
-            ->with(['laporanImut', 'user'])
+            ->with(['laporanImuts', 'creator'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -84,7 +84,7 @@ class ImutDataApiController extends Controller
                 'recommendation' => $note->recommendation,
                 'additional_notes' => $note->additional_notes,
                 'created_at' => $note->created_at->format('d M Y H:i'),
-                'user_name' => $note->user->name ?? 'Unknown',
+                'user_name' => $note->creator->name ?? 'Unknown',
             ];
         });
 
@@ -155,7 +155,7 @@ class ImutDataApiController extends Controller
 
         // Available notes
         $availableNotes = ImutDataNote::where('imut_data_id', $imutData->id)
-            ->whereJsonContains('related_laporan_ids', $laporan->id)
+            ->whereRelation('laporanImuts', 'id', $laporan->id)
             ->get()
             ->map(function ($note) {
                 return [

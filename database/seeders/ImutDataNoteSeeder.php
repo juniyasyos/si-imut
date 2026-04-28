@@ -105,15 +105,14 @@ class ImutDataNoteSeeder extends Seeder
                 $additionalNotes = $additionalNotesTemplates[array_rand($additionalNotesTemplates)];
 
                 // Get related laporans for this period
-                $relatedLaporans = !empty($laporanList) ? array_slice($laporanList, 0, rand(1, min(3, count($laporanList)))) : null;
+                $relatedLaporans = !empty($laporanList) ? array_slice($laporanList, 0, rand(1, min(3, count($laporanList)))) : [];
 
-                ImutDataNote::create([
+                $note = ImutDataNote::create([
                     'imut_data_id' => $imutData->id,
                     'note_name' => "Catatan Analisis {$periodLabel} - {$imutData->title}",
                     'period_year' => $year,
                     'period_quarter' => $quarter,
                     'period_type' => $periodType,
-                    'related_laporan_ids' => $relatedLaporans,
                     'recommendation' => $recommendation,
                     'analysis' => $analysis,
                     'additional_notes' => $additionalNotes,
@@ -121,6 +120,10 @@ class ImutDataNoteSeeder extends Seeder
                     'is_active' => $i === 0, // Only the latest note is active
                     'created_by' => $admin->id,
                 ]);
+
+                if (!empty($relatedLaporans)) {
+                    $note->laporanImuts()->sync($relatedLaporans);
+                }
             }
 
             $this->command->info("Created {$noteCount} notes for: {$imutData->title}");

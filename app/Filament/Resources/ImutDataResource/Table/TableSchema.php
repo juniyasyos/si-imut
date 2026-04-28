@@ -129,6 +129,15 @@ class TableSchema extends ImutDataResource
                     ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
                     ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
+                ActionTable::make('catatan')
+                    ->label('Analisis & Rekomendasi per Triwulan/Tahun')
+                    ->icon('heroicon-o-document-text')
+                    ->color('primary')
+                    ->slideOver()
+                    ->modalWidth('8xl')
+                    ->modalHeading(fn($record) => ($record->title ?? ''))
+                    ->modalContent(fn($record) => view('filament.resources.imut-data-resource.widgets.imut-data-notes-slide-over', ['record' => $record])),
+
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja')
                     ->slideOver()
                     ->modalWidth('7xl')

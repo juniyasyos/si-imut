@@ -28,13 +28,6 @@
     </div>
     @endif
 
-    @if(!empty($note->related_laporan_ids))
-    <div>
-        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Laporan Terkait</label>
-        <p class="text-base text-gray-900 dark:text-white mt-1">{{ $note->laporan_names }}</p>
-    </div>
-    @endif
-
     @if($note->recommendation)
     <div>
         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Rekomendasi</label>

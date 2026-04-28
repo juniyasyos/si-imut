@@ -6,6 +6,7 @@ use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Filament\Resources\ImutDataResource\RelationManagers\RegionTypeRelationManager;
 use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
+use App\Filament\Resources\ImutDataResource\Widgets\ImutDataNotesReport;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\CanNotify;
@@ -34,7 +35,7 @@ class EditImutData extends EditRecord
                 ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
             ActionGroup::make([
-                RelationManagerAction::make('profiles') 
+                RelationManagerAction::make('profiles')
                     ->slideOver()
                     ->label('Kelola Profiles')
                     ->icon('heroicon-s-user-group')
@@ -73,7 +74,7 @@ class EditImutData extends EditRecord
     {
         $user = Auth::user();
 
-        return $record?->created_by === $user?->id || $user?->can('view_all_data_imut::data') ;
+        return $record?->created_by === $user?->id || $user?->can('view_all_data_imut::data');
     }
 
     protected function getFormActions(): array
@@ -90,6 +91,15 @@ class EditImutData extends EditRecord
         return [
             $this->getSaveFormAction(),
             $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        $imutData = $this->getRecord();
+
+        return [
+            ImutDataNotesReport::make(['imutDataId' => $imutData?->id]),
         ];
     }
 
