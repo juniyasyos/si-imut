@@ -96,9 +96,9 @@ class LaporanImutTable extends LaporanImutResource
         return [
             Action::make('isi_penilaian')
                 ->label(fn($record) => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'Belum Dibuka',
+                    'coming_soon' => 'Laporan belum Dibuka',
                     'complete' => 'Lihat Hasil',
-                    default => 'Isi Penilaian',
+                    default => 'Input Penilaian',
                 })
                 ->icon(fn($record) => match (self::resolveStatus($record)) {
                     'coming_soon' => 'heroicon-o-clock',

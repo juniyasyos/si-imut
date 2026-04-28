@@ -12,6 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
@@ -116,36 +117,66 @@ trait BuildIsiPenilaian
     {
         $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
 
-        return [
-            TextInput::make('numerator_value')
-                ->label('Numerator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->debounce(1000)
-                ->readOnly($shouldLock)
-                ->disabled(fn($record) => $record->profile->imutData->is_monthly)
-                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+        if (Auth::user()?->hasRole(['tim_mutu', 'super_admin'])) {
 
-            TextInput::make('denominator_value')
-                ->label('Denominator')
-                ->numeric()
-                ->placeholder('0.00')
-                ->nullable()
-                ->debounce(1000)
-                ->readOnly($shouldLock)
-                ->disabled(fn($record) => $record->profile->imutData->is_monthly)
-                ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+            return [
+                TextInput::make('numerator_value')
+                    ->label('Numerator')
+                    ->numeric()
+                    ->placeholder('0.00')
+                    ->nullable()
+                    ->debounce(1000)
+                    ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
 
-            TextInput::make('result_operation')
-                ->label('Result (%)')
-                ->numeric()
-                ->placeholder('0.00')
-                ->readOnly()
-                ->debounce(1000)
-                ->dehydrated(false)
-                ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
-        ];
+                TextInput::make('denominator_value')
+                    ->label('Denominator')
+                    ->numeric()
+                    ->placeholder('0.00')
+                    ->nullable()
+                    ->debounce(1000)
+                    ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+                TextInput::make('result_operation')
+                    ->label('Result (%)')
+                    ->numeric()
+                    ->placeholder('0.00')
+                    ->readOnly()
+                    ->debounce(1000)
+                    ->dehydrated(false)
+                    ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+            ];
+        } else {
+            return [
+                TextInput::make('numerator_value')
+                    ->label('Numerator')
+                    ->numeric()
+                    ->placeholder('0.00')
+                    ->nullable()
+                    ->debounce(1000)
+                    ->readOnly($shouldLock)
+                    ->disabled(fn($record) => $record->profile->imutData->is_monthly)
+                    ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+                TextInput::make('denominator_value')
+                    ->label('Denominator')
+                    ->numeric()
+                    ->placeholder('0.00')
+                    ->nullable()
+                    ->debounce(1000)
+                    ->readOnly($shouldLock)
+                    ->disabled(fn($record) => $record->profile->imutData->is_monthly)
+                    ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+
+                TextInput::make('result_operation')
+                    ->label('Result (%)')
+                    ->numeric()
+                    ->placeholder('0.00')
+                    ->readOnly()
+                    ->debounce(1000)
+                    ->dehydrated(false)
+                    ->afterStateHydrated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
+            ];
+        }
     }
 
     protected function buildAnalysisSchemaForAction($livewireComponent): array
