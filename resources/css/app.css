@@ -7,9 +7,3 @@
 body {
   font-family: 'Inter', sans-serif;
 }
-
-/* Scrollbar Style */
-::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-}
