@@ -159,7 +159,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         // Prefer S3 when available
         if (StorageFallback::isS3Available()) {
             try {
-                $result = Storage::disk('s3')->url($this->ttd_url);
+                $result = $this->getS3TtdUrl($this->ttd_url);
             } catch (\Throwable $e) {
                 $result = null; // continue to public fallback
             }
@@ -173,13 +173,24 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         // Last-resort try S3 (may be unreachable)
         if (! $result) {
             try {
-                $result = Storage::disk('s3')->url($this->ttd_url);
+                $result = $this->getS3TtdUrl($this->ttd_url);
             } catch (\Throwable $e) {
                 $result = null;
             }
         }
 
         return $result ? trim($result) : null;
+    }
+
+    private function getS3TtdUrl(string $path): ?string
+    {
+        $s3Url = trim(config('filesystems.disks.s3.url') ?? '');
+
+        if ($s3Url !== '') {
+            return rtrim($s3Url, '/') . '/' . ltrim($path, '/');
+        }
+
+        return trim(Storage::disk('s3')->url($path));
     }
 
     /**

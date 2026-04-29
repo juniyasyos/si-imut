@@ -6,6 +6,7 @@ use App\Models\UnitKerja;
 use App\Models\User;
 use App\Models\DailyReportResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Service to pick signatory users (pengumpul data + validator/PIC) for a UnitKerja.
@@ -49,8 +50,8 @@ class SignatoryService
 
         // 1) Try S3 (may throw if not reachable) — prefer actual existence check
         try {
-            if (\Illuminate\Support\Facades\Storage::disk('s3')->exists($user->ttd_url)) {
-                return trim(\Illuminate\Support\Facades\Storage::disk('s3')->url($user->ttd_url));
+            if (Storage::disk('s3')->exists($user->ttd_url)) {
+                return trim($this->buildS3Url($user->ttd_url));
             }
         } catch (\Throwable $e) {
             // ignore and fallback to public
@@ -69,6 +70,18 @@ class SignatoryService
 
         return null;
     }
+
+    private function buildS3Url(string $path): string
+    {
+        $s3Url = trim(config('filesystems.disks.s3.url') ?? '');
+
+        if ($s3Url !== '') {
+            return rtrim($s3Url, '/') . '/' . ltrim($path, '/');
+        }
+
+        return trim(Storage::disk('s3')->url($path));
+    }
+
     public function pickForUnit(UnitKerja $unit, ?Collection $entries = null): array
     {
         // Precompute counts from $entries (if available)
