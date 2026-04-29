@@ -13,6 +13,52 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     @vite(['resources/css/app.css'])
     <style>
+        html, body {
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            scrollbar-color: #94a3b8 #e2e8f0;
+            scrollbar-width: thin;
+            scrollbar-gutter: stable both-edges;
+        }
+
+        body::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: #64748b;
+            border-radius: 9999px;
+            border: 3px solid #e2e8f0;
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background-color: #475569;
+        }
+
+        .scroll-tip {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 60;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 9999px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #f8fafc;
+            font-size: 0.85rem;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+        }
+
+        .scroll-tip span:last-child {
+            opacity: 0.9;
+        }
+
         @media print {
             .no-print {
                 display: none !important;
@@ -133,7 +179,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
 
         </div>
     </div>
-
+    
     <!-- HEADER -->
     <x-basic-report-header
         title="Laporan Kategori Indikator Mutu"
@@ -229,12 +275,7 @@ $imutBenchmarkTypes[$imut['id']] = $types;
                         $counter++;
                         $map = collect($imut['data'] ?? [])->keyBy('month_label');
 
-                        $operatorMap = [
-                        '>=' => '≥',
-                        '<='=> '≤',
-                            '==' => '=',
-                            '>' => '>',
-                            '<'=> '<', '!='=> '≠',
+                        $operatorMap = ['>=' => '≥','<='=> '≤',    '==' => '=',    '>' => '>',    '<'=> '<', '!='=> '≠',
                                     ];
 
                                     $operator = $imut['target_operator'] ?? '>=';
