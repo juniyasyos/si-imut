@@ -27,21 +27,21 @@
         </p>
     </div>
     @endif
+    
+    @if($note->analysis)
+    <div>
+        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Analisis</label>
+        <div class="mt-1 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <p class="text-base text-gray-900 dark:text-white whitespace-pre-wrap">{{ $note->analysis }}</p>
+        </div>
+    </div>
+    @endif
 
     @if($note->recommendation)
     <div>
         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Rekomendasi</label>
         <div class="mt-1 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <p class="text-base text-gray-900 dark:text-white whitespace-pre-wrap">{{ $note->recommendation }}</p>
-        </div>
-    </div>
-    @endif
-
-    @if($note->analysis)
-    <div>
-        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Analisis</label>
-        <div class="mt-1 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <p class="text-base text-gray-900 dark:text-white whitespace-pre-wrap">{{ $note->analysis }}</p>
         </div>
     </div>
     @endif

@@ -99,17 +99,18 @@ class ImutDataNotesReport extends BaseWidget
                         ->required(fn(Get $get) => $get('period_type') === 'triwulan'),
                 ]),
 
-            Textarea::make('recommendation')
-                ->label('Rekomendasi')
-                ->rows(3)
-                ->maxLength(65535)
-                ->placeholder('Masukkan rekomendasi'),
 
             Textarea::make('analysis')
                 ->label('Analisis')
                 ->rows(3)
                 ->maxLength(65535)
                 ->placeholder('Masukkan analisis'),
+
+            Textarea::make('recommendation')
+                ->label('Rekomendasi')
+                ->rows(3)
+                ->maxLength(65535)
+                ->placeholder('Masukkan rekomendasi'),
 
             Select::make('priority')
                 ->label('Prioritas')
