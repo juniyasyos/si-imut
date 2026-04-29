@@ -135,6 +135,7 @@ class TableSchema extends ImutDataResource
                     ->color('primary')
                     ->slideOver()
                     ->modalWidth('8xl')
+                    ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
                     ->modalHeading(fn($record) => ($record->title ?? ''))
                     ->modalContent(fn($record) => view('filament.resources.imut-data-resource.widgets.imut-data-notes-slide-over', ['record' => $record])),
 
