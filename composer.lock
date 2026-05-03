@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "44001e7ed8d905a60c1c8415cad9307a",
+    "content-hash": "278b898a76e820136f087752bc854ebe",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3691,16 +3691,16 @@
         },
         {
             "name": "juniyasyos/auth-bridge-client",
-            "version": "v1.2.2",
+            "version": "v1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/auth-bridge-client.git",
-                "reference": "7d7fa56c5df3a571a25f83c92ea4b41bf5c0cf07"
+                "reference": "b925028bcc5154df65a1cc58b5ac06d400f022b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/7d7fa56c5df3a571a25f83c92ea4b41bf5c0cf07",
-                "reference": "7d7fa56c5df3a571a25f83c92ea4b41bf5c0cf07",
+                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/b925028bcc5154df65a1cc58b5ac06d400f022b6",
+                "reference": "b925028bcc5154df65a1cc58b5ac06d400f022b6",
                 "shasum": ""
             },
             "require": {
@@ -3746,9 +3746,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/auth-bridge-client/issues",
-                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.2.2"
+                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.2.3"
             },
-            "time": "2026-05-02T20:38:48+00:00"
+            "time": "2026-05-03T20:50:43+00:00"
         },
         {
             "name": "juniyasyos/dash-stack-theme-juniyasyos",
