@@ -151,6 +151,7 @@ class UserResource extends Resource implements HasShieldPermissions
         return $table
             ->columns(UserResourceTable::columns())
             ->filters(UserResourceTable::filters())
+            ->headerActions(UserResourceTable::headerActions())
             ->actions(UserResourceTable::actions())
             ->bulkActions(UserResourceTable::bulkActions());
     }

@@ -103,6 +103,15 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     ];
 
     /**
+     * The attributes that should be appended when serializing.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'ttd_presigned_url',
+    ];
+
+    /**
      * The attributes that should be cast.
      *
      * @return array<string, string, string>
@@ -141,56 +150,33 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     }
 
     /**
+     * Mengambil URL TTD presigned dari Siimut API (jika IAM enabled) atau local storage.
+     * - Shortcut ke SignatoryService::getTtdUrl()
+     * - Jika IAM enabled: ambil dari IAM API (presigned URL, valid 15 menit)
+     * - Jika IAM disabled: ambil dari S3 atau public disk lokal
+     *
+     * Usage: $user->ttd_presigned_url
+     *
+     * @return string|null
+     */
+    public function getTtdPresignedUrlAttribute(): ?string
+    {
+        return app(\App\Services\SignatoryService::class)->getTtdUrl($this);
+    }
+
+    /**
      * Mengambil URL TTD pengguna untuk Filament.
      * - Prioritaskan S3 jika tersedia (MinIO aktif).
      * - Jika S3 tidak tersedia, gunakan `public` disk (accessible via /storage).
      * - Method tidak mengubah nilai DB (`ttd_url` tetap path relatif).
      *
      * @return string|null
+     *
+     * @deprecated Use $user->ttd_presigned_url instead
      */
     public function getFilamentTtdUrl(): ?string
     {
-        if (! $this->ttd_url) {
-            return null;
-        }
-
-        $result = null;
-
-        // Prefer S3 when available
-        if (StorageFallback::isS3Available()) {
-            try {
-                $result = $this->getS3TtdUrl($this->ttd_url);
-            } catch (\Throwable $e) {
-                $result = null; // continue to public fallback
-            }
-        }
-
-        // Public fallback
-        if (! $result && Storage::disk('public')->exists($this->ttd_url)) {
-            $result = Storage::disk('public')->url($this->ttd_url);
-        }
-
-        // Last-resort try S3 (may be unreachable)
-        if (! $result) {
-            try {
-                $result = $this->getS3TtdUrl($this->ttd_url);
-            } catch (\Throwable $e) {
-                $result = null;
-            }
-        }
-
-        return $result ? trim($result) : null;
-    }
-
-    private function getS3TtdUrl(string $path): ?string
-    {
-        $s3Url = trim(config('filesystems.disks.s3.url') ?? '');
-
-        if ($s3Url !== '') {
-            return rtrim($s3Url, '/') . '/' . ltrim($path, '/');
-        }
-
-        return trim(Storage::disk('s3')->url($path));
+        return $this->ttd_presigned_url;
     }
 
     /**

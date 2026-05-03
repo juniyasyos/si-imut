@@ -12,7 +12,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
-use Filament\Resources\Pages\CreateRecord;
 
 class UserResourceSchema
 {
@@ -121,6 +120,7 @@ class UserResourceSchema
                         ->disk(\App\Support\StorageFallback::isS3Available() ? 's3' : 'public')
                         ->directory('ttd')
                         ->image()
+                        ->openable()
                         ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
                         ->maxSize(2048)
                         ->nullable(),

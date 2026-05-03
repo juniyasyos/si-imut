@@ -25,7 +25,9 @@ use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
@@ -103,6 +105,27 @@ class UserResourceTable
                 ->relationship('roles', 'name')
                 ->multiple()
                 ->preload(),
+        ];
+    }
+
+    public static function headerActions(): array
+    {
+        return [
+            Action::make('exportUsersJson')
+                ->label('Unduh JSON')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action(function () {
+                    $relativePath = 'exports/users.json';
+
+                    Artisan::call('users:export-json', ['--path' => $relativePath]);
+
+                    return Storage::disk('local')->download(
+                        $relativePath,
+                        'users.json',
+                        ['Content-Type' => 'application/json']
+                    );
+                })
+                ->visible(fn() => Gate::allows('export', User::class)),
         ];
     }
 

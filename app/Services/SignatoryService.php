@@ -7,6 +7,9 @@ use App\Models\User;
 use App\Models\DailyReportResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Service to pick signatory users (pengumpul data + validator/PIC) for a UnitKerja.
@@ -28,11 +31,10 @@ class SignatoryService
      */
 
     /**
-     * Resolve TTD URL for a user with S3-first but safe fallback to local `public` disk.
-     * - If user->ttd_url is already an absolute URL it will be returned as-is.
-     * - If S3 is reachable and file exists on S3 -> return S3 URL.
-     * - If S3 returns 404 / unreachable -> use `public` disk if file exists.
-     * - Returns relative `/storage/...` path for public disk files (safer for headless PDF).
+     * Resolve TTD URL for a user.
+     * - If IAM enabled: Call IAM API to get presigned URL (cached 15 min)
+     * - If IAM disabled or fails: Use local logic (S3 fallback to public disk)
+     * - If already absolute URL: return as-is
      *
      * @param \App\Models\User $user
      * @return string|null
@@ -48,7 +50,84 @@ class SignatoryService
             return trim($user->ttd_url);
         }
 
-        // 1) Try S3 (may throw if not reachable) — prefer actual existence check
+        // Try IAM API if enabled
+        if (config('iam.enabled')) {
+            try {
+                $iamUrl = $this->getTtdUrlFromIam($user);
+                if ($iamUrl) {
+                    return $iamUrl;
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Failed to get TTD URL from IAM: ' . $e->getMessage());
+                // fall back to local logic
+            }
+        }
+
+        // Local fallback logic
+        return $this->getTtdUrlLocal($user);
+    }
+
+    /**
+     * Get presigned TTD URL from IAM API
+     *
+     * @param User $user
+     * @return string|null
+     */
+    private function getTtdUrlFromIam(User $user): ?string
+    {
+        // Get JWT token dari session atau request header
+        $token = session('sso_token')
+            ?? request()->bearerToken()
+            ?? auth()->user()?->iam_token;
+
+        if (!$token) {
+            return null;
+        }
+
+        $cacheKey = "ttd_presigned_url_{$user->id}_" . md5($token);
+
+        // Check cache first
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        try {
+            $iamBaseUrl = rtrim(config('iam.base_url'), '/');
+            $endpoint = "{$iamBaseUrl}/api/users/{$user->id}/ttd-url";
+
+            $response = Http::withToken($token)
+                ->timeout(10)
+                ->get($endpoint);
+
+            if ($response->successful()) {
+                $url = $response->json('url');
+                if ($url) {
+                    // Cache presigned URL for 15 minutes
+                    Cache::put($cacheKey, $url, now()->addMinutes(15));
+                    return trim($url);
+                }
+            } else {
+                Log::warning("IAM TTD API error: {$response->status()} - {$response->body()}");
+            }
+        } catch (\Throwable $e) {
+            Log::warning("IAM TTD API error: {$e->getMessage()}");
+        }
+
+        return null;
+    }
+
+    /**
+     * Local TTD URL resolution (S3 fallback to public)
+     * - If S3 is reachable and file exists on S3 -> return S3 URL.
+     * - If S3 returns 404 / unreachable -> use `public` disk if file exists.
+     * - Returns relative `/storage/...` path for public disk files.
+     *
+     * @param User $user
+     * @return string|null
+     */
+    private function getTtdUrlLocal(User $user): ?string
+    {
+        // 1) Try S3 (may throw if not reachable)
         try {
             if (Storage::disk('s3')->exists($user->ttd_url)) {
                 return trim($this->buildS3Url($user->ttd_url));
@@ -59,8 +138,8 @@ class SignatoryService
 
         // 2) Public/local fallback
         try {
-            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($user->ttd_url)) {
-                $rawPublicUrl = trim(\Illuminate\Support\Facades\Storage::disk('public')->url($user->ttd_url));
+            if (Storage::disk('public')->exists($user->ttd_url)) {
+                $rawPublicUrl = trim(Storage::disk('public')->url($user->ttd_url));
                 $pathOnly = parse_url($rawPublicUrl, PHP_URL_PATH) ?: $rawPublicUrl;
                 return '/' . ltrim($pathOnly, '/');
             }
