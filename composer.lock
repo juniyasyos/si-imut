@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "278b898a76e820136f087752bc854ebe",
+    "content-hash": "8bc1590bb44676384f7a9a78efc0f334",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
-            "version": "1.3.7",
+            "version": "1.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AnourValar/eloquent-serialize.git",
-                "reference": "b6b16ab61316fb9885dff1ede29e72441c7098c0"
+                "reference": "6bf2d5b336e78c99cdb9e1252eb78d004451841b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AnourValar/eloquent-serialize/zipball/b6b16ab61316fb9885dff1ede29e72441c7098c0",
-                "reference": "b6b16ab61316fb9885dff1ede29e72441c7098c0",
+                "url": "https://api.github.com/repos/AnourValar/eloquent-serialize/zipball/6bf2d5b336e78c99cdb9e1252eb78d004451841b",
+                "reference": "6bf2d5b336e78c99cdb9e1252eb78d004451841b",
                 "shasum": ""
             },
             "require": {
@@ -67,9 +67,9 @@
             ],
             "support": {
                 "issues": "https://github.com/AnourValar/eloquent-serialize/issues",
-                "source": "https://github.com/AnourValar/eloquent-serialize/tree/1.3.7"
+                "source": "https://github.com/AnourValar/eloquent-serialize/tree/1.3.8"
             },
-            "time": "2026-03-27T16:21:06+00:00"
+            "time": "2026-05-04T09:18:12+00:00"
         },
         {
             "name": "archilex/filament-toggle-icon-column",
@@ -325,16 +325,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.379.11",
+            "version": "3.380.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "af784a64c1fc91c55bcfa493d8b92328bc3b38bf"
+                "reference": "01e0e05a5744715904cfb53ac7564d2e39996d4d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/af784a64c1fc91c55bcfa493d8b92328bc3b38bf",
-                "reference": "af784a64c1fc91c55bcfa493d8b92328bc3b38bf",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/01e0e05a5744715904cfb53ac7564d2e39996d4d",
+                "reference": "01e0e05a5744715904cfb53ac7564d2e39996d4d",
                 "shasum": ""
             },
             "require": {
@@ -416,9 +416,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.379.11"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.380.1"
             },
-            "time": "2026-05-01T18:16:33+00:00"
+            "time": "2026-05-05T18:06:08+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -3691,16 +3691,16 @@
         },
         {
             "name": "juniyasyos/auth-bridge-client",
-            "version": "v1.2.3",
+            "version": "v1.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/auth-bridge-client.git",
-                "reference": "b925028bcc5154df65a1cc58b5ac06d400f022b6"
+                "reference": "ba0ee1a139d2f608983818ee250a39c3429258f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/b925028bcc5154df65a1cc58b5ac06d400f022b6",
-                "reference": "b925028bcc5154df65a1cc58b5ac06d400f022b6",
+                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/ba0ee1a139d2f608983818ee250a39c3429258f3",
+                "reference": "ba0ee1a139d2f608983818ee250a39c3429258f3",
                 "shasum": ""
             },
             "require": {
@@ -3746,9 +3746,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/auth-bridge-client/issues",
-                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.2.3"
+                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.2.6"
             },
-            "time": "2026-05-03T20:50:43+00:00"
+            "time": "2026-05-06T05:47:21+00:00"
         },
         {
             "name": "juniyasyos/dash-stack-theme-juniyasyos",
@@ -4524,16 +4524,16 @@
         },
         {
             "name": "laravel/sanctum",
-            "version": "v4.3.1",
+            "version": "v4.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sanctum.git",
-                "reference": "e3b85d6e36ad00e5db2d1dcc27c81ffdf15cbf76"
+                "reference": "2a9bccc18e9907808e0018dd15fa643937886b1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sanctum/zipball/e3b85d6e36ad00e5db2d1dcc27c81ffdf15cbf76",
-                "reference": "e3b85d6e36ad00e5db2d1dcc27c81ffdf15cbf76",
+                "url": "https://api.github.com/repos/laravel/sanctum/zipball/2a9bccc18e9907808e0018dd15fa643937886b1e",
+                "reference": "2a9bccc18e9907808e0018dd15fa643937886b1e",
                 "shasum": ""
             },
             "require": {
@@ -4583,7 +4583,7 @@
                 "issues": "https://github.com/laravel/sanctum/issues",
                 "source": "https://github.com/laravel/sanctum"
             },
-            "time": "2026-02-07T17:19:31+00:00"
+            "time": "2026-04-30T11:46:25+00:00"
         },
         {
             "name": "laravel/serializable-closure",
@@ -9581,16 +9581,16 @@
         },
         {
             "name": "spatie/laravel-medialibrary",
-            "version": "11.22.0",
+            "version": "11.22.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-medialibrary.git",
-                "reference": "a80f584d93bad370ca7a0efa52c16a1a81e6e9fe"
+                "reference": "808424a4b7dc9811b5633c28a97c530919aea7b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/a80f584d93bad370ca7a0efa52c16a1a81e6e9fe",
-                "reference": "a80f584d93bad370ca7a0efa52c16a1a81e6e9fe",
+                "url": "https://api.github.com/repos/spatie/laravel-medialibrary/zipball/808424a4b7dc9811b5633c28a97c530919aea7b8",
+                "reference": "808424a4b7dc9811b5633c28a97c530919aea7b8",
                 "shasum": ""
             },
             "require": {
@@ -9675,7 +9675,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-medialibrary/issues",
-                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.22.0"
+                "source": "https://github.com/spatie/laravel-medialibrary/tree/11.22.1"
             },
             "funding": [
                 {
@@ -9687,7 +9687,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-28T09:18:56+00:00"
+            "time": "2026-05-04T11:42:39+00:00"
         },
         {
             "name": "spatie/laravel-package-tools",
@@ -13716,16 +13716,16 @@
         },
         {
             "name": "composer/class-map-generator",
-            "version": "1.7.2",
+            "version": "1.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/class-map-generator.git",
-                "reference": "6a9c2f0970022ab00dc58c07d0685dd712f2231b"
+                "reference": "86d8208fc3c649a3a999daf1a63c25201be2990f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/class-map-generator/zipball/6a9c2f0970022ab00dc58c07d0685dd712f2231b",
-                "reference": "6a9c2f0970022ab00dc58c07d0685dd712f2231b",
+                "url": "https://api.github.com/repos/composer/class-map-generator/zipball/86d8208fc3c649a3a999daf1a63c25201be2990f",
+                "reference": "86d8208fc3c649a3a999daf1a63c25201be2990f",
                 "shasum": ""
             },
             "require": {
@@ -13769,7 +13769,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/class-map-generator/issues",
-                "source": "https://github.com/composer/class-map-generator/tree/1.7.2"
+                "source": "https://github.com/composer/class-map-generator/tree/1.7.3"
             },
             "funding": [
                 {
@@ -13781,7 +13781,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-30T15:36:56+00:00"
+            "time": "2026-05-05T09:17:07+00:00"
         },
         {
             "name": "fakerphp/faker",
