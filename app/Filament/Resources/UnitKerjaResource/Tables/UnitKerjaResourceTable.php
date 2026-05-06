@@ -8,6 +8,7 @@ use App\Filament\Resources\UnitKerjaResource\RelationManagers\ImutDataRelationMa
 use App\Filament\Resources\UnitKerjaResource\RelationManagers\UsersRelationManager;
 use App\Models\UnitKerja;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -20,7 +21,9 @@ use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class UnitKerjaResourceTable
@@ -56,7 +59,22 @@ class UnitKerjaResourceTable
     public static function headerActions(): array
     {
         return [
-            ExportAction::make()->exporter(UnitKerjaExporter::class),
+            // ExportAction::make()->exporter(UnitKerjaExporter::class),
+
+            Action::make('exportUnitKerjaJson')
+                ->label('Unduh JSON')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action(function () {
+                    $relativePath = 'exports/unit_kerja.json';
+
+                    Artisan::call('unit-kerja:export-json', ['--path' => $relativePath]);
+
+                    return Storage::disk('local')->download(
+                        $relativePath,
+                        'unit_kerja.json',
+                        ['Content-Type' => 'application/json']
+                    );
+                })
         ];
     }
 

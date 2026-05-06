@@ -22,13 +22,20 @@ class ExportUsersJson extends Command
      * @var string
      */
     protected $description = 'Export all user fields to a JSON file';
-
+ 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $query = User::query()->orderBy('id');
+        $query = User::query()
+            ->with([
+                'roles',
+                'unitKerjas' => static function ($relation) {
+                    $relation->withTrashed()->orderBy('unit_name');
+                },
+            ])
+            ->orderBy('id');
 
         if (in_array(SoftDeletes::class, class_uses_recursive(User::class), true)) {
             $query->withTrashed();
@@ -36,7 +43,18 @@ class ExportUsersJson extends Command
 
         $users = $query
             ->get()
-            ->map(static fn(User $user) => $user->getAttributes())
+            ->map(static function (User $user): array {
+                return array_merge($user->getAttributes(), [
+                    'roles' => $user->roles->pluck('name')->values()->all(),
+                    'unit_kerjas' => $user->unitKerjas->map(static function ($unitKerja): array {
+                        return [
+                            'id' => $unitKerja->id,
+                            'unit_name' => $unitKerja->unit_name,
+                            'slug' => $unitKerja->slug,
+                        ];
+                    })->values()->all(),
+                ]);
+            })
             ->toArray();
 
         $payload = json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
