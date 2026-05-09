@@ -96,6 +96,7 @@ class EditImutProfile extends EditRecord
                 ->icon('heroicon-s-document-text')
                 ->record($this->getRecord())
                 ->color('gray')
+                ->modalWidth('8xl')
                 ->relationManager(FormTemplateVersionsRelationManager::make())
                 ->visible(fn($record) => static::canEditProfilIndikator($record)),
 

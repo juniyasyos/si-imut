@@ -59,6 +59,7 @@ class FormBuilder extends Page implements HasForms
             $this->redirect(ImutDataResource::getUrl('manage-form-builder', [
                 'imutDataSlug' => $record->imutData->slug,
                 'record' => $record->slug,
+                'templateId' => $this->formTemplate?->id,
             ]));
             return;
         }
@@ -92,6 +93,7 @@ class FormBuilder extends Page implements HasForms
                 ->url(fn() => ImutDataResource::getUrl('manage-form-builder', [
                     'imutDataSlug' => $this->record->imutData->slug,
                     'record' => $this->record->slug,
+                    'templateId' => $this->formTemplate?->id,
                 ]))
                 ->color('gray'),
         ];
@@ -115,6 +117,7 @@ class FormBuilder extends Page implements HasForms
             ImutDataResource::getUrl('manage-form-builder', [
                 'imutDataSlug' => $this->record->imutData->slug,
                 'record' => $this->record->slug,
+                'templateId' => $this->formTemplate?->id,
             ]) => 'Konfigurasi Form Laporan Harian',
             'Preview Form: ' . $this->record->version,
         ];

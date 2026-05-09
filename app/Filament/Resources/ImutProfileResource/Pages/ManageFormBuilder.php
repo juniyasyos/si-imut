@@ -5,17 +5,16 @@ namespace App\Filament\Resources\ImutProfileResource\Pages;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutProfile;
+use App\Models\DailyReportResponse;
 use App\Services\FormBuilder\FormDataService;
 use App\Services\FormBuilder\FormSchemaBuilder;
 use App\Services\FormBuilder\FormPersistenceService;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
@@ -30,6 +29,8 @@ class ManageFormBuilder extends Page implements HasForms
 
     public ?array $data = [];
     public ?ImutProfile $record = null;
+    public ?\App\Models\FormTemplate $formTemplate = null;
+    public ?int $selectedTemplateId = null;
     public bool $autoSaveEnabled = false;
     public bool $hasExistingResponses = false;
     public int $responseCount = 0;
@@ -37,30 +38,51 @@ class ManageFormBuilder extends Page implements HasForms
     public ?string $currentVersion = null;
     public int $totalVersions = 0;
 
-    public function mount(ImutProfile $record): void
+    public function mount(ImutProfile $record, ?int $templateId = null): void
     {
         $this->record = $record;
         $this->canForceUpdate = Gate::allows('updateFormWithExistingResponses', $this->record);
 
+        // Check both path parameter and query parameter for template selection
+        // Path parameter takes precedence: /form-builder/349
+        // Query parameter fallback: ?templateId=349 (for backward compatibility)
+        $requestedTemplateId = $templateId ?? request()->query('templateId');
+
+        // Determine which template to load
+        if ($requestedTemplateId) {
+            $this->formTemplate = \App\Models\FormTemplate::where('id', $requestedTemplateId)
+                ->where('imut_profile_id', $record->id)
+                ->first();
+            $this->selectedTemplateId = $requestedTemplateId;
+        }
+
+        // Fallback to active template if not found or not specified
+        if (!$this->formTemplate) {
+            $this->formTemplate = $record->activeFormTemplate;
+            $this->selectedTemplateId = $this->formTemplate?->id;
+        }
+
+        // Load form data from selected template
         $formDataService = new FormDataService();
-        $this->data = $formDataService->loadFormData($record);
+        $this->data = $formDataService->loadFormData($record, $this->selectedTemplateId);
         $this->form->fill($this->data);
 
-        // Check if form has existing responses (only from active template)
+        // Check if selected template has existing responses
         $formPersistenceService = new FormPersistenceService();
-        $this->hasExistingResponses = $formPersistenceService->hasExistingResponses($record);
-        $this->responseCount = $formPersistenceService->getResponseCount($record);
-        
+        if ($this->formTemplate) {
+            $this->hasExistingResponses = $formPersistenceService->hasExistingResponsesForTemplate($this->formTemplate);
+            $this->responseCount = $formPersistenceService->getResponseCountForTemplate($this->formTemplate);
+        }
+
         // Get version information
-        $activeTemplate = $record->activeFormTemplate;
-        $this->currentVersion = $activeTemplate?->version ?? 'No Active Version';
+        $this->currentVersion = $this->formTemplate?->version ?? 'No Template';
         $this->totalVersions = $record->formTemplateVersions()->count();
     }
 
     public function form(Form $form): Form
     {
         return $form
-            ->schema(FormSchemaBuilder::buildFormSchema())
+            ->schema(FormSchemaBuilder::buildFormSchema($this->hasExistingResponses && !$this->canForceUpdate))
             ->statePath('data')
             ->model($this->record)
             ->disabled($this->hasExistingResponses && !$this->canForceUpdate);
@@ -149,11 +171,17 @@ class ManageFormBuilder extends Page implements HasForms
             // NOTE: Do NOT delete existing responses during a normal save.
             // Reset of the form template and deletion of responses are
             // handled by separate explicit actions (Reset Form / Hapus Responses).
-            $formPersistenceService->saveFormData($this->record, $data);
-            $formPersistenceService->calculateAndUpdateCompliance($this->record);
+
+            if ($this->formTemplate) {
+                // Save to specific template without activating it
+                $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
+
+                // Calculate compliance for the profile
+                $formPersistenceService->calculateAndUpdateCompliance($this->record);
+            }
 
             DB::commit();
-            
+
             // Refresh version information after save
             $this->refreshVersionInfo();
 
@@ -163,7 +191,7 @@ class ManageFormBuilder extends Page implements HasForms
                 ->send();
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Notification::make()
                 ->title('Gagal menyimpan form')
                 ->body($e->getMessage())
@@ -184,8 +212,11 @@ class ManageFormBuilder extends Page implements HasForms
             DB::beginTransaction();
 
             $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->saveFormData($this->record, $data);
-            $formPersistenceService->calculateAndUpdateCompliance($this->record);
+
+            if ($this->formTemplate) {
+                $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
+                $formPersistenceService->calculateAndUpdateCompliance($this->record);
+            }
 
             DB::commit();
 
@@ -203,14 +234,23 @@ class ManageFormBuilder extends Page implements HasForms
     private function refreshVersionInfo(): void
     {
         $this->record->refresh();
-        $activeTemplate = $this->record->activeFormTemplate;
-        $this->currentVersion = $activeTemplate?->version ?? 'No Active Version';
+        // Reload selected template
+        if ($this->selectedTemplateId) {
+            $this->formTemplate = \App\Models\FormTemplate::find($this->selectedTemplateId);
+        } else {
+            $this->formTemplate = $this->record->activeFormTemplate;
+            $this->selectedTemplateId = $this->formTemplate?->id;
+        }
+
+        $this->currentVersion = $this->formTemplate?->version ?? 'No Template';
         $this->totalVersions = $this->record->formTemplateVersions()->count();
-        
-        // Also refresh response count
-        $formPersistenceService = new FormPersistenceService();
-        $this->hasExistingResponses = $formPersistenceService->hasExistingResponses($this->record);
-        $this->responseCount = $formPersistenceService->getResponseCount($this->record);
+
+        // Also refresh response count for selected template
+        if ($this->formTemplate) {
+            $formPersistenceService = new FormPersistenceService();
+            $this->hasExistingResponses = $formPersistenceService->hasExistingResponsesForTemplate($this->formTemplate);
+            $this->responseCount = $formPersistenceService->getResponseCountForTemplate($this->formTemplate);
+        }
     }
 
     /**
@@ -227,17 +267,16 @@ class ManageFormBuilder extends Page implements HasForms
         try {
             DB::beginTransaction();
 
-            // Remove form fields so the template becomes empty
-            $formTemplate = $this->record->activeFormTemplate;
-            if ($formTemplate) {
-                $formTemplate->formFields()->delete();
-                $formTemplate->update(['scoring_config' => null]);
+            // Remove form fields from selected template only
+            if ($this->formTemplate) {
+                $this->formTemplate->formFields()->delete();
+                $this->formTemplate->update(['scoring_config' => null]);
             }
 
             DB::commit();
 
             // Refresh UI state
-            $this->data = (new FormDataService())->loadFormData($this->record);
+            $this->data = (new FormDataService())->loadFormData($this->record, $this->selectedTemplateId);
             $this->form->fill($this->data);
             $this->refreshVersionInfo();
 
@@ -250,11 +289,11 @@ class ManageFormBuilder extends Page implements HasForms
     public function preview(): void
     {
         // Save current form data before redirecting to preview (only if no existing responses)
-        if (!$this->hasExistingResponses) {
+        if (!$this->hasExistingResponses && $this->formTemplate) {
             try {
                 $data = $this->form->getState();
                 $formPersistenceService = new FormPersistenceService();
-                $formPersistenceService->saveFormData($this->record, $data);
+                $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
             } catch (\Exception $e) {
                 // Continue to preview even if save fails
             }
@@ -286,8 +325,10 @@ class ManageFormBuilder extends Page implements HasForms
         try {
             DB::beginTransaction();
 
-            $formPersistenceService = new FormPersistenceService();
-            $formPersistenceService->deleteResponses($this->record);
+            // Delete responses only for selected template
+            if ($this->formTemplate) {
+                DailyReportResponse::where('form_template_id', $this->formTemplate->id)->delete();
+            }
 
             DB::commit();
 

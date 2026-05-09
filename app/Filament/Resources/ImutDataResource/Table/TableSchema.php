@@ -141,7 +141,7 @@ class TableSchema extends ImutDataResource
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja')
                     ->slideOver()
-                    ->modalWidth('7xl')
+                    ->modalWidth('8xl')
                     ->label('Unit Kerja')
                     ->icon('heroicon-o-building-office-2')
                     ->color('info')
@@ -150,7 +150,7 @@ class TableSchema extends ImutDataResource
 
                 \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('profiles')
                     ->slideOver()
-                    ->modalWidth('7xl')
+                    ->modalWidth('8xl')
                     ->label('Profiles')
                     ->icon('heroicon-o-document-text')
                     ->color('')

@@ -10,12 +10,20 @@ use Illuminate\Support\Str;
 
 class FormDataService
 {
-    public function loadFormData(ImutProfile $record): array
+    public function loadFormData(ImutProfile $record, ?int $templateId = null): array
     {
-        $formTemplate = $record->activeFormTemplate;
+        // If templateId provided, load that specific template
+        if ($templateId) {
+            $formTemplate = FormTemplate::where('id', $templateId)
+                ->where('imut_profile_id', $record->id)
+                ->first();
+        } else {
+            // Fallback to active template
+            $formTemplate = $record->activeFormTemplate;
+        }
 
         if (!$formTemplate) {
-            return []; // Return empty array if no active form template found
+            return []; // Return empty array if no template found
         }
 
         return $this->loadFromFormTemplate($formTemplate);

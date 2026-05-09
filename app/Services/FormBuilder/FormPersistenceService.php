@@ -4,6 +4,7 @@ namespace App\Services\FormBuilder;
 
 use App\Models\ImutProfile;
 use App\Models\FormTemplate;
+use App\Models\DailyReportResponse;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
 use Illuminate\Support\Str;
@@ -19,6 +20,31 @@ class FormPersistenceService
 
         // Update existing form template or create new one
         $this->saveToEnhancedFormat($record, $data);
+    }
+
+    /**
+     * Save form data to a specific template without activating it
+     */
+    public function saveFormDataToTemplate(FormTemplate $formTemplate, array $data): void
+    {
+        // Prepare compliance settings
+        $complianceMethod = $data['compliance_method'] ?? 'auto_calculate';
+        $autoFailOnCritical = $data['auto_fail_on_critical'] ?? false;
+
+        // If the payload doesn't include the values, keep existing template values
+        $complianceMethod = $data['compliance_method'] ?? $formTemplate->compliance_method ?? $complianceMethod;
+        $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
+
+        // Update template fields only (don't change is_active status)
+        $formTemplate->update([
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'compliance_method' => $complianceMethod,
+            'auto_fail_on_critical' => $autoFailOnCritical,
+        ]);
+
+        // Reconcile fields with incoming payload in a non-destructive way
+        $this->reconcileEnhancedFields($formTemplate, $data['fields'] ?? []);
     }
 
     private function saveToEnhancedFormat(ImutProfile $record, array $data): void
@@ -304,19 +330,54 @@ class FormPersistenceService
 
     public function hasExistingResponses(ImutProfile $record): bool
     {
-        $existingTemplate = $record->activeFormTemplate;
-        return $existingTemplate && $existingTemplate->dailyReportResponses()->exists();
+        $template = $this->resolveTemplateForResponseChecks($record);
+
+        if (! $template) {
+            return false;
+        }
+
+        return DailyReportResponse::where('form_template_id', $template->id)->exists();
     }
 
     public function getResponseCount(ImutProfile $record): int
     {
-        $existingTemplate = $record->activeFormTemplate;
-        return $existingTemplate ? $existingTemplate->dailyReportResponses()->count() : 0;
+        $template = $this->resolveTemplateForResponseChecks($record);
+
+        if (! $template) {
+            return 0;
+        }
+
+        return DailyReportResponse::where('form_template_id', $template->id)->count();
+    }
+
+    /**
+     * Check if a specific template has existing responses
+     */
+    public function hasExistingResponsesForTemplate(FormTemplate $template): bool
+    {
+        if (! $template) {
+            return false;
+        }
+
+        return DailyReportResponse::where('form_template_id', $template->id)->exists();
+    }
+
+    /**
+     * Get response count for a specific template
+     */
+    public function getResponseCountForTemplate(FormTemplate $template): int
+    {
+        if (! $template) {
+            return 0;
+        }
+
+        return DailyReportResponse::where('form_template_id', $template->id)->count();
     }
 
     public function calculateAndUpdateCompliance(ImutProfile $record): void
     {
-        $formTemplate = FormTemplate::where('imut_profile_id', $record->id)->first();
+        $formTemplate = $record->activeFormTemplate()->first()
+            ?? $record->latestFormTemplate()->first();
 
         if ($formTemplate) {
             // Calculate compliance based on form structure (without actual responses)
@@ -329,6 +390,16 @@ class FormPersistenceService
                 'is_compliant' => $complianceScore['compliance_status'] ?? false,
             ]);
         }
+    }
+
+    /**
+     * Resolve template context for response locking/counting.
+     * Prefer active template, fallback to latest when no active exists.
+     */
+    private function resolveTemplateForResponseChecks(ImutProfile $record): ?FormTemplate
+    {
+        return $record->activeFormTemplate()->first()
+            ?? $record->latestFormTemplate()->first();
     }
 
     /**

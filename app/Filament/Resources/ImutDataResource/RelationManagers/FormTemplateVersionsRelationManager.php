@@ -54,34 +54,45 @@ class FormTemplateVersionsRelationManager extends RelationManager
                         'gray' => 'Inactive',
                     ]),
 
-                TextColumn::make('compliance_method')
-                    ->label('Compliance Method')
-                    ->badge()
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'auto_calculate' => 'Auto Calculate',
-                        'manual' => 'Manual',
-                        'weighted' => 'Weighted',
-                        default => $state,
-                    })
-                    ->color(fn(string $state): string => match ($state) {
-                        'auto_calculate' => 'info',
-                        'manual' => 'warning',
-                        'weighted' => 'success',
-                        default => 'gray',
-                    }),
+                // TextColumn::make('compliance_method')
+                //     ->label('Compliance Method')
+                //     ->badge()
+                //     ->formatStateUsing(fn(string $state): string => match ($state) {
+                //         'auto_calculate' => 'Auto Calculate',
+                //         'manual' => 'Manual',
+                //         'weighted' => 'Weighted',
+                //         default => $state,
+                //     })
+                //     ->color(fn(string $state): string => match ($state) {
+                //         'auto_calculate' => 'info',
+                //         'manual' => 'warning',
+                //         'weighted' => 'success',
+                //         default => 'gray',
+                //     }),
 
                 TextColumn::make('valid_period')
                     ->label('Valid Period')
-                    ->getStateUsing(
-                        fn($record) =>
-                        $record->valid_from && $record->valid_until
-                            ? ($record->valid_from->year === $record->valid_until->year
-                                ? $record->valid_from->translatedFormat('d M') . ' - ' . $record->valid_until->translatedFormat('d M Y')
-                                : $record->valid_from->translatedFormat('d M Y') . ' - ' . $record->valid_until->translatedFormat('d M Y'))
-                            : ($record->valid_from
-                                ? $record->valid_from->translatedFormat('d M Y') . ' - Present'
-                                : 'Not Set')
-                    )
+                    ->getStateUsing(function ($record) {
+                        if ($record->valid_from && $record->valid_until) {
+
+                            if ($record->valid_from->year === $record->valid_until->year) {
+                                return $record->valid_from->translatedFormat('d M')
+                                    . ' - '
+                                    . $record->valid_until->translatedFormat('d M Y');
+                            }
+
+                            return $record->valid_from->translatedFormat('d M Y')
+                                . ' - '
+                                . $record->valid_until->translatedFormat('d M Y');
+                        }
+
+                        if ($record->valid_from) {
+                            return $record->valid_from->translatedFormat('d M Y')
+                                . ' - Present';
+                        }
+
+                        return 'Not Set';
+                    })
                     ->sortable(['valid_from', 'valid_until']),
 
                 TextColumn::make('createdBy.name')
@@ -107,6 +118,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     ->url(fn($livewire) => ImutDataResource::getUrl('manage-form-builder', [
                         'imutDataSlug' => $livewire->ownerRecord->imutData->slug,
                         'record' => $livewire->ownerRecord->slug,
+                        'templateId' => $livewire->ownerRecord->activeFormTemplate?->id,
                     ])),
 
                 Action::make('create_from_latest')
@@ -199,6 +211,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                         ->url(fn(FormTemplate $record, $livewire) => ImutDataResource::getUrl('manage-form-builder', [
                             'imutDataSlug' => $livewire->ownerRecord->imutData->slug,
                             'record' => $livewire->ownerRecord->slug,
+                            'templateId' => $record->id,
                         ])),
 
                     Action::make('duplicate')
@@ -224,6 +237,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                         ->url(fn(FormTemplate $record, $livewire) => ImutDataResource::getUrl('manage-form-builder', [
                             'imutDataSlug' => $livewire->ownerRecord->imutData->slug,
                             'record' => $livewire->ownerRecord->slug,
+                            'templateId' => $record->id,
                         ])),
 
                     Action::make('preview')

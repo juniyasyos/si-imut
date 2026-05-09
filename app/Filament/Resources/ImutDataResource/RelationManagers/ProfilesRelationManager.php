@@ -30,7 +30,7 @@ class ProfilesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('version')
             ->defaultPaginationPageOption(5)
-            ->modifyQueryUsing(fn ($query) => $query->with(['formTemplates', 'imutData']))
+            ->modifyQueryUsing(fn($query) => $query->with(['formTemplates', 'imutData']))
             ->poll('30s')
             ->columns([
                 TextColumn::make('version')
@@ -55,28 +55,34 @@ class ProfilesRelationManager extends RelationManager
 
                 TextColumn::make('valid_period')
                     ->label('Periode Berlaku')
-                    ->formatStateUsing(function ($record) {
+                    ->state(function ($record) {
                         if (!$record->valid_from || !$record->valid_until) return '-';
-                        
+
                         $from = $record->valid_from;
                         $until = $record->valid_until;
-                        
+
                         if ($from->year === $until->year) {
                             return $from->translatedFormat('d M') . ' - ' . $until->translatedFormat('d M Y');
                         }
-                        
+
                         return $from->translatedFormat('d M Y') . ' - ' . $until->translatedFormat('d M Y');
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('form_template_status')
                     ->label('Form Template')
-                    ->formatStateUsing(fn($record) => $record->formTemplates->count() > 0 ? 'Ada' : 'Belum Ada')
+                    ->state(function ($record) {
+                        $count = $record->formTemplates()->count();
+
+                        return $count > 0
+                            ? "{$count} Template"
+                            : 'Belum Ada';
+                    })
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'Ada' => 'success',
-                        'Belum Ada' => 'warning',
-                        default => 'gray',
+                    ->color(function (string $state): string {
+                        return $state === 'Belum Ada'
+                            ? 'warning'
+                            : 'success';
                     }),
             ])
             ->headerActions([
