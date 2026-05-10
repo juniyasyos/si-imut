@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FormSchemaBuilder
 {
-    public static function buildFormSchema(): array
+    public static function buildFormSchema(bool $hasExistingResponses): array
     {
         return [
             Section::make('Informasi Dasar Form')
@@ -66,13 +66,13 @@ class FormSchemaBuilder
                 ->columns(2),
 
             Section::make('Field Builder - Sederhana untuk Pelaporan Mutu')
-                ->description('🎯 Fokus pada 3 elemen utama: (1) Pengumpul Data, (2) Data Validasi, (3) Matching/Compliance. Pilih field type yang sesuai kebutuhan pelaporan.')
+                ->description('🎯 Fokus pada 3 elemen utama: (1) Pengumpul Data, (2) Data Validasi. Pilih field type yang sesuai kebutuhan pelaporan.')
                 ->schema([
                     Repeater::make('fields')
                         ->label('Fields')
                         ->schema(self::getFieldSchema())
                         ->defaultItems(0)
-                        ->disabled(fn($record) => self::shouldBeReadonly($record))
+                        ->disabled($hasExistingResponses)
                         ->addActionLabel('Tambah Field Baru')
                         ->reorderableWithButtons()
                         ->collapsible(true)

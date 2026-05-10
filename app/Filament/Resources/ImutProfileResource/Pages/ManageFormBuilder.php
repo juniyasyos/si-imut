@@ -10,11 +10,13 @@ use App\Services\FormBuilder\FormDataService;
 use App\Services\FormBuilder\FormSchemaBuilder;
 use App\Services\FormBuilder\FormPersistenceService;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
@@ -35,13 +37,22 @@ class ManageFormBuilder extends Page implements HasForms
     public bool $hasExistingResponses = false;
     public int $responseCount = 0;
     public bool $canForceUpdate = false;
+    // Optional override to control `canForceUpdate` programmatically or via query param
+    public ?bool $forceUpdateOverride = null;
     public ?string $currentVersion = null;
     public int $totalVersions = 0;
 
     public function mount(ImutProfile $record, ?int $templateId = null): void
     {
         $this->record = $record;
-        $this->canForceUpdate = Gate::allows('updateFormWithExistingResponses', $this->record);
+
+        // Allow optional override via query param `?forceUpdate=1|0`.
+        $forceParam = request()->query('forceUpdate', null);
+        if ($forceParam !== null) {
+            $this->forceUpdateOverride = in_array(strtolower((string) $forceParam), ['1', 'true'], true);
+        }
+
+        $this->canForceUpdate = $this->evaluateCanForceUpdate();
 
         // Check both path parameter and query parameter for template selection
         // Path parameter takes precedence: /form-builder/349
@@ -77,12 +88,40 @@ class ManageFormBuilder extends Page implements HasForms
         // Get version information
         $this->currentVersion = $this->formTemplate?->version ?? 'No Template';
         $this->totalVersions = $record->formTemplateVersions()->count();
+
+        // dd([
+        //     'selectedTemplateId' => $this->selectedTemplateId,
+        //     'currentVersion' => $this->currentVersion,
+        //     'totalVersions' => $this->totalVersions,
+        //     'hasExistingResponses' => $this->hasExistingResponses,
+        //     'responseCount' => $this->responseCount,
+        //     'canForceUpdate' => $this->canForceUpdate,
+        // ]);
+    }
+
+    /**
+     * Evaluate whether the current user/context can force-update forms.
+     * Priority:
+     * 1. If `forceUpdateOverride` is set, use that value.
+     * 2. Otherwise consult the Gate `updateFormWithExistingResponses`.
+     */
+    private function evaluateCanForceUpdate(): bool
+    {
+        if ($this->record->imutData->created_by === Auth::id()) {
+            return true;
+        }
+
+        if ($this->forceUpdateOverride !== null) {
+            return (bool) $this->forceUpdateOverride;
+        }
+
+        return Auth::user()->can('delete_imut::profile');
     }
 
     public function form(Form $form): Form
     {
         return $form
-            ->schema(FormSchemaBuilder::buildFormSchema($this->hasExistingResponses && !$this->canForceUpdate))
+            ->schema(FormSchemaBuilder::buildFormSchema($this->hasExistingResponses))
             ->statePath('data')
             ->model($this->record)
             ->disabled($this->hasExistingResponses && !$this->canForceUpdate);
@@ -92,6 +131,12 @@ class ManageFormBuilder extends Page implements HasForms
     {
         if ($this->hasExistingResponses && !$this->canForceUpdate) {
             return [
+                Action::make('versionInfo')
+                    ->label("Version: {$this->currentVersion} ({$this->totalVersions} total)")
+                    ->icon('heroicon-o-information-circle')
+                    ->color('success')
+                    ->disabled(),
+
                 Action::make('locked')
                     ->label('Form Sudah Memiliki Data Response')
                     ->icon('heroicon-o-lock-closed')
@@ -119,37 +164,44 @@ class ManageFormBuilder extends Page implements HasForms
                 ->color('gray')
                 ->disabled(),
 
-            Action::make('reset')
-                ->label('Reset Form (Destruktif)')
-                ->icon('heroicon-o-arrow-path')
-                ->color('danger')
-                ->visible(fn() => $this->canForceUpdate)
-                ->requiresConfirmation()
-                ->modalIcon('heroicon-o-exclamation-triangle')
-                ->modalHeading('Reset Struktur Form?')
-                ->modalDescription('Apakah Anda yakin ingin mereset struktur form ini? Data yang sudah ada akan hilang.')
-                ->modalSubmitActionLabel('Ya, Reset Sekarang')
-                ->modalCancelActionLabel('Batal')
-                ->action(function () {
-                    $this->performReset();
-                }),
+            ActionGroup::make([
+                Action::make('reset')
+                    ->label('Reset Form (Destruktif)')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('danger')
+                    ->visible(fn() => $this->canForceUpdate)
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-exclamation-triangle')
+                    ->modalHeading('Reset Struktur Form?')
+                    ->modalDescription('Apakah Anda yakin ingin mereset struktur form ini? Data yang sudah ada akan hilang.')
+                    ->modalSubmitActionLabel('Ya, Reset Sekarang')
+                    ->modalCancelActionLabel('Batal')
+                    ->action(function () {
+                        $this->performReset();
+                    }),
 
-            Action::make('deleteResponses')
-                ->label('Hapus Semua Responses')
-                ->icon('heroicon-o-trash')
-                ->color('danger')
-                ->visible(fn() => $this->canForceUpdate && $this->hasExistingResponses)
-                ->requiresConfirmation()
-                ->modalIcon('heroicon-o-exclamation-triangle')
-                ->modalHeading('Hapus Semua Data Respons?')
-                ->modalDescription('Apakah Anda yakin ingin menghapus semua data respons dari form ini? Tindakan ini tidak dapat dibatalkan.')
-                ->modalSubmitActionLabel('Ya, Hapus Permanen')
-                ->modalCancelActionLabel('Batal')
-                ->action(function () {
-                    $this->performDeleteResponses();
-                }),
+                Action::make('deleteResponses')
+                    ->label('Hapus Semua Responses')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn() => $this->canForceUpdate && $this->hasExistingResponses)
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-exclamation-triangle')
+                    ->modalHeading('Hapus Semua Data Respons?')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus semua data respons dari form ini? Tindakan ini tidak dapat dibatalkan.')
+                    ->modalSubmitActionLabel('Ya, Hapus Permanen')
+                    ->modalCancelActionLabel('Batal')
+                    ->action(function () {
+                        $this->performDeleteResponses();
+                    }),
 
-            $saveAction,
+                $saveAction,
+            ])
+                ->button()
+                ->color('primary')
+                ->icon('heroicon-o-pencil')
+                ->label('Actions'),
+
 
             Action::make('preview')
                 ->label('Preview Form')
@@ -250,6 +302,8 @@ class ManageFormBuilder extends Page implements HasForms
             $formPersistenceService = new FormPersistenceService();
             $this->hasExistingResponses = $formPersistenceService->hasExistingResponsesForTemplate($this->formTemplate);
             $this->responseCount = $formPersistenceService->getResponseCountForTemplate($this->formTemplate);
+            // Re-evaluate canForceUpdate after refreshing template/response info
+            $this->canForceUpdate = $this->evaluateCanForceUpdate();
         }
     }
 

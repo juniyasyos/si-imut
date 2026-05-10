@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\ImutDataResource\RelationManagers;
+namespace App\Filament\Resources\ImutProfileResource\RelationManagers;
 
 use Filament\Forms\Form;
 use Filament\Tables\Table;

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
-use App\Filament\Resources\ImutDataResource\RelationManagers\FormTemplateVersionsRelationManager;
+use App\Filament\Resources\ImutProfileResource\RelationManagers\FormTemplateVersionsRelationManager;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutData;
 use App\Models\ImutProfile;
