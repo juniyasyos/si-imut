@@ -7,6 +7,7 @@ use App\Models\FormTemplate;
 use App\Models\DailyReportResponse;
 use App\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,9 @@ class FormPersistenceService
      */
     public function saveFormDataToTemplate(FormTemplate $formTemplate, array $data): void
     {
+        $this->validateTemplateDateWindow($formTemplate, $data);
+        $hasExistingResponses = $this->hasExistingResponsesForTemplate($formTemplate);
+
         // Prepare compliance settings
         $complianceMethod = $data['compliance_method'] ?? 'auto_calculate';
         $autoFailOnCritical = $data['auto_fail_on_critical'] ?? false;
@@ -34,17 +38,62 @@ class FormPersistenceService
         // If the payload doesn't include the values, keep existing template values
         $complianceMethod = $data['compliance_method'] ?? $formTemplate->compliance_method ?? $complianceMethod;
         $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
+        $validFrom = $data['valid_from'] ?? $formTemplate->valid_from?->toDateString();
+        $validUntil = array_key_exists('valid_until', $data)
+            ? $data['valid_until']
+            : $formTemplate->valid_until?->toDateString();
 
         // Update template fields only (don't change is_active status)
         $formTemplate->update([
             'title' => $data['title'],
             'description' => $data['description'],
+            'valid_from' => $validFrom,
+            'valid_until' => blank($validUntil) ? null : $validUntil,
             'compliance_method' => $complianceMethod,
             'auto_fail_on_critical' => $autoFailOnCritical,
         ]);
 
         // Reconcile fields with incoming payload in a non-destructive way
-        $this->reconcileEnhancedFields($formTemplate, $data['fields'] ?? []);
+        $this->reconcileEnhancedFields($formTemplate, $data['fields'] ?? [], $hasExistingResponses);
+    }
+
+    private function validateTemplateDateWindow(FormTemplate $formTemplate, array $data): void
+    {
+        $profile = $formTemplate->imutProfile;
+
+        if (! $profile) {
+            return;
+        }
+
+        $validFrom = $data['valid_from'] ?? $formTemplate->valid_from?->toDateString();
+        $validUntil = array_key_exists('valid_until', $data)
+            ? $data['valid_until']
+            : $formTemplate->valid_until?->toDateString();
+
+        if (blank($validFrom)) {
+            throw new \InvalidArgumentException('Tanggal berlaku mulai wajib diisi.');
+        }
+
+        $profileValidFrom = $profile->valid_from ? Carbon::parse($profile->valid_from)->startOfDay() : null;
+        $profileValidUntil = $profile->valid_until ? Carbon::parse($profile->valid_until)->endOfDay() : null;
+        $selectedValidFrom = Carbon::parse($validFrom)->startOfDay();
+        $selectedValidUntil = blank($validUntil) ? null : Carbon::parse($validUntil)->endOfDay();
+
+        if ($selectedValidUntil && $selectedValidUntil->lt($selectedValidFrom)) {
+            throw new \InvalidArgumentException('Berlaku sampai tidak boleh lebih kecil dari berlaku mulai.');
+        }
+
+        if ($profileValidFrom && $selectedValidFrom->lt($profileValidFrom)) {
+            throw new \InvalidArgumentException('Berlaku mulai tidak boleh kurang dari tanggal valid profile terkait.');
+        }
+
+        if ($profileValidUntil && $selectedValidFrom->gt($profileValidUntil)) {
+            throw new \InvalidArgumentException('Berlaku mulai tidak boleh melebihi tanggal valid profile terkait.');
+        }
+
+        if ($profileValidUntil && $selectedValidUntil && $selectedValidUntil->gt($profileValidUntil)) {
+            throw new \InvalidArgumentException('Berlaku sampai tidak boleh melebihi tanggal valid profile terkait.');
+        }
     }
 
     private function saveToEnhancedFormat(ImutProfile $record, array $data): void
@@ -119,7 +168,11 @@ class FormPersistenceService
         }
 
         // Reconcile fields with incoming payload in a non-destructive way
-        $this->reconcileEnhancedFields($formTemplate, $data['fields'] ?? []);
+        $this->reconcileEnhancedFields(
+            $formTemplate,
+            $data['fields'] ?? [],
+            $this->hasExistingResponsesForTemplate($formTemplate)
+        );
     }
 
     /**
@@ -129,7 +182,7 @@ class FormPersistenceService
      * - delete only fields that are removed and have NO field_responses
      * - preserve any field that already has responses
      */
-    private function reconcileEnhancedFields(FormTemplate $formTemplate, array $fields): void
+    private function reconcileEnhancedFields(FormTemplate $formTemplate, array $fields, bool $preserveHistoricalOptions = true): void
     {
         $existingFields = $formTemplate->formFields()->get()->keyBy('field_key');
         $incomingKeys = [];
@@ -163,7 +216,7 @@ class FormPersistenceService
                 ]);
 
                 // Reconcile options non-destructively (don't remove existing options that may be referenced by historical responses)
-                $this->reconcileFieldOptions($field, $fieldData['options'] ?? []);
+                $this->reconcileFieldOptions($field, $fieldData['options'] ?? [], $preserveHistoricalOptions);
             } else {
                 // Create new field
                 $field = EnhancedFormField::create([
@@ -296,13 +349,18 @@ class FormPersistenceService
      * - create new options from incoming payload
      * - DO NOT delete existing options (preserve historical references)
      */
-    private function reconcileFieldOptions(EnhancedFormField $field, array $options): void
+    private function reconcileFieldOptions(EnhancedFormField $field, array $options, bool $preserveHistoricalOptions = true): void
     {
         $existingOptions = $field->options()->get()->keyBy('option_value');
+        $incomingOptionValues = [];
 
         foreach ($options as $index => $optionData) {
             $optionValue = $optionData['value'] ?? $optionData['option_value'] ?? null;
             $optionText = $optionData['label'] ?? $optionData['option_text'] ?? $optionValue;
+
+            if ($optionValue) {
+                $incomingOptionValues[] = $optionValue;
+            }
 
             if ($optionValue && $existingOptions->has($optionValue)) {
                 $opt = $existingOptions->get($optionValue);
@@ -325,7 +383,17 @@ class FormPersistenceService
             }
         }
 
-        // Intentionally do not remove existing options to avoid breaking historical responses.
+        if ($preserveHistoricalOptions) {
+            return;
+        }
+
+        $optionsToDelete = $existingOptions->keys()->diff($incomingOptionValues);
+
+        if ($optionsToDelete->isNotEmpty()) {
+            $field->options()
+                ->whereIn('option_value', $optionsToDelete->all())
+                ->delete();
+        }
     }
 
     public function hasExistingResponses(ImutProfile $record): bool

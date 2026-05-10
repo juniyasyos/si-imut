@@ -59,6 +59,7 @@ class CreateDailyReportEntry extends CreateRecord
         // indicator parameter is required for creation; if missing we cannot
         // decide so just forbid access (mount will redirect anyway).
         $indicatorId = request()->query('indicator');
+        $reportDate = request()->query('date') ?: now()->toDateString();
         if (! $indicatorId) {
             return;
         }
@@ -72,11 +73,11 @@ class CreateDailyReportEntry extends CreateRecord
             abort(404);
         }
 
-        // Get active template from the same profile
-        $template = $requestedTemplate->imutProfile->activeFormTemplate;
+        // Resolve template that is valid for the requested report date
+        $template = $this->resolveTemplateForDate($requestedTemplate, (string) $reportDate);
 
         if (! $template) {
-            abort(404, 'No active template found for this profile');
+            abort(404, 'No template found for this profile and report date');
         }
 
         // Load required relationships for authorization check
@@ -132,13 +133,13 @@ class CreateDailyReportEntry extends CreateRecord
                 return;
             }
 
-            // Get active template from the same profile
-            $this->formTemplate = $requestedTemplate->imutProfile->activeFormTemplate;
+            // Resolve template that is valid for requested report date
+            $this->formTemplate = $this->resolveTemplateForDate($requestedTemplate, $this->originalDate);
 
             if (!$this->formTemplate) {
                 Notification::make()
-                    ->title('No Active Template')
-                    ->body('Tidak ada template aktif untuk profil ini.')
+                    ->title('Template Tidak Tersedia')
+                    ->body('Tidak ada template yang valid untuk tanggal laporan yang dipilih.')
                     ->danger()
                     ->send();
 
@@ -312,11 +313,8 @@ class CreateDailyReportEntry extends CreateRecord
             $this->halt();
         }
 
-        // Get form template ID from URL parameter or use already loaded template
-        $indicatorId = request()->query('indicator');
-        if ($indicatorId) {
-            $data['form_template_id'] = (int) $indicatorId;
-        } elseif ($this->formTemplate) {
+        // Always use the resolved template ID (date-aware)
+        if ($this->formTemplate) {
             $data['form_template_id'] = $this->formTemplate->id;
         } else {
             Notification::make()
@@ -534,5 +532,26 @@ class CreateDailyReportEntry extends CreateRecord
             // Update the field
             $field->update(['history_suggestions' => $currentSuggestions]);
         }
+    }
+
+    private function resolveTemplateForDate(FormTemplate $requestedTemplate, string $reportDate): ?FormTemplate
+    {
+        $profile = $requestedTemplate->imutProfile;
+
+        if (! $profile) {
+            return null;
+        }
+
+        $templateForDate = $profile->formTemplates()
+            ->whereDate('valid_from', '<=', $reportDate)
+            ->where(function ($query) use ($reportDate) {
+                $query->whereNull('valid_until')
+                    ->orWhereDate('valid_until', '>=', $reportDate);
+            })
+            ->orderByDesc('is_active')
+            ->orderByDesc('valid_from')
+            ->first();
+
+        return $templateForDate ?: $profile->activeFormTemplate;
     }
 }

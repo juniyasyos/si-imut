@@ -63,6 +63,9 @@ class FormDataService
         return [
             'title' => $formTemplate->title,
             'description' => $formTemplate->description,
+            // include validity window so DatePicker components can display existing values
+            'valid_from' => $formTemplate->valid_from,
+            'valid_until' => $formTemplate->valid_until,
             'compliance_method' => $formTemplate->compliance_method,
             'auto_fail_on_critical' => $formTemplate->auto_fail_on_critical,
             'fields' => $fields,

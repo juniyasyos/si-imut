@@ -59,9 +59,10 @@ class ManageFormBuilder extends Page implements HasForms
         // Query parameter fallback: ?templateId=349 (for backward compatibility)
         $requestedTemplateId = $templateId ?? request()->query('templateId');
 
-        // Determine which template to load
+        // Determine which template to load. Load minimal relations for permission checks.
         if ($requestedTemplateId) {
-            $this->formTemplate = \App\Models\FormTemplate::where('id', $requestedTemplateId)
+            $this->formTemplate = \App\Models\FormTemplate::with('imutProfile.imutData')
+                ->where('id', $requestedTemplateId)
                 ->where('imut_profile_id', $record->id)
                 ->first();
             $this->selectedTemplateId = $requestedTemplateId;
@@ -69,13 +70,14 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Fallback to active template if not found or not specified
         if (!$this->formTemplate) {
-            $this->formTemplate = $record->activeFormTemplate;
+            $this->formTemplate = $record->activeFormTemplate?->load('imutProfile.imutData');
             $this->selectedTemplateId = $this->formTemplate?->id;
         }
 
         // Load form data from selected template
         $formDataService = new FormDataService();
-        $this->data = $formDataService->loadFormData($record, $this->selectedTemplateId);
+        $profileForData = $this->record ?? $this->formTemplate?->imutProfile;
+        $this->data = $formDataService->loadFormData($profileForData, $this->selectedTemplateId);
         $this->form->fill($this->data);
 
         // Check if selected template has existing responses
@@ -90,11 +92,9 @@ class ManageFormBuilder extends Page implements HasForms
         $this->totalVersions = $record->formTemplateVersions()->count();
 
         // dd([
+        //     'record' => $this->record,
+        //     'formTemplate' => $this->formTemplate,
         //     'selectedTemplateId' => $this->selectedTemplateId,
-        //     'currentVersion' => $this->currentVersion,
-        //     'totalVersions' => $this->totalVersions,
-        //     'hasExistingResponses' => $this->hasExistingResponses,
-        //     'responseCount' => $this->responseCount,
         //     'canForceUpdate' => $this->canForceUpdate,
         // ]);
     }
@@ -107,7 +107,16 @@ class ManageFormBuilder extends Page implements HasForms
      */
     private function evaluateCanForceUpdate(): bool
     {
-        if ($this->record->imutData->created_by === Auth::id()) {
+        // Determine owner via formTemplate->imutProfile->imutData or via record if available
+        $createdBy = null;
+
+        if ($this->formTemplate?->imutProfile?->imutData?->created_by !== null) {
+            $createdBy = $this->formTemplate->imutProfile->imutData->created_by;
+        } elseif ($this->record?->imutData?->created_by !== null) {
+            $createdBy = $this->record->imutData->created_by;
+        }
+
+        if ($createdBy === Auth::id()) {
             return true;
         }
 
@@ -123,7 +132,7 @@ class ManageFormBuilder extends Page implements HasForms
         return $form
             ->schema(FormSchemaBuilder::buildFormSchema($this->hasExistingResponses))
             ->statePath('data')
-            ->model($this->record)
+            ->model($this->formTemplate ?? $this->record)
             ->disabled($this->hasExistingResponses && !$this->canForceUpdate);
     }
 
@@ -132,7 +141,7 @@ class ManageFormBuilder extends Page implements HasForms
         if ($this->hasExistingResponses && !$this->canForceUpdate) {
             return [
                 Action::make('versionInfo')
-                    ->label("Version: {$this->currentVersion} ({$this->totalVersions} total)")
+                    ->label("Version: {$this->currentVersion}")
                     ->icon('heroicon-o-information-circle')
                     ->color('success')
                     ->disabled(),
@@ -159,9 +168,9 @@ class ManageFormBuilder extends Page implements HasForms
 
         return [
             Action::make('versionInfo')
-                ->label("Version: {$this->currentVersion} ({$this->totalVersions} total)")
+                ->label("Version: {$this->currentVersion}")
                 ->icon('heroicon-o-information-circle')
-                ->color('gray')
+                ->color('success')
                 ->disabled(),
 
             ActionGroup::make([
@@ -229,7 +238,8 @@ class ManageFormBuilder extends Page implements HasForms
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
 
                 // Calculate compliance for the profile
-                $formPersistenceService->calculateAndUpdateCompliance($this->record);
+                $profileForAction = $this->record ?? $this->formTemplate?->imutProfile;
+                $formPersistenceService->calculateAndUpdateCompliance($profileForAction);
             }
 
             DB::commit();
@@ -267,7 +277,8 @@ class ManageFormBuilder extends Page implements HasForms
 
             if ($this->formTemplate) {
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
-                $formPersistenceService->calculateAndUpdateCompliance($this->record);
+                $profileForAction = $this->record ?? $this->formTemplate?->imutProfile;
+                $formPersistenceService->calculateAndUpdateCompliance($profileForAction);
             }
 
             DB::commit();
@@ -285,17 +296,24 @@ class ManageFormBuilder extends Page implements HasForms
      */
     private function refreshVersionInfo(): void
     {
-        $this->record->refresh();
+        if ($this->record) {
+            $this->record->refresh();
+        } elseif ($this->formTemplate?->imutProfile) {
+            $this->formTemplate->imutProfile->refresh();
+        }
+
         // Reload selected template
         if ($this->selectedTemplateId) {
-            $this->formTemplate = \App\Models\FormTemplate::find($this->selectedTemplateId);
+            $this->formTemplate = \App\Models\FormTemplate::with('imutProfile.imutData')->find($this->selectedTemplateId);
         } else {
-            $this->formTemplate = $this->record->activeFormTemplate;
+            $this->formTemplate = $this->record?->activeFormTemplate?->load('imutProfile.imutData') ?? $this->formTemplate;
             $this->selectedTemplateId = $this->formTemplate?->id;
         }
 
         $this->currentVersion = $this->formTemplate?->version ?? 'No Template';
-        $this->totalVersions = $this->record->formTemplateVersions()->count();
+        $this->totalVersions = $this->record
+            ? $this->record->formTemplateVersions()->count()
+            : ($this->formTemplate?->imutProfile?->formTemplateVersions()->count() ?? 0);
 
         // Also refresh response count for selected template
         if ($this->formTemplate) {
@@ -330,7 +348,8 @@ class ManageFormBuilder extends Page implements HasForms
             DB::commit();
 
             // Refresh UI state
-            $this->data = (new FormDataService())->loadFormData($this->record, $this->selectedTemplateId);
+            $profileForData = $this->record ?? $this->formTemplate?->imutProfile;
+            $this->data = (new FormDataService())->loadFormData($profileForData, $this->selectedTemplateId);
             $this->form->fill($this->data);
             $this->refreshVersionInfo();
 
@@ -354,9 +373,10 @@ class ManageFormBuilder extends Page implements HasForms
         }
 
         // Redirect to preview page
+        $profileForRedirect = $this->record ?? $this->formTemplate?->imutProfile;
         $this->redirect(ImutDataResource::getUrl('preview-form', [
-            'imutDataSlug' => $this->record->imutData->slug,
-            'record' => $this->record->slug,
+            'imutDataSlug' => $profileForRedirect->imutData->slug,
+            'record' => $profileForRedirect->slug,
         ]));
     }
 

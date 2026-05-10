@@ -16,9 +16,13 @@ use Filament\Forms\Components\TimePicker;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
 use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
+use Carbon\Carbon;
+use Filament\Forms\Components\Fieldset;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\HtmlString;
 
 class FormSchemaBuilder
 {
@@ -26,6 +30,9 @@ class FormSchemaBuilder
     {
         return [
             Section::make('Informasi Dasar Form')
+                ->description('Atur judul, deskripsi, dan periode validitas form. Pastikan periode validitas form berada dalam rentang periode profil indikator.')
+                ->icon('heroicon-o-document-text')
+                ->collapsible()
                 ->schema([
                     TextInput::make('title')
                         ->label('Judul Form')
@@ -39,10 +46,86 @@ class FormSchemaBuilder
                         ->maxLength(1000)
                         ->readOnly(fn($record) => self::shouldBeReadonly($record))
                         ->columnSpanFull(),
+
+                    Fieldset::make('validity_window')
+                        ->label('Pengaturan Validitas Form')
+                        ->schema([
+
+                            Placeholder::make('imut_profile_validity_range')
+                                ->label('')
+                                ->content(function (?Model $record) {
+                                    $profile = self::resolveRelatedProfile($record);
+
+                                    if (! $profile) {
+                                        return new HtmlString('
+                                            <div class="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700">
+                                                Data periode validitas profil belum tersedia.
+                                            </div>
+                                        ');
+                                    }
+
+                                    $validFrom = $profile->valid_from
+                                        ? Carbon::parse($profile->valid_from)->translatedFormat('d F Y')
+                                        : '-';
+
+                                    $validUntil = $profile->valid_until
+                                        ? Carbon::parse($profile->valid_until)->translatedFormat('d F Y')
+                                        : 'Selamanya';
+
+                                    return new HtmlString("
+                                        <div class='rounded-2xl border border-slate-200 bg-gradient-to-r dark:bg-slate-700 from-slate-50 to-white p-4 shadow-sm'>
+                                            <div class='flex items-start gap-3'>
+                                                <div class='flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600'>
+                                                    📅
+                                                </div>
+
+                                                <div class='space-y-1'>
+                                                    <p class='text-sm font-semibold text-slate-800'>
+                                                        Form ini mengikuti periode aktif profil indikator yang berlaku.
+                                                    </p>
+
+                                                    <div class='inline-flex items-center rounded-lg bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700'>
+                                                        {$validFrom} — {$validUntil}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ");
+                                })
+                                ->columnSpanFull(),
+                            Grid::make(2)
+                                ->schema([
+                                    DatePicker::make('valid_from')
+                                        ->label('Berlaku Mulai')
+                                        ->native(false)
+                                        ->required()
+                                        ->default(now()->toDateString())
+                                        ->helperText('Tanggal form daily report ini mulai berlaku')
+                                        ->minDate(fn(?Model $record) => self::resolveRelatedProfile($record)?->valid_from)
+                                        ->maxDate(fn(?Model $record) => self::resolveRelatedProfile($record)?->valid_until)
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get, ?Model $record) {
+                                            self::validateValidityWindow($state, $get('valid_until'), $record);
+                                        }),
+
+                                    DatePicker::make('valid_until')
+                                        ->label('Berlaku Sampai')
+                                        ->native(false)
+                                        ->minDate(fn(?Model $record) => self::resolveRelatedProfile($record)?->valid_from)
+                                        ->maxDate(fn(?Model $record) => self::resolveRelatedProfile($record)?->valid_until)
+                                        ->reactive()
+                                        ->afterOrEqual('valid_from')
+                                        ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get, ?Model $record) {
+                                            self::validateValidityWindow($get('valid_from'), $state, $record);
+                                        }),
+                                ]),
+                        ])
                 ])
                 ->columns(2),
 
             Section::make('Pengaturan Compliance')
+                ->description()
+                ->icon('heroicon-o-shield-check')
                 ->schema([
                     Select::make('compliance_method')
                         ->label('Metode Compliance')
@@ -66,7 +149,9 @@ class FormSchemaBuilder
                 ->columns(2),
 
             Section::make('Field Builder - Sederhana untuk Pelaporan Mutu')
-                ->description('🎯 Fokus pada 3 elemen utama: (1) Pengumpul Data, (2) Data Validasi. Pilih field type yang sesuai kebutuhan pelaporan.')
+                ->collapsible()
+                ->icon('heroicon-o-rectangle-stack')
+                ->description('Fokus pada 3 elemen utama: (1) Pengumpul Data, (2) Data Validasi. Pilih field type yang sesuai kebutuhan pelaporan.')
                 ->schema([
                     Repeater::make('fields')
                         ->label('Fields')
@@ -609,6 +694,79 @@ class FormSchemaBuilder
 
     private static function shouldBeReadonly(Model $record): bool
     {
-        return !($record->imutData->created_by === Auth::id()) && Auth::user()?->can('delete_imut::profile');
+        // dd([
+        //     'record' => $record,
+        //     'imutProfile' => $record->imutProfile,
+        //     'imutData' => $record->imutProfile->imutData,
+        //     'created_by' => $record->imutProfile->imutData->created_by,
+        //     'current_user_id' => Auth::id(),
+        // ]);
+        return !($record->imutProfile->imutData->created_by === Auth::id()) && Auth::user()?->can('delete_imut::profile');
+    }
+
+    private static function validateValidityWindow($validFrom, $validUntil, ?Model $record): bool
+    {
+        $profile = self::resolveRelatedProfile($record);
+
+        if (! $profile) {
+            return true;
+        }
+
+        if (blank($validFrom)) {
+            return true;
+        }
+
+        $profileValidFrom = Carbon::parse($profile->valid_from)->startOfDay();
+        $profileValidUntil = $profile->valid_until ? Carbon::parse($profile->valid_until)->endOfDay() : null;
+        $selectedValidFrom = Carbon::parse($validFrom)->startOfDay();
+        $selectedValidUntil = blank($validUntil) ? null : Carbon::parse($validUntil)->endOfDay();
+
+        if ($selectedValidFrom->lt($profileValidFrom)) {
+            Notification::make()
+                ->title('Tanggal di luar batas profile')
+                ->body('Berlaku mulai tidak boleh kurang dari tanggal valid profile terkait.')
+                ->danger()
+                ->persistent()
+                ->send();
+
+            return false;
+        }
+
+        if ($profileValidUntil && $selectedValidUntil && $selectedValidUntil->gt($profileValidUntil)) {
+            Notification::make()
+                ->title('Tanggal di luar batas profile')
+                ->body('Berlaku sampai tidak boleh melebihi tanggal valid profile terkait.')
+                ->danger()
+                ->persistent()
+                ->send();
+
+            return false;
+        }
+
+        if ($selectedValidUntil && $selectedValidUntil->lt($selectedValidFrom)) {
+            Notification::make()
+                ->title('Rentang tanggal tidak valid')
+                ->body('Berlaku sampai tidak boleh lebih kecil dari berlaku mulai.')
+                ->danger()
+                ->persistent()
+                ->send();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static function resolveRelatedProfile(?Model $record): ?\App\Models\ImutProfile
+    {
+        if ($record instanceof \App\Models\FormTemplate) {
+            return $record->imutProfile;
+        }
+
+        if ($record instanceof \App\Models\ImutProfile) {
+            return $record;
+        }
+
+        return $record?->imutProfile ?? null;
     }
 }

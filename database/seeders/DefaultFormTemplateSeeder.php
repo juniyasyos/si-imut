@@ -41,8 +41,8 @@ class DefaultFormTemplateSeeder extends Seeder
                 // Create default FormTemplate
                 $formTemplate = FormTemplate::create([
                     'imut_profile_id' => $profile->id,
-                    'title' => 'Template Observasi: ' . $imutDataTitle,
-                    'description' => 'Form observasi cerdas dengan conditional logic untuk ' . $imutDataTitle . ' - v' . $profile->version,
+                    'title' => 'Form Pelaporan Harian — ' . $imutDataTitle,
+                    'description' => 'Dokumentasikan aktivitas, hasil observasi, dan temuan lapangan secara terstruktur untuk mendukung monitoring dan evaluasi operasional • Versi ' . $profile->version,
                     'compliance_method' => 'weighted_average',
                     'auto_fail_on_critical' => true,
                     'scoring_config' => json_encode([

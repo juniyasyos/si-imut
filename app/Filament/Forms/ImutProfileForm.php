@@ -21,6 +21,7 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\Wizard;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -47,27 +48,26 @@ class ImutProfileForm
     /**
      * Summary of make
      *
-     * @return Forms\Components\Tabs[]
+     * @return Forms\Components\Wizard[]
      */
     public static function make(): array
     {
         return [
             \Filament\Forms\Components\Hidden::make('imut_data_id'),
-            Tabs::make('Form Profil Indikator')
-                ->tabs([
-                    Tab::make('ℹ️ Informasi Dasar')
-                        ->schema(self::basicInformationSchema()),
+            Wizard::make([
+                Wizard\Step::make('ℹ️ Informasi Dasar')
+                    ->schema(self::basicInformationSchema()),
 
-                    Tab::make('🧮 Perhitungan')
-                        ->schema(self::operationalDefinitionSchema()),
+                Wizard\Step::make('🧮 Perhitungan')
+                    ->schema(self::operationalDefinitionSchema()),
 
-                    Tab::make('📋 Data Resource')
-                        ->schema(self::dataResourceSchema()),
+                Wizard\Step::make('📋 Data Resource')
+                    ->schema(self::dataResourceSchema()),
 
-                    Tab::make('🎯 Analisis')
-                        ->schema(self::AnalysisSchema()),
-                ])
-                ->columnSpan(['lg' => 2]),
+                Wizard\Step::make('🎯 Analisis')
+                    ->schema(self::AnalysisSchema()),
+            ])
+                ->columnSpan(['lg' => 2])
         ];
     }
 
@@ -76,6 +76,8 @@ class ImutProfileForm
         return [
             Section::make('Informasi Dasar')
                 ->description('Isi data umum indikator mutu profil.')
+                ->collapsible()
+                ->icon('heroicon-o-information-circle')
                 ->schema([
                     Grid::make(2)->schema([
 
@@ -149,7 +151,9 @@ class ImutProfileForm
                 ]),
 
             Section::make('Deskripsi Indikator')
+                ->icon('heroicon-o-document-text')
                 ->description('Uraikan latar belakang, tujuan, dan makna indikator.')
+                ->collapsible()
                 ->schema([
                     RichEditor::make('rationale')
                         ->label('Rasional')
@@ -178,9 +182,10 @@ class ImutProfileForm
     {
         return [
             Section::make('💡 Perhitungan Indikator')
+                ->icon('heroicon-o-calculator')
+                ->collapsible()
                 ->description('Masukkan rumus dan kriteria yang digunakan untuk menghitung indikator mutu.')
                 ->schema([
-
                     Fieldset::make('🧮 Rumus Perhitungan')
                         ->columns(1)
                         ->schema([
@@ -226,6 +231,8 @@ class ImutProfileForm
     {
         return [
             Section::make('📥 Pengumpulan')
+                ->icon('heroicon-o-archive-box')
+                ->collapsible()
                 ->description('Detail proses pengumpulan data, dan metode')
                 ->schema([
 
@@ -269,6 +276,8 @@ class ImutProfileForm
     {
         return [
             Section::make('🔍 Analisis Data')
+                ->icon('heroicon-o-chart-bar')
+                ->collapsible()
                 ->description('Detail perencanaan analisis indikator mutu.')
                 ->schema([
                     // === Fieldset: Detail Analisis ===

@@ -78,7 +78,13 @@ class TableViewController extends Controller
 
         // Apply form_template_id filter
         if ($formTemplateId) {
+            // User explicitly selected a template
             $query->where('form_template_id', $formTemplateId);
+        } else {
+            // No template selected: filter by active form templates only
+            $query->whereHas('formTemplate', function ($q) {
+                $q->where('is_active', true);
+            });
         }
 
         // Apply unit_kerja_id filter
@@ -453,6 +459,9 @@ class TableViewController extends Controller
 
             $row = [
                 'no' => $index + 1,
+                'form_template_id' => $entry->form_template_id,
+                'form_template_title' => $entry->formTemplate?->title ?? '-',
+                'form_template_is_active' => $entry->formTemplate?->is_active ?? false,
                 'report_date' => $entry->report_date->format('Y-m-d'),
                 'submitted_by_name' => $entry->submittedBy?->name ?? '-',
                 'is_validated' => $entry->validation_status === 'valid' ? '✓' : ($entry->validation_status === 'invalid' ? '✗' : '—'),

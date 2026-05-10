@@ -46,7 +46,7 @@ trait BuildIsiPenilaian
                 $period = null;
 
                 if ($record) {
-                    $formTemplateId = optional($record->profile)->formTemplates()->first()?->id;
+                    $formTemplateId = optional($record->profile)->activeFormTemplate?->id;
                     $imutProfileId = optional($record->profile)->id;
                     $unitKerjaId = optional($record->laporanUnitKerja)->unit_kerja_id;
                     $laporan = optional($record->laporanUnitKerja)->laporanImut;
@@ -391,7 +391,7 @@ trait BuildIsiPenilaian
      */
     protected function buildTableViewUrl($record): string
     {
-        $formTemplateId = optional($record->profile)->formTemplates()->first()?->id;
+        $formTemplateId = optional($record->profile)->activeFormTemplate?->id;
         $imutProfileId = optional($record->profile)->id;
         $unitKerjaId = optional($record->laporanUnitKerja)->unit_kerja_id;
         $laporan = optional($record->laporanUnitKerja)->laporanImut;

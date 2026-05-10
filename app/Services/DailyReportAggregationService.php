@@ -32,7 +32,7 @@ class DailyReportAggregationService
         $unitKerjaId = $penilaian->laporanUnitKerja->unit_kerja_id;
         $unitKerjaName = $penilaian->laporanUnitKerja->unitKerja->unit_name ?? 'Unknown';
 
-        $formTemplate = $penilaian->profile->formTemplates()->first();
+        $formTemplate = $penilaian->profile->activeFormTemplate;
         if (! $formTemplate) {
             Log::warning("No FormTemplate found for ImutProfile {$penilaian->imut_profil_id}");
             return $this->emptyResult($start, $end, 'No FormTemplate found');
