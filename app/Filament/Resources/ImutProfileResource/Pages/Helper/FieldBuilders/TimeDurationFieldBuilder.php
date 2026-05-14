@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders;
 
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -42,7 +43,10 @@ class TimeDurationFieldBuilder
                         // Force set the threshold type value
                         $set($fieldKey . '_threshold_type', $thresholdType);
                     }),
+                // Date pickers for explicit day selection
+                self::createStartDatePicker($fieldKey),
                 self::createStartTimePicker($fieldKey, $required, $customLabels),
+                self::createEndDatePicker($fieldKey),
                 self::createEndTimePicker($fieldKey, $required, $customLabels),
                 self::createDurationDisplay($fieldKey),
                 self::createThresholdPicker($fieldKey, $defaultThreshold)
@@ -78,11 +82,24 @@ class TimeDurationFieldBuilder
             ->debounce(1000)
             ->live()
             ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
-                // Validate on load
+                // Combine with date if present, then validate on load
+                $date = $get($fieldKey . '_start_date');
+                if ($date) {
+                    $combined = trim($date . ' ' . $state);
+                    $set($fieldKey . '_start_time', $combined);
+                } else {
+                    $set($fieldKey . '_start_time', $state);
+                }
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
             })
             ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                $date = $get($fieldKey . '_start_date');
+                if ($date) {
+                    $set($fieldKey . '_start_time', trim($date . ' ' . $state));
+                } else {
+                    $set($fieldKey . '_start_time', $state);
+                }
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
             })
@@ -113,15 +130,104 @@ class TimeDurationFieldBuilder
             ->debounce(1000)
             ->live()
             ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
-                // Validate on load
+                // Combine with date if present, then validate on load
+                $date = $get($fieldKey . '_end_date');
+                if ($date) {
+                    $set($fieldKey . '_end_time', trim($date . ' ' . $state));
+                } else {
+                    $set($fieldKey . '_end_time', $state);
+                }
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
             })
             ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                $date = $get($fieldKey . '_end_date');
+                if ($date) {
+                    $set($fieldKey . '_end_time', trim($date . ' ' . $state));
+                } else {
+                    $set($fieldKey . '_end_time', $state);
+                }
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
             })
             ->reactive(); // Make it reactive to update validation indicator
+    }
+
+    /**
+     * Create start date picker
+     *
+     * @param string $fieldKey
+     * @return DatePicker
+     */
+    public static function createStartDatePicker(string $fieldKey): DatePicker
+    {
+        return DatePicker::make($fieldKey . '_start_date')
+            ->label('Tanggal Mulai')
+            ->format('Y-m-d')
+            ->displayFormat('Y-m-d')
+            ->default(date('Y-m-d'))
+            ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
+                $time = $get($fieldKey . '_start_time');
+                if ($time) {
+                    // If the time value looks time-only, combine; otherwise respect existing value
+                    $hasDate = preg_match('/\d{4}-\d{2}-\d{2}/', (string) $time);
+                    if (!$hasDate) {
+                        $set($fieldKey . '_start_time', trim($state . ' ' . $time));
+                    }
+                }
+                $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
+                self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
+            })
+            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                $time = $get($fieldKey . '_start_time');
+                if ($time) {
+                    $hasDate = preg_match('/\d{4}-\d{2}-\d{2}/', (string) $time);
+                    if (!$hasDate) {
+                        $set($fieldKey . '_start_time', trim($state . ' ' . $time));
+                    }
+                }
+                $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
+                self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
+            })
+            ->reactive();
+    }
+
+    /**
+     * Create end date picker
+     *
+     * @param string $fieldKey
+     * @return DatePicker
+     */
+    public static function createEndDatePicker(string $fieldKey): DatePicker
+    {
+        return DatePicker::make($fieldKey . '_end_date')
+            ->label('Tanggal Selesai')
+            ->format('Y-m-d')
+            ->displayFormat('Y-m-d')
+            ->default(date('Y-m-d'))
+            ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
+                $time = $get($fieldKey . '_end_time');
+                if ($time) {
+                    $hasDate = preg_match('/\d{4}-\d{2}-\d{2}/', (string) $time);
+                    if (!$hasDate) {
+                        $set($fieldKey . '_end_time', trim($state . ' ' . $time));
+                    }
+                }
+                $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
+                self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
+            })
+            ->afterStateUpdated(function ($state, $set, $get) use ($fieldKey) {
+                $time = $get($fieldKey . '_end_time');
+                if ($time) {
+                    $hasDate = preg_match('/\d{4}-\d{2}-\d{2}/', (string) $time);
+                    if (!$hasDate) {
+                        $set($fieldKey . '_end_time', trim($state . ' ' . $time));
+                    }
+                }
+                $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
+                self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
+            })
+            ->reactive();
     }
 
     /**

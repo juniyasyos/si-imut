@@ -55,7 +55,25 @@ class TimeUtility
     public static function calculateDurationInMinutes(string $startTime, string $endTime): ?int
     {
         try {
-            // Try H:i:s format first, then H:i format for both start and end times
+            // Detect whether input strings include a date part (YYYY-MM-DD or ISO T)
+            $startHasDate = (bool) preg_match('/\d{4}-\d{2}-\d{2}/', $startTime) || strpos($startTime, 'T') !== false;
+            $endHasDate = (bool) preg_match('/\d{4}-\d{2}-\d{2}/', $endTime) || strpos($endTime, 'T') !== false;
+
+            if ($startHasDate || $endHasDate) {
+                // Parse as full datetimes when at least one contains a date
+                $start = Carbon::parse($startTime);
+                $end = Carbon::parse($endTime);
+
+                // If both values include explicit dates, respect them as-is.
+                // If one of them lacks a date, allow crossing midnight by adding a day.
+                if ((!$startHasDate || !$endHasDate) && $end->lessThan($start)) {
+                    $end->addDay();
+                }
+
+                return $start->diffInMinutes($end);
+            }
+
+            // Fallback: time-only strings (H:i[:s]) — preserve previous behavior
             try {
                 $start = Carbon::createFromFormat('H:i:s', $startTime);
             } catch (\Exception $e) {
@@ -96,26 +114,41 @@ class TimeUtility
 
         try {
             $threshold = self::convertTimeToMinutes($thresholdTime);
+            // Detect whether inputs include an explicit date part
+            $startHasDate = (bool) preg_match('/\d{4}-\d{2}-\d{2}/', $startTime) || strpos($startTime, 'T') !== false;
+            $endHasDate = (bool) preg_match('/\d{4}-\d{2}-\d{2}/', $endTime) || strpos($endTime, 'T') !== false;
 
-            // Try H:i:s format first, then H:i format for both start and end times
-            try {
-                $start = Carbon::createFromFormat('H:i:s', $startTime);
-            } catch (\Exception $e) {
-                $start = Carbon::createFromFormat('H:i', $startTime);
+            if ($startHasDate || $endHasDate) {
+                $start = Carbon::parse($startTime);
+                $end = Carbon::parse($endTime);
+
+                // If one of the values lacks a date, allow crossing midnight by adding a day
+                if ((!$startHasDate || !$endHasDate) && $end->lessThan($start)) {
+                    $end->addDay();
+                }
+
+                $durationInMinutes = $start->diffInMinutes($end);
+            } else {
+                // Fallback to time-only parsing
+                try {
+                    $start = Carbon::createFromFormat('H:i:s', $startTime);
+                } catch (\Exception $e) {
+                    $start = Carbon::createFromFormat('H:i', $startTime);
+                }
+
+                try {
+                    $end = Carbon::createFromFormat('H:i:s', $endTime);
+                } catch (\Exception $e) {
+                    $end = Carbon::createFromFormat('H:i', $endTime);
+                }
+
+                // Allow crossing midnight for time-only inputs
+                if ($end->lessThan($start)) {
+                    $end->addDay();
+                }
+
+                $durationInMinutes = $start->diffInMinutes($end);
             }
-
-            try {
-                $end = Carbon::createFromFormat('H:i:s', $endTime);
-            } catch (\Exception $e) {
-                $end = Carbon::createFromFormat('H:i', $endTime);
-            }
-
-            // Handle case where end time is before start time (invalid)
-            if ($end->lessThan($start)) {
-                return false;
-            }
-
-            $durationInMinutes = $start->diffInMinutes($end);
 
             // Validate based on threshold type
             if ($thresholdType === 'greater_than') {
