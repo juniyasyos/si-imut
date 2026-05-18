@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\Calculator;
 
-use App\Services\Calculator\ImutCalculatorService;
+use App\Services\Core\ImutCalculatorService;
 use PHPUnit\Framework\TestCase;
 
 class ImutCalculatorServiceTest extends TestCase

@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
-use App\Services\DailyReportAggregationService;
+use App\Services\Reporting\DailyReportAggregationService;
 use Illuminate\Console\Command;
 
 class TestDailyReportCalculation extends Command

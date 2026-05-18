@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Reporting;
 
 use App\Repositories\Interfaces\LaporanRepositoryInterface;
 use Illuminate\Database\Eloquent\Builder;

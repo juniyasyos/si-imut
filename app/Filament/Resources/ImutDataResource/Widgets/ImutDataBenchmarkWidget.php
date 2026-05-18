@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Widgets;
 
 use App\Models\ImutBenchmarking;
 use App\Models\RegionType;
-use App\Services\ImutBenchmarkingService;
+use App\Services\Benchmarking\ImutBenchmarkingService;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 

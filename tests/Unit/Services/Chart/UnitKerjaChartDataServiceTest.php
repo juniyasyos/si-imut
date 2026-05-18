@@ -4,7 +4,7 @@ namespace Tests\Unit\Services\Chart;
 
 use Tests\TestCase;
 use App\Services\Chart\UnitKerjaChartDataService;
-use App\Services\Calculator\ImutCalculatorService;
+use App\Services\Core\ImutCalculatorService;
 use App\Services\Chart\ChartDataProcessorService;
 use App\Models\ImutCategory;
 use Illuminate\Support\Collection;

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
  * Service for Daily Report Entry creation
  * Handles all business logic for creating daily reports, field responses, and compliance calculations
  */
-class CreateDailyReportEntryService
+class DailyReportAuthorizationService
 {
     /**
      * Authorize user access to create report for indicator

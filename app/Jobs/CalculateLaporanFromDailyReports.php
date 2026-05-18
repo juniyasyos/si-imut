@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\LaporanImut;
-use App\Services\DailyReportAggregationService;
+use App\Services\Reporting\DailyReportAggregationService;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

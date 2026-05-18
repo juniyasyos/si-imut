@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\ImutBenchmarkingService;
+use App\Services\Benchmarking\ImutBenchmarkingService;
 use App\Models\ImutData;
 use App\Models\RegionType;
 use Illuminate\Http\Request;

@@ -45,7 +45,7 @@
             {{-- Fallback: jika tidak ada leftUsers tapi prop `unit` diberikan, ambil dari SignatoryService --}}
             @php
             if (empty($leftUsers) && isset($unit)) {
-            $svc = app(\App\Services\SignatoryService::class);
+            $svc = app(\App\Services\Support\SignatoryService::class);
             $sign = $svc->pickForUnit($unit);
             if ($sign['pengumpul']) {
             $leftUsers = [[

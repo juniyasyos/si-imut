@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Services\GreetingService;
+use App\Services\Support\GreetingService;
 use Illuminate\Http\JsonResponse;
 
 class GreetingController

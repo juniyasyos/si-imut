@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\FormBuilder;
+namespace App\Services\Support;
 
 class FormFieldMapper
 {

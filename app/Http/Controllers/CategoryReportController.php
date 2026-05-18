@@ -10,8 +10,8 @@ use App\Models\RegionType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Services\CategoryAggregationService;
-use App\Services\PeriodParserService;
+use App\Services\Reporting\CategoryAggregationService;
+use App\Services\Support\PeriodParserService;
 
 class CategoryReportController extends Controller
 {
@@ -542,7 +542,7 @@ class CategoryReportController extends Controller
         }
 
         // Resolve Tim Mutu users for left signer dropdown ("Mengetahui")
-        $signatoryService = app(\App\Services\SignatoryService::class);
+        $signatoryService = app(\App\Services\Support\SignatoryService::class);
         $timMutuUsersData = [];
         $defaultLeftSignerIndex = 0;
         try {

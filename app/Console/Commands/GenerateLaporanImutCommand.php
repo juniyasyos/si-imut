@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\LaporanImutAutoGenerationService;
+use App\Services\Laporan\LaporanImutAutoGenerationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 

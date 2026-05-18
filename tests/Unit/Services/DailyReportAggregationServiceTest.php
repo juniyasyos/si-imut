@@ -9,7 +9,7 @@ use App\Models\ImutProfile;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\UnitKerja;
-use App\Services\DailyReportAggregationService;
+use App\Services\Reporting\DailyReportAggregationService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

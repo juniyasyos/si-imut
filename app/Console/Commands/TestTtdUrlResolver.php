@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Services\SignatoryService;
+use App\Services\Support\SignatoryService;
 use Illuminate\Console\Command;
 
 class TestTtdUrlResolver extends Command

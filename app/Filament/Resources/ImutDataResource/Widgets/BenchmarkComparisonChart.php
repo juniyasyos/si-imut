@@ -4,7 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Widgets;
 
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
-use App\Services\ImutBenchmarkingService;
+use App\Services\Benchmarking\ImutBenchmarkingService;
 use Filament\Forms\Components\Select;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;

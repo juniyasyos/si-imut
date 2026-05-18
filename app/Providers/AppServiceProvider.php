@@ -50,15 +50,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Services - Priority 1 & 2 refactoring
         $this->app->singleton(\App\Services\ImutReportService::class);
-        $this->app->singleton(\App\Services\PeriodParserService::class);
-        $this->app->singleton(\App\Services\CategoryAggregationService::class);
-        $this->app->singleton(\App\Services\CategoryReportDataBuilderService::class);
+        $this->app->singleton(\App\Services\Support\PeriodParserService::class);
+        $this->app->singleton(\App\Services\Reporting\CategoryAggregationService::class);
+        $this->app->singleton(\App\Services\Reporting\CategoryReportDataBuilderService::class);
         $this->app->singleton(\App\Services\Form\FormMutationService::class);
 
         // Register Daily Report Services
         $this->app->singleton(\App\Services\DailyReport\UnifiedComplianceService::class);
         $this->app->singleton(\App\Services\DailyReport\FieldResponseBuilderService::class);
-        $this->app->singleton(\App\Services\DailyReport\DailyReportCreationService::class);
+        $this->app->singleton(\App\Services\DailyReport\DailyReportBuildService::class);
 
         // When SSO is enabled we want the Filament logout response to redirect
         // the user through the IAM/SO logout flow instead of just returning to

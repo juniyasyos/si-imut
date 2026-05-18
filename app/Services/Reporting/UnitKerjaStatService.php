@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Reporting;
 
 use App\Models\ImutPenilaian;
 use App\Models\LaporanUnitKerja;

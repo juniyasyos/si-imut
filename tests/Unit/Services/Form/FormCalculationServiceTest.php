@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\Form;
 
-use App\Services\Calculator\ImutCalculatorService;
+use App\Services\Core\ImutCalculatorService;
 use App\Services\Form\FormCalculationService;
 use PHPUnit\Framework\TestCase;
 use Mockery;

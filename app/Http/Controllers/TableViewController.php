@@ -808,7 +808,7 @@ class TableViewController extends Controller
             ];
         }
 
-        $service = new \App\Services\SignatoryService();
+        $service = new \App\Services\Support\SignatoryService();
         $signatories = $service->pickForUnit($unitKerja, $entries);
 
         $unitUsers = $signatories['unit_users'];

@@ -1,6 +1,6 @@
 @php
 use Illuminate\Support\Str;
-use App\Services\GreetingService;
+use App\Services\Support\GreetingService;
 
 $user = filament()->auth()->user();
 $displayName = Str::limit(filament()->getUserName($user), 24);

@@ -4,7 +4,7 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
-use App\Services\DailyReport\CreateDailyReportEntryService;
+use App\Services\DailyReport\DailyReportAuthorizationService;
 use App\Services\DynamicForm\DynamicFormService;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -20,7 +20,7 @@ class CreateDailyReportEntry extends CreateRecord
 
     protected static string $view = 'filament.pages.create-daily-report-entry';
 
-    private CreateDailyReportEntryService $creationService;
+    private DailyReportAuthorizationService $creationService;
 
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
@@ -28,7 +28,7 @@ class CreateDailyReportEntry extends CreateRecord
 
     public function __construct()
     {
-        $this->creationService = app(CreateDailyReportEntryService::class);
+        $this->creationService = app(DailyReportAuthorizationService::class);
     }
 
     /**

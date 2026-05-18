@@ -149,16 +149,43 @@ class ImutProfileResourceSchema extends ImutProfileResource
                     RichEditor::make('rationale')
                         ->label('Rasional')
                         ->disabled(fn(?Model $record) => self::shouldDisableProfileField($record))
+                        ->toolbarButtons([
+                            'bold',
+                            'bulletList',
+                            'italic',
+                            'orderedList',
+                            'redo',
+                            'underline',
+                            'undo',
+                        ])
                         ->hint('Mengapa indikator ini penting untuk diukur.'),
 
                     RichEditor::make('objective')
                         ->label('Tujuan')
                         ->disabled(fn(?Model $record) => self::shouldDisableProfileField($record))
+                        ->toolbarButtons([
+                            'bold',
+                            'bulletList',
+                            'italic',
+                            'orderedList',
+                            'redo',
+                            'underline',
+                            'undo',
+                        ])
                         ->hint('Apa yang ingin dicapai melalui indikator ini.'),
 
                     RichEditor::make('operational_definition')
                         ->label('Definisi Operasional')
                         ->disabled(fn(?Model $record) => self::shouldDisableProfileField($record))
+                        ->toolbarButtons([
+                            'bold',
+                            'bulletList',
+                            'italic',
+                            'orderedList',
+                            'redo',
+                            'underline',
+                            'undo',
+                        ])
                         ->hint('Penjelasan rinci istilah dalam indikator.'),
 
                     TextInput::make('quality_dimension')

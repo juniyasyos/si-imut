@@ -203,7 +203,7 @@ class UnitKerjaLaporanController extends Controller
         $chartData = $this->buildChartData($dataByImut);
 
         // Prepare signatories for footer using SignatoryService
-        $signatoryService = new \App\Services\SignatoryService();
+        $signatoryService = new \App\Services\Support\SignatoryService();
         $signatories = $signatoryService->pickForUnit($unit);
 
         // Format users for blade component (keep compatibility with existing props)

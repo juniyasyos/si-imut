@@ -17,7 +17,7 @@ use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Actions\{Action, ActionGroup as ActionsActionGroup, CreateAction, EditAction, DeleteAction, DeleteBulkAction, BulkActionGroup};
 use Illuminate\Support\Facades\Auth;
-use App\Services\FormTemplateVersionService;
+use App\Services\Form\FormTemplateVersionService;
 use Filament\Notifications\Notification;
 
 class FormTemplateVersionsRelationManager extends RelationManager

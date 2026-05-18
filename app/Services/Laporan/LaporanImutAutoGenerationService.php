@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Laporan;
 
 use App\Jobs\ProsesPenilaianImut;
 use App\Models\LaporanImut;

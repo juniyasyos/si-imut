@@ -5,7 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\RegionType;
-use App\Services\BenchmarkingValidationService;
+use App\Services\Benchmarking\BenchmarkingValidationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

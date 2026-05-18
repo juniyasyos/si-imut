@@ -2,7 +2,7 @@
 
 namespace App\Services\Chart;
 
-use App\Services\Calculator\ImutCalculatorService;
+use App\Services\Core\ImutCalculatorService;
 use Illuminate\Support\Collection;
 
 /**

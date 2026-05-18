@@ -3,7 +3,7 @@
 namespace Tests\Unit\Services\Data;
 
 use Tests\TestCase;
-use App\Services\Data\DateFormattingService;
+use App\Services\Support\DateFormattingService;
 use Illuminate\Support\Collection;
 
 class DateFormattingServiceTest extends TestCase

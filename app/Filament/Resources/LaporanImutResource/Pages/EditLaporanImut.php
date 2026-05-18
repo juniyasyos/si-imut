@@ -390,7 +390,7 @@ class EditLaporanImut extends EditRecord
                     ->label('Berdasarkan IMUT Data')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('primary')
-                    ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForImutData($record->id))
+                    ->url(fn($record) => \App\Services\Support\LaporanRedirectService::getRedirectUrlForImutData($record->id))
                     ->disabled(fn($record) => is_null($record->imutPenilaians))
                     ->visible(fn() => Gate::any([
                         'view_imut_data_report_laporan::imut',
@@ -401,7 +401,7 @@ class EditLaporanImut extends EditRecord
                     ->label('Berdasarkan Unit Kerja')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('success')
-                    ->url(fn($record) => \App\Services\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
+                    ->url(fn($record) => \App\Services\Support\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
                     ->visible(fn() => Gate::any([
                         'view_unit_kerja_report_laporan::imut',
                         'view_unit_kerja_report_detail_laporan::imut',

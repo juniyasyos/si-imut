@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Laporan;
 
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;

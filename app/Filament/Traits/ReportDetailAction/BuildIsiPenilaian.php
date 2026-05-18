@@ -6,6 +6,7 @@ use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Services\Form\FormCalculationService;
 use Carbon\Carbon;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -185,9 +186,8 @@ trait BuildIsiPenilaian
 
         if (Auth::user()?->hasRole(['tim_mutu', 'super_admin'])) {
             return [
-                Textarea::make('analysis')
+                RichEditor::make('analysis')
                     ->label('Analisis')
-                    ->rows(4)
                     ->required(!$shouldLock)
                     ->minLength(20)
                     ->maxLength(100000)
@@ -201,14 +201,22 @@ trait BuildIsiPenilaian
                         }
                         return "Karakter: {$length}/100000";
                     })
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->toolbarButtons([
+                        'bold',
+                        'bulletList',
+                        'italic',
+                        'orderedList',
+                        'redo',
+                        'underline',
+                        'undo',
+                    ]),
 
-                Textarea::make('recommendations')
+                RichEditor::make('recommendations')
                     ->label('Rekomendasi')
                     ->required(!$shouldLock)
                     ->minLength(20)
                     ->maxLength(100000)
-                    ->rows(4)
                     ->live(onBlur: true)
                     ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
                     ->helperText(function ($state) {
@@ -219,13 +227,21 @@ trait BuildIsiPenilaian
                         }
                         return "Karakter: {$length}/100000";
                     })
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->toolbarButtons([
+                        'bold',
+                        'bulletList',
+                        'italic',
+                        'orderedList',
+                        'redo',
+                        'underline',
+                        'undo',
+                    ]),
             ];
         }
         return [
-            Textarea::make('analysis')
+            RichEditor::make('analysis')
                 ->label('Analisis')
-                ->rows(4)
                 ->required(!$shouldLock)
                 ->minLength(20)
                 ->maxLength(100000)
@@ -240,15 +256,23 @@ trait BuildIsiPenilaian
                     }
                     return "Karakter: {$length}/100000";
                 })
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->toolbarButtons([
+                    'bold',
+                    'bulletList',
+                    'italic',
+                    'orderedList',
+                    'redo',
+                    'underline',
+                    'undo',
+                ]),
 
-            Textarea::make('recommendations')
+            RichEditor::make('recommendations')
                 ->label('Rekomendasi')
                 ->required(!$shouldLock)
                 ->minLength(20)
                 ->maxLength(100000)
                 ->readOnly($shouldLock)
-                ->rows(4)
                 ->live(onBlur: true)
                 ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
                 ->helperText(function ($state) {
@@ -259,7 +283,16 @@ trait BuildIsiPenilaian
                     }
                     return "Karakter: {$length}/100000";
                 })
-                ->columnSpanFull(),
+                ->columnSpanFull()
+                ->toolbarButtons([
+                    'bold',
+                    'bulletList',
+                    'italic',
+                    'orderedList',
+                    'redo',
+                    'underline',
+                    'undo',
+                ]),
         ];
     }
 

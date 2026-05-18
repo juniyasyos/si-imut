@@ -5,7 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Models\DailyReportResponse;
-use App\Services\SignatoryService;
+use App\Services\Support\SignatoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;

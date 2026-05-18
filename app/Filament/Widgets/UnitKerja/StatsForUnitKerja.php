@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets\UnitKerja;
 
-use App\Services\UnitKerjaStatService;
+use App\Services\Reporting\UnitKerjaStatService;
 use App\Support\CacheKey;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;

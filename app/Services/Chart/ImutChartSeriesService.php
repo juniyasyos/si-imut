@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Chart;
 
 use App\Models\ImutCategory;
 use App\Support\CacheKey;

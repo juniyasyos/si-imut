@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\LaporanImutAutoGenerationSetting;
-use App\Services\LaporanImutAutoGenerationService;
+use App\Services\Laporan\LaporanImutAutoGenerationService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;

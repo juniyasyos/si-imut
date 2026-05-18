@@ -85,6 +85,7 @@ class ImutDataSchema extends ImutDataResource
                                     ->label(__('filament-forms::imut-data.fields.slug'))
                                     ->readOnly()
                                     ->disabled()
+                                    ->hidden()
                                     ->extraAttributes(['class' => 'bg-gray-100 text-gray-500'])
                                     ->visibleOn('edit')
                                     ->columnSpan(1),
@@ -107,16 +108,30 @@ class ImutDataSchema extends ImutDataResource
                                     ->required()
                                     ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
                                     ->hint(__('filament-forms::imut-data.form.main.category_hint')),
-
-                                Toggle::make('status')
+                                ToggleButtons::make('status')
                                     ->label(__('filament-forms::imut-data.fields.status'))
                                     ->helperText(__('filament-forms::imut-data.form.main.status_helper'))
                                     ->inline(true)
-                                    ->columnSpan(2)
-                                    ->disabled(fn(?Model $record) => ($record && $record->created_by !== Auth::id()) && ! Auth::user()->can('force_editable_imut::profile'))
+                                    ->columnSpan(1)
+                                    ->disabled(
+                                        fn(?Model $record) => ($record && $record->created_by !== Auth::id()) &&
+                                            ! Auth::user()->can('force_editable_imut::profile')
+                                    )
                                     ->required()
                                     ->default(true)
-                                    ->columnSpan(1),
+                                    ->boolean()
+                                    ->colors([
+                                        true  => 'success',
+                                        false => 'danger',
+                                    ])
+                                    ->icons([
+                                        true  => 'heroicon-m-check-circle',
+                                        false => 'heroicon-m-x-circle',
+                                    ])
+                                    ->options([
+                                        true  => 'Aktif',
+                                        false => 'Nonaktif',
+                                    ]),
 
                                 ToggleButtons::make('is_monthly')
                                     ->label('Pengisian')
@@ -138,7 +153,16 @@ class ImutDataSchema extends ImutDataResource
                                     ->helperText(__('filament-forms::imut-data.form.main.description_helper'))
                                     ->dehydrated(true)
                                     ->columnSpan(2)
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->toolbarButtons([
+                                        'bold',
+                                        'bulletList',
+                                        'italic',
+                                        'orderedList',
+                                        'redo',
+                                        'underline',
+                                        'undo',
+                                    ]),
 
                                 Select::make('created_by')
                                     ->label('Dibuat oleh')
@@ -148,6 +172,7 @@ class ImutDataSchema extends ImutDataResource
                                     })
                                     ->visibleOn('edit')
                                     ->disabled()
+                                    ->columnSpanFull()
                                     ->dehydrated(false),
 
                                 Hidden::make('created_by')

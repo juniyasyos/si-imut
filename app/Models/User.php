@@ -161,7 +161,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     public function getTtdPresignedUrlAttribute(): ?string
     {
-        return app(\App\Services\SignatoryService::class)->getTtdUrl($this);
+        return app(\App\Services\Support\SignatoryService::class)->getTtdUrl($this);
     }
 
     /**

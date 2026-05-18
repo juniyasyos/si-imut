@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Calculator;
+namespace App\Services\Core;
 
 /**
  * Service untuk menangani semua perhitungan terkait IMUT

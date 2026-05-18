@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\Chart;
 
-use App\Services\Calculator\ImutCalculatorService;
+use App\Services\Core\ImutCalculatorService;
 use App\Services\Chart\ChartDataProcessorService;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestCase;

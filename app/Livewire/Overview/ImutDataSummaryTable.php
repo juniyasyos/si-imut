@@ -29,11 +29,6 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
 
     public ?int $imutDataId = null;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     protected $listeners = [
         'summary-changed' => 'updateSummary',
     ];

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Benchmarking;
 
 use App\Models\ImutBenchmarking;
 use Illuminate\Support\Carbon;

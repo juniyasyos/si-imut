@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Form;
 
 use App\Models\FormTemplate;
 use App\Models\ImutProfile;

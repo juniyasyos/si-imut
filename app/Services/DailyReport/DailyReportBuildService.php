@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  * Service untuk menangani pembuatan Daily Report
  * Mengekstrak semua business logic dari Filament Page
  */
-class DailyReportCreationService
+class DailyReportBuildService
 {
     private UnifiedComplianceService $complianceService;
     private FieldResponseBuilderService $fieldResponseBuilder;

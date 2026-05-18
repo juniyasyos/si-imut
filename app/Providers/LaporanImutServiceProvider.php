@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\LaporanImutService;
+use App\Services\Laporan\LaporanImutService;
 use Illuminate\Support\ServiceProvider;
 
 class LaporanImutServiceProvider extends ServiceProvider

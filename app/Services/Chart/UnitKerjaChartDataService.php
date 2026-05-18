@@ -4,7 +4,7 @@ namespace App\Services\Chart;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
-use App\Services\Calculator\ImutCalculatorService;
+use App\Services\Core\ImutCalculatorService;
 use App\Support\ApexChartConfig;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
