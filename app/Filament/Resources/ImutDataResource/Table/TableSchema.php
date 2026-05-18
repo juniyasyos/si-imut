@@ -4,9 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Table;
 
 use App\Filament\Exports\ImutDataExporter;
 use App\Filament\Resources\ImutDataResource;
-use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
-use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
 use App\Models\ImutData;
 use App\Models\User;
 use Filament\Tables\Actions\Action as ActionTable;
@@ -19,17 +17,13 @@ use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 
 class TableSchema extends ImutDataResource
 {

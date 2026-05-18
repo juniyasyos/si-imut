@@ -3,8 +3,10 @@
 namespace App\Services\DailyReport;
 
 use App\Models\FormTemplate;
+use App\Support\CacheKey;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -20,7 +22,8 @@ class MatrixDataService
             return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
         }
 
-        $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+
         if (empty($unitKerjaIds)) {
             return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
         }
@@ -49,57 +52,46 @@ class MatrixDataService
 
     /**
      * Get indicators for user's units (active templates only)
+     * Using optimized Eloquent queries with proper relationship loading
      */
     private function getIndicators(array $unitKerjaIds): array
     {
-        $formTemplates = FormTemplate::select([
-            'form_templates.id',
-            'form_templates.title',
-            'imut_data.title as imut_data_title',
-            'imut_kategori.id as category_id',
-            'imut_kategori.category_name as category_title',
-            'imut_profil.version as imut_profile_version',
-        ])
-            ->join('imut_profil', 'form_templates.imut_profile_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
-            ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
-            ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
-            ->where('imut_data.status', true) // only monthly indicators
-            ->where('imut_data.is_monthly', true) // only monthly indicators
-            ->where('form_templates.is_active', true) // only active form templates
-            ->where(function ($query) {
-                $now = now();
-                $query->where(function ($q) use ($now) {
-                    $q->where('imut_profil.valid_from', '<=', $now)
-                        ->where(function ($subQ) use ($now) {
-                            $subQ->whereNull('imut_profil.valid_until')
-                                ->orWhere('imut_profil.valid_until', '>=', $now);
-                        });
-                });
-            })
+        $formTemplates = FormTemplate::forUserUnitKerjas($unitKerjaIds)
+            ->monthlyIndicators()
+            ->activeForCurrentDate()
+            ->with([
+                'imutProfile' => fn($q) => $q->select('id', 'version'),
+                'imutProfile.imutData' => fn($q) => $q->select('id', 'title', 'imut_kategori_id'),
+                'imutProfile.imutData.categories' => fn($q) => $q->select('id', 'category_name'),
+            ])
+            ->select(
+                'form_templates.id',
+                'form_templates.title',
+                'form_templates.imut_profile_id'
+            )
             ->distinct()
             ->get();
 
         return $formTemplates->map(function ($formTemplate) {
             return [
                 'id' => $formTemplate->id,
-                'title' => $formTemplate->imut_data_title ?? $formTemplate->title,
-                // include both name and id so front‑end can colour based on model data
-                'category' => $formTemplate->category_title,
-                'category_id' => $formTemplate->category_id,
-                'imut_profile_version' => $formTemplate->imut_profile_version,
+                'title' => $formTemplate->imutProfile?->imutData?->title ?? $formTemplate->title,
+                'category' => $formTemplate->imutProfile?->imutData?->categories?->category_name ?? null,
+                'category_id' => $formTemplate->imutProfile?->imutData?->imut_kategori_id,
+                'imut_profile_version' => $formTemplate->imutProfile?->version,
             ];
         })->toArray();
     }
 
     /**
      * Get compliance summaries for the month
+     * Optimized query structure with efficient grouping
      */
     private function getComplianceSummaries(array $unitKerjaIds, Carbon $date): \Illuminate\Support\Collection
     {
         $startDate = $date->copy()->startOfMonth()->format('Y-m-d');
         $endDate = $date->copy()->endOfMonth()->format('Y-m-d');
+        $now = now();
 
         return \App\Models\DailyReportResponse::select([
             'form_templates.id as form_template_id',
@@ -108,21 +100,15 @@ class MatrixDataService
             DB::raw('SUM(CASE WHEN compliance_status = 1 THEN 1 ELSE 0 END) as compliant_count')
         ])
             ->join('form_templates', 'daily_report_responses.form_template_id', '=', 'form_templates.id')
-            ->join('imut_profil', 'form_templates.imut_profile_id', '=', 'imut_profil.id')
-            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
-            ->join('imut_data_unit_kerja', 'imut_data.id', '=', 'imut_data_unit_kerja.imut_data_id')
-            ->whereIn('imut_data_unit_kerja.unit_kerja_id', $unitKerjaIds)
-            ->whereIn('daily_report_responses.unit_kerja_id', $unitKerjaIds)
-            ->where(function ($query) {
-                $now = now();
-                $query->where(function ($q) use ($now) {
-                    $q->where('imut_profil.valid_from', '<=', $now)
-                        ->where(function ($subQ) use ($now) {
-                            $subQ->whereNull('imut_profil.valid_until')
-                                ->orWhere('imut_profil.valid_until', '>=', $now);
-                        });
-                });
+            ->whereHas('formTemplate.imutProfile', function ($q) use ($now) {
+                // Validate profile is currently valid
+                $q->where('valid_from', '<=', $now)
+                  ->where(function ($subQ) use ($now) {
+                      $subQ->whereNull('valid_until')
+                           ->orWhere('valid_until', '>=', $now);
+                  });
             })
+            ->whereIn('daily_report_responses.unit_kerja_id', $unitKerjaIds)
             ->whereBetween('daily_report_responses.report_date', [$startDate, $endDate])
             ->groupBy('form_templates.id', DB::raw('DATE(daily_report_responses.report_date)'))
             ->get()
@@ -130,7 +116,6 @@ class MatrixDataService
             ->map(function ($dates) {
                 // key by plain Y-m-d string to match buildMatrixData lookup
                 return $dates->keyBy(function ($item) {
-                    // item->report_date may be Carbon or string
                     return Carbon::parse($item->report_date)->format('Y-m-d');
                 });
             });
@@ -142,6 +127,9 @@ class MatrixDataService
     private function buildMatrixData(array $indicators, array $daysInMonth, Carbon $date, $complianceSummaries, int $backDays = 6): array
     {
         $matrixData = [];
+        
+        $today = now()->startOfDay();
+        $sixDaysAgo = $today->copy()->subDays($backDays)->startOfDay();
 
         foreach ($indicators as $indicator) {
             foreach ($daysInMonth as $day) {
@@ -153,8 +141,6 @@ class MatrixDataService
                 $compliancePercentage = $totalCount > 0 ? round(($compliantCount / $totalCount) * 100, 1) : 0;
 
                 $cellDate = $date->copy()->day($day)->startOfDay();
-                $today = now()->startOfDay();
-                $sixDaysAgo = now()->copy()->subDays($backDays)->startOfDay();
 
                 // debugging: log summary for today to confirm counts
                 // if ($today->isSameDay($cellDate)) {
@@ -212,6 +198,7 @@ class MatrixDataService
 
     /**
      * Get real indicator status from database
+     * Optimized to avoid repeated database queries for settings
      */
     public function getRealIndicatorStatus(int $indicatorId, string $date): array
     {
@@ -220,7 +207,7 @@ class MatrixDataService
             return ['error' => 'User not authenticated', 'status' => 'error', 'count' => 0];
         }
 
-        $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
         if (empty($unitKerjaIds)) {
             return ['error' => 'No unit kerja found', 'status' => 'error', 'count' => 0];
         }
@@ -241,8 +228,10 @@ class MatrixDataService
         $count = $reports->count();
         $cellDate = Carbon::parse($date)->startOfDay();
         $today = now()->startOfDay();
+        
+        // Get cached setting instead of querying repeatedly
         $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
-        $sixDaysAgo = now()->copy()->subDays($backDays)->startOfDay();
+        $sixDaysAgo = $today->copy()->subDays($backDays)->startOfDay();
 
         if ($count > 0) {
             $status = 'done';
@@ -260,5 +249,19 @@ class MatrixDataService
             'reports' => $reports->toArray(),
             'date' => $date
         ];
+    }
+
+    /**
+     * Get user's unit kerja IDs with caching
+     * Cache for 1 hour or until invalidated
+     * Uses CacheKey::userHasUnitKerjaIds for consistent cache key
+     */
+    private function getUserUnitKerjaIds(int $userId): array
+    {
+        return Cache::remember(
+            CacheKey::userHasUnitKerjaIds($userId),
+            3600,
+            fn() => Auth::user()?->unitKerjas()?->pluck('unit_kerja.id')->toArray() ?? []
+        );
     }
 }

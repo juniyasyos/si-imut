@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class LaporanImutAutoGenerationSetting extends Model
 {
@@ -39,6 +40,19 @@ class LaporanImutAutoGenerationSetting extends Model
         'recommendation_analysis_duration' => 'integer',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            self::clearCache();
+        });
+
+        static::deleted(function ($model) {
+            self::clearCache();
+        });
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -50,11 +64,22 @@ class LaporanImutAutoGenerationSetting extends Model
     }
 
     /**
-     * Get the singleton instance
+     * Get the singleton instance with caching
+     * Cache for 1 hour or until manually cleared
      */
     public static function getInstance(): self
     {
-        return static::firstOrCreate([], static::getDefaults());
+        return Cache::remember('laporan_imut_auto_generation_setting', 3600, function () {
+            return static::firstOrCreate([], static::getDefaults());
+        });
+    }
+
+    /**
+     * Clear cache for singleton instance
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('laporan_imut_auto_generation_setting');
     }
 
     /**

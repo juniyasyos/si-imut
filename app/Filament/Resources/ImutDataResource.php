@@ -11,6 +11,7 @@ use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationMa
 use App\Filament\Resources\ImutDataResource\Schema\ImutDataSchema;
 use App\Filament\Resources\ImutDataResource\Table\TableSchema;
 use App\Models\ImutData;
+use App\Support\CacheKey;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -95,20 +96,28 @@ class ImutDataResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        // dd(
-        //     $user->getAllPermissions(),   // collection permission
-        //     $user->roles,                 // role-model(s)
-        //     $user->roles->pluck('name')   // nama-namanya saja
-        // );
+        if (! $user) {
+            return null;
+        }
 
         if ($user->can('view_all_data_imut::data')) {
-            return (string) ImutData::count();
+            return cache()->remember(
+                CacheKey::imutDataNavigationBadgeCount(),
+                now()->addMinutes(10),
+                fn() => (string) ImutData::count()
+            );
         }
 
         if ($user->can('view_by_unit_kerja_imut::data')) {
-            return (string) ImutData::whereHas('unitKerja', function ($q) use ($user) {
-                $q->where('unit_kerja_id', $user->unitKerjas->pluck('id')->toArray());
-            })->count();
+            $cacheKey = CacheKey::imutDataNavigationBadgeCountForUser($user->id);
+
+            return cache()->remember(
+                $cacheKey,
+                now()->addMinutes(10),
+                fn() => (string) ImutData::whereHas('unitKerja', function ($q) use ($user) {
+                    $q->whereIn('unit_kerja_id', $user->unitKerjas->pluck('id')->toArray());
+                })->count()
+            );
         }
 
         return null;

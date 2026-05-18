@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets\UnitKerja;
 
 use App\Services\UnitKerjaStatService;
+use App\Support\CacheKey;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
@@ -17,15 +18,29 @@ class StatsForUnitKerja extends BaseWidget
     {
         $user = Auth::user();
 
-        return $user
-        && $user->unitKerjas()->exists()
-        && $user?->can('widget_StatsForUnitKerja');
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->can('widget_StatsForUnitKerja')) {
+            return cache()->remember(
+                CacheKey::userHasUnitKerja($user->id),
+                now()->addMinutes(10),
+                fn() => $user->unitKerjas()->exists()
+            );
+        }
+
+        return false;
     }
 
     protected function getStats(): array
     {
-        $service = app(UnitKerjaStatService::class);
-        $data = $service->getStats();
+        $user = Auth::user();
+        $cacheKey = $user ? CacheKey::statsForUnitKerja($user->id) : null;
+
+        $data = $cacheKey
+            ? cache()->remember($cacheKey, now()->addMinutes(5), fn() => app(UnitKerjaStatService::class)->getStats())
+            : app(UnitKerjaStatService::class)->getStats();
 
         $totalIndikator = $data['totalIndikator'];
         $jumlahMemenuhi = $data['jumlahMemenuhiTarget'];

@@ -110,6 +110,34 @@ class FormTemplate extends Model
         return $query->where('version', $version);
     }
 
+    public function scopeActiveForCurrentDate(Builder $query): Builder
+    {
+        $now = now();
+        return $query->where('is_active', true)
+            ->whereHas('imutProfile', function ($q) use ($now) {
+                $q->where('valid_from', '<=', $now)
+                  ->where(function ($subQ) use ($now) {
+                      $subQ->whereNull('valid_until')
+                           ->orWhere('valid_until', '>=', $now);
+                  });
+            });
+    }
+
+    public function scopeMonthlyIndicators(Builder $query): Builder
+    {
+        return $query->whereHas('imutProfile.imutData', function ($q) {
+            $q->where('status', true)
+              ->where('is_monthly', true);
+        });
+    }
+
+    public function scopeForUserUnitKerjas(Builder $query, array $unitKerjaIds): Builder
+    {
+        return $query->whereHas('imutProfile.imutData.unitKerja', function ($q) use ($unitKerjaIds) {
+            $q->whereIn('unit_kerja.id', $unitKerjaIds);
+        });
+    }
+
     public function calculateCompliance(array $fieldResponses): array
     {
         $totalScore = 0;

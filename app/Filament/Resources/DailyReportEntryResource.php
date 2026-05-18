@@ -8,6 +8,7 @@ use App\Filament\Resources\DailyReportEntryResource\Schema\DailyReportEntrySchem
 use App\Filament\Resources\DailyReportEntryResource\Table\DailyReportEntryTable;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
+use App\Support\CacheKey;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
@@ -131,12 +132,15 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
-        /** @var \App\Models\User $user */
-        return $user->unitKerjas()->exists();
+        return cache()->remember(
+            CacheKey::userHasUnitKerja($user->id),
+            now()->addMinutes(10),
+            fn() => $user->unitKerjas()->exists()
+        );
     }
 
     /**
@@ -154,33 +158,40 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return false;
         }
 
-        if (! $user->unitKerjas()->exists()) {
+        $userUnitIds = $user->unitKerjas()->pluck('unit_kerjas.id');
+
+        if ($userUnitIds->isEmpty()) {
             return false;
         }
 
-        $indicatorId = request()->query('indicator') ?? request()->input('indicator');
-        if ($indicatorId) {
-            $template = FormTemplate::with('imutProfile.imutData.unitKerja')->find($indicatorId);
+        $indicatorId = request('indicator');
 
-            if (! $template) {
-                return false;
-            }
-
-            if ($user->can('view_all_data_imut::data')) {
-                return true;
-            }
-
-            $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
-            $hasUnitAccess = $template->imutProfile
-                && $template->imutProfile->imutData
-                && $template->imutProfile->imutData->unitKerja()
-                ->whereIn('unit_kerja_id', $userUnitIds)
-                ->exists();
-
-            return $hasUnitAccess && $user->can('view_by_unit_kerja_imut::data');
+        if (! $indicatorId) {
+            return false;
         }
 
-        return false;
+        $template = FormTemplate::query()
+            ->with(['imutProfile.imutData.unitKerja:id'])
+            ->find($indicatorId);
+
+        if (! $template) {
+            return false;
+        }
+
+        if ($user->can('view_all_data_imut::data')) {
+            return true;
+        }
+
+        $unitKerjaQuery = $template->imutProfile?->imutData?->unitKerja();
+
+        if (! $unitKerjaQuery) {
+            return false;
+        }
+
+        return $unitKerjaQuery
+            ->whereIn('unit_kerja_id', $userUnitIds)
+            ->exists()
+            && $user->can('view_by_unit_kerja_imut::data');
     }
 
     /**
@@ -329,14 +340,14 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         // Get profile from any template ID and use active template ID for URL
         $template = FormTemplate::find($indicatorId);
         $activeTemplateId = $indicatorId; // default fallback
-        
+
         if ($template && $template->imutProfile) {
             $activeTemplate = $template->imutProfile->activeFormTemplate;
             if ($activeTemplate) {
                 $activeTemplateId = $activeTemplate->id;
             }
         }
-        
+
         return static::getUrl('create') . '?' . http_build_query([
             'indicator' => $activeTemplateId,
             'date' => $date ?? now()->format('Y-m-d')

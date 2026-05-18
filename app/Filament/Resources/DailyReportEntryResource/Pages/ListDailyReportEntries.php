@@ -3,9 +3,8 @@
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
-use App\Models\DailyReportEntry;
 use App\Models\DailyReportResponse;
-use App\Models\FormTemplate;
+use App\Services\DailyReport\DailyReportMonitoringService;
 use App\Services\DailyReport\SlideOverService;
 use App\Traits\DailyReport\FormHandlerTrait;
 use App\Traits\DailyReport\DebugTrait;
@@ -15,7 +14,6 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 
 class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasForms
 {
@@ -25,12 +23,19 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
     protected static string $resource = DailyReportEntryResource::class;
 
+    private DailyReportMonitoringService $monitoringService;
+
+    public function __construct()
+    {
+        $this->monitoringService = app(DailyReportMonitoringService::class);
+    }
+
     public function boot(): void
     {
         parent::boot();
     }
 
-    public function mount(): void
+    public function mount(): void   
     {
         $this->bootBase();
         $this->loadMatrixData();
@@ -170,75 +175,15 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
     /**
      * Load monitoring templates data for monthly period
+     * Delegates to service layer for business logic
      */
     protected function loadMonitoringTemplates(): void
     {
-        try {
-            $user = Auth::user();
-
-            // Parse month (format: Y-m)
-            $date = Carbon::createFromFormat('Y-m', $this->selectedMonth);
-
-            // Get period settings
-            $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
-
-            // Use full month approach (1 - end of month)
-            $startDate = $date->copy()->startOfMonth()->startOfDay();
-            $endDate = $date->copy()->endOfMonth()->endOfDay();
-
-            // Get user's unit kerja IDs
-            $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
-
-            // Build query - use same scope as list daily report (active templates only)
-            $templates = FormTemplate::query()
-                ->forUserUnits($user)
-                ->where('is_active', true)
-                ->with(['imutProfile.imutData.categories'])
-                ->whereHas('imutProfile', function ($query) {
-                    $query->where('valid_from', '<=', now())
-                        ->where(function ($q) {
-                            $q->whereNull('valid_until')
-                                ->orWhere('valid_until', '>=', now());
-                        });
-                })
-                ->whereHas('imutProfile.imutData', function ($query) {
-                    $query->where('is_monthly', true);
-                })
-                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
-                    $query->whereBetween('report_date', [$startDate, $endDate]);
-
-                    // Only filter by unit_kerja if user has units (not admin/tim mutu)
-                    if (!empty($unitKerjaIds)) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    }
-                }])
-                ->get();
-
-            // Get first unit kerja ID for URL (or null for all units)
-            $firstUnitKerjaId = !empty($unitKerjaIds) ? $unitKerjaIds[0] : null;
-
-            $mapped = $templates->map(function ($template) use ($firstUnitKerjaId) {
-                return [
-                    'id' => $template->id,
-                    'imut_profile_id' => $template->imutProfile?->id,
-                    'unit_kerja_id' => $firstUnitKerjaId,
-                    'title' => $template->imutProfile->imutData->title,
-                    'description' => $template->description,
-                    'profile_name' => $template->imutProfile?->title ?? null,
-                    'imut_profile_version' => $template->imutProfile?->version ?? null,
-                    'category' => null,
-                    'response_count' => $template->response_count ?? 0,
-                ];
-            });
-
-            $this->monitoringTemplates = $mapped->toArray();
-        } catch (\Exception $e) {
-            Log::error('Error loading monitoring data', [
-                'month' => $this->selectedMonth,
-                'error' => $e->getMessage()
-            ]);
-            $this->monitoringTemplates = [];
-        }
+        $user = Auth::user();
+        $this->monitoringTemplates = $this->monitoringService->loadMonitoringTemplates(
+            $user,
+            $this->selectedMonth
+        );
     }
 
     /**
@@ -264,7 +209,8 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     }
 
     /**
-     * Export monitoring data to Excel/CSV
+     * Export monitoring data to Excel
+     * Delegates to service layer
      */
     public function exportMonitoring(int $templateId, ?string $month = null): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
     {
@@ -272,250 +218,36 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $user = Auth::user();
             $currentMonth = $month ?? $this->monitoringMonth ?? now()->format('Y-m');
 
-            // Parse month
-            $date = Carbon::createFromFormat('Y-m', $currentMonth);
-
-            // Get period settings
-            $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
-
-            // Use full month approach
-            $startDate = $date->copy()->startOfMonth()->startOfDay();
-            $endDate = $date->copy()->endOfMonth()->endOfDay();
-
-            // Get template with responses
-            $template = \App\Models\FormTemplate::with([
-                'imutProfile.imutData',
-                'formFields.options',
-                'dailyReportResponses' => function ($query) use ($startDate, $endDate, $user) {
-                    $query->whereBetween('report_date', [$startDate, $endDate])
-                        ->forUserUnits($user)
-                        ->with(['submittedBy', 'validator', 'unitKerja', 'fieldResponses.formField']);
-                }
-            ])->findOrFail($templateId);
-
-            // Generate filename
-            $filename = 'monitoring_' . $template->imutProfile->imutData->title . '_' . $currentMonth . '.xlsx';
-            $filename = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
-
-            // Create Excel file
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new class($template, $startDate, $endDate) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle {
-                    private $template;
-                    private $startDate;
-                    private $endDate;
-
-                    public function __construct($template, $startDate, $endDate)
-                    {
-                        $this->template = $template;
-                        $this->startDate = $startDate;
-                        $this->endDate = $endDate;
-                    }
-
-                    public function collection()
-                    {
-                        $data = collect();
-
-                        foreach ($this->template->dailyReportResponses as $response) {
-                            $row = [
-                                'Tanggal' => $response->report_date->format('d/m/Y'),
-                                'Unit Kerja' => $response->unitKerja->unit_name ?? '',
-                                'Pengumpul Data' => $response->submittedBy->name ?? '',
-                                'Validator' => $response->validator->name ?? '',
-                                'Status Validasi' => $response->is_validated ? 'Tervalidasi' : 'Belum Divalidasi',
-                            ];
-
-                            // Add field responses
-                            foreach ($this->template->formFields as $field) {
-                                $fieldResponse = $response->fieldResponses->where('form_field_id', $field->id)->first();
-                                $value = '';
-
-                                if ($fieldResponse) {
-                                    $fieldValue = $fieldResponse->field_value;
-
-                                    // Format value based on field type
-                                    switch ($field->field_type) {
-                                        case 'boolean':
-                                            $value = ($fieldValue == 1 || $fieldValue === true || $fieldValue === '1') ? 'Ya' : 'Tidak';
-                                            break;
-
-                                        case 'single_select':
-                                        case 'multi_select':
-                                            if (is_array($fieldValue)) {
-                                                $selectedOptions = [];
-                                                foreach ($fieldValue as $optionValue) {
-                                                    $option = $field->options->firstWhere('option_value', $optionValue);
-                                                    if ($option) {
-                                                        $selectedOptions[] = $option->option_text;
-                                                    }
-                                                }
-                                                $value = implode(', ', $selectedOptions);
-                                            } else {
-                                                $option = $field->options->firstWhere('option_value', $fieldValue);
-                                                $value = $option ? $option->option_text : $fieldValue;
-                                            }
-                                            break;
-
-                                        case 'time_duration':
-                                        case 'time_range':
-                                            if (is_array($fieldValue)) {
-                                                if (isset($fieldValue['start_time']) && isset($fieldValue['end_time'])) {
-                                                    $value = $fieldValue['start_time'] . ' - ' . $fieldValue['end_time'];
-                                                } elseif (isset($fieldValue['duration'])) {
-                                                    $value = $fieldValue['duration'] . ' menit';
-                                                } else {
-                                                    $value = json_encode($fieldValue);
-                                                }
-                                            } else {
-                                                $value = $fieldValue;
-                                            }
-                                            break;
-
-                                        case 'number':
-                                            $value = is_numeric($fieldValue) ? number_format($fieldValue, 0, ',', '.') : $fieldValue;
-                                            break;
-
-                                        case 'date':
-                                            if ($fieldValue && strtotime($fieldValue)) {
-                                                $value = date('d/m/Y', strtotime($fieldValue));
-                                            } else {
-                                                $value = $fieldValue;
-                                            }
-                                            break;
-
-                                        default:
-                                            if (is_array($fieldValue)) {
-                                                $value = json_encode($fieldValue);
-                                            } else {
-                                                $value = $fieldValue;
-                                            }
-                                            break;
-                                    }
-                                }
-
-                                $row[$field->field_label] = $value;
-                            }
-
-                            $data->push($row);
-                        }
-
-                        return $data;
-                    }
-
-                    public function headings(): array
-                    {
-                        $headings = [
-                            'Tanggal',
-                            'Unit Kerja',
-                            'Pengumpul Data',
-                            'Validator',
-                            'Status Validasi'
-                        ];
-
-                        // Add field headings
-                        foreach ($this->template->formFields as $field) {
-                            $headings[] = $field->field_label;
-                        }
-
-                        return $headings;
-                    }
-
-                    public function title(): string
-                    {
-                        return substr($this->template->imutProfile->imutData->title, 0, 31);
-                    }
-                },
-                $filename
-            );
-
+            return $this->monitoringService->exportMonitoring($user, $templateId, $currentMonth);
         } catch (\Exception $e) {
-            \Log::error('Export monitoring data failed', [
+            Log::error('Export monitoring data failed', [
                 'template_id' => $templateId,
-                'user_id' => $user->id ?? null,
-                'month' => $currentMonth,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'month' => $currentMonth ?? 'unknown',
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
             ]);
 
-            // For file download endpoints, redirect back with error message
             return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
         }
     }
 
     /**
      * Load monitoring data for specific period (called from Alpine.js)
+     * Delegates to service layer
      */
     public function loadMonitoringForPeriod(string $month): array
     {
-        try {
-            $user = Auth::user();
-
-            // Parse month (format: Y-m)
-            $date = Carbon::createFromFormat('Y-m', $month);
-
-            // Get period settings
-            $settings = \App\Models\LaporanImutAutoGenerationSetting::getInstance();
-
-            // Use full month approach (1 - end of month)
-            $startDate = $date->copy()->startOfMonth()->startOfDay();
-            $endDate = $date->copy()->endOfMonth()->endOfDay();
-
-            // Get user's unit kerja IDs
-            $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
-
-            // Build query - use same scope as list daily report (active templates only)
-            $templates = FormTemplate::query()
-                ->forUserUnits($user)
-                ->where('is_active', true)
-                ->with(['imutProfile.imutData.categories'])
-                ->whereHas('imutProfile', function ($query) {
-                    $query->where('valid_from', '<=', now())
-                        ->where(function ($q) {
-                            $q->whereNull('valid_until')
-                                ->orWhere('valid_until', '>=', now());
-                        });
-                })
-                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
-                    $query->whereBetween('report_date', [$startDate, $endDate]);
-
-                    // Only filter by unit_kerja if user has units (not admin/tim mutu)
-                    if (!empty($unitKerjaIds)) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    }
-                }])
-                ->get();
-
-            return $templates->map(function ($template) {
-                return [
-                    'id' => $template->id,
-                    'title' => $template->imutProfile->imutData->title,
-                    'description' => $template->description,
-                    'profile_name' => $template->imutProfile?->title ?? null,
-                    'imut_profile_version' => $template->imutProfile?->version ?? null,
-                    'category' => null,
-                    'response_count' => $template->response_count ?? 0,
-                ];
-            })->toArray();
-        } catch (\Exception $e) {
-            Log::error('Error loading monitoring data for period', [
-                'month' => $month,
-                'error' => $e->getMessage()
-            ]);
-            return [];
-        }
+        $user = Auth::user();
+        return $this->monitoringService->loadMonitoringForPeriod($user, $month);
     }
 
     /**
-     * Delete a daily report entry via API
+     * Get report count for indicator on specific date (called from Alpine.js)
+     * Delegates to service layer
      */
     public function getReportCountForIndicatorDate(int $indicatorId, string $date): int
     {
-        try {
-            $reports = $this->slideOverService->loadDailyReports($indicatorId, $date);
-            return count($reports);
-        } catch (\Exception $e) {
-            Log::error('Error fetching report count', ['indicator_id' => $indicatorId, 'date' => $date, 'error' => $e->getMessage()]);
-            return 0;
-        }
+        return $this->monitoringService->getReportCountForIndicatorDate($indicatorId, $date);
     }
 
     public function deleteReport($recordId): void
@@ -564,4 +296,6 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 ->send();
         }
     }
+
 }
+    

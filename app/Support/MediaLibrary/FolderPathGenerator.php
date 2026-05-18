@@ -2,6 +2,8 @@
 
 namespace App\Support\MediaLibrary;
 
+use App\Support\CacheKey;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
@@ -51,31 +53,44 @@ class FolderPathGenerator implements PathGenerator
 
         // Cek apakah media attached ke Folder model
         if ($media->model_type === 'Juniyasyos\FilamentMediaManager\Models\Folder' && $media->model_id) {
-            $folder = \Juniyasyos\FilamentMediaManager\Models\Folder::find($media->model_id);
-
-            if ($folder) {
-                // Build path dari parent hierarchy
-                $path = [];
-                $current = $folder;
-
-                while ($current) {
-                    array_unshift($path, $current->collection);
-                    $current = $current->parent;
-                }
-
-                return implode('/', $path);
-            }
+            return Cache::remember(
+                CacheKey::folderPathByFolderId($media->model_id),
+                now()->addHours(2),
+                fn() => $this->resolveFolderPathFromFolderId($media->model_id)
+            );
         }
 
-        // Fallback: cari folder berdasarkan collection name
+        return Cache::remember(
+            CacheKey::folderPathByCollection($collection),
+            now()->addHours(2),
+            fn() => $this->resolveFolderPathByCollection($collection) ?? $collection
+        );
+    }
+
+    private function resolveFolderPathFromFolderId(int $folderId): string
+    {
+        $folder = \Juniyasyos\FilamentMediaManager\Models\Folder::find($folderId);
+
+        if (! $folder) {
+            return (string) $folderId;
+        }
+
+        return $this->buildFolderPath($folder);
+    }
+
+    private function resolveFolderPathByCollection(string $collection): ?string
+    {
         $folder = \Juniyasyos\FilamentMediaManager\Models\Folder::where('collection', $collection)->first();
 
-        if (!$folder) {
-            // Jika tidak ada folder, gunakan collection name saja
-            return $collection;
+        if (! $folder) {
+            return null;
         }
 
-        // Build path dari parent hierarchy
+        return $this->buildFolderPath($folder);
+    }
+
+    private function buildFolderPath(\Juniyasyos\FilamentMediaManager\Models\Folder $folder): string
+    {
         $path = [];
         $current = $folder;
 

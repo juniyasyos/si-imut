@@ -152,6 +152,31 @@ final class CacheKey
         return "imut:chart-series-data:laporan:{$laporanId}";
     }
 
+    public static function imutDataNavigationBadgeCount(): string
+    {
+        return 'navigation:imut_data:count';
+    }
+
+    public static function statsForUnitKerja(int $userId): string
+    {
+        return "stats:unit_kerja:user:{$userId}";
+    }
+
+    public static function folderPathByFolderId(int $folderId): string
+    {
+        return "folder:path:folder:{$folderId}";
+    }
+
+    public static function folderPathByCollection(string $collection): string
+    {
+        return "folder:path:collection:{$collection}";
+    }
+
+    public static function imutDataNavigationBadgeCountForUser(int $userId): string
+    {
+        return "navigation:imut_data:count:user:{$userId}";
+    }
+
     /**
      * Cache key untuk statistik kelengkapan unit kerja
      */
@@ -214,6 +239,22 @@ final class CacheKey
     public static function recommendationAnalysisCompletionStatsUnitKerja(int $laporanId, int $unitKerjaId): string
     {
         return "widget:recommendation_analysis:completion_stats:laporan:{$laporanId}:unit:{$unitKerjaId}";
+    }
+
+    /**
+     * Cache key untuk user has unit kerja
+     */
+    public static function userHasUnitKerja(int $userId): string
+    {
+        return "user:{$userId}:has_unit_kerja";
+    }
+
+    /**
+     * Cache key untuk user has unit kerja plus check existence (digunakan untuk cache hasil pengecekan eksistensi unit kerja user, agar tidak perlu query berulang)
+     */
+    public static function userHasUnitKerjaIds(int $userId): string
+    {
+        return "user:{$userId}:has_unit_kerja_ids";
     }
 
     /**

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Widgets\UnitKerja;
 
+use App\Support\CacheKey;
 use Filament\Widgets\Widget;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UnitKerjaInfo extends Widget
@@ -15,9 +17,21 @@ class UnitKerjaInfo extends Widget
 
     public static function canView(): bool
     {
-        return auth()->check()
-        && auth()->user()->unitKerjas()->exists()
-        && auth()->user()?->can('widget_UnitKerjaInfo');
+        $user = Auth::user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->can('widget_UnitKerjaInfo')) {
+            return cache()->remember(
+                CacheKey::userHasUnitKerja($user->id),
+                now()->addMinutes(10),
+                fn() => $user->unitKerjas()->exists()
+            );
+        }
+
+        return false;
     }
 
     protected function getViewData(): array
@@ -38,9 +52,9 @@ class UnitKerjaInfo extends Widget
             'total_users' => $unitKerja->users()->count(),
             'total_reports' => $unitKerja->laporanUnitKerjas()->count(),
             'completed_assessments' => $unitKerja->laporanUnitKerjas()
-                ->whereHas('imutPenilaians', function($query) {
+                ->whereHas('imutPenilaians', function ($query) {
                     $query->whereNotNull('numerator_value')
-                          ->whereNotNull('denominator_value');
+                        ->whereNotNull('denominator_value');
                 })
                 ->count(),
         ];

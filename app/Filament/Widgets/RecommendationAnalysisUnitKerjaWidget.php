@@ -27,7 +27,11 @@ class RecommendationAnalysisUnitKerjaWidget extends Widget
                 return false;
             }
 
-            $hasUnitKerja = $user->unitKerjas()->exists();
+            $hasUnitKerja = cache()->remember(
+                CacheKey::userHasUnitKerja($user->id),
+                now()->addMinutes(10),
+                fn() => $user->unitKerjas()->exists()
+            );
             $isAdminOrTimMutu = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
 
             $canView = $hasUnitKerja && !$isAdminOrTimMutu;
