@@ -183,6 +183,45 @@ trait BuildIsiPenilaian
     {
         $shouldLock = !$livewireComponent->createAnalisistAndRecomendation();
 
+        if (Auth::user()?->hasRole(['tim_mutu', 'super_admin'])) {
+            return [
+                Textarea::make('analysis')
+                    ->label('Analisis')
+                    ->rows(4)
+                    ->required(!$shouldLock)
+                    ->minLength(20)
+                    ->maxLength(100000)
+                    ->live(onBlur: true)
+                    ->placeholder('Tuliskan hasil analisis lengkap minimal 20 karakter. Contoh: Berdasarkan data yang terkumpul, tingkat kepatuhan cuci tangan masih rendah karena...')
+                    ->helperText(function ($state) {
+                        $length = strlen($state ?? '');
+                        $remaining = max(0, 20 - $length);
+                        if ($remaining > 0) {
+                            return "Minimal 20 karakter. Kurang {$remaining} karakter lagi. ({$length}/20)";
+                        }
+                        return "Karakter: {$length}/100000";
+                    })
+                    ->columnSpanFull(),
+
+                Textarea::make('recommendations')
+                    ->label('Rekomendasi')
+                    ->required(!$shouldLock)
+                    ->minLength(20)
+                    ->maxLength(100000)
+                    ->rows(4)
+                    ->live(onBlur: true)
+                    ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
+                    ->helperText(function ($state) {
+                        $length = strlen($state ?? '');
+                        $remaining = max(0, 20 - $length);
+                        if ($remaining > 0) {
+                            return "Minimal 20 karakter. Kurang {$remaining} karakter lagi. ({$length}/20)";
+                        }
+                        return "Karakter: {$length}/100000";
+                    })
+                    ->columnSpanFull(),
+            ];
+        }
         return [
             Textarea::make('analysis')
                 ->label('Analisis')
