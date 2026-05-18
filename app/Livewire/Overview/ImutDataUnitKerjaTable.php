@@ -3,7 +3,7 @@
 namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
-use App\Models\LaporanUnitKerja;
+use App\Services\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -46,8 +46,10 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $reportService = app(ImutReportService::class);
+        
         return $table
-            ->query(fn() => LaporanUnitKerja::getLaporanByUnitKerjaDetails($this->imutDataId, $this->unitKerjaId))
+            ->query(fn() => $reportService->getDataForUnitKerjaTable($this->imutDataId, $this->unitKerjaId))
             ->columns([
                 TextColumn::make('laporan_name')
                     ->label('Nama Laporan')

@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
+use App\Repositories\Interfaces\LaporanRepositoryInterface;
 use App\Models\LaporanUnitKerja;
 use Filament\Tables;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -114,9 +115,10 @@ class ImutTercapai extends BaseWidget
 
     protected function getIncompleteUnitsQuery(int $laporanId): Builder
     {
+        $laporanRepository = app(LaporanRepositoryInterface::class);
         $filledCountExpr = \App\QueryBuilders\UnitKerjaReportQueryBuilder::getFilledCountExpression();
 
-        return LaporanUnitKerja::getReportByUnitKerja($laporanId)
+        return $laporanRepository->getReportByUnitKerja($laporanId)
             ->havingRaw("{$filledCountExpr} < COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0")
             ->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) ASC");
     }

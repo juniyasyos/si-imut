@@ -6,7 +6,7 @@ use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Models\ImutCategory;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
+use App\Services\ImutReportService;
 use App\Models\UnitKerja;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
@@ -177,7 +177,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
     protected function getTableQuery()
     {
-        return fn() => LaporanUnitKerja::getReportByUnitKerjaDetails($this->laporanId, $this->unitKerjaId);
+        $reportService = app(ImutReportService::class);
+            return fn() => $reportService->getUnitKerjaDetailData($this->laporanId, $this->unitKerjaId);
     }
 
     /**

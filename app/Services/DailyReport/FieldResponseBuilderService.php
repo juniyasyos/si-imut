@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Services\DailyReport;
+
+use App\Models\DailyReportResponse;
+use App\Models\FieldResponse;
+use App\Models\EnhancedFormField;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
+
+/**
+ * Service untuk membangun FieldResponse records dengan konsisten
+ * Menormalkan storage untuk semua field types
+ */
+class FieldResponseBuilderService
+{
+    private UnifiedComplianceService $complianceService;
+
+    public function __construct(UnifiedComplianceService $complianceService)
+    {
+        $this->complianceService = $complianceService;
+    }
+
+    /**
+     * Build dan create FieldResponse untuk field tertentu
+     */
+    public function build(
+        DailyReportResponse $dailyReport,
+        EnhancedFormField $field,
+        array $formData
+    ): FieldResponse {
+        $fieldValue = $formData[$field->field_key] ?? null;
+        $complianceScore = $this->complianceService->scoreField($field, $fieldValue);
+
+        $normalizedValue = $this->normalizeFieldValue($field, $fieldValue, $formData);
+
+        return FieldResponse::create([
+            'daily_report_response_id' => $dailyReport->id,
+            'form_field_id' => $field->id,
+            'field_value' => $normalizedValue,
+            'compliance_score' => $complianceScore,
+        ]);
+    }
+
+    /**
+     * Normalize field value ke format storage yang konsisten
+     */
+    private function normalizeFieldValue(
+        EnhancedFormField $field,
+        $fieldValue,
+        array $formData
+    ): mixed {
+        return match ($field->field_type) {
+            'time_duration' => $this->normalizeTimeDuration($field, $fieldValue, $formData),
+            'time_range' => $this->normalizeTimeRange($field, $fieldValue, $formData),
+            'checkbox' => $this->normalizeCheckbox($fieldValue),
+            default => $this->normalizeGeneric($fieldValue),
+        };
+    }
+
+    /**
+     * Normalize time duration field - composite structure
+     */
+    private function normalizeTimeDuration(
+        EnhancedFormField $field,
+        $fieldValue,
+        array $formData
+    ): array {
+        $startTime = $formData[$field->field_key . '_start_time'] ?? null;
+        $endTime = $formData[$field->field_key . '_end_time'] ?? null;
+        $validDuration = $formData[$field->field_key . '_valid_duration_setting'] ?? null;
+        $thresholdType = $field->validation_config['threshold_type'] ?? 'less_than';
+
+        $isValid = TimeUtility::checkDurationValidity(
+            $startTime,
+            $endTime,
+            $validDuration,
+            $thresholdType
+        ) ? '1' : '0';
+
+        return [
+            'type' => 'time_duration',
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'valid_duration_setting' => $validDuration,
+            'valid_indicator' => $isValid,
+        ];
+    }
+
+    /**
+     * Normalize time range field
+     */
+    private function normalizeTimeRange(
+        EnhancedFormField $field,
+        $fieldValue,
+        array $formData
+    ): array {
+        $inputValue = $formData[$field->field_key . '_input_value'] ?? null;
+        $startTime = $formData[$field->field_key . '_start_time'] ?? null;
+        $endTime = $formData[$field->field_key . '_end_time'] ?? null;
+
+        $isValid = ($inputValue && $startTime && $endTime) ? '1' : '0';
+
+        return [
+            'type' => 'time_range',
+            'input_value' => $inputValue,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'valid_indicator' => $isValid,
+        ];
+    }
+
+    /**
+     * Normalize checkbox - ensure array format
+     */
+    private function normalizeCheckbox($fieldValue): array
+    {
+        if (!is_array($fieldValue)) {
+            return [$fieldValue];
+        }
+
+        return $fieldValue;
+    }
+
+    /**
+     * Normalize generic field - simple value storage
+     */
+    private function normalizeGeneric($fieldValue): mixed
+    {
+        if (is_array($fieldValue)) {
+            return $fieldValue;
+        }
+
+        return $fieldValue;
+    }
+}

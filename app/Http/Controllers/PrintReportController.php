@@ -5,9 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use App\Repositories\Interfaces\LaporanRepositoryInterface;
 
 class PrintReportController extends Controller
 {
+    private LaporanRepositoryInterface $laporanRepository;
+
+    public function __construct(LaporanRepositoryInterface $laporanRepository)
+    {
+        $this->laporanRepository = $laporanRepository;
+    }
+
     /**
      * Preview print laporan IMUT dengan dummy data
      *
@@ -289,7 +297,7 @@ class PrintReportController extends Controller
         }
 
         // Gunakan query builder untuk mendapatkan data per unit kerja
-        $unitKerjaData = \App\Models\LaporanUnitKerja::getReportByImutDataDetails(
+        $unitKerjaData = $this->laporanRepository->getReportByImutDataDetails(
             $laporan->id,
             $imutData->id
         )->get();
@@ -356,7 +364,7 @@ class PrintReportController extends Controller
 
         foreach ($laporans as $laporan) {
             // Ambil summary data untuk laporan ini
-            $monthlyData = \App\Models\LaporanUnitKerja::getReportByImutDataDetails(
+            $monthlyData = $this->laporanRepository->getReportByImutDataDetails(
                 $laporan->id,
                 $imutDataId
             )->get();
@@ -433,7 +441,7 @@ class PrintReportController extends Controller
 
             if ($laporan) {
                 // Ambil summary data untuk bulan ini
-                $monthlyData = \App\Models\LaporanUnitKerja::getReportByImutDataDetails(
+                $monthlyData = $this->laporanRepository->getReportByImutDataDetails(
                     $laporan->id,
                     $imutDataId
                 )->get();

@@ -42,6 +42,24 @@ class AppServiceProvider extends ServiceProvider
             fn(): string => Blade::render("@vite('resources/js/app.js')")
         );
 
+        // Register Repository interfaces
+        $this->app->bind(
+            \App\Repositories\Interfaces\LaporanRepositoryInterface::class,
+            \App\Repositories\LaporanRepository::class,
+        );
+
+        // Register Services - Priority 1 & 2 refactoring
+        $this->app->singleton(\App\Services\ImutReportService::class);
+        $this->app->singleton(\App\Services\PeriodParserService::class);
+        $this->app->singleton(\App\Services\CategoryAggregationService::class);
+        $this->app->singleton(\App\Services\CategoryReportDataBuilderService::class);
+        $this->app->singleton(\App\Services\Form\FormMutationService::class);
+
+        // Register Daily Report Services
+        $this->app->singleton(\App\Services\DailyReport\UnifiedComplianceService::class);
+        $this->app->singleton(\App\Services\DailyReport\FieldResponseBuilderService::class);
+        $this->app->singleton(\App\Services\DailyReport\DailyReportCreationService::class);
+
         // When SSO is enabled we want the Filament logout response to redirect
         // the user through the IAM/SO logout flow instead of just returning to
         // the Filament login page.  We bind our own implementation here so it

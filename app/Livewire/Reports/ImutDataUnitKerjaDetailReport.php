@@ -7,8 +7,7 @@ use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSch
 use App\Models\ImutCategory;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
-use App\Models\LaporanUnitKerja;
-use App\Services\Form\FormCalculationService;
+use App\Services\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Carbon\Carbon;
@@ -73,8 +72,10 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
 
     public function table(Table $table): Table
     {
+        $reportService = app(ImutReportService::class);
+        
         return $table
-            ->query(fn() => LaporanUnitKerja::getReportByImutDataDetails($this->laporanId, $this->imutDataId))
+            ->query(fn() => $reportService->getImutDataDetailData($this->laporanId, $this->imutDataId))
             ->columns([
                 TextColumn::make('unit_kerja')
                     ->label('Unit Kerja')

@@ -10,6 +10,8 @@ use App\Models\RegionType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\CategoryAggregationService;
+use App\Services\PeriodParserService;
 
 class CategoryReportController extends Controller
 {
@@ -23,62 +25,18 @@ class CategoryReportController extends Controller
     public function show(Request $request)
     {
         $categoryInput = $request->input('categories', '');
-        // parse comma-separated list and cast to integers (ignore empties)
-        $categories = array_filter(array_map('intval', explode(',', $categoryInput)));
+                $categories = array_filter(array_map('intval', explode(',', $categoryInput)));
+                $periode = $request->input('periode', now()->format('Y'));
 
-        $periode = $request->input('periode', now()->format('Y'));
+                try {
+                    $aggregationService = app(CategoryAggregationService::class);
+                    $aggregatedData = $aggregationService->aggregate($categories, $periode);
+                } catch (\InvalidArgumentException $e) {
+                    abort(400, $e->getMessage());
+                }
 
-        // calculate date range based on accepted formats:
-        //  - YYYY                : whole year
-        //  - YYYY-MM             : specific month
-        //  - YYYY-Q[1-4]         : quarter
-        //  - YYYY-S[1-2]         : semester
-        //  - YYYY-MM,YYYY-MM     : custom range (start,end)
-        //  - other -> error
-        $startDate = null;
-        $endDate = null;
-
-        if (preg_match('/^\d{4}$/', $periode)) {
-            // full year
-            $year = intval($periode);
-            $startDate = Carbon::createFromDate($year, 1, 1)->startOfDay();
-            $endDate = Carbon::createFromDate($year, 12, 31)->endOfDay();
-        } elseif (preg_match('/^(\d{4})-(\d{2})$/', $periode, $m)) {
-            // month
-            [$year, $month] = [intval($m[1]), intval($m[2])];
-            if ($month < 1 || $month > 12) {
-                abort(400, 'Bulan tidak valid dalam parameter periode');
-            }
-            $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-            $endDate = (clone $startDate)->endOfMonth();
-        } elseif (preg_match('/^(\d{4})-Q([1-4])$/', $periode, $m)) {
-            // quarter
-            $year = intval($m[1]);
-            $quarter = intval($m[2]);
-            $monthStart = ($quarter - 1) * 3 + 1;
-            $startDate = Carbon::createFromDate($year, $monthStart, 1)->startOfMonth();
-            $endDate = (clone $startDate)->addMonths(2)->endOfMonth();
-        } elseif (preg_match('/^(\d{4})-S([12])$/', $periode, $m)) {
-            // semester
-            $year = intval($m[1]);
-            $sem = intval($m[2]);
-            $monthStart = $sem === 1 ? 1 : 7;
-            $startDate = Carbon::createFromDate($year, $monthStart, 1)->startOfMonth();
-            $endDate = (clone $startDate)->addMonths(5)->endOfMonth();
-        } elseif (strpos($periode, ',') !== false) {
-            // custom range
-            [$p1, $p2] = explode(',', $periode, 2);
-            try {
-                $startDate = Carbon::parse($p1)->startOfMonth();
-                $endDate = Carbon::parse($p2)->endOfMonth();
-            } catch (\Exception $e) {
-                abort(400, 'Format custom periode tidak valid');
-            }
-        }
-
-        if (! $startDate || ! $endDate) {
-            abort(400, 'Parameter periode tidak valid');
-        }
+                $startDate = $aggregatedData['startDate'];
+                $endDate = $aggregatedData['endDate'];
 
         // first prepare list of months between start and end date
         $months = [];

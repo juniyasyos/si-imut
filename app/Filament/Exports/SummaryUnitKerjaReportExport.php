@@ -4,6 +4,7 @@ namespace App\Filament\Exports;
 
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
+use App\Repositories\Interfaces\LaporanRepositoryInterface;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -50,7 +51,8 @@ class SummaryUnitKerjaReportExport extends Exporter
     {
         $laporanId = $export->options['laporan_id'] ?? null;
 
-        return LaporanUnitKerja::getReportByUnitKerja($laporanId);
+        $repository = app(LaporanRepositoryInterface::class);
+        return $repository->getReportByUnitKerja($laporanId);
     }
 
     public static function getCompletedNotificationBody(Export $export): string

@@ -6,6 +6,7 @@ use App\Models\ImutData;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\UnitKerja;
+use App\Repositories\Interfaces\LaporanRepositoryInterface;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -36,7 +37,8 @@ class SummaryImutDataReportDetailExport extends Exporter
         $laporanId = $export->options['laporan_id'] ?? null;
         $imutDataId = $export->options['imut_data_id'] ?? null;
 
-        return LaporanUnitKerja::getReportByImutDataDetails($laporanId, $imutDataId);
+        $repository = app(LaporanRepositoryInterface::class);
+        return $repository->getReportByImutDataDetails($laporanId, $imutDataId);
     }
 
     public static function getCompletedNotificationBody(Export $export): string

@@ -8,18 +8,26 @@ use App\Models\ImutDataNote;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Models\RegionType;
+use App\Repositories\Interfaces\LaporanRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 
 class ImutDataApiController extends Controller
 {
+    private LaporanRepositoryInterface $laporanRepository;
+
+    public function __construct(LaporanRepositoryInterface $laporanRepository)
+    {
+        $this->laporanRepository = $laporanRepository;
+    }
+
     public function summary(Request $request, $imutDataId)
     {
         $imutData = ImutData::findOrFail($imutDataId);
 
         // Use the existing query builder for consistency
-        $query = \App\Models\LaporanUnitKerja::getSummaryByImutDataGrouped($imutDataId);
+        $query = $this->laporanRepository->getSummaryByImutDataGrouped($imutDataId);
 
         $records = $query->get();
 
@@ -110,7 +118,7 @@ class ImutDataApiController extends Controller
         [$startDate, $endDate] = $this->getFilterDateRange($request, $filterMode, $laporan);
 
         // Get historical data using the correct query with date filter
-        $historicalQuery = \App\Models\LaporanUnitKerja::getSummaryByImutDataGrouped($imutData->id);
+        $historicalQuery = $this->laporanRepository->getSummaryByImutDataGrouped($imutData->id);
 
         // Apply date range filter
         if ($startDate && $endDate) {

@@ -4,7 +4,7 @@ namespace App\Livewire\Reports;
 
 use App\Filament\Exports\SummaryUnitKerjaReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
-use App\Models\LaporanUnitKerja;
+use App\Services\ImutReportService;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
@@ -47,8 +47,10 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $reportService = app(ImutReportService::class);
+        
         return $table
-            ->query(fn() => LaporanUnitKerja::getReportByUnitKerja($this->laporanId))
+            ->query(fn() => $reportService->getUnitKerjaSummaryData($this->laporanId))
             ->columns([
                 TextColumn::make('unit_name')
                     ->label('Unit Kerja')

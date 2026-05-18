@@ -3,7 +3,7 @@
 namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
-use App\Models\LaporanUnitKerja;
+use App\Services\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -29,6 +29,11 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
 
     public ?int $imutDataId = null;
 
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     protected $listeners = [
         'summary-changed' => 'updateSummary',
     ];
@@ -51,6 +56,8 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $reportService = app(ImutReportService::class);
+        
         $columns = [
             TextColumn::make('laporan_name')
                 ->label('Nama Laporan')
@@ -151,7 +158,7 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
             );
 
         return $table
-            ->query(fn() => LaporanUnitKerja::getSummaryByImutDataGrouped($this->imutDataId))
+            ->query(fn() => $reportService->getSummaryForImutDataTable($this->imutDataId))
             ->columns($columns)
             ->filters([
                 SelectFilter::make('laporan_status')

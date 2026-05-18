@@ -5,7 +5,7 @@ namespace App\Livewire\Reports;
 use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
 use App\Models\ImutCategory;
-use App\Models\LaporanUnitKerja;
+use App\Services\ImutReportService;
 use App\Traits\HasPercentageColor;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -50,8 +50,10 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        $reportService = app(ImutReportService::class);
+        
         return $table
-            ->query(fn() => LaporanUnitKerja::getReportByImutData($this->laporanId))
+            ->query(fn() => $reportService->getImutDataSummaryData($this->laporanId))
             ->columns([
                 TextColumn::make('imut_data_title')
                     ->label('IMUT Data')
