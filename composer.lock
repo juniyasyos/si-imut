@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1dbd6c5f1dc5776a6cbbbd98b608e912",
+    "content-hash": "59add1479313868c322f979a78aa26a2",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3691,17 +3691,11 @@
         },
         {
             "name": "juniyasyos/auth-bridge-client",
-            "version": "v1.2.14",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/juniyasyos/auth-bridge-client.git",
-                "reference": "5192851542759e21fabbd133c7de1d10eab45aa1"
-            },
+            "version": "dev-master",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/auth-bridge-client/zipball/5192851542759e21fabbd133c7de1d10eab45aa1",
-                "reference": "5192851542759e21fabbd133c7de1d10eab45aa1",
-                "shasum": ""
+                "type": "path",
+                "url": "../../plugin/auth-bridge-client",
+                "reference": "aab74c06bdf331120958e1a8f4b737eca48c22ed"
             },
             "require": {
                 "firebase/php-jwt": "^6.0",
@@ -3726,7 +3720,11 @@
                     "Juniyasyos\\IamClient\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Juniyasyos\\IamClient\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -3738,17 +3736,15 @@
             ],
             "description": "Laravel package for IAM SSO integration with JIT user provisioning",
             "keywords": [
-                "Authentication",
-                "SSO",
+                "authentication",
                 "iam",
                 "jwt",
-                "laravel"
+                "laravel",
+                "sso"
             ],
-            "support": {
-                "issues": "https://github.com/juniyasyos/auth-bridge-client/issues",
-                "source": "https://github.com/juniyasyos/auth-bridge-client/tree/v1.2.14"
-            },
-            "time": "2026-05-14T15:10:32+00:00"
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "juniyasyos/dash-stack-theme-juniyasyos",

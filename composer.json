@@ -13,6 +13,12 @@
         "starter-kit"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../plugin/auth-bridge-client"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "archilex/filament-toggle-icon-column": "^3.2",
@@ -37,7 +43,7 @@
         "juniyasyos/filament-media-manager": "3.0",
         "juniyasyos/filament-pwa-kaido": "^2.1",
         "juniyasyos/filament-settings-hub-kaido": "^4.0",
-        "juniyasyos/auth-bridge-client": "v1.2.14",
+        "juniyasyos/auth-bridge-client": "*",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
