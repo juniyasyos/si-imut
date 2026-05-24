@@ -2,10 +2,8 @@
 
 namespace App\Filament\Widgets\UnitKerja;
 
-use App\Support\CacheKey;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class UnitKerjaInfo extends Widget
 {
@@ -24,11 +22,7 @@ class UnitKerjaInfo extends Widget
         }
 
         if ($user->can('widget_UnitKerjaInfo')) {
-            return cache()->remember(
-                CacheKey::userHasUnitKerja($user->id),
-                now()->addMinutes(10),
-                fn() => $user->unitKerjas()->exists()
-            );
+            return $user->hasUnitKerjaCached();
         }
 
         return false;

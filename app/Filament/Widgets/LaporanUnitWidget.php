@@ -5,7 +5,6 @@ namespace App\Filament\Widgets;
 use App\Models\DailyReportResponse;
 use App\Models\LaporanImut;
 use App\Filament\Widgets\LaporanLatestWidget;
-use App\Support\CacheKey;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -22,11 +21,7 @@ class LaporanUnitWidget extends Widget
         }
 
         // user must have the new permission and must belong to at least one unit kerja
-        return cache()->remember(
-            CacheKey::userHasUnitKerja($user->id),
-            now()->addMinutes(10),
-            fn() => $user->unitKerjas()->exists()
-        );
+        return $user->hasUnitKerjaCached();
     }
 
     protected static ?int $sort = 5;

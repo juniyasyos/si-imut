@@ -17,6 +17,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
@@ -149,6 +150,10 @@ class UserResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn(Builder $query) => $query->with([
+                'roles:id,name,label',
+                'unitKerjas:id,unit_name',
+            ]))
             ->columns(UserResourceTable::columns())
             ->filters(UserResourceTable::filters())
             ->headerActions(UserResourceTable::headerActions())

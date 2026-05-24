@@ -16,6 +16,8 @@ use Illuminate\Container\Attributes\Auth;
 
 class RoleResource extends Resource implements HasShieldPermissions
 {
+    private static ?string $navigationBadgeMemo = null;
+
     use HasActiveIcon, HasShieldFormComponents;
 
     protected static ?int $navigationSort = 2;
@@ -121,9 +123,17 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function getNavigationBadge(): ?string
     {
-        return Utils::isResourceNavigationBadgeEnabled()
-            ? strval(static::getEloquentQuery()->count())
-            : null;
+        if (! Utils::isResourceNavigationBadgeEnabled()) {
+            return null;
+        }
+
+        if (self::$navigationBadgeMemo !== null) {
+            return self::$navigationBadgeMemo;
+        }
+
+        self::$navigationBadgeMemo = strval(static::getEloquentQuery()->count());
+
+        return self::$navigationBadgeMemo;
     }
 
     public static function isScopedToTenant(): bool

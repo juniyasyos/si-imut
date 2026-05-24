@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Support\CacheKey;
 use Filament\Panel;
 use App\Models\UnitKerja;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use App\Support\StorageFallback;
 use Filament\Models\Contracts\HasAvatar;
@@ -112,6 +114,14 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     ];
 
     /**
+     * Request-scoped memoization to avoid repeated cache/database hits
+     * for the same user-level checks within one request.
+     *
+     * @var array<string, bool>
+     */
+    private static array $requestMemoizedFlags = [];
+
+    /**
      * The attributes that should be cast.
      *
      * @return array<string, string, string>
@@ -137,6 +147,34 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->belongsToMany(UnitKerja::class, 'user_unit_kerja', 'user_id', 'unit_kerja_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Check whether user belongs to at least one unit kerja.
+     * Uses shared cache key with per-request memoization to prevent
+     * repeated reads to the cache store in a single request.
+     */
+    public function hasUnitKerjaCached(int $ttlMinutes = 10): bool
+    {
+        if (! $this->exists) {
+            return false;
+        }
+
+        $memoKey = "user:{$this->id}:has_unit_kerja";
+
+        if (array_key_exists($memoKey, self::$requestMemoizedFlags)) {
+            return self::$requestMemoizedFlags[$memoKey];
+        }
+
+        $hasUnitKerja = (bool) Cache::remember(
+            CacheKey::userHasUnitKerja($this->id),
+            now()->addMinutes($ttlMinutes),
+            fn() => $this->unitKerjas()->exists()
+        );
+
+        self::$requestMemoizedFlags[$memoKey] = $hasUnitKerja;
+
+        return $hasUnitKerja;
     }
 
     /**

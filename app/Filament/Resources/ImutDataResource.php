@@ -24,6 +24,13 @@ class ImutDataResource extends Resource implements HasShieldPermissions
 {
     use \App\Traits\HasActiveIcon;
 
+    /**
+     * Request-scoped memoized navigation badges to avoid repeated cache store reads.
+     *
+     * @var array<string, string|null>
+     */
+    private static array $navigationBadgeMemo = [];
+
     protected static ?string $model = ImutData::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
@@ -100,25 +107,37 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             return null;
         }
 
+        $memoKey = "imut_data_badge:user:{$user->id}";
+
+        if (array_key_exists($memoKey, self::$navigationBadgeMemo)) {
+            return self::$navigationBadgeMemo[$memoKey];
+        }
+
         if ($user->can('view_all_data_imut::data')) {
-            return cache()->remember(
+            self::$navigationBadgeMemo[$memoKey] = cache()->remember(
                 CacheKey::imutDataNavigationBadgeCount(),
                 now()->addMinutes(10),
                 fn() => (string) ImutData::count()
             );
+
+            return self::$navigationBadgeMemo[$memoKey];
         }
 
         if ($user->can('view_by_unit_kerja_imut::data')) {
             $cacheKey = CacheKey::imutDataNavigationBadgeCountForUser($user->id);
 
-            return cache()->remember(
+            self::$navigationBadgeMemo[$memoKey] = cache()->remember(
                 $cacheKey,
                 now()->addMinutes(10),
                 fn() => (string) ImutData::whereHas('unitKerja', function ($q) use ($user) {
                     $q->whereIn('unit_kerja_id', $user->unitKerjas->pluck('id')->toArray());
                 })->count()
             );
+
+            return self::$navigationBadgeMemo[$memoKey];
         }
+
+        self::$navigationBadgeMemo[$memoKey] = null;
 
         return null;
     }

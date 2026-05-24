@@ -23,11 +23,7 @@ class StatsForUnitKerja extends BaseWidget
         }
 
         if ($user->can('widget_StatsForUnitKerja')) {
-            return cache()->remember(
-                CacheKey::userHasUnitKerja($user->id),
-                now()->addMinutes(10),
-                fn() => $user->unitKerjas()->exists()
-            );
+            return $user->hasUnitKerjaCached();
         }
 
         return false;

@@ -24,13 +24,6 @@
       0 => 'Asmit\\ResizedColumn\\ResizedColumnServiceProvider',
     ),
   ),
-  'awcodes/filament-table-repeater' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Awcodes\\TableRepeater\\TableRepeaterServiceProvider',
-    ),
-  ),
   'barryvdh/laravel-debugbar' => 
   array (
     'aliases' => 
@@ -271,6 +264,13 @@
     'providers' => 
     array (
       0 => 'Juniyasyos\\FilamentSettingsHub\\FilamentSettingsHubServiceProvider',
+    ),
+  ),
+  'juniyasyos/table-repeater' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Juniyasyos\\TableRepeater\\TableRepeaterServiceProvider',
     ),
   ),
   'kirschbaum-development/eloquent-power-joins' => 

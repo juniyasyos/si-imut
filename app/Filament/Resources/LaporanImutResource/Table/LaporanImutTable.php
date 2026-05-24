@@ -206,16 +206,22 @@ class LaporanImutTable extends LaporanImutResource
     {
         $user = Auth::user();
 
-        $matchingUnitKerja = $user->unitKerjas()
-            ->whereIn('unit_kerja.id', $record->unitKerjas->pluck('id'))
-            ->first();
+        // Prefer using already-loaded collections to avoid extra DB calls per row.
+        $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+        $laporanUnitIds = $record->unitKerjas->pluck('id')->toArray();
 
-        return $matchingUnitKerja
-            ? UnitKerjaImutDataReport::getUrl([
-                'laporan_id' => $record->id,
-                'unit_kerja_id' => $matchingUnitKerja->id,
-            ])
-            : null;
+        $common = array_values(array_intersect($userUnitIds, $laporanUnitIds));
+
+        if (empty($common)) {
+            return null;
+        }
+
+        $matchingId = $common[0];
+
+        return UnitKerjaImutDataReport::getUrl([
+            'laporan_id' => $record->id,
+            'unit_kerja_id' => $matchingId,
+        ]);
     }
 
     protected static function formatAssessmentPeriod($record): string

@@ -48,7 +48,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
         return $user
             && $user->can('widget_ImutCapaianUnitKerjaWidget')
-            && $user->unitKerjas()->exists();
+            && $user->hasUnitKerjaCached();
     }
 
     protected function getHeading(): ?string
@@ -149,7 +149,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
         return Cache::remember(
             CacheKey::imutLaporansForUnitKerjas($unitKerjaIds),
-            now()->addDay(1),
+            now()->addDay(),
             fn() => LaporanImut::with([
                 'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
                     $query->whereIn('unit_kerja_id', $unitKerjaIds);

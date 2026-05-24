@@ -5,6 +5,7 @@ namespace App\Filament\Resources\UserResource\Tables;
 use App\Filament\Exports\UserExporter;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\Action;
@@ -26,8 +27,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Rmsramos\Activitylog\Actions\ActivityLogTimelineTableAction;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
@@ -116,11 +117,12 @@ class UserResourceTable
                 ->icon('heroicon-o-arrow-down-tray')
                 ->action(function () {
                     $relativePath = 'exports/users.json';
+                    $absolutePath = storage_path('app/' . $relativePath);
 
                     Artisan::call('users:export-json', ['--path' => $relativePath]);
 
-                    return Storage::disk('local')->download(
-                        $relativePath,
+                    return response()->download(
+                        $absolutePath,
                         'users.json',
                         ['Content-Type' => 'application/json']
                     );
@@ -141,12 +143,16 @@ class UserResourceTable
                 ->form([
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
-                        ->relationship('roles', 'label')
-                        // ->multiple()
+                        ->options(function (): array {
+                            return Cache::remember('users:set_role:options', now()->addMinutes(30), function () {
+                                return Role::query()
+                                    ->orderBy('name')
+                                    ->pluck('label', 'id')
+                                    ->toArray();
+                            });
+                        })
                         ->searchable()
-                        ->preload()
-                        ->optionsLimit(10)
-                        ->getOptionLabelFromRecordUsing(fn($record) => $record->label),
+                        ->optionsLimit(10),
                 ])
                 ->visible(fn() => !Gate::allows('setRole', User::class) || !(env('USE_SSO') || env('IAM_ENABLED')) || config('iam.role_sync_mode') === 'pull'),
 

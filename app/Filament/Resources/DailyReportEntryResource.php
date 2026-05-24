@@ -8,7 +8,6 @@ use App\Filament\Resources\DailyReportEntryResource\Schema\DailyReportEntrySchem
 use App\Filament\Resources\DailyReportEntryResource\Table\DailyReportEntryTable;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
-use App\Support\CacheKey;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
@@ -136,11 +135,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return false;
         }
 
-        return cache()->remember(
-            CacheKey::userHasUnitKerja($user->id),
-            now()->addMinutes(10),
-            fn() => $user->unitKerjas()->exists()
-        );
+        return $user->hasUnitKerjaCached();
     }
 
     /**
@@ -206,7 +201,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        if (!$user->unitKerjas()->exists()) {
+        if (! $user->hasUnitKerjaCached()) {
             return false;
         }
 
@@ -227,7 +222,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        if (!$user->unitKerjas()->exists()) {
+        if (! $user->hasUnitKerjaCached()) {
             return false;
         }
 
@@ -248,7 +243,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        if (!$user->unitKerjas()->exists()) {
+        if (! $user->hasUnitKerjaCached()) {
             return false;
         }
 
@@ -269,7 +264,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
         }
 
         /** @var \App\Models\User $user */
-        return $user->unitKerjas()->exists();
+        return $user->hasUnitKerjaCached();
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace App\QueryBuilders;
 
 use App\Models\LaporanUnitKerja;
-use App\Services\Core\ImutSqlExpressionBuilder;
+use App\Services\Core\ImutCalculationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
