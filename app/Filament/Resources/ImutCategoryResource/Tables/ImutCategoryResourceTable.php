@@ -14,6 +14,7 @@ use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Model;
@@ -46,18 +47,20 @@ class ImutCategoryResourceTable
                 ->alignCenter()
                 ->sortable(),
 
-            \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_use_global')
+            IconColumn::make('is_use_global')
                 ->label(__('filament-forms::imut-category.fields.is_use_global'))
                 ->translateLabel()
+                ->boolean()
                 ->alignCenter()
                 ->size('xl')
                 ->disabled()
                 ->tooltip(fn(Model $record) => $record->status ? 'Global' : 'Not Global')
                 ->sortable(),
 
-            \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_benchmark_category')
+            IconColumn::make('is_benchmark_category')
                 ->label(__('filament-forms::imut-category.fields.is_benchmark_category'))
                 ->translateLabel()
+                ->boolean()
                 ->disabled()
                 ->alignCenter()
                 ->size('xl')

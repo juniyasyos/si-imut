@@ -11,6 +11,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -58,9 +59,10 @@ class ImutDataRelationManager extends RelationManager
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('status')
+                IconColumn::make('status')
                     ->label(__('filament-forms::imut-data.fields.status'))
                     ->translateLabel()
+                    ->boolean()
                     ->alignCenter()
                     ->size('xl')
                     ->disabled(fn() => \Illuminate\Support\Facades\Gate::any([
@@ -69,9 +71,10 @@ class ImutDataRelationManager extends RelationManager
                     ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
                     ->sortable(),
 
-                \Archilex\ToggleIconColumn\Columns\ToggleIconColumn::make('is_monthly')
+                IconColumn::make('is_monthly')
                     ->label('Bulanan')
                     ->translateLabel()
+                    ->boolean()
                     ->alignCenter()
                     ->size('xl')
                     ->tooltip(fn(Model $record) => $record->is_monthly ? 'Ya' : 'Tidak')
