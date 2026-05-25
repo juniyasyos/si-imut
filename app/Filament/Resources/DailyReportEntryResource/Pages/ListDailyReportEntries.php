@@ -253,10 +253,18 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     public function deleteReport($recordId): void
     {
         try {
-            $record = DailyReportResponse::findOrFail($recordId);
+            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $record = $repo->findById($recordId);
 
-            // Delete the record
-            $record->delete();
+            if (! $record) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
+            }
+
+            // Delete the record via repository
+            $deleted = $repo->deleteById($recordId);
+            if (! $deleted) {
+                throw new \Exception('Gagal menghapus laporan');
+            }
 
             // Close slide-over if open
             $this->slideOverOpen = true;

@@ -2,14 +2,15 @@
 
 namespace App\Services\DailyReport;
 
-use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\User;
 use App\Services\DailyReport\Exports\DailyReportMonitoringExport;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Support\CacheKey;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -19,6 +20,11 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class DailyReportMonitoringService
 {
+    public function __construct(
+        private readonly DailyReportResponseRepositoryInterface $dailyReportRepository,
+    ) {
+    }
+
     /**
      * Load monitoring templates for a specific period
      */
@@ -103,10 +109,19 @@ class DailyReportMonitoringService
     public function getReportCountForIndicatorDate(int $indicatorId, string $date): int
     {
         try {
-            return DailyReportResponse::query()
-                ->where('form_template_id', $indicatorId)
-                ->whereDate('report_date', $date)
-                ->count();
+            $user = Auth::user();
+
+            if (! $user) {
+                return 0;
+            }
+
+            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+
+            return $this->dailyReportRepository->countReportsForIndicatorDate(
+                $indicatorId,
+                $date,
+                $unitKerjaIds
+            );
         } catch (\Exception $e) {
             Log::error('Error fetching report count', [
                 'indicator_id' => $indicatorId,
@@ -205,7 +220,7 @@ class DailyReportMonitoringService
     /**
      * Format template response data
      */
-    private function formatTemplateResponse(FormTemplate $template, ?int $firstUnitKerjaId = null): array
+    private function formatTemplateResponse($template, ?int $firstUnitKerjaId = null): array
     {
         return [
             'id' => $template->id,

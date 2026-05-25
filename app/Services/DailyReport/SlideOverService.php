@@ -2,17 +2,20 @@
 
 namespace App\Services\DailyReport;
 
-use App\Models\DailyReportEntry;
-use App\Models\FormTemplate;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class SlideOverService
 {
     /**
      * Load daily reports for selected indicator and date
      */
+    public function __construct(
+        private readonly DailyReportResponseRepositoryInterface $dailyReportRepository,
+    ) {
+    }
+
     public function loadDailyReports(int $indicatorId, string $date): array
     {
         $user = Auth::user();
@@ -25,49 +28,19 @@ class SlideOverService
             return [];
         }
 
-        // Get daily reports with basic data
-        $reports = \App\Models\DailyReportResponse::query()
-            ->select([
-                'daily_report_responses.*',
-                'unit_kerja.unit_name as unit_name',
-                'users.name as submitted_by_name',
-                'form_templates.title as form_title'
-            ])
-            ->join('form_templates', 'daily_report_responses.form_template_id', '=', 'form_templates.id')
-            ->join('imut_profil', 'form_templates.imut_profile_id', '=', 'imut_profil.id')
-            ->join('unit_kerja', 'daily_report_responses.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('users', 'daily_report_responses.submitted_by', '=', 'users.id')
-            ->where('form_templates.id', $indicatorId)
-            ->where(function ($query) {
-                $now = now();
-                $query->where(function ($q) use ($now) {
-                    $q->where('imut_profil.valid_from', '<=', $now)
-                        ->where(function ($subQ) use ($now) {
-                            $subQ->whereNull('imut_profil.valid_until')
-                                ->orWhere('imut_profil.valid_until', '>=', $now);
-                        });
-                });
-            })
-            ->whereDate('daily_report_responses.report_date', $date)
-            ->whereIn('daily_report_responses.unit_kerja_id', $userUnitIds)
-            ->latest('daily_report_responses.created_at')
-            ->get();
+        $reports = $this->dailyReportRepository->getReportsForIndicatorDate(
+            $indicatorId,
+            $date,
+            $userUnitIds
+        );
 
         if ($reports->isEmpty()) {
             return [];
         }
 
-        // Get field responses for all reports
-        $reportIds = $reports->pluck('id')->toArray();
-        $fieldResponses = \App\Models\FieldResponse::query()
-            ->select([
-                'field_responses.*',
-                'enhanced_form_fields.field_label'
-            ])
-            ->join('enhanced_form_fields', 'field_responses.form_field_id', '=', 'enhanced_form_fields.id')
-            ->whereIn('field_responses.daily_report_response_id', $reportIds)
-            ->get()
-            ->groupBy('daily_report_response_id');
+        $fieldResponses = $this->dailyReportRepository->getFieldResponsesForReportIds(
+            $reports->pluck('id')->all()
+        );
 
         // Map reports with field responses
         return $reports->map(function ($report) use ($fieldResponses) {

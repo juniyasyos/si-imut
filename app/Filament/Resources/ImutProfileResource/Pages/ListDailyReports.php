@@ -229,11 +229,8 @@ class ListDailyReports extends Page implements HasTable
 
     protected function getTableQuery()
     {
-        return DailyReportResponse::query()
-            ->whereHas('formTemplate', function ($query) {
-                $query->where('imut_profile_id', $this->record->id);
-            })
-            ->with(['unitKerja', 'submittedBy', 'formTemplate']);
+        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+        return $repo->getQueryForProfile($this->record->id);
     }
 
     protected function getScoreColor($score): string

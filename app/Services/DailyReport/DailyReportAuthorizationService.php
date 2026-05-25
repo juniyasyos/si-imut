@@ -7,6 +7,7 @@ use App\Models\FieldResponse;
 use App\Models\FormTemplate;
 use App\Models\User;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
+use App\Services\DailyReport\UnifiedComplianceService;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -127,21 +128,24 @@ class DailyReportAuthorizationService
 
             Log::debug('Creating daily report with data:', $reportData);
 
-            // Create daily report response
-            $dailyReport = DailyReportResponse::create($reportData);
+            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
 
-            if (!$dailyReport->id) {
+            // Create daily report response via repository
+            $dailyReport = $repo->createReport($reportData);
+
+            if (!$dailyReport || !$dailyReport->id) {
                 throw new \Exception('Gagal membuat record daily report. Silakan coba lagi.');
             }
 
             // Process and create field responses
             $responses = $this->createFieldResponses($dailyReport, $formTemplate, $formData);
 
-            // Calculate compliance
-            $complianceResult = $formTemplate->calculateCompliance($responses);
+            // Calculate compliance using centralized service
+            $complianceService = app(UnifiedComplianceService::class);
+            $complianceResult = $complianceService->calculate($formTemplate, $responses);
 
-            // Update daily report with compliance results
-            $dailyReport->update([
+            // Update daily report with compliance results via repository
+            $repo->updateById($dailyReport->id, [
                 'total_score' => $complianceResult['total_score'],
                 'compliance_status' => $complianceResult['compliance_status'],
                 'calculation_details' => $complianceResult,

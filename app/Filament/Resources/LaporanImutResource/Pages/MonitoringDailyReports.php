@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Filament\Resources\LaporanImutResource;
-use App\Models\DailyReportResponse;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
 use Carbon\Carbon;
@@ -66,30 +65,16 @@ class MonitoringDailyReports extends Page
             // Expected total reports = indicators × days passed
             $expectedReports = $expectedIndicators * $daysPassed;
 
+            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+
             // Get actual reports submitted
-            $actualReports = DailyReportResponse::query()
-                ->where('unit_kerja_id', $unitKerja->id)
-                ->whereIn('form_template_id', $formTemplateIds)
-                ->whereBetween('report_date', [$start, min($today, $end)])
-                ->count();
+            $actualReports = $repo->countBetweenForUnitAndFormIds($unitKerja->id, $start, min($today, $end), $formTemplateIds->toArray());
 
             // Get today's reports
-            $todayReports = DailyReportResponse::query()
-                ->where('unit_kerja_id', $unitKerja->id)
-                ->whereIn('form_template_id', $formTemplateIds)
-                ->whereDate('report_date', $today)
-                ->count();
+            $todayReports = $repo->countByDateForUnitAndFormIds($unitKerja->id, $today->toDateString(), $formTemplateIds->toArray());
 
             // Get compliance data (reports with 100% score)
-            $perfectReports = DailyReportResponse::query()
-                ->where('unit_kerja_id', $unitKerja->id)
-                ->whereIn('form_template_id', $formTemplateIds)
-                ->whereBetween('report_date', [$start, min($today, $end)])
-                ->where(function ($query) {
-                    $query->where('total_score', '>=', 100)
-                        ->orWhereRaw("JSON_EXTRACT(calculation_details, '$.compliance_status') = true");
-                })
-                ->count();
+            $perfectReports = $repo->countPerfectBetweenForUnitAndFormIds($unitKerja->id, $start, min($today, $end), $formTemplateIds->toArray());
 
             // Calculate percentages
             $completionRate = $expectedReports > 0
@@ -101,11 +86,7 @@ class MonitoringDailyReports extends Page
                 : 0;
 
             // Get last submission time
-            $lastSubmission = DailyReportResponse::query()
-                ->where('unit_kerja_id', $unitKerja->id)
-                ->whereIn('form_template_id', $formTemplateIds)
-                ->latest('created_at')
-                ->first();
+            $lastSubmission = $repo->getLatestForUnitAndFormIds($unitKerja->id, $start, min($today, $end), $formTemplateIds->toArray());
 
             // Status determination
             $status = $this->determineStatus($completionRate, $todayReports, $expectedIndicators);

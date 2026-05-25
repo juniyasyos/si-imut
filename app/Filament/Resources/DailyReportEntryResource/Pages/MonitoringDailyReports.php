@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
-use App\Models\DailyReportResponse;
 use App\Models\UnitKerja;
 use Carbon\Carbon;
 use Filament\Resources\Pages\Page;
@@ -81,11 +80,8 @@ class MonitoringDailyReports extends Page
                 : 0;
 
             // Get last submission
-            $lastSubmission = DailyReportResponse::query()
-                ->where('unit_kerja_id', $unit->id)
-                ->whereBetween('report_date', [$startDate, $endDate])
-                ->latest('created_at')
-                ->first();
+            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $lastSubmission = $repo->getLatestForUnitAndFormIds($unit->id, $startDate, $endDate, []);
 
             // Determine status
             $status = $this->determineStatus($todayReports, $complianceRate);

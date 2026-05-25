@@ -439,8 +439,9 @@ class FormPersistenceService
 
         if ($formTemplate) {
             // Calculate compliance based on form structure (without actual responses)
-            // This gives a baseline compliance score for the form template itself
-            $complianceScore = $formTemplate->calculateCompliance([]);
+            // Use centralized compliance service
+            $complianceService = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+            $complianceScore = $complianceService->calculate($formTemplate, []);
 
             // Update record dengan compliance score
             $record->update([

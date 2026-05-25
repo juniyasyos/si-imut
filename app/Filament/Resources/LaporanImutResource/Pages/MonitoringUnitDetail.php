@@ -4,10 +4,10 @@ namespace App\Filament\Resources\LaporanImutResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource\Pages\BaseDailyReportMonitoring;
 use App\Filament\Resources\LaporanImutResource;
-use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 
 class MonitoringUnitDetail extends BaseDailyReportMonitoring
 {
@@ -36,9 +36,15 @@ class MonitoringUnitDetail extends BaseDailyReportMonitoring
 
     protected function getReportsQuery($startDate, $endDate)
     {
-        return DailyReportResponse::query()
-            ->where('unit_kerja_id', $this->unitKerja->id)
-            ->whereBetween('report_date', [$startDate, $endDate]);
+        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+        // Return a collection directly from repository; Base loader accepts collections now
+        return $repo->getTableViewEntries(
+            auth()->user(),
+            null,
+            $this->unitKerja->id,
+            $startDate,
+            $endDate
+        );
     }
 
     protected function loadIndicators($startDate, $endDate): void
@@ -91,39 +97,22 @@ class MonitoringUnitDetail extends BaseDailyReportMonitoring
             return;
         }
 
-        // Get daily reports for specific unit
-        $reports = \App\Models\DailyReportResponse::query()
-            ->select([
-                'daily_report_responses.*',
-                'unit_kerja.unit_name as unit_name',
-                'users.name as submitted_by_name',
-                'form_templates.title as form_title'
-            ])
-            ->join('form_templates', 'daily_report_responses.form_template_id', '=', 'form_templates.id')
-            ->join('unit_kerja', 'daily_report_responses.unit_kerja_id', '=', 'unit_kerja.id')
-            ->join('users', 'daily_report_responses.submitted_by', '=', 'users.id')
-            ->where('form_templates.id', $this->selectedIndicatorId)
-            ->where('daily_report_responses.unit_kerja_id', $this->unitKerja->id)
-            ->whereDate('daily_report_responses.report_date', $this->selectedDate)
-            ->latest('daily_report_responses.created_at')
-            ->get();
+        $dailyReportRepository = app(DailyReportResponseRepositoryInterface::class);
+
+        $reports = $dailyReportRepository->getReportsForIndicatorDate(
+            $this->selectedIndicatorId,
+            $this->selectedDate,
+            [$this->unitKerja->id]
+        );
 
         if ($reports->isEmpty()) {
             $this->dailyReports = [];
             return;
         }
 
-        // Get field responses for all reports
-        $reportIds = $reports->pluck('id')->toArray();
-        $fieldResponses = \App\Models\FieldResponse::query()
-            ->select([
-                'field_responses.*',
-                'enhanced_form_fields.field_label'
-            ])
-            ->join('enhanced_form_fields', 'field_responses.form_field_id', '=', 'enhanced_form_fields.id')
-            ->whereIn('field_responses.daily_report_response_id', $reportIds)
-            ->get()
-            ->groupBy('daily_report_response_id');
+        $fieldResponses = $dailyReportRepository->getFieldResponsesForReportIds(
+            $reports->pluck('id')->all()
+        );
 
         // Map reports with field responses
         $this->dailyReports = $reports->map(function ($report) use ($fieldResponses) {

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
+use App\Services\DailyReport\DailyReportEntryContextService;
+use App\Services\DailyReport\UnifiedComplianceService;
 use App\Services\DynamicForm\DynamicFormService;
 use Filament\Actions;
 use Filament\Forms\Form;
@@ -19,6 +21,12 @@ class EditDailyReportEntry extends EditRecord
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
     public ?string $originalDate = null;
+    private DailyReportEntryContextService $contextService;
+
+    public function __construct()
+    {
+        $this->contextService = app(DailyReportEntryContextService::class);
+    }
 
     /**
      * Mount the component
@@ -64,10 +72,7 @@ class EditDailyReportEntry extends EditRecord
      */
     public function getFormTitle(): string
     {
-        if ($this->formTemplate && $this->formTemplate->imutProfile) {
-            return $this->formTemplate->imutProfile->imutData->title;
-        }
-        return 'Edit Laporan Harian';
+        return $this->contextService->getFormTitle($this->formTemplate, 'Edit Laporan Harian');
     }
 
     /**
@@ -83,7 +88,7 @@ class EditDailyReportEntry extends EditRecord
      */
     public function getFormattedDate(): string
     {
-        return $this->record->report_date->format('d F Y');
+        return $this->contextService->getFormattedDate($this->record->report_date->format('Y-m-d'));
     }
 
     /**
@@ -91,12 +96,7 @@ class EditDailyReportEntry extends EditRecord
      */
     public function getCategoryBadgeColor(): string
     {
-        if ($this->formTemplate && $this->formTemplate->imutProfile) {
-            $colors = ['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'pink'];
-            $index = abs(crc32($this->formTemplate->imutProfile->title)) % count($colors);
-            return $colors[$index];
-        }
-        return 'gray';
+        return $this->contextService->getCategoryBadgeColor($this->formTemplate);
     }
 
     /**
@@ -255,8 +255,9 @@ class EditDailyReportEntry extends EditRecord
                 }
             }
 
-            // Recalculate compliance
-            $complianceResult = $this->formTemplate->calculateCompliance($formData);
+            // Recalculate compliance using central service
+            $complianceService = app(UnifiedComplianceService::class);
+            $complianceResult = $complianceService->calculate($this->formTemplate, $formData);
             $this->record->update([
                 'total_score' => $complianceResult['total_score'],
                 'compliance_status' => $complianceResult['compliance_status'],

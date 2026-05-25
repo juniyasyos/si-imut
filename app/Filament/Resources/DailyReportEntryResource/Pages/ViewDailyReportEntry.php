@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
+use App\Services\DailyReport\DailyReportEntryContextService;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -16,6 +17,12 @@ class ViewDailyReportEntry extends ViewRecord
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
     public ?string $originalDate = null;
+    private DailyReportEntryContextService $contextService;
+
+    public function __construct()
+    {
+        $this->contextService = app(DailyReportEntryContextService::class);
+    }
 
     /**
      * Mount the component
@@ -54,10 +61,7 @@ class ViewDailyReportEntry extends ViewRecord
      */
     public function getFormTitle(): string
     {
-        if ($this->formTemplate && $this->formTemplate->imutProfile) {
-            return $this->formTemplate->imutProfile->title;
-        }
-        return 'Detail Laporan Harian';
+        return $this->contextService->getFormTitle($this->formTemplate, 'Detail Laporan Harian');
     }
 
     /**
@@ -73,7 +77,7 @@ class ViewDailyReportEntry extends ViewRecord
      */
     public function getFormattedDate(): string
     {
-        return $this->record->report_date->format('d F Y');
+        return $this->contextService->getFormattedDate($this->record->report_date->format('Y-m-d'));
     }
 
     /**
@@ -81,12 +85,7 @@ class ViewDailyReportEntry extends ViewRecord
      */
     public function getCategoryBadgeColor(): string
     {
-        if ($this->formTemplate && $this->formTemplate->imutProfile) {
-            $colors = ['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'pink'];
-            $index = abs(crc32($this->formTemplate->imutProfile->title)) % count($colors);
-            return $colors[$index];
-        }
-        return 'gray';
+        return $this->contextService->getCategoryBadgeColor($this->formTemplate);
     }
 
 

@@ -52,9 +52,11 @@ class DailyReportBuildService
             $template->load('formFields.options');
         }
 
-        return DB::transaction(function () use ($template, $formData, $unitKerja, $submittedBy, $reportDate) {
-            // 1. Create DailyReportResponse record
-            $dailyReport = DailyReportResponse::create([
+        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+
+        return DB::transaction(function () use ($template, $formData, $unitKerja, $submittedBy, $reportDate, $repo) {
+            // 1. Create DailyReportResponse record via repository
+            $dailyReport = $repo->createReport([
                 'form_template_id' => $template->id,
                 'unit_kerja_id' => $unitKerja->id,
                 'submitted_by' => $submittedBy->id,
@@ -82,8 +84,8 @@ class DailyReportBuildService
             // 3. Calculate compliance ONCE (unified logic)
             $compliance = $this->complianceService->calculate($template, $formData);
 
-            // 4. Update DailyReportResponse dengan compliance data
-            $dailyReport->update([
+            // 4. Update DailyReportResponse with compliance data via repository
+            $repo->updateById($dailyReport->id, [
                 'total_score' => $compliance['score'],
                 'compliance_status' => $compliance['status'],
             ]);

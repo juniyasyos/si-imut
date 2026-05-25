@@ -82,7 +82,28 @@ class DynamicFormService
         //     dd($currentData);
         // }
 
-        $compliance = ComplianceCalculatorService::calculateCompliance($formTemplate, $currentData);
+        $unified = app(\App\Services\DailyReport\UnifiedComplianceService::class)->calculate($formTemplate, $currentData);
+
+        // Map unified shape to the legacy shape expected by this UI renderer
+        $fieldBreakdown = $unified['calculation_details']['field_breakdown'] ?? [];
+        $fieldsAssoc = [];
+        foreach ($fieldBreakdown as $fb) {
+            $key = $fb['field_key'] ?? ($fb['field_key'] ?? null);
+            if ($key) {
+                $fieldsAssoc[$key] = [
+                    'score' => $fb['score'] ?? 0,
+                    'weight' => $fb['weight'] ?? ($fb['weight'] ?? 0),
+                ];
+            }
+        }
+
+        $compliance = [
+            'score' => $unified['total_score'] ?? ($unified['calculation_details']['weighted_percentage'] ?? 0),
+            'total_score' => $unified['calculation_details']['raw_score'] ?? ($unified['total_score'] ?? 0),
+            'fields' => $fieldsAssoc,
+            'warnings' => $unified['calculation_details']['warnings'] ?? [],
+            'auto_fail' => $unified['critical_failed'] ?? false,
+        ];
 
         $html = '<div class="space-y-4 text-sm sm:text-base">';
 

@@ -63,8 +63,10 @@ class FormMutationService
         array $preparedData,
         FormTemplate $formTemplate
     ): DailyReportResponse {
-        // Create DailyReportResponse
-        $dailyReport = DailyReportResponse::create([
+        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+
+        // Create DailyReportResponse via repository
+        $dailyReport = $repo->createReport([
             'form_template_id' => $preparedData['form_template_id'],
             'unit_kerja_id' => $preparedData['unit_kerja_id'],
             'submitted_by' => $preparedData['submitted_by'],

@@ -64,7 +64,7 @@ abstract class BaseDailyReportMonitoring extends Page
     public function boot(): void
     {
         $this->matrixService = new MatrixDataService();
-        $this->slideOverService = new SlideOverService();
+        $this->slideOverService = app(SlideOverService::class);
 
         // load category list and pre‑compute CSS classes for each
         $this->imutCategories = \App\Models\ImutCategory::query()
@@ -137,7 +137,12 @@ abstract class BaseDailyReportMonitoring extends Page
             $endDate = $startDate->copy()->endOfMonth();
 
             // Get reports with custom filter
-            $reports = $this->getReportsQuery($startDate, $endDate)->get();
+            $reportsQueryOrCollection = $this->getReportsQuery($startDate, $endDate);
+            if ($reportsQueryOrCollection instanceof \Illuminate\Contracts\Support\Arrayable || $reportsQueryOrCollection instanceof \Illuminate\Support\Collection) {
+                $reports = $reportsQueryOrCollection instanceof \Illuminate\Support\Collection ? $reportsQueryOrCollection : collect($reportsQueryOrCollection->toArray());
+            } else {
+                $reports = $reportsQueryOrCollection->get();
+            }
 
             // Build matrix data with aggregation for multiple reports per day
             $matrix = [];

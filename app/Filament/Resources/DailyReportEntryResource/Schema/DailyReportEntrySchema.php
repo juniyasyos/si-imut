@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DailyReportEntryResource\Schema;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
 use App\Traits\BuildsDynamicForm;
+use App\Services\DailyReport\DailyReportEntryContextService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -18,11 +19,11 @@ class DailyReportEntrySchema extends DailyReportEntryResource
      */
     public static function make(): array
     {
-        $formTemplateId = request()->query('indicator') ?? request()->route('record');
-
-        $formTemplate = $formTemplateId
-            ? FormTemplate::with('formFields')->find($formTemplateId)
-            : null;
+        $contextService = app(DailyReportEntryContextService::class);
+        $formTemplate = $contextService->resolveTemplate(
+            request()->query('indicator'),
+            request()->route('record')
+        );
 
         $schema = [
             static::getInformationSection($formTemplate),
@@ -41,6 +42,8 @@ class DailyReportEntrySchema extends DailyReportEntryResource
      */
     protected static function getInformationSection(?FormTemplate $formTemplate = null): Section
     {
+        $contextService = app(DailyReportEntryContextService::class);
+
         // Get indicator from query parameter
         $indicatorId = request()->query('indicator');
 
@@ -69,7 +72,7 @@ class DailyReportEntrySchema extends DailyReportEntryResource
                 ->hidden();
         }
 
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = $contextService->getBackDataEntryDays();
 
         $fields[] = DatePicker::make('report_date')
             ->label('Tanggal Laporan')

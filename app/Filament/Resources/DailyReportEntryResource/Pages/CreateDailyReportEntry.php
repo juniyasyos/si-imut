@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
+use App\Services\DailyReport\DailyReportBuildService;
 use App\Services\DailyReport\DailyReportAuthorizationService;
 use App\Services\DynamicForm\DynamicFormService;
 use Filament\Forms\Form;
@@ -21,6 +22,7 @@ class CreateDailyReportEntry extends CreateRecord
     protected static string $view = 'filament.pages.create-daily-report-entry';
 
     private DailyReportAuthorizationService $creationService;
+    private DailyReportBuildService $buildService;
 
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
@@ -29,6 +31,7 @@ class CreateDailyReportEntry extends CreateRecord
     public function __construct()
     {
         $this->creationService = app(DailyReportAuthorizationService::class);
+        $this->buildService = app(DailyReportBuildService::class);
     }
 
     /**
@@ -248,12 +251,18 @@ class CreateDailyReportEntry extends CreateRecord
                 'date' => $this->originalDate
             ]);
 
-            // Use service to create daily report and field responses
-            $this->record = $this->creationService->createDailyReportWithResponses(
-                $user,
+            $unitKerja = $user->unitKerjas()->first();
+
+            if (! $unitKerja) {
+                throw new \Exception('User tidak terdaftar di unit kerja mana pun');
+            }
+
+            $this->record = $this->buildService->create(
                 $this->formTemplate,
-                $this->originalDate,
-                $data
+                $data,
+                $unitKerja,
+                $user,
+                \Carbon\Carbon::createFromFormat('Y-m-d', $this->originalDate)
             );
 
             return [];

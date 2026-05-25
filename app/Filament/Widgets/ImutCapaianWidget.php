@@ -7,6 +7,7 @@ use App\Services\Chart\ChartDataProcessorService;
 use App\Services\Core\ImutSqlExpressionBuilder;
 use App\Services\Chart\ImutChartSeriesService;
 use App\Services\Core\ImutCalculationService;
+use App\Services\DailyReport\WidgetDataService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
@@ -128,8 +129,8 @@ class ImutCapaianWidget extends ApexChartWidget
                 ->toArray();
         }
 
-        // Hitung statistik detail untuk laporan yang dipilih
-        $this->statistikData = $this->calculateDetailedStatistics($laporans, $categories);
+        $service = app(WidgetDataService::class);
+        $this->statistikData = $service->getImutCapaianStats($selectedLaporan, $categories);
 
         $colors = $this->getChartService()->getDefaultColors();
 
@@ -157,166 +158,6 @@ class ImutCapaianWidget extends ApexChartWidget
         return $options;
     }
 
-    protected function calculateDetailedStatistics($laporans, $categories): array
-    {
-        // Default: ambil laporan terbaru jika tidak ada yang dipilih
-        if (!$this->selectedLaporanId) {
-            $latestLaporan = $laporans->sortByDesc('assessment_period_start')->first();
-            $this->selectedLaporanId = $latestLaporan?->id;
-        }
-
-        // Ambil laporan yang dipilih
-        $selectedLaporan = $laporans->firstWhere('id', $this->selectedLaporanId);
-
-        if (!$selectedLaporan) {
-            // Fallback ke terbaru jika tidak ketemu
-            $selectedLaporan = $laporans->sortByDesc('assessment_period_start')->first();
-            $this->selectedLaporanId = $selectedLaporan?->id;
-        }
-
-        if (!$selectedLaporan) {
-            return [
-                'total_categories' => count($categories),
-                'categories_detail' => [],
-                'total_imut_indicators' => 0,
-                'imut_meeting_standard' => 0,
-                'imut_below_standard' => 0,
-                'overall_achievement' => 0,
-                'available_laporans' => [],
-                'selected_laporan_id' => null,
-            ];
-        }
-
-        // Gunakan HANYA laporan yang dipilih
-        $selectedLaporanCollection = collect([$selectedLaporan]);
-
-        // Simpan daftar laporan yang tersedia untuk dropdown
-        $availableLaporans = $laporans->sortByDesc('assessment_period_start')->map(function ($laporan) {
-            return [
-                'id' => $laporan->id,
-                'name' => $laporan->name,
-                'period' => $laporan->assessment_period_start->format('F Y'),
-            ];
-        })->values()->toArray();
-
-        $stats = [
-            'total_categories' => count($categories),
-            'categories_detail' => [],
-            'total_imut_indicators' => 0,
-            'imut_meeting_standard' => 0,
-            'imut_below_standard' => 0,
-            'overall_achievement' => 0,
-            'laporan_used' => $selectedLaporan->name,
-            'laporan_period' => $selectedLaporan->assessment_period_start->format('F Y'),
-            'available_laporans' => $availableLaporans,
-            'selected_laporan_id' => $this->selectedLaporanId,
-        ];
-
-        foreach ($categories as $categoryShortName) {
-            $categoryStats = [
-                'category_id' => $categoryShortName,
-                'category_name' => $categoryShortName,
-                'total_imut' => 0,
-                'imut_meeting_standard' => 0,
-                'imut_below_standard' => 0,
-                'achievement_percentage' => 0,
-            ];
-
-            // Kumpulkan data dari laporan yang dipilih
-            $imutDataMap = [];
-
-            foreach ($selectedLaporanCollection as $laporan) {
-                foreach ($laporan->laporanUnitKerjas as $laporanUnitKerja) {
-                    foreach ($laporanUnitKerja->imutPenilaians as $penilaian) {
-                        $imutData = $penilaian->profile->imutData ?? null;
-
-                        if (!$imutData) continue;
-
-                        // Cek apakah imut ini termasuk kategori yang sedang diproses
-                        $imutCategory = $imutData->categories;
-                        if (!$imutCategory || $imutCategory->short_name != $categoryShortName) {
-                            continue;
-                        }
-
-                        $imutId = $imutData->id;
-
-                        // Inisialisasi jika belum ada
-                        if (!isset($imutDataMap[$imutId])) {
-                            $imutDataMap[$imutId] = [
-                                'title' => $imutData->title,
-                                'standard' => $penilaian->profile->target_value ?? 0,
-                                'operator' => $penilaian->profile->target_operator ?? '>=',
-                                'total_numerator' => 0,
-                                'total_denominator' => 0,
-                            ];
-                        }
-
-                        // Akumulasi numerator dan denominator dari semua unit
-                        if (
-                            $penilaian->numerator_value !== null &&
-                            $penilaian->denominator_value !== null &&
-                            $penilaian->denominator_value != 0
-                        ) {
-                            $imutDataMap[$imutId]['total_numerator'] += $penilaian->numerator_value;
-                            $imutDataMap[$imutId]['total_denominator'] += $penilaian->denominator_value;
-                        }
-                    }
-                }
-            }
-
-            // Hitung achievement untuk IMUT yang ADA di laporan (bukan semua dari database)
-            foreach ($imutDataMap as $imutId => $data) {
-                $categoryStats['total_imut']++;
-
-                // Jika denominator 0, anggap tidak memenuhi standar
-                if ($data['total_denominator'] == 0) {
-                    $categoryStats['imut_below_standard']++;
-                    continue;
-                }
-
-                $achievement = ImutCalculationService::calculatePercentage(
-                    $data['total_numerator'],
-                    $data['total_denominator']
-                );
-
-                // Cek apakah memenuhi standard
-                $meetsStandard = $this->checkIfMeetsStandard(
-                    $achievement,
-                    $data['standard'],
-                    $data['operator']
-                );
-
-                if ($meetsStandard) {
-                    $categoryStats['imut_meeting_standard']++;
-                } else {
-                    $categoryStats['imut_below_standard']++;
-                }
-            }
-
-            // Hitung persentase kategori yang memenuhi standard
-            if ($categoryStats['total_imut'] > 0) {
-                $categoryStats['achievement_percentage'] = round(
-                    ($categoryStats['imut_meeting_standard'] / $categoryStats['total_imut']) * 100,
-                    2
-                );
-            }
-
-            $stats['categories_detail'][] = $categoryStats;
-            $stats['total_imut_indicators'] += $categoryStats['total_imut'];
-            $stats['imut_meeting_standard'] += $categoryStats['imut_meeting_standard'];
-            $stats['imut_below_standard'] += $categoryStats['imut_below_standard'];
-        }
-
-        // Hitung overall achievement
-        if ($stats['total_imut_indicators'] > 0) {
-            $stats['overall_achievement'] = round(
-                ($stats['imut_meeting_standard'] / $stats['total_imut_indicators']) * 100,
-                2
-            );
-        }
-
-        return $stats;
-    }
 
     protected function checkIfMeetsStandard(float $achievement, float $standard, string $operator): bool
     {

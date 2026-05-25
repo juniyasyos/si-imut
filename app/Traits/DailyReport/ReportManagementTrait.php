@@ -281,28 +281,29 @@ trait ReportManagementTrait
      */
     protected function calculateCompliance(array $data): array
     {
-        if (!$this->formTemplate) {
-            return ['score' => 0, 'status' => 'No Template'];
+        if (! $this->formTemplate) {
+            return ['score' => 0, 'status' => 'No Template', 'filled_fields' => 0, 'total_fields' => 0];
         }
+
+        $responses = $data['field_responses'] ?? $data;
+
+        $complianceService = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+        $result = $complianceService->calculate($this->formTemplate, $responses);
 
         $totalFields = $this->formTemplate->formFields->count();
         $filledFields = 0;
-
         foreach ($this->formTemplate->formFields as $field) {
-            $fieldValue = $data['field_responses'][$field->field_key] ?? null;
-            if (!empty($fieldValue)) {
+            $val = $responses[$field->field_key] ?? null;
+            if (! empty($val)) {
                 $filledFields++;
             }
         }
 
-        $percentage = $totalFields > 0 ? ($filledFields / $totalFields) * 100 : 0;
-        $status = $percentage >= 80 ? 'Completed' : 'Incomplete';
-
         return [
-            'score' => $percentage,
-            'status' => $status,
+            'score' => $result['total_score'] ?? 0,
+            'status' => ($result['compliance_status'] ?? false) ? 'Completed' : 'Incomplete',
             'filled_fields' => $filledFields,
-            'total_fields' => $totalFields
+            'total_fields' => $totalFields,
         ];
     }
 }

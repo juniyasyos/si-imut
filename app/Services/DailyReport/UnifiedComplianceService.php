@@ -21,31 +21,53 @@ class UnifiedComplianceService
      */
     public function calculate(FormTemplate $template, array $responses): array
     {
-        // Load formFields jika belum
-        if (!$template->relationLoaded('formFields')) {
+        // Ensure fields loaded
+        if (! $template->relationLoaded('formFields')) {
             $template->load('formFields.options');
         }
 
-        $fieldScores = [];
         $totalScore = 0;
-        $fieldCount = 0;
+        $maxScore = 0;
+        $criticalFailed = false;
+        $fieldScores = [];
 
         foreach ($template->formFields as $field) {
-            $fieldScore = $this->scoreField($field, $responses[$field->field_key] ?? null);
+            $response = $responses[$field->field_key] ?? null;
+            $fieldScore = $this->scoreField($field, $response);
+
             $fieldScores[$field->field_key] = $fieldScore;
 
-            $totalScore += $fieldScore;
-            $fieldCount++;
+            if ($this->fieldContributesToScoring($field)) {
+                $weight = $field->compliance_weight ?? 1;
+                $totalScore += ($fieldScore * $weight);
+                $maxScore += (100 * $weight);
+
+                if (($field->is_critical_field ?? false) && $fieldScore < 50) {
+                    $criticalFailed = true;
+                }
+            }
         }
 
-        // Calculate average compliance
-        $averageScore = $fieldCount > 0 ? round($totalScore / $fieldCount) : 0;
+        $percentage = $maxScore > 0 ? ($totalScore / $maxScore) * 100 : 0;
+
+        if (($template->auto_fail_on_critical ?? false) && $criticalFailed) {
+            $percentage = 0;
+            $isCompliant = false;
+        } else {
+            $isCompliant = $percentage >= 80;
+        }
 
         return [
-            'score' => $averageScore,
-            'status' => $this->getComplianceStatus($averageScore),
-            'breakdown' => $fieldScores,
-            'fields' => $this->getFieldBreakdown($template->formFields, $fieldScores),
+            'total_score' => round($percentage, 2),
+            'compliance_status' => $isCompliant,
+            'critical_failed' => $criticalFailed,
+            'calculation_details' => [
+                'raw_score' => $totalScore,
+                'max_score' => $maxScore,
+                'weighted_percentage' => $percentage,
+                'threshold_met' => $isCompliant,
+                'field_breakdown' => $this->getFieldBreakdown($template->formFields, $fieldScores),
+            ],
         ];
     }
 
@@ -194,7 +216,7 @@ class UnifiedComplianceService
             $breakdown[] = [
                 'field_id' => $field->id,
                 'field_key' => $field->field_key,
-                'field_label' => $field->label,
+                'field_label' => $field->field_label ?? null,
                 'field_type' => $field->field_type,
                 'score' => $fieldScores[$field->field_key] ?? 0,
                 'weight' => $field->compliance_weight ?? 1,
@@ -202,5 +224,22 @@ class UnifiedComplianceService
         }
 
         return $breakdown;
+    }
+
+    /**
+     * Determine if a field contributes to scoring (same rules as FormTemplate::fieldContributesToScoring)
+     */
+    private function fieldContributesToScoring($field): bool
+    {
+        return in_array($field->field_type, [
+            'boolean',
+            'single_select',
+            'multi_select',
+            'rating_scale',
+            'time_duration',
+            'time_range',
+            'conditional_trigger',
+            'compliance_checker',
+        ]) && (($field->compliance_weight ?? 0) > 0);
     }
 }

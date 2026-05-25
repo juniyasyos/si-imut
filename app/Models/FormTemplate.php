@@ -140,45 +140,16 @@ class FormTemplate extends Model
 
     public function calculateCompliance(array $fieldResponses): array
     {
-        $totalScore = 0;
-        $maxScore = 0;
-        $criticalFailed = false;
+        // Delegate to UnifiedComplianceService to ensure single source of truth
+        $service = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+        $result = $service->calculate($this, $fieldResponses);
 
-        foreach ($this->formFields as $field) {
-            $response = $fieldResponses[$field->field_key] ?? null;
-            $fieldScore = $field->calculateFieldScore($response);
-
-            // Only include fields that contribute to scoring (have compliance weight > 0)
-            // Text fields are excluded from compliance calculation
-            if ($this->fieldContributesToScoring($field)) {
-                $totalScore += $fieldScore * $field->compliance_weight;
-                $maxScore += 100 * $field->compliance_weight;
-
-                if ($field->is_critical_field && $fieldScore < 50) {
-                    $criticalFailed = true;
-                }
-            }
-        }
-
-        $percentage = $maxScore > 0 ? ($totalScore / $maxScore) * 100 : 0;
-
-        if ($this->auto_fail_on_critical && $criticalFailed) {
-            $percentage = 0;
-            $isCompliant = false;
-        } else {
-            $isCompliant = $percentage >= 80;
-        }
-
+        // Keep backward-compatible shape expected by callers
         return [
-            'total_score' => round($percentage, 2),
-            'compliance_status' => $isCompliant,
-            'critical_failed' => $criticalFailed,
-            'calculation_details' => [
-                'raw_score' => $totalScore,
-                'max_score' => $maxScore,
-                'weighted_percentage' => $percentage,
-                'threshold_met' => $isCompliant,
-            ]
+            'total_score' => $result['total_score'] ?? ($result['calculation_details']['weighted_percentage'] ?? 0),
+            'compliance_status' => $result['compliance_status'] ?? false,
+            'critical_failed' => $result['critical_failed'] ?? false,
+            'calculation_details' => $result['calculation_details'] ?? [],
         ];
     }
 
