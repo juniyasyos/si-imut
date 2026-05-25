@@ -132,7 +132,7 @@ class WidgetDataService
             'overall_achievement' => 0,
             'laporan_used' => $laporan->name,
             'laporan_period' => $laporan->assessment_period_start?->format('F Y'),
-            'available_laporans' => array_map(function ($l) { return ['id' => $l->id, 'name' => $l->name, 'period' => $l->assessment_period_start->format('F Y')]; }, $selectedLaporanCollection->toArray()),
+            'available_laporans' => $selectedLaporanCollection->map(function ($l) { return ['id' => $l->id, 'name' => $l->name, 'period' => $l->assessment_period_start?->format('F Y')]; })->values()->toArray(),
             'selected_laporan_id' => $laporan->id,
         ];
 

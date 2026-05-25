@@ -1,4 +1,4 @@
-<x-filament-panels::page>
+<div class="mt-8">
     <div class="space-y-8">
         {{-- Hero Header --}}
         <div class="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-700 dark:to-primary-500 rounded-xl shadow-lg p-8 text-white">
@@ -284,4 +284,4 @@
         });
     </script>
     @endscript
-</x-filament-panels::page>
+</div>

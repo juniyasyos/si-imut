@@ -87,7 +87,7 @@ class DailyReportBuildService
             // 4. Update DailyReportResponse with compliance data via repository
             $repo->updateById($dailyReport->id, [
                 'total_score' => $compliance['score'],
-                'compliance_status' => $compliance['status'],
+                'compliance_status' => $compliance['compliance_status'] ?? ($compliance['status'] ?? false),
             ]);
 
             return $dailyReport;

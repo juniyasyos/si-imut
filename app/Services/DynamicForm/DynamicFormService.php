@@ -4,6 +4,7 @@ namespace App\Services\DynamicForm;
 
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\FormTemplate;
+use App\View\Components\ComplianceDisplay;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
@@ -78,158 +79,15 @@ class DynamicFormService
             $currentData = [];
         }
 
-        // if (!empty($currentData['hand_hygiene_method']) && !empty($currentData['hand_hygiene_indication']) && !empty($currentData['six_steps_compliance'])) {
-        //     dd($currentData);
-        // }
+        $component = new ComplianceDisplay($formTemplate, $currentData);
 
-        $unified = app(\App\Services\DailyReport\UnifiedComplianceService::class)->calculate($formTemplate, $currentData);
-
-        // Map unified shape to the legacy shape expected by this UI renderer
-        $fieldBreakdown = $unified['calculation_details']['field_breakdown'] ?? [];
-        $fieldsAssoc = [];
-        foreach ($fieldBreakdown as $fb) {
-            $key = $fb['field_key'] ?? ($fb['field_key'] ?? null);
-            if ($key) {
-                $fieldsAssoc[$key] = [
-                    'score' => $fb['score'] ?? 0,
-                    'weight' => $fb['weight'] ?? ($fb['weight'] ?? 0),
-                ];
-            }
-        }
-
-        $compliance = [
-            'score' => $unified['total_score'] ?? ($unified['calculation_details']['weighted_percentage'] ?? 0),
-            'total_score' => $unified['calculation_details']['raw_score'] ?? ($unified['total_score'] ?? 0),
-            'fields' => $fieldsAssoc,
-            'warnings' => $unified['calculation_details']['warnings'] ?? [],
-            'auto_fail' => $unified['critical_failed'] ?? false,
-        ];
-
-        $html = '<div class="space-y-4 text-sm sm:text-base">';
-
-        // ================= OVERALL SCORE =================
-        $isCompliant = $compliance['score'] >= 100;
-        $scoreColor = $isCompliant ? 'green' : 'red';
-        $complianceStatus = $isCompliant ? 'PATUH' : 'TIDAK PATUH';
-
-        $html .= '<div class="p-3 sm:p-4 rounded-xl border ' .
-            ($isCompliant
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200'
-                : 'bg-red-50 dark:bg-red-900/20 border-red-200') .
-            '">';
-
-        $html .= '<h3 class="font-semibold text-sm sm:text-base lg:text-lg text-' . $scoreColor . '-800 mb-1">
-            Overall Compliance Score
-          </h3>';
-
-        $html .= '<div class="font-bold text-2xl sm:text-3xl lg:text-4xl text-' . $scoreColor . '-600 leading-tight">
-            ' . number_format($compliance['score'], 1) . '%
-          </div>';
-
-        $html .= '<div class="font-semibold text-sm sm:text-base text-' . $scoreColor . '-700 mt-1">
-            ' . $complianceStatus . '
-          </div>';
-
-        $html .= '<p class="text-xs sm:text-sm text-' . $scoreColor . '-600 mt-2">
-            Pertanyaannya harus dijawab dengan benar 100% untuk dianggap patuh
-          </p>';
-
-        $html .= '</div>';
-
-
-        // ================= FIELD BREAKDOWN =================
-        $html .= '<div class="p-3 sm:p-4 rounded-xl bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-gray-700">';
-        $html .= '<h4 class="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-200 mb-3">
-            Rincian Field
-          </h4>';
-
-        $html .= '<div class="space-y-2 text-xs sm:text-sm">';
-
-        foreach ($compliance['fields'] as $fieldKey => $fieldData) {
-
-            $field = $formTemplate->formFields->where('field_key', $fieldKey)->first();
-            if ($field) {
-
-                $weight = $field->compliance_weight;
-                $score = $fieldData['score'];
-                $percentage = $weight > 0 ? ($score / $weight) * 100 : 0;
-
-                $fieldCompliant = $percentage >= 100;
-                $statusColor = $fieldCompliant ? 'green' : 'red';
-
-                $html .= '<div class="p-2 sm:p-3 rounded-lg border ' .
-                    ($fieldCompliant
-                        ? 'border-green-200 bg-green-50 dark:bg-green-900/20'
-                        : 'border-red-200 bg-red-50 dark:bg-red-900/20') .
-                    '">';
-
-                $html .= '<div class="flex justify-between items-start gap-2">';
-
-                $html .= '<span class="font-medium text-' . $statusColor . '-700 dark:text-' . $statusColor . '-300 text-xs sm:text-sm leading-snug">
-                    ' . $field->field_label .
-                    ($field->is_critical_field ? ' <span class=\"text-yellow-500\">⚠</span>' : '') .
-                    '</span>';
-
-                $html .= '<span class="font-semibold text-xs sm:text-sm text-' . $statusColor . '-700 whitespace-nowrap">
-                    ' . number_format($percentage, 1) . '%
-                  </span>';
-
-                $html .= '</div>';
-
-                $html .= '<div class="flex flex-wrap items-center gap-2 mt-1 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400">';
-
-                $html .= '<span>Skor: ' . number_format($score, 1) . '/' . $weight . '</span>';
-
-                $html .= '<span class="text-' . $statusColor . '-600">
-                    ' . ($fieldCompliant ? 'Benar' : 'Ada kesalahan') . '
-                  </span>';
-
-                $html .= '</div>';
-
-                $html .= '</div>';
-            }
-        }
-
-        $html .= '</div></div>';
-
-
-        // ================= STATUS MESSAGE =================
-        if ($isCompliant) {
-
-            $html .= '<div class="p-3 sm:p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200">';
-            $html .= '<h4 class="font-semibold text-sm sm:text-base text-green-700 dark:text-green-300 mb-1">
-                Compliance Terpenuhi
-              </h4>';
-            $html .= '<p class="text-xs sm:text-sm text-green-700 dark:text-green-300">
-                Semua pertanyaan dijawab dengan benar
-              </p>';
-            $html .= '</div>';
-        } else if (!empty($compliance['warnings'])) {
-
-            $html .= '<div class="p-3 sm:p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200">';
-            $html .= '<h4 class="font-semibold text-sm sm:text-base text-red-800 mb-2">
-                Ketidaksesuaian Ditemukan
-              </h4>';
-            $html .= '<ul class="text-xs sm:text-sm text-red-700 dark:text-red-300 space-y-1">';
-
-            foreach ($compliance['warnings'] as $warning) {
-                $html .= '<li class="flex gap-2">
-                    <span class="flex-shrink-0">•</span>
-                    <span>' . $warning . '</span>
-                  </li>';
-            }
-
-            $html .= '</ul>';
-            $html .= '<p class="text-[11px] sm:text-xs text-red-600 dark:text-red-400 mt-2 italic">
-                Silakan periksa kembali jawaban Anda untuk mencapai compliance 100%.
-              </p>';
-            $html .= '</div>';
-        }
-
-        $html .= '</div>';
-
-        return new HtmlString($html);
+        return new HtmlString(view('components.compliance-display', [
+            'formTemplate' => $component->formTemplate,
+            'currentData' => $component->currentData,
+            'compliance' => $component->compliance,
+        ])->render());
     }
+
 
     /**
      * Initialize form data with defaults

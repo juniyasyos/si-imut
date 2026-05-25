@@ -57,8 +57,14 @@ class UnifiedComplianceService
             $isCompliant = $percentage >= 80;
         }
 
+        $fieldBreakdown = $this->getFieldBreakdown($template->formFields, $fieldScores);
+
         return [
-            'total_score' => round($percentage, 2),
+            // numeric score percentage (0-100)
+            'score' => round($percentage, 2),
+            // human/readable status string (e.g. 'compliant', 'partial')
+            'status' => $this->getComplianceStatus($percentage),
+            // boolean for quick checks
             'compliance_status' => $isCompliant,
             'critical_failed' => $criticalFailed,
             'calculation_details' => [
@@ -66,8 +72,15 @@ class UnifiedComplianceService
                 'max_score' => $maxScore,
                 'weighted_percentage' => $percentage,
                 'threshold_met' => $isCompliant,
-                'field_breakdown' => $this->getFieldBreakdown($template->formFields, $fieldScores),
+                'field_breakdown' => $fieldBreakdown,
             ],
+            // legacy keys for consumers expecting breakdown/fields
+            'breakdown' => [
+                'field_breakdown' => $fieldBreakdown,
+                'raw_score' => $totalScore,
+                'max_score' => $maxScore,
+            ],
+            'fields' => $fieldBreakdown,
         ];
     }
 
