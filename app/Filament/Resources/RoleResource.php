@@ -11,13 +11,11 @@ use Filament\Panel;
 use App\Traits\HasActiveIcon;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
-use App\Filament\Resources\RoleResource\Pages;
 use App\Filament\Resources\RoleResource\Schema\RoleResourceSchema;
 use App\Filament\Resources\RoleResource\Tables\RoleResourceTable;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
-use Illuminate\Container\Attributes\Auth;
 
 class RoleResource extends Resource implements HasShieldPermissions
 {
@@ -94,16 +92,14 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function shouldRegisterNavigation(): bool
     {
-        // dd($user = auth()->user());
-        return Utils::isResourceNavigationRegistered();
-        // return false;
+        return (bool) config('filament-shield.shield_resource.should_register_navigation', true);
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return Utils::isResourceNavigationGroupEnabled()
+        return (bool) config('filament-shield.shield_resource.navigation_group', false)
             ? __('filament-shield::filament-shield.nav.group')
-            : '';
+            : null;
     }
 
     public static function getNavigationLabel(): string
@@ -118,7 +114,7 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function getNavigationSort(): ?int
     {
-        return Utils::getResourceNavigationSort();
+        return config('filament-shield.shield_resource.navigation_sort');
     }
 
     public static function getSlug(?Panel $panel = null): string
@@ -128,7 +124,7 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function getNavigationBadge(): ?string
     {
-        if (! Utils::isResourceNavigationBadgeEnabled()) {
+        if (! (bool) config('filament-shield.shield_resource.navigation_count_badge', false)) {
             return null;
         }
 
@@ -143,11 +139,13 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     public static function isScopedToTenant(): bool
     {
-        return Utils::isScopedToTenant();
+        return (bool) config('filament-shield.shield_resource.is_scoped_to_tenant', false);
     }
 
     public static function canGloballySearch(): bool
     {
-        return Utils::isResourceGloballySearchable() && count(static::getGloballySearchableAttributes()) && static::canViewAny();
+        return (bool) config('filament-shield.shield_resource.is_globally_searchable', false)
+            && count(static::getGloballySearchableAttributes())
+            && static::canViewAny();
     }
 }
