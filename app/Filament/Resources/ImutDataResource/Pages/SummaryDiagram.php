@@ -4,9 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\LineChart;
-use App\Models\ImutData;
-use App\Models\LaporanImut;
-use App\QueryBuilders\LaporanUnitKerja;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
@@ -22,7 +20,7 @@ class SummaryDiagram extends Page
 
     public array $data = [];
 
-    public ?ImutData $imutData = null;
+    public ?\App\Models\ImutData $imutData = null;
 
     /**
      * @param  array<string, mixed>  $parameters
@@ -38,13 +36,15 @@ class SummaryDiagram extends Page
 
     public function mount(): void
     {
+        $repository = app(ImutDataRepositoryInterface::class);
+
         $slug = request()->query('record');
 
         if (! $slug) {
             abort(404, 'Slug Data IMUT tidak ditemukan.');
         }
 
-        $imutData = ImutData::with(['profiles', 'categories'])->where('slug', $slug)->first();
+        $imutData = $repository->findBySlugWithRelations($slug);
 
         if (! $imutData) {
             abort(404, 'Data IMUT tidak valid.');
@@ -95,18 +95,16 @@ class SummaryDiagram extends Page
                 ->icon('heroicon-o-document-text')
                 ->color('primary')
                 ->url(function () {
-                    // Ambil laporan terbaru yang sudah complete
-                    $latestLaporan = LaporanImut::where('status', 'complete')
-                        ->latest('assessment_period_end')
-                        ->first();
+                    $repository = app(ImutDataRepositoryInterface::class);
+
+                    $latestLaporan = $repository->getLatestCompletedLaporan();
 
                     if (!$latestLaporan) {
-                        // Fallback ke laporan terbaru apapun statusnya
-                        $latestLaporan = LaporanImut::latest('assessment_period_end')->first();
+                        $latestLaporan = $repository->getLatestAnyLaporan();
                     }
 
                     if (!$latestLaporan) {
-                        Notification::make() 
+                        Notification::make()
                             ->title('Tidak ada laporan tersedia')
                             ->body('Belum ada laporan yang tersedia untuk indikator ini.')
                             ->warning()

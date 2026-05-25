@@ -2,17 +2,19 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\ImutDataNote;
-use App\Models\ImutPenilaian;
 use Carbon\Carbon;
+use App\Repositories\Interfaces\ImutDataNoteRepositoryInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Service untuk membangun detailed report data (monthly breakdown, chart data, notes)
  */
 class CategoryReportDataBuilderService
 {
+    public function __construct(
+        protected ImutDataNoteRepositoryInterface $noteRepository
+    ) {}
+
     /**
      * Build detailed data untuk setiap indicator dengan monthly breakdown
      */
@@ -138,80 +140,12 @@ class CategoryReportDataBuilderService
             return $notesMap;
         }
 
-        $notesQuery = ImutDataNote::active()
-            ->whereIn('imut_data_id', $imutIds);
-
-        $yearStart = $startDate->year;
-        $yearEnd = $endDate->year;
-
-        $years = [];
-        for ($y = $yearStart; $y <= $yearEnd; $y++) {
-            $years[] = $y;
-        }
-
-        // Filter notes berdasarkan period overlap
-        $notesQuery->where(function ($q) use ($years, $months) {
-            // Annual notes
-            $q->orWhere(function ($sub) use ($years) {
-                $sub->where('period_type', 'tahunan')
-                    ->whereIn('period_year', $years);
-            });
-
-            // Semester notes
-            $q->orWhere(function ($sub) use ($years, $months) {
-                $sub->where('period_type', 'semester')
-                    ->whereIn('period_year', $years)
-                    ->where(function ($s) use ($months) {
-                        $hasS1Month = false;
-                        $hasS2Month = false;
-                        foreach ($months as $m) {
-                            $monthNum = (int) Carbon::parse($m . '-01')->month;
-                            if ($monthNum >= 1 && $monthNum <= 6) {
-                                $hasS1Month = true;
-                            }
-                            if ($monthNum >= 7 && $monthNum <= 12) {
-                                $hasS2Month = true;
-                            }
-                        }
-                        if ($hasS1Month) {
-                            $s->orWhere('period_semester', 'S1');
-                        }
-                        if ($hasS2Month) {
-                            $s->orWhere('period_semester', 'S2');
-                        }
-                    });
-            });
-
-            // Quarter notes
-            $q->orWhere(function ($sub) use ($years, $months) {
-                $sub->where('period_type', 'triwulan')
-                    ->whereIn('period_year', $years)
-                    ->where(function ($s) use ($months) {
-                        $quarterMap = [
-                            'Q1' => [1, 2, 3],
-                            'Q2' => [4, 5, 6],
-                            'Q3' => [7, 8, 9],
-                            'Q4' => [10, 11, 12],
-                        ];
-
-                        $overlappingQuarters = [];
-                        foreach ($months as $m) {
-                            $monthNum = (int) Carbon::parse($m . '-01')->month;
-                            foreach ($quarterMap as $qName => $qMonths) {
-                                if (in_array($monthNum, $qMonths) && !in_array($qName, $overlappingQuarters)) {
-                                    $overlappingQuarters[] = $qName;
-                                }
-                            }
-                        }
-
-                        if (!empty($overlappingQuarters)) {
-                            $s->whereIn('period_quarter', $overlappingQuarters);
-                        }
-                    });
-            });
-        });
-
-        $rawNotes = $notesQuery->get(['id', 'imut_data_id', 'period_year', 'period_quarter', 'period_semester', 'period_type', 'analysis', 'recommendation', 'note_name']);
+        $rawNotes = $this->noteRepository->getActiveNotesForIndicators(
+            $imutIds,
+            $months,
+            $startDate->year,
+            $endDate->year
+        );
 
         foreach ($rawNotes as $n) {
             $key = $n->imut_data_id;

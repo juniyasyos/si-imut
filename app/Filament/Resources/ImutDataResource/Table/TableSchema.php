@@ -5,8 +5,8 @@ namespace App\Filament\Resources\ImutDataResource\Table;
 use App\Filament\Exports\ImutDataExporter;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
-use App\Models\ImutData;
 use App\Models\User;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use Filament\Tables\Actions\Action as ActionTable;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -31,20 +31,7 @@ class TableSchema extends ImutDataResource
     {
         $user = \Illuminate\Support\Facades\Auth::user();
 
-        if ($user->can('view_all_data_imut::data')) {
-            return ImutData::query();
-        }
-
-        if ($user->can('view_by_unit_kerja_imut::data')) {
-            $unitKerjaIds = $user->unitKerjas->pluck('id')->toArray();
-
-            return ImutData::query()
-                ->whereHas('unitKerja', function ($query) use ($unitKerjaIds) {
-                    $query->whereIn('unit_kerja.id', $unitKerjaIds);
-                })->orWhere('created_by', $user->id);
-        }
-
-        return ImutData::query()->whereRaw('1 = 0');
+        return app(ImutDataRepositoryInterface::class)->getTableQueryForUser($user);
     }
 
     public static function columns(): array
@@ -84,22 +71,19 @@ class TableSchema extends ImutDataResource
                 ->sortable(),
 
             TextColumn::make('is_monthly')
-                ->label('Tipe Pengisian Indikator')
+                ->label('Tipe Pengisian')
                 ->badge()
                 ->icon('heroicon-o-calendar')
                 ->formatStateUsing(
-                    fn(bool $state) =>
-                    $state ? 'Harian' : 'Bulanan'
+                    fn(bool $state) => $state ? 'Harian' : 'Bulanan'
                 )
                 ->color(
-                    fn(bool $state) =>
-                    $state ? 'info' : 'success'
+                    fn(bool $state) => $state ? 'info' : 'warning'
                 )
                 ->tooltip(
-                    fn($record) =>
-                    $record->is_monthly
-                        ? 'Pengisian dilakukan 1 kali setiap bulan'
-                        : 'Pengisian dilakukan setiap hari'
+                    fn(bool $state) => $state
+                    ? 'Pengisian dapat dilakukan rutin setiap 1x24 jam.'
+                    : 'Pengisian hanya dilakukan 1 kali di akhir periode bulanan.'
                 )
                 ->alignCenter()
                 ->sortable(),
@@ -153,15 +137,15 @@ class TableSchema extends ImutDataResource
                 RestoreAction::make('restore')
                     ->visible(
                         fn($record) => \Illuminate\Support\Facades\Gate::allows('restore', $record) &&
-                            method_exists($record, 'trashed') &&
-                            $record->trashed()
+                        method_exists($record, 'trashed') &&
+                        $record->trashed()
                     ),
 
                 ForceDeleteAction::make('forceDelete')
                     ->visible(
                         fn($record) => \Illuminate\Support\Facades\Gate::allows('forceDelete', $record) &&
-                            method_exists($record, 'trashed') &&
-                            $record->trashed()
+                        method_exists($record, 'trashed') &&
+                        $record->trashed()
                     ),
             ])
                 ->icon('heroicon-o-ellipsis-vertical')

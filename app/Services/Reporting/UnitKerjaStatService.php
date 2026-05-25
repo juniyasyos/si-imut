@@ -2,22 +2,21 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\ImutPenilaian;
-use App\Models\LaporanUnitKerja;
+use App\Repositories\Interfaces\ImutPenilaianRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 
 class UnitKerjaStatService
 {
+    public function __construct(
+        protected ImutPenilaianRepositoryInterface $penilaianRepository
+    ) {}
+
     public function getStats(): array
     {
         $user = Auth::user();
         $unitKerjaIds = $user->unitKerjas->pluck('id');
 
-        $laporanUnitKerjaIds = LaporanUnitKerja::whereIn('unit_kerja_id', $unitKerjaIds)->pluck('id');
-
-        $penilaians = ImutPenilaian::with('profile')
-            ->whereIn('laporan_unit_kerja_id', $laporanUnitKerjaIds)
-            ->get();
+        $penilaians = $this->penilaianRepository->getByUnitKerjaIds($unitKerjaIds->all());
 
         $totalIndikator = $penilaians->pluck('imut_profil_id')->unique()->count();
 

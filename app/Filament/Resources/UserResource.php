@@ -57,6 +57,11 @@ class UserResource extends Resource implements HasShieldPermissions
         ];
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        return User::count() > 0 ? (string) User::count() : null;
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'email'];

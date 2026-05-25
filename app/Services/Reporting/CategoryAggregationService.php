@@ -2,10 +2,10 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\ImutPenilaian;
 use Carbon\Carbon;
+use App\Repositories\Interfaces\ImutPenilaianRepositoryInterface;
+use App\Services\Support\PeriodParserService;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Service untuk aggregasi data kategori berdasarkan periode dan kategori
@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\DB;
 class CategoryAggregationService
 {
     public function __construct(
-        protected PeriodParserService $periodParser
+        protected PeriodParserService $periodParser,
+        protected ImutPenilaianRepositoryInterface $penilaianRepository
     ) {}
 
     /**
@@ -38,12 +39,7 @@ class CategoryAggregationService
         $monthValues = $months->pluck('value')->toArray();
 
         // Fetch penilaian dengan eager loading
-        $penilaians = $this->fetchPenilaiansByPeriod(
-            categoryIds: $categoryIds,
-            monthStrings: $monthValues,
-            startDate: $startDate,
-            endDate: $endDate
-        );
+        $penilaians = $this->penilaianRepository->getByCategoryPeriod($categoryIds, $monthValues, $startDate, $endDate);
 
         // Group by indicator dan bulan
         $grouped = $this->groupByIndicatorAndMonth($penilaians);
@@ -57,42 +53,6 @@ class CategoryAggregationService
             'startDate' => $startDate,
             'endDate' => $endDate,
         ];
-    }
-
-    /**
-     * Fetch penilaian records matching periode dan kategori
-     */
-    private function fetchPenilaiansByPeriod(
-        array $categoryIds,
-        array $monthStrings,
-        Carbon $startDate,
-        Carbon $endDate
-    ): Collection {
-        $query = ImutPenilaian::with(['profile.imutData', 'laporanUnitKerja.laporanImut'])
-            ->whereHas('profile.imutData', fn($q) => $q->where('status', true));
-
-        // Filter by kategori jika ada
-        if (count($categoryIds) > 0) {
-            $query->whereHas('profile.imutData.categories', fn($q) => $q->whereIn('id', $categoryIds));
-        }
-
-        // Filter by periode
-        if (count($monthStrings) > 0) {
-            $query->whereHas('laporanUnitKerja.laporanImut', function ($q) use ($monthStrings, $startDate, $endDate) {
-                $q->whereIn(
-                    DB::raw("CONCAT(report_year,'-',LPAD(report_month,2,'0'))"),
-                    $monthStrings
-                )
-                    ->orWhereBetween('assessment_period_start', [$startDate, $endDate])
-                    ->orWhereBetween('assessment_period_end', [$startDate, $endDate])
-                    ->orWhere(function ($q3) use ($startDate, $endDate) {
-                        $q3->where('assessment_period_start', '<=', $startDate)
-                            ->where('assessment_period_end', '>=', $endDate);
-                    });
-            });
-        }
-
-        return $query->get();
     }
 
     /**

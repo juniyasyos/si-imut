@@ -4,16 +4,18 @@ namespace App\Services\FormBuilder;
 
 use App\Models\ImutProfile;
 use App\Models\FormTemplate;
-use App\Models\DailyReportResponse;
 use App\Models\EnhancedFormField;
-use App\Models\FormFieldOption;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
+use App\Repositories\Interfaces\FormPersistenceRepositoryInterface;
 
 class FormPersistenceService
 {
+    public function __construct(
+        protected FormPersistenceRepositoryInterface $repository
+    ) {
+    }
+
     public function saveFormData(ImutProfile $record, array $data): void
     {
         // With versioning system, we don't cleanup duplicate templates
@@ -38,10 +40,10 @@ class FormPersistenceService
         // If the payload doesn't include the values, keep existing template values
         $complianceMethod = $data['compliance_method'] ?? $formTemplate->compliance_method ?? $complianceMethod;
         $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
-        $validFrom = $data['valid_from'] ?? $formTemplate->valid_from?->toDateString();
+        $validFrom = $data['valid_from'] ?? ($formTemplate->valid_from ? Carbon::parse($formTemplate->valid_from)->toDateString() : null);
         $validUntil = array_key_exists('valid_until', $data)
             ? $data['valid_until']
-            : $formTemplate->valid_until?->toDateString();
+            : ($formTemplate->valid_until ? Carbon::parse($formTemplate->valid_until)->toDateString() : null);
 
         // Update template fields only (don't change is_active status)
         $formTemplate->update([
@@ -65,10 +67,10 @@ class FormPersistenceService
             return;
         }
 
-        $validFrom = $data['valid_from'] ?? $formTemplate->valid_from?->toDateString();
+        $validFrom = $data['valid_from'] ?? ($formTemplate->valid_from ? Carbon::parse($formTemplate->valid_from)->toDateString() : null);
         $validUntil = array_key_exists('valid_until', $data)
             ? $data['valid_until']
-            : $formTemplate->valid_until?->toDateString();
+            : ($formTemplate->valid_until ? Carbon::parse($formTemplate->valid_until)->toDateString() : null);
 
         if (blank($validFrom)) {
             throw new \InvalidArgumentException('Tanggal berlaku mulai wajib diisi.');
@@ -104,9 +106,7 @@ class FormPersistenceService
         // If there is no active template (e.g. legacy data), fallback to the most recent template for the profile.
         // This prevents duplicate version errors when the template exists but isn't marked as active.
         if (!$formTemplate) {
-            $formTemplate = FormTemplate::where('imut_profile_id', $record->id)
-                ->orderByDesc('created_at')
-                ->first();
+            $formTemplate = $this->repository->findLatestTemplateForProfile($record);
         }
 
         // Fail-safe (avoid undefined array key warnings when the form payload doesn't include these keys)
@@ -119,7 +119,7 @@ class FormPersistenceService
             $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
 
             // Update existing active form template (or promote latest template to active)
-            $formTemplate->update([
+            $this->repository->updateTemplate($formTemplate, [
                 'title' => $data['title'],
                 'description' => $data['description'],
                 'compliance_method' => $complianceMethod,
@@ -129,12 +129,7 @@ class FormPersistenceService
         } else {
             // Create new active template (first version)
             try {
-                $formTemplate = FormTemplate::create([
-                    'imut_profile_id' => $record->id,
-                    'version' => 'v1.0', // First version
-                    'is_active' => true, // Mark as active
-                    'valid_from' => now()->toDateString(),
-                    'created_by_user_id' => auth()->id(),
+                $formTemplate = $this->repository->createActiveTemplate($record, [
                     'title' => $data['title'],
                     'description' => $data['description'],
                     'compliance_method' => $complianceMethod,
@@ -154,7 +149,7 @@ class FormPersistenceService
                     $complianceMethod = $data['compliance_method'] ?? $formTemplate->compliance_method ?? $complianceMethod;
                     $autoFailOnCritical = $data['auto_fail_on_critical'] ?? $formTemplate->auto_fail_on_critical ?? $autoFailOnCritical;
 
-                    $formTemplate->update([
+                    $this->repository->updateTemplate($formTemplate, [
                         'title' => $data['title'],
                         'description' => $data['description'],
                         'compliance_method' => $complianceMethod,
@@ -184,7 +179,7 @@ class FormPersistenceService
      */
     private function reconcileEnhancedFields(FormTemplate $formTemplate, array $fields, bool $preserveHistoricalOptions = true): void
     {
-        $existingFields = $formTemplate->formFields()->get()->keyBy('field_key');
+        $existingFields = $this->repository->getFields($formTemplate);
         $incomingKeys = [];
 
         foreach ($fields as $index => $fieldData) {
@@ -200,7 +195,7 @@ class FormPersistenceService
             if ($existingFields->has($fieldKey)) {
                 // Update existing field (non-destructive)
                 $field = $existingFields->get($fieldKey);
-                $field->update([
+                $this->repository->updateField($field, [
                     'field_label' => $fieldData['field_label'] ?? $field->field_label,
                     'field_description' => $fieldData['field_description'] ?? $field->field_description,
                     'field_type' => $fieldData['field_type'] ?? $field->field_type,
@@ -219,8 +214,7 @@ class FormPersistenceService
                 $this->reconcileFieldOptions($field, $fieldData['options'] ?? [], $preserveHistoricalOptions);
             } else {
                 // Create new field
-                $field = EnhancedFormField::create([
-                    'form_template_id' => $formTemplate->id,
+                $field = $this->repository->createField($formTemplate, [
                     'field_key' => $fieldKey,
                     'field_label' => $fieldData['field_label'] ?? ($fieldData['field_key'] ?? 'field'),
                     'field_description' => $fieldData['field_description'] ?? null,
@@ -252,7 +246,7 @@ class FormPersistenceService
             }
 
             // Safe to delete (no historical responses)
-            $removedField->delete();
+            $this->repository->deleteField($removedField);
         }
     }
 
@@ -281,8 +275,7 @@ class FormPersistenceService
     private function saveFieldOptions(EnhancedFormField $field, array $options): void
     {
         foreach ($options as $index => $optionData) {
-            FormFieldOption::create([
-                'enhanced_form_field_id' => $field->id,
+            $this->repository->createOption($field, [
                 'option_text' => $optionData['label'] ?? $optionData['option_text'] ?? '',
                 'option_value' => $optionData['value'] ?? $optionData['option_value'] ?? '',
                 'is_correct' => $optionData['is_correct'] ?? true,
@@ -351,7 +344,7 @@ class FormPersistenceService
      */
     private function reconcileFieldOptions(EnhancedFormField $field, array $options, bool $preserveHistoricalOptions = true): void
     {
-        $existingOptions = $field->options()->get()->keyBy('option_value');
+        $existingOptions = $this->repository->getOptions($field);
         $incomingOptionValues = [];
 
         foreach ($options as $index => $optionData) {
@@ -364,7 +357,7 @@ class FormPersistenceService
 
             if ($optionValue && $existingOptions->has($optionValue)) {
                 $opt = $existingOptions->get($optionValue);
-                $opt->update([
+                $this->repository->updateOption($opt, [
                     'option_text' => $optionText ?? $opt->option_text,
                     'is_correct' => $optionData['is_correct'] ?? $opt->is_correct,
                     'compliance_value' => $optionData['compliance_value'] ?? $opt->compliance_value,
@@ -372,8 +365,7 @@ class FormPersistenceService
                 ]);
             } else {
                 // Create new option (safe)
-                FormFieldOption::create([
-                    'enhanced_form_field_id' => $field->id,
+                $this->repository->createOption($field, [
                     'option_text' => $optionText ?? '',
                     'option_value' => $optionValue ?? ($optionText ?? ''),
                     'is_correct' => $optionData['is_correct'] ?? true,
@@ -390,9 +382,7 @@ class FormPersistenceService
         $optionsToDelete = $existingOptions->keys()->diff($incomingOptionValues);
 
         if ($optionsToDelete->isNotEmpty()) {
-            $field->options()
-                ->whereIn('option_value', $optionsToDelete->all())
-                ->delete();
+            $this->repository->deleteOptionsByValues($field, $optionsToDelete->all());
         }
     }
 
@@ -404,7 +394,7 @@ class FormPersistenceService
             return false;
         }
 
-        return DailyReportResponse::where('form_template_id', $template->id)->exists();
+        return $this->repository->hasResponsesForTemplate($template);
     }
 
     public function getResponseCount(ImutProfile $record): int
@@ -415,7 +405,7 @@ class FormPersistenceService
             return 0;
         }
 
-        return DailyReportResponse::where('form_template_id', $template->id)->count();
+        return $this->repository->countResponsesForTemplate($template);
     }
 
     /**
@@ -427,7 +417,7 @@ class FormPersistenceService
             return false;
         }
 
-        return DailyReportResponse::where('form_template_id', $template->id)->exists();
+        return $this->repository->hasResponsesForTemplate($template);
     }
 
     /**
@@ -439,7 +429,7 @@ class FormPersistenceService
             return 0;
         }
 
-        return DailyReportResponse::where('form_template_id', $template->id)->count();
+        return $this->repository->countResponsesForTemplate($template);
     }
 
     public function calculateAndUpdateCompliance(ImutProfile $record): void
@@ -517,7 +507,7 @@ class FormPersistenceService
     {
         $formTemplate = $record->activeFormTemplate;
         if ($formTemplate) {
-            $formTemplate->dailyReportResponses()->delete();
+            $this->repository->deleteResponsesForTemplate($formTemplate);
         }
     }
 }

@@ -2,15 +2,21 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\DailyReportResponse;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
+use App\Repositories\Interfaces\ImutPenilaianRepositoryInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DailyReportAggregationService
 {
+    public function __construct(
+        protected ImutPenilaianRepositoryInterface $penilaianRepository,
+        protected DailyReportResponseRepositoryInterface $dailyReportRepository
+    ) {
+    }
+
     /**
      * Calculate N/D untuk satu ImutPenilaian dari daily reports
      */
@@ -39,54 +45,31 @@ class DailyReportAggregationService
         }
 
         $imutDataTitle = $penilaian->profile->imutData->title ?? 'Unknown';
+        $denominator = $this->dailyReportRepository->countReportedEntries(
+            $unitKerjaId,
+            $formTemplate->id,
+            $start,
+            $end
+        );
 
-        // build the base query once; clones will be used for each count so that
-        // additional where/selected columns do not leak between uses.
-        $baseQuery = DailyReportResponse::query()
-            ->where('unit_kerja_id', $unitKerjaId)
-            ->where('form_template_id', $formTemplate->id)
-            ->whereBetween('report_date', [
-                $start->toDateString(),
-                $end->toDateString(),
-            ]);
-
-        // denominator is simply the total number of reported rows
-        $denominator = (clone $baseQuery)->count();
-
-        // numerator – mimic the original PHP logic but perform the work in SQL
-        // so we don't have to hydrate a collection. the JSON checks are required
-        // because the definitive values come from calculation_details in many
-        // cases.
-        $numerator = (clone $baseQuery)
-            ->where(function ($q) {
-                $q->where('compliance_status', true)
-                    ->orWhereRaw("JSON_EXTRACT(calculation_details, '$.compliance_status') = true")
-                    ->orWhere('total_score', '>=', 100)
-                    ->orWhereRaw("JSON_EXTRACT(calculation_details, '$.total_score') >= 100");
-            })
-            ->count();
+        $numerator = $this->dailyReportRepository->countPerfectEntries(
+            $unitKerjaId,
+            $formTemplate->id,
+            $start,
+            $end
+        );
 
         $percentage = $denominator > 0
             ? ceil(($numerator / $denominator) * 100 * 100) / 100
             : 0;
 
-        $missingDates = $this->findMissingDates(clone $baseQuery, $start, $end);
+        $missingDates = $this->dailyReportRepository->getMissingReportDates(
+            $unitKerjaId,
+            $formTemplate->id,
+            $start,
+            $end
+        );
         $totalDays = $start->diffInDays($end) + 1;
-
-        return [
-            'numerator' => $numerator,
-            'denominator' => $denominator,
-            'percentage' => $percentage,
-            'calculation_metadata' => [
-                'calculated_at' => now()->toDateTimeString(),
-                'total_days_in_period' => $totalDays,
-                'days_reported' => $denominator,
-                'days_perfect' => $numerator,
-                'missing_dates' => $missingDates,
-                'form_template_id' => $formTemplate->id,
-                'form_template_title' => $formTemplate->title,
-            ],
-        ];
 
         return [
             'numerator' => $numerator,
@@ -125,12 +108,7 @@ class DailyReportAggregationService
             return false;
         }
 
-        return $penilaian->update([
-            'numerator_value' => $result['numerator'],
-            'denominator_value' => $result['denominator'],
-            'is_auto_calculated' => true,
-            'calculation_metadata' => $result['calculation_metadata'],
-        ]);
+        return $this->penilaianRepository->updateCalculation($penilaian, $result);
     }
 
     /**
@@ -174,39 +152,6 @@ class DailyReportAggregationService
         }
 
         return $results;
-    }
-
-    /**
-     * Find dates without reports in the period
-     */
-    /**
-     * Find dates without reports in the period. Accepts an Eloquent query so
-     * that we avoid hydrating every row just to collect the dates.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     */
-    private function findMissingDates($query, Carbon $start, Carbon $end): array
-    {
-        // clone to avoid modifying the original builder
-        $reportedDates = (clone $query)
-            ->select(DB::raw('DATE(report_date) as report_date'))
-            ->distinct()
-            ->pluck('report_date')
-            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
-            ->toArray();
-
-        $missingDates = [];
-        $current = $start->copy();
-
-        while ($current <= $end) {
-            $dateStr = $current->format('Y-m-d');
-            if (! in_array($dateStr, $reportedDates)) {
-                $missingDates[] = $dateStr;
-            }
-            $current->addDay();
-        }
-
-        return $missingDates;
     }
 
     /**

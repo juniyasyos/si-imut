@@ -4,8 +4,7 @@ namespace App\Filament\Resources\ImutDataResource\Pages;
 
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
-use App\Models\ImutData;
-use App\Models\UnitKerja;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,9 +16,9 @@ class UnitKerjaOverview extends Page
 
     public array $data = [];
 
-    public ?ImutData $imutData = null;
+    public ?\App\Models\ImutData $imutData = null;
 
-    public ?UnitKerja $unitKerja = null;
+    public ?\App\Models\UnitKerja $unitKerja = null;
 
     public static function canAccess(array $parameters = []): bool
     {
@@ -46,11 +45,17 @@ class UnitKerjaOverview extends Page
 
     public function mount(): void
     {
+        $repository = app(ImutDataRepositoryInterface::class);
+
         $imutDataId = request()->query('record_imut_data');
         $unitKerjaId = request()->query('record_unit_kerja');
 
-        $this->imutData = ImutData::with(['profiles', 'categories'])->findOrFail($imutDataId);
-        $this->unitKerja = UnitKerja::findOrFail($unitKerjaId);
+        $this->imutData = $repository->findByIdWithRelations($imutDataId);
+        $this->unitKerja = $repository->findUnitKerjaOrFail($unitKerjaId);
+
+        if (! $this->imutData) {
+            abort(404, 'Data IMUT tidak valid.');
+        }
 
         $this->data = [
             'imutDataId' => $this->imutData->id,

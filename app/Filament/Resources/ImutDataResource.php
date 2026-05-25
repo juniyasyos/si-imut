@@ -12,6 +12,7 @@ use App\Filament\Resources\ImutDataResource\Schema\ImutDataSchema;
 use App\Filament\Resources\ImutDataResource\Table\TableSchema;
 use App\Models\ImutData;
 use App\Support\CacheKey;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -113,11 +114,13 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             return self::$navigationBadgeMemo[$memoKey];
         }
 
+        $repository = app(ImutDataRepositoryInterface::class);
+
         if ($user->can('view_all_data_imut::data')) {
             self::$navigationBadgeMemo[$memoKey] = cache()->remember(
                 CacheKey::imutDataNavigationBadgeCount(),
                 now()->addMinutes(10),
-                fn() => (string) ImutData::count()
+                fn() => (string) $repository->countForNavigationBadge($user)
             );
 
             return self::$navigationBadgeMemo[$memoKey];
@@ -129,9 +132,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             self::$navigationBadgeMemo[$memoKey] = cache()->remember(
                 $cacheKey,
                 now()->addMinutes(10),
-                fn() => (string) ImutData::whereHas('unitKerja', function ($q) use ($user) {
-                    $q->whereIn('unit_kerja_id', $user->unitKerjas->pluck('id')->toArray());
-                })->count()
+                fn() => (string) $repository->countForNavigationBadge($user)
             );
 
             return self::$navigationBadgeMemo[$memoKey];

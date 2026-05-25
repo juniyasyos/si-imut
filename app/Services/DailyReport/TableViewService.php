@@ -3,11 +3,11 @@
 namespace App\Services\DailyReport;
 
 use App\Domain\DailyReport\TableViewDomain;
-use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
-use App\Models\ImutPenilaian;
 use App\Models\UnitKerja;
 use App\Models\User;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
+use App\Repositories\Interfaces\ImutPenilaianRepositoryInterface;
 use App\Services\Support\SignatoryService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,7 +16,9 @@ class TableViewService
 {
     public function __construct(
         protected TableViewDomain $domain,
-        protected SignatoryService $signatoryService
+        protected SignatoryService $signatoryService,
+        protected DailyReportResponseRepositoryInterface $dailyReportRepository,
+        protected ImutPenilaianRepositoryInterface $penilaianRepository
     ) {
     }
 
@@ -27,30 +29,13 @@ class TableViewService
         $startDate = $date->copy()->startOfMonth()->startOfDay();
         $endDate = $date->copy()->endOfMonth()->endOfDay();
 
-        $query = DailyReportResponse::query()
-            ->with([
-                'formTemplate.formFields.options',
-                'formTemplate.imutProfile.imutData',
-                'unitKerja',
-                'submittedBy',
-                'validator',
-                'fieldResponses.formField.options',
-            ])
-            ->whereBetween('report_date', [$startDate, $endDate]);
-
-        if ($formTemplateId) {
-            $query->where('form_template_id', $formTemplateId);
-        } else {
-            $query->whereHas('formTemplate', fn ($q) => $q->where('is_active', true));
-        }
-
-        if ($unitKerjaId) {
-            $query->where('unit_kerja_id', $unitKerjaId);
-        } else {
-            $query->forUserUnits($user);
-        }
-
-        $entries = $query->orderBy('report_date', 'asc')->get();
+        $entries = $this->dailyReportRepository->getTableViewEntries(
+            $user,
+            $formTemplateId,
+            $unitKerjaId,
+            $startDate,
+            $endDate
+        );
 
         if ($entries->isEmpty()) {
             return [
@@ -107,22 +92,12 @@ class TableViewService
             return ['', ''];
         }
 
-        $penilaianQuery = ImutPenilaian::query()
-            ->where('imut_profil_id', $profileId)
-            ->whereHas('laporanUnitKerja.laporanImut', function ($q) use ($startDate, $endDate) {
-                $q->where(function ($q2) use ($startDate, $endDate) {
-                    $q2->whereBetween('assessment_period_start', [$startDate, $endDate])
-                        ->orWhereBetween('assessment_period_end', [$startDate, $endDate]);
-                });
-            });
-
-        if ($unitKerjaId) {
-            $penilaianQuery->whereHas('laporanUnitKerja', fn ($q) => $q->where('unit_kerja_id', $unitKerjaId));
-        } elseif ($entries->first()?->unitKerja?->id) {
-            $penilaianQuery->whereHas('laporanUnitKerja', fn ($q) => $q->where('unit_kerja_id', $entries->first()->unitKerja->id));
-        }
-
-        $penilaianRec = $penilaianQuery->latest('id')->first();
+        $penilaianRec = $this->penilaianRepository->findLatestAnalysisForProfile(
+            $profileId,
+            $startDate,
+            $endDate,
+            $unitKerjaId ?: $entries->first()?->unitKerja?->id
+        );
 
         return [
             $penilaianRec?->analysis ?? '',

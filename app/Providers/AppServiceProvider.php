@@ -47,6 +47,26 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Interfaces\LaporanRepositoryInterface::class,
             \App\Repositories\LaporanRepository::class,
         );
+        $this->app->bind(
+            \App\Repositories\Interfaces\ImutPenilaianRepositoryInterface::class,
+            \App\Repositories\ImutPenilaianRepository::class,
+        );
+        $this->app->bind(
+            \App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class,
+            \App\Repositories\DailyReportResponseRepository::class,
+        );
+        $this->app->bind(
+            \App\Repositories\Interfaces\FormPersistenceRepositoryInterface::class,
+            \App\Repositories\FormPersistenceRepository::class,
+        );
+        $this->app->bind(
+            \App\Repositories\Interfaces\ImutDataNoteRepositoryInterface::class,
+            \App\Repositories\ImutDataNoteRepository::class,
+        );
+        $this->app->bind(
+            \App\Repositories\Interfaces\ImutDataRepositoryInterface::class,
+            \App\Repositories\ImutDataRepository::class,
+        );
 
         // Register Services - Priority 1 & 2 refactoring
         $this->app->singleton(\App\Services\ImutReportService::class);

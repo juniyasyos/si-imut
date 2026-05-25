@@ -131,7 +131,7 @@ return [
     ],
 
     'model' => [
-        'label' => 'Manajemen Pengguna',
-        'plural_label' => 'Manajemen Pengguna',
+        'label' => 'Pengguna',
+        'plural_label' => 'Pengguna',
     ],
 ];
