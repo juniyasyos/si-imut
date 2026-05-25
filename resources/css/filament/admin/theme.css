@@ -6,7 +6,7 @@
 
 @source '../../../../vendor/guava/filament-modal-relation-managers/resources/**/*';
 
-@config 'tailwind.config.js';
+@config '../../../../tailwind.config.js';
 
 
 /* @layer utilities {

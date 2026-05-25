@@ -1,13 +1,24 @@
-@props(['navigation'])
+@props([
+    'navigation',
+])
 
-<x-filament::tabs wire:ignore :attributes="\Filament\Support\prepare_inherited_attributes($attributes)->class([
-    'fi-page-sub-navigation-tabs hidden md:flex',
-])">
+<x-filament::tabs
+    :attributes="\Filament\Support\prepare_inherited_attributes($attributes)->class(['fi-page-sub-navigation-tabs'])"
+>
     @foreach ($navigation as $navigationGroup)
-        @if ($navigationGroupLabel = $navigationGroup->getLabel())
+        @php
+            $navigationGroupLabel = $navigationGroup->getLabel();
+            $isNavigationGroupActive = $navigationGroup->isActive();
+            $navigationGroupIcon = $navigationGroup->getIcon();
+        @endphp
+
+        @if ($navigationGroupLabel)
             <x-filament::dropdown placement="bottom-start">
                 <x-slot name="trigger">
-                    <x-filament::tabs.item :active="$navigationGroup->isActive()" :icon="$navigationGroup->getIcon()">
+                    <x-filament::tabs.item
+                        :active="$isNavigationGroupActive"
+                        :icon="$navigationGroupIcon"
+                    >
                         {{ $navigationGroupLabel }}
                     </x-filament::tabs.item>
                 </x-slot>
@@ -15,14 +26,25 @@
                 <x-filament::dropdown.list>
                     @foreach ($navigationGroup->getItems() as $navigationItem)
                         @php
-                            $navigationItemIcon = $navigationItem->getIcon();
-                            $navigationItemIcon = $navigationItem->isActive()
-                                ? $navigationItem->getActiveIcon() ?? $navigationItemIcon
-                                : $navigationItemIcon;
+                            $navigationItemBadge = $navigationItem->getBadge();
+                            $navigationItemBadgeColor = $navigationItem->getBadgeColor($navigationItemBadge);
+                            $navigationItemBadgeTooltip = $navigationItem->getBadgeTooltip($navigationItemBadge);
+                            $navigationItemIcon = $navigationItem->isActive() ? ($navigationItem->getActiveIcon() ?? $navigationItem->getIcon()) : $navigationItem->getIcon();
+                            $navigationItemUrl = $navigationItem->getUrl();
+                            $shouldNavigationItemOpenUrlInNewTab = $navigationItem->shouldOpenUrlInNewTab();
+                            $navigationItemExtraAttributes = $navigationItem->getExtraAttributeBag();
                         @endphp
 
-                        <x-filament::dropdown.list.item :badge="$navigationItem->getBadge()" :badge-color="$navigationItem->getBadgeColor()" :href="$navigationItem->getUrl()"
-                            :icon="$navigationItemIcon" tag="a" :target="$navigationItem->shouldOpenUrlInNewTab() ? '_blank' : null">
+                        <x-filament::dropdown.list.item
+                            :badge="$navigationItemBadge"
+                            :badge-color="$navigationItemBadgeColor"
+                            :badge-tooltip="$navigationItemBadgeTooltip"
+                            :href="$navigationItemUrl"
+                            :icon="$navigationItemIcon"
+                            tag="a"
+                            :target="$shouldNavigationItemOpenUrlInNewTab ? '_blank' : null"
+                            :attributes="\Filament\Support\prepare_inherited_attributes($navigationItemExtraAttributes)"
+                        >
                             {{ $navigationItem->getLabel() }}
 
                             @if ($navigationItemIcon instanceof \Illuminate\Contracts\Support\Htmlable)
@@ -37,14 +59,27 @@
         @else
             @foreach ($navigationGroup->getItems() as $navigationItem)
                 @php
-                    $navigationItemIcon = $navigationItem->getIcon();
-                    $navigationItemIcon = $navigationItem->isActive()
-                        ? $navigationItem->getActiveIcon() ?? $navigationItemIcon
-                        : $navigationItemIcon;
+                    $isNavigationItemActive = $navigationItem->isActive();
+                    $navigationItemBadge = $navigationItem->getBadge();
+                    $navigationItemBadgeColor = $navigationItem->getBadgeColor($navigationItemBadge);
+                    $navigationItemBadgeTooltip = $navigationItem->getBadgeTooltip($navigationItemBadge);
+                    $navigationItemIcon = $navigationItem->isActive() ? ($navigationItem->getActiveIcon() ?? $navigationItem->getIcon()) : $navigationItem->getIcon();
+                    $navigationItemUrl = $navigationItem->getUrl();
+                    $shouldNavigationItemOpenUrlInNewTab = $navigationItem->shouldOpenUrlInNewTab();
+                    $navigationItemExtraAttributes = $navigationItem->getExtraAttributeBag();
                 @endphp
 
-                <x-filament::tabs.item :active="$navigationItem->isActive()" :badge="$navigationItem->getBadge()" :badge-color="$navigationItem->getBadgeColor()" :href="$navigationItem->getUrl()"
-                    :icon="$navigationItemIcon" tag="a" :target="$navigationItem->shouldOpenUrlInNewTab() ? '_blank' : null">
+                <x-filament::tabs.item
+                    :active="$isNavigationItemActive"
+                    :badge="$navigationItemBadge"
+                    :badge-color="$navigationItemBadgeColor"
+                    :badge-tooltip="$navigationItemBadgeTooltip"
+                    :href="$navigationItemUrl"
+                    :icon="$navigationItemIcon"
+                    tag="a"
+                    :target="$shouldNavigationItemOpenUrlInNewTab ? '_blank' : null"
+                    :attributes="\Filament\Support\prepare_inherited_attributes($navigationItemExtraAttributes)"
+                >
                     {{ $navigationItem->getLabel() }}
 
                     @if ($navigationItemIcon instanceof \Illuminate\Contracts\Support\Htmlable)

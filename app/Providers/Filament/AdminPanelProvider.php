@@ -127,11 +127,11 @@ class AdminPanelProvider extends PanelProvider
             FilamentSettingsHubPlugin::make(),
             FilamentLaravelBackupPlugin::make(),
             FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
-            ActivitylogPlugin::make()
-                ->navigationIcon('heroicon-o-clock')
-                ->navigationItem()
-                ->navigationGroup('User & Access Control')
-                ->label('Audit & Activity Logs'),
+            // ActivitylogPlugin::make()
+            //     ->navigationIcon('heroicon-o-clock')
+            //     ->navigationItem()
+            //     ->navigationGroup('User & Access Control')
+            //     ->label('Audit & Activity Logs'),
             AuthUIEnhancerPlugin::make()
                 ->showEmptyPanelOnMobile(false)
                 ->formPanelPosition('right')
