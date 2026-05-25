@@ -6,17 +6,6 @@
       'EloquentSerialize' => 'AnourValar\\EloquentSerialize\\Facades\\EloquentSerializeFacade',
     ),
   ),
-  'archilex/filament-toggle-icon-column' => 
-  array (
-    'aliases' => 
-    array (
-      'ToggleIconColumn' => 'Archilex\\ToggleIconColumn\\Facades\\ToggleIconColumn',
-    ),
-    'providers' => 
-    array (
-      0 => 'Archilex\\ToggleIconColumn\\ToggleIconColumnServiceProvider',
-    ),
-  ),
   'asmit/resized-column' => 
   array (
     'providers' => 
