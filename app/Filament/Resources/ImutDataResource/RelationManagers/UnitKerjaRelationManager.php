@@ -48,15 +48,14 @@ class UnitKerjaRelationManager extends RelationManager
                     ->recordSelect(function ($livewire) {
                         $relatedIds = $livewire->ownerRecord->unitKerja()->pluck('id')->toArray();
 
+                        $options = app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                            ->getAvailableUnitKerjaOptionsForAttach($livewire->ownerRecord);
+
                         return Select::make('recordId')
                             ->label('Pilih Unit Kerja')
                             ->placeholder('Cari unit kerja...')
                             ->helperText('Pilih unit kerja yang ingin ditautkan')
-                            ->options(
-                                UnitKerja::whereNotIn('id', $relatedIds)
-                                    ->pluck('unit_name', 'id')
-                                    ->toArray()
-                            )
+                            ->options($options)
                             ->searchable()
                             ->preload()
                             ->required();
@@ -67,10 +66,8 @@ class UnitKerjaRelationManager extends RelationManager
                     ->action(function (array $data, $livewire) {
                         $imut = $livewire->ownerRecord;
 
-                        $imut->unitKerja()->attach($data['recordId'], [
-                            'assigned_by' => auth()->id(),
-                            'assigned_at' => now(),
-                        ]);
+                        app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                            ->attachUnitKerjas($imut, [$data['recordId']], auth()->id());
                     })
                     ->attachAnother(false)
                     ->recordSelectSearchColumns(['unit_name']),

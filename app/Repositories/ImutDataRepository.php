@@ -92,4 +92,34 @@ class ImutDataRepository implements ImutDataRepositoryInterface
     {
         return LaporanImut::latest('assessment_period_end')->first();
     }
+
+    public function getAvailableUnitKerjaOptionsForAttach(ImutData $record): array
+    {
+        $relatedIds = $record->unitKerja()->pluck('id')->toArray();
+
+        return UnitKerja::whereNotIn('id', $relatedIds)
+            ->pluck('unit_name', 'id')
+            ->toArray();
+    }
+
+    public function detachUnitKerjas(ImutData $record, array $unitKerjaIds): void
+    {
+        $unitKerjaIds = array_values(array_unique(array_filter($unitKerjaIds)));
+
+        if (empty($unitKerjaIds)) {
+            return;
+        }
+
+        $record->unitKerja()->detach($unitKerjaIds);
+    }
+
+    public function getAllUnitKerjaOptions(): array
+    {
+        return UnitKerja::pluck('unit_name', 'id')->toArray();
+    }
+
+    public function getUserUnitKerjaIds(User $user): array
+    {
+        return $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+    }
 }

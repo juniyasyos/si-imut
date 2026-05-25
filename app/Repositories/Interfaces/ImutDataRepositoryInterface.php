@@ -29,4 +29,11 @@ interface ImutDataRepositoryInterface
     public function getLatestCompletedLaporan(): ?LaporanImut;
 
     public function getLatestAnyLaporan(): ?LaporanImut;
+    public function getAvailableUnitKerjaOptionsForAttach(ImutData $record): array;
+
+    public function detachUnitKerjas(ImutData $record, array $unitKerjaIds): void;
+
+    public function getAllUnitKerjaOptions(): array;
+
+    public function getUserUnitKerjaIds(User $user): array;
 }

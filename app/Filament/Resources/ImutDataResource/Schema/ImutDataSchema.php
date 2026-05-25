@@ -188,11 +188,17 @@ class ImutDataSchema extends ImutDataResource
                                     CheckboxList::make('unitKerja')
                                         ->label('Unit Kerja yang Bisa Menilai')
                                         ->relationship('unitKerja', 'unit_name')
-                                        ->options(UnitKerja::pluck('unit_name', 'id')->toArray())
+                                        ->options(function () {
+                                            return app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                                                ->getAllUnitKerjaOptions();
+                                        })
                                         ->columns(3)
                                         ->required()
                                         ->bulkToggleable()
-                                        ->default(fn() => Auth::user()->unitKerjas()->pluck('unit_kerja.id')->toArray())
+                                        ->default(function () {
+                                            return app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                                                ->getUserUnitKerjaIds(Auth::user());
+                                        })
                                         ->visible(fn() => Auth::user()->can('attach_imut_data_to_unit_kerja_unit::kerja'))
                                         ->dehydrated(true)
                                         ->name('unitKerjaIds'),
