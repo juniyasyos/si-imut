@@ -2,6 +2,10 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Support\Facades\Storage;
+use DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 use App\Models\ImutPenilaian;
 use Illuminate\Console\Command;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
@@ -89,7 +93,7 @@ class PenilaianMediaCheckCommand extends Command
                 $this->line("       Disk Config: {$diskDriver}");
 
                 // Check if file exists on disk
-                $disk = \Illuminate\Support\Facades\Storage::disk($media->disk);
+                $disk = Storage::disk($media->disk);
                 $exists = $disk->exists($media->getPath());
                 $status = $exists ? "✅ Yes" : "❌ No";
                 $this->line("       Exists on Disk: {$status}");
@@ -125,7 +129,7 @@ class PenilaianMediaCheckCommand extends Command
                 }
 
                 // Check pivot table
-                $pivotCount = \DB::table('folder_has_models')
+                $pivotCount = DB::table('folder_has_models')
                     ->where('folder_id', $folder->id)
                     ->count();
                 $this->line("      Pivot Entries: {$pivotCount}");
@@ -172,7 +176,7 @@ class PenilaianMediaCheckCommand extends Command
 
         // 6. Pivot Table Check
         $this->section("🔗 PIVOT TABLE (folder_has_models)");
-        $pivotMedia = \DB::table('folder_has_models')
+        $pivotMedia = DB::table('folder_has_models')
             ->where('model_type', 'Spatie\MediaLibrary\MediaCollections\Models\Media')
             ->get();
 
@@ -188,8 +192,8 @@ class PenilaianMediaCheckCommand extends Command
             $laporan = $penilaian->laporanUnitKerja->laporanImut;
 
             if ($laporan) {
-                $unitSlug = \Illuminate\Support\Str::slug($unitKerja->unit_name);
-                $laporanDate = \Illuminate\Support\Carbon::createFromDate(
+                $unitSlug = Str::slug($unitKerja->unit_name);
+                $laporanDate = Carbon::createFromDate(
                     $laporan->report_year,
                     $laporan->report_month,
                     1

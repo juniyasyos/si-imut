@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Maatwebsite\Excel\Excel;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Actions;
@@ -17,7 +19,7 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Tambah Data')
                 ->visible(fn() => !Gate::allows('create', User::class) || !(env('USE_SSO') && env('IAM_ENABLED')) && config('iam.role_sync_mode') !== 'pull')
                 ->icon('heroicon-m-plus'),
@@ -26,7 +28,7 @@ class ListUsers extends ListRecords
                     ExcelExport::make()
                         ->fromTable() 
                         ->withFilename(fn($resource) => $resource::getModelLabel() . '-' . date('Y-m-d'))
-                        ->withWriterType(\Maatwebsite\Excel\Excel::XLSX)
+                        ->withWriterType(Excel::XLSX)
                         ->withColumns([
                             Column::make('updated_at'),
                         ])

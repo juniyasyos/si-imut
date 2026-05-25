@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class StatsForUnitKerja extends BaseWidget
 {
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected static ?int $sort = 1;
 

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Panel;
+use App\Filament\Resources\MediaCustomResource\Pages\ListMediaCustom;
 use App\Traits\HasActiveIcon;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Juniyasyos\FilamentMediaManager\Resources\MediaResource as BaseMediaResource;
@@ -33,7 +35,7 @@ class MediaCustomResource extends BaseMediaResource implements HasShieldPermissi
     /**
      * Override slug resource secara statik.
      */
-    public static function getSlug(): string
+    public static function getSlug(?Panel $panel = null): string
     {
         return config('filament-media-manager.slug_media', 'media-custom');
     }
@@ -41,7 +43,7 @@ class MediaCustomResource extends BaseMediaResource implements HasShieldPermissi
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\MediaCustomResource\Pages\ListMediaCustom::route('/'),
+            'index' => ListMediaCustom::route('/'),
         ];
     }
 }

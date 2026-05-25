@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders;
 
+use Filament\Actions\Action;
+use Filament\Support\Enums\Size;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Support\Enums\ActionSize;
 use Illuminate\Support\Str;
 
 /**
@@ -112,9 +113,9 @@ class SelectFieldBuilder
                 Action::make('addNewOption')
                     ->label('Tambah Baru')
                     ->icon('heroicon-o-plus')
-                    ->size(ActionSize::Small)
+                    ->size(Size::Small)
                     ->color('success')
-                    ->form([
+                    ->schema([
                         TextInput::make('new_option_label')
                             ->label('Opsi Baru')
                             ->required()
@@ -139,7 +140,7 @@ class SelectFieldBuilder
                         // Check if value already exists
                         if (isset($currentOptions[$newValue])) {
                             // Show error notification
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Opsi sudah ada')
                                 ->body('Opsi dengan value tersebut sudah ada dalam daftar.')
                                 ->warning()
@@ -164,7 +165,7 @@ class SelectFieldBuilder
                         }
 
                         // Show success notification
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Opsi berhasil ditambahkan')
                             ->body("Opsi '{$newLabel}' telah ditambahkan ke daftar.")
                             ->success()

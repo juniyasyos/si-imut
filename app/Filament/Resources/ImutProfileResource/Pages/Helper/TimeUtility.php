@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages\Helper;
 
+use Exception;
 use Carbon\Carbon;
 
 /**
@@ -25,8 +26,8 @@ class TimeUtility
                 $minutes = (int)$matches[2];
                 return ($hours * 60) + $minutes;
             }
-            throw new \Exception('Invalid time format');
-        } catch (\Exception $e) {
+            throw new Exception('Invalid time format');
+        } catch (Exception $e) {
             return 480; // Default: 8 hours
         }
     }
@@ -76,13 +77,13 @@ class TimeUtility
             // Fallback: time-only strings (H:i[:s]) — preserve previous behavior
             try {
                 $start = Carbon::createFromFormat('H:i:s', $startTime);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $start = Carbon::createFromFormat('H:i', $startTime);
             }
 
             try {
                 $end = Carbon::createFromFormat('H:i:s', $endTime);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $end = Carbon::createFromFormat('H:i', $endTime);
             }
 
@@ -91,7 +92,7 @@ class TimeUtility
             }
 
             return $start->diffInMinutes($end);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }
@@ -132,13 +133,13 @@ class TimeUtility
                 // Fallback to time-only parsing
                 try {
                     $start = Carbon::createFromFormat('H:i:s', $startTime);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $start = Carbon::createFromFormat('H:i', $startTime);
                 }
 
                 try {
                     $end = Carbon::createFromFormat('H:i:s', $endTime);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $end = Carbon::createFromFormat('H:i', $endTime);
                 }
 
@@ -159,7 +160,7 @@ class TimeUtility
             }
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -175,7 +176,7 @@ class TimeUtility
         try {
             $carbon = Carbon::parse($time);
             return $carbon->format('H:i:s');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $time;
         }
     }
@@ -193,7 +194,7 @@ class TimeUtility
             // Try H:i:s format first, then H:i format
             Carbon::createFromFormat('H:i:s', $time) ?: Carbon::createFromFormat('H:i', $time);
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

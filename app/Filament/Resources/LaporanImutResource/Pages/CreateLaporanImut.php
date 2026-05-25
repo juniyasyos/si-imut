@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Components\CheckboxList;
+use Illuminate\Database\Eloquent\Model;
+use App\Jobs\ProsesPenilaianImut;
+use Exception;
 use Filament\Actions;
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;
@@ -12,7 +22,6 @@ use App\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use App\Filament\Resources\LaporanImutResource;
@@ -33,7 +42,7 @@ class CreateLaporanImut extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         // Load setting untuk auto-generate period dan duration
         $settings = LaporanImutAutoGenerationSetting::getInstance();
@@ -42,13 +51,13 @@ class CreateLaporanImut extends CreateRecord
         $assessmentStart = now()->startOfMonth();
         $assessmentEnd = now()->endOfMonth();
 
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Informasi Laporan')
+        return $schema
+            ->components([
+                Section::make('Informasi Laporan')
                     ->description('Lengkapi data laporan di bawah ini.')
                     ->schema([
                         // Auto-generated name
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nama Laporan')
                             ->columnSpanFull()
                             // ->disabled()
@@ -59,9 +68,9 @@ class CreateLaporanImut extends CreateRecord
                             })
                             ->helperText('Nama laporan dibuat otomatis berdasarkan periode laporan.'),
 
-                        Forms\Components\Grid::make(2)
+                        Grid::make(2)
                             ->schema([
-                                Forms\Components\Select::make('report_month')
+                                Select::make('report_month')
                                     ->label('Bulan Laporan')
                                     ->options([
                                         1 => 'Januari',
@@ -85,7 +94,7 @@ class CreateLaporanImut extends CreateRecord
                                     })
                                     ->helperText('Bulan periode laporan ini.'),
 
-                                Forms\Components\Select::make('report_year')
+                                Select::make('report_year')
                                     ->label('Tahun Laporan')
                                     ->options(function () {
                                         $currentYear = now()->year;
@@ -105,13 +114,13 @@ class CreateLaporanImut extends CreateRecord
                             ]),
 
                         // READONLY: Period fields from setting
-                        Forms\Components\Section::make('⏰ Periode Asesmen (Otomatis dari Pengaturan)')
+                        Section::make('⏰ Periode Asesmen (Otomatis dari Pengaturan)')
                             ->description('Tanggal asesmen dihitung otomatis berdasarkan konfigurasi pengaturan laporan.')
                             ->columnSpanFull()
                             ->schema([
-                                Forms\Components\Grid::make(2)
+                                Grid::make(2)
                                     ->schema([
-                                        Forms\Components\TextInput::make('assessment_period_start')
+                                        TextInput::make('assessment_period_start')
                                             ->label('Dimulainya Periode Asesmen')
                                             // ->disabled()
                                             ->dehydrated()
@@ -120,7 +129,7 @@ class CreateLaporanImut extends CreateRecord
                                         // ->readOnly(),
                                         ,
 
-                                        Forms\Components\TextInput::make('assessment_period_end')
+                                        TextInput::make('assessment_period_end')
                                             ->label('Berakhirnya Periode Asesmen')
                                             // ->disabled()
                                             ->dehydrated()
@@ -132,7 +141,7 @@ class CreateLaporanImut extends CreateRecord
                             ]),
 
                         // Status (readonly)
-                        Forms\Components\ToggleButtons::make('status')
+                        ToggleButtons::make('status')
                             ->label('Status Laporan')
                             ->options([
                                 'process' => 'Dalam Proses',
@@ -156,7 +165,7 @@ class CreateLaporanImut extends CreateRecord
                             ->extraAttributes(['readonly' => true])
                             ->helperText('Status laporan ditentukan otomatis berdasarkan periode asesmen.'),
 
-                        Forms\Components\Select::make('created_by')
+                        Select::make('created_by')
                             ->label('Dibuat oleh')
                             ->options(User::pluck('name', 'id'))
                             ->default(fn() => Auth::id())
@@ -164,11 +173,11 @@ class CreateLaporanImut extends CreateRecord
                             ->columnSpanFull(),
 
                         // NEW: Durasi Pengisian Analisis & Rekomendasi
-                        Forms\Components\Section::make('📋 Pengaturan Timeline Pengisian')
+                        Section::make('📋 Pengaturan Timeline Pengisian')
                             ->description('Durasi waktu yang tersedia untuk pengisian analisis dan rekomendasi.')
                             ->columnSpanFull()
                             ->schema([
-                                Forms\Components\TextInput::make('recommendation_analysis_duration')
+                                TextInput::make('recommendation_analysis_duration')
                                     ->label('Durasi Pengisian Analisis & Rekomendasi')
                                     ->numeric()
                                     ->minValue(1)
@@ -182,12 +191,12 @@ class CreateLaporanImut extends CreateRecord
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Pemilihan Unit Kerja')
+                Section::make('Pemilihan Unit Kerja')
                     ->description('Tentukan unit kerja yang berwenang melakukan penilaian indikator mutu pada periode laporan ini.')
                     ->icon('heroicon-o-building-office-2')
                     ->columnSpanFull()
                     ->schema([
-                        Forms\Components\CheckboxList::make('unitKerjas')
+                        CheckboxList::make('unitKerjas')
                             ->relationship('unitKerjas', 'unit_name')
                             ->label('Daftar Unit Kerja yang Berpartisipasi')
                             ->columns(4)
@@ -272,7 +281,7 @@ class CreateLaporanImut extends CreateRecord
         return $data;
     }
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         try {
             return parent::handleRecordCreation($data);
@@ -360,9 +369,9 @@ class CreateLaporanImut extends CreateRecord
                 ->status('info')
                 ->send();
 
-            dispatch(new \App\Jobs\ProsesPenilaianImut($this->record->id));
-        } catch (\Exception $e) {
-            \Log::error("Error in CreateLaporanImut::afterCreate", [
+            dispatch(new ProsesPenilaianImut($this->record->id));
+        } catch (Exception $e) {
+            Log::error("Error in CreateLaporanImut::afterCreate", [
                 'laporan_id' => $this->record->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -397,7 +406,7 @@ class CreateLaporanImut extends CreateRecord
             ->count();
 
         if ($orphanedCount > 0) {
-            \Log::warning("Found {$orphanedCount} orphaned ImutPenilaian for laporan {$laporan->id}");
+            Log::warning("Found {$orphanedCount} orphaned ImutPenilaian for laporan {$laporan->id}");
         }
     }
 

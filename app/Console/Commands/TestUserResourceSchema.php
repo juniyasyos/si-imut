@@ -2,6 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Filament\Resources\UserResource\Schema\UserResourceSchema;
+use Exception;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Console\Command;
 
 class TestUserResourceSchema extends Command
@@ -16,7 +20,7 @@ class TestUserResourceSchema extends Command
         // 1. Check schema generation
         $this->line("\n1. Checking Schema Generation:");
         try {
-            $schema = \App\Filament\Resources\UserResource\Schema\UserResourceSchema::make();
+            $schema = UserResourceSchema::make();
             $this->line("   ✓ Schema generated successfully");
             $this->line("   Total sections: " . count($schema));
 
@@ -27,7 +31,7 @@ class TestUserResourceSchema extends Command
                 }
             }
             $this->line("   Sections: " . implode(', ', $sectionTitles));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Schema generation failed: " . $e->getMessage());
             return 1;
         }
@@ -94,7 +98,7 @@ class TestUserResourceSchema extends Command
 
         // 5. Check User model fillable
         $this->line("\n5. Checking User Model:");
-        $userModel = new \App\Models\User();
+        $userModel = new User();
         $fillable = $userModel->getFillable();
 
         $modelChecks = [
@@ -113,12 +117,12 @@ class TestUserResourceSchema extends Command
         // 6. Check available roles
         $this->line("\n6. Checking Available Roles:");
         try {
-            $roles = \Spatie\Permission\Models\Role::all();
+            $roles = Role::all();
             $this->line("   ✓ Found " . $roles->count() . " roles:");
             foreach ($roles as $role) {
                 $this->line("     - " . $role->name);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error checking roles: " . $e->getMessage());
         }
 

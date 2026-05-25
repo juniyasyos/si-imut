@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -78,7 +79,7 @@ class TestMinioConnection extends Command
             $this->info('✅ All MinIO tests passed!');
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('❌ MinIO Connection Failed!');
             $this->error('Error: ' . $e->getMessage());
             $this->newLine();

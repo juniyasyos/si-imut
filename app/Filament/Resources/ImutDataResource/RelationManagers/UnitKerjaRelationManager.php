@@ -2,23 +2,29 @@
 
 namespace App\Filament\Resources\ImutDataResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\AttachAction;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
+use Filament\Actions\Action;
+use Filament\Actions\DetachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachBulkAction;
 use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
 use App\Models\UnitKerja;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 
 class UnitKerjaRelationManager extends RelationManager
 {
     protected static string $relationship = 'unitKerja';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form;
+        return $schema;
         // ->schema([
         //     Forms\Components\TextInput::make('unit_name')
         //         ->label('Nama Unit')
@@ -32,23 +38,23 @@ class UnitKerjaRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('unit_name')
             ->columns([
-                Tables\Columns\TextColumn::make('unit_name')->label('Nama Unit Kerja')->searchable(),
-                Tables\Columns\TextColumn::make('pivot.assignedBy.name')
+                TextColumn::make('unit_name')->label('Nama Unit Kerja')->searchable(),
+                TextColumn::make('pivot.assignedBy.name')
                     ->label('Dikaitkan Oleh')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('pivot.assigned_at')
+                TextColumn::make('pivot.assigned_at')
                     ->label('Tanggal Penugasan')
                     ->date()
                     ->sortable(),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()
+                AttachAction::make()
                     ->label('Tambah Unit Kerja')
                     ->color('primary')
                     ->recordSelect(function ($livewire) {
                         $relatedIds = $livewire->ownerRecord->unitKerja()->pluck('id')->toArray();
 
-                        $options = app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                        $options = app(ImutDataRepositoryInterface::class)
                             ->getAvailableUnitKerjaOptionsForAttach($livewire->ownerRecord);
 
                         return Select::make('recordId')
@@ -66,13 +72,13 @@ class UnitKerjaRelationManager extends RelationManager
                     ->action(function (array $data, $livewire) {
                         $imut = $livewire->ownerRecord;
 
-                        app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                        app(ImutDataRepositoryInterface::class)
                             ->attachUnitKerjas($imut, [$data['recordId']], auth()->id());
                     })
                     ->attachAnother(false)
                     ->recordSelectSearchColumns(['unit_name']),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('lihat_berdasarkan_unit_kerja')
                     ->label('🏢 Lihat Unit Kerja')
                     ->color('success')
@@ -82,13 +88,13 @@ class UnitKerjaRelationManager extends RelationManager
                             'record_unit_kerja' => $record->unit_kerja_id
                         ]);
                     }),
-                Tables\Actions\DetachAction::make()
+                DetachAction::make()
                     ->label('Lepas')
                     ->requiresConfirmation(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make()->label('Lepas Beberapa'),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make()->label('Lepas Beberapa'),
                 ]),
             ]);
     }

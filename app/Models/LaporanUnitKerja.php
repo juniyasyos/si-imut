@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Support\CacheKey;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +26,7 @@ class LaporanUnitKerja extends Model
     /**
      * Relasi ke model LaporanImut.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function laporanImut()
     {
@@ -34,7 +36,7 @@ class LaporanUnitKerja extends Model
     /**
      * Relasi ke model UnitKerja.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function unitKerja()
     {
@@ -44,7 +46,7 @@ class LaporanUnitKerja extends Model
     /**
      * Relasi ke model ImutPenilaian.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function imutPenilaians()
     {

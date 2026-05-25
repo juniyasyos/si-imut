@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\ViewUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\Schema\UserResourceInfolist;
 use App\Filament\Resources\UserResource\Schema\UserResourceSchema;
@@ -9,12 +14,10 @@ use App\Filament\Resources\UserResource\Tables\UserResourceTable;
 use App\Models\User;
 use App\Traits\HasActiveIcon;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Form;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,7 +33,7 @@ class UserResource extends Resource implements HasShieldPermissions
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -105,9 +108,9 @@ class UserResource extends Resource implements HasShieldPermissions
         return __('filament-navigation::navigation.group.user_access');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(UserResourceSchema::make());
+        return $schema->components(UserResourceSchema::make());
     }
 
     protected static function mutateFormDataBeforeCreate(array $data): array
@@ -162,8 +165,8 @@ class UserResource extends Resource implements HasShieldPermissions
             ->columns(UserResourceTable::columns())
             ->filters(UserResourceTable::filters())
             ->headerActions(UserResourceTable::headerActions())
-            ->actions(UserResourceTable::actions())
-            ->bulkActions(UserResourceTable::bulkActions());
+            ->recordActions(UserResourceTable::actions())
+            ->toolbarActions(UserResourceTable::bulkActions());
     }
 
     public static function getRelations(): array
@@ -176,16 +179,16 @@ class UserResource extends Resource implements HasShieldPermissions
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'view' => Pages\ViewUser::route('/{record}'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'view' => ViewUser::route('/{record}'),
+            'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist->schema(UserResourceInfolist::infolist());
+        return $schema->components(UserResourceInfolist::infolist());
     }
 
     public static function getModelLabel(): string

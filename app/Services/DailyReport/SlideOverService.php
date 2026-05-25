@@ -2,6 +2,7 @@
 
 namespace App\Services\DailyReport;
 
+use Exception;
 use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +98,7 @@ class SlideOverService
 
         try {
             return Carbon::createFromFormat('Y-m-d', $date)->format('Y-m-d');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return now()->format('Y-m-d');
         }
     }

@@ -2,26 +2,24 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
+use Filament\Schemas\Components\Component;
 use App\Models\User;
-use Filament\Forms\Form;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Models\Contracts\FilamentUser;
-use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Validation\ValidationException;
-use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Illuminate\Support\Facades\Hash;
 
-class Login extends BaseLogin
+class Login extends \Filament\Auth\Pages\Login
 {
     use HasCustomLayout;
 
-    protected static string $view = 'vendor.filament-panels.pages.auth.login';
+    protected string $view = 'vendor.filament-panels.pages.auth.login';
 
     public function mount(): void
     {
@@ -120,7 +118,7 @@ class Login extends BaseLogin
 
         if (
             ($user instanceof FilamentUser) &&
-            (!$user->canAccessPanel(Filament::getCurrentPanel()))
+            (!$user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
         ) {
             Filament::auth()->logout();
 
@@ -133,14 +131,14 @@ class Login extends BaseLogin
     }
 
     /**
-     * @return array<int | string, string | Form>
+     * @return array<int|string, string|\Filament\Schemas\Schema>
      */
     protected function getForms(): array
     {
         return [
             'form' => $this->form(
                 $this->makeForm()
-                    ->schema([
+                    ->components([
                         $this->getNIPFormComponent(),
                         $this->getPasswordFormComponent(),
                         $this->getRememberFormComponent(),

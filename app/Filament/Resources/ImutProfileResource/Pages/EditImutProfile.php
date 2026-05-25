@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use Exception;
+use Filament\Notifications\Notification;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource\RelationManagers\FormTemplateVersionsRelationManager;
 use App\Filament\Resources\ImutProfileResource;
@@ -36,7 +38,7 @@ class EditImutProfile extends EditRecord
     public function getRedirectUrl(): string
     {
 
-        return \App\Filament\Resources\ImutDataResource::getUrl('edit', [
+        return ImutDataResource::getUrl('edit', [
             'record' => ImutData::where('id', $this->record->imut_data_id)->firstOrFail()->slug,
         ]);
     }
@@ -61,9 +63,9 @@ class EditImutProfile extends EditRecord
     {
         try {
             return parent::handleRecordUpdate($record, $data);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Handle validation errors from the model
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Gagal memperbarui profil')
                 ->body($e->getMessage())
                 ->danger()

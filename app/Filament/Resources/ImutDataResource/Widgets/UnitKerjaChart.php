@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ImutDataResource\Widgets;
 
+use Filament\Support\Enums\Width;
+use Carbon\Carbon;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
@@ -11,7 +13,6 @@ use App\Support\ApexChartConfig;
 use App\Support\CacheKey as SupportCacheKey;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -22,7 +23,7 @@ class UnitKerjaChart extends ApexChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static MaxWidth|string $filterFormWidth = MaxWidth::Large;
+    protected static Width|string $filterFormWidth = Width::Large;
 
     protected static bool $isLazy = false;
 
@@ -252,7 +253,7 @@ class UnitKerjaChart extends ApexChartWidget
                     continue;
                 }
 
-                $date = \Carbon\Carbon::createFromFormat('Y-m', $periodeKey);
+                $date = Carbon::createFromFormat('Y-m', $periodeKey);
 
                 foreach ($items as $item) {
                     // Validate if benchmark is valid for this period

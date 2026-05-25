@@ -2,6 +2,8 @@
 
 namespace App\Services\DailyReport;
 
+use Exception;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Models\DailyReportResponse;
 use App\Models\FieldResponse;
 use App\Models\FormTemplate;
@@ -76,7 +78,7 @@ class DailyReportAuthorizationService
                 ->first();
 
             return $templateForDate ?: $profile->activeFormTemplate;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error resolving template for date', [
                 'template_id' => $requestedTemplate->id,
                 'date' => $reportDate,
@@ -94,14 +96,14 @@ class DailyReportAuthorizationService
         try {
             // Validate user has ID
             if (!$user->id) {
-                throw new \Exception('User ID tidak valid. Pastikan Anda sudah login dengan benar.');
+                throw new Exception('User ID tidak valid. Pastikan Anda sudah login dengan benar.');
             }
 
             // Get user's unit kerja
             $unitKerjaId = $user->unitKerjas()->first()?->id;
 
             if (!$unitKerjaId) {
-                throw new \Exception('User tidak terdaftar di unit kerja mana pun');
+                throw new Exception('User tidak terdaftar di unit kerja mana pun');
             }
 
             // Parse report date
@@ -122,19 +124,19 @@ class DailyReportAuthorizationService
             $requiredFields = ['form_template_id', 'unit_kerja_id', 'submitted_by', 'report_date'];
             foreach ($requiredFields as $field) {
                 if (empty($reportData[$field]) && $reportData[$field] !== 0) {
-                    throw new \Exception("Field '{$field}' tidak boleh kosong. Nilai: " . var_export($reportData[$field], true));
+                    throw new Exception("Field '{$field}' tidak boleh kosong. Nilai: " . var_export($reportData[$field], true));
                 }
             }
 
             Log::debug('Creating daily report with data:', $reportData);
 
-            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $repo = app(DailyReportResponseRepositoryInterface::class);
 
             // Create daily report response via repository
             $dailyReport = $repo->createReport($reportData);
 
             if (!$dailyReport || !$dailyReport->id) {
-                throw new \Exception('Gagal membuat record daily report. Silakan coba lagi.');
+                throw new Exception('Gagal membuat record daily report. Silakan coba lagi.');
             }
 
             // Process and create field responses
@@ -159,7 +161,7 @@ class DailyReportAuthorizationService
             ]);
 
             return $dailyReport;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error creating daily report', [
                 'template_id' => $formTemplate->id,
                 'user_id' => $user->id,
@@ -242,7 +244,7 @@ class DailyReportAuthorizationService
                 ],
                 'compliance_score' => ($startTime && $endTime) ? (($validIndicator == '1') ? 100 : 0) : 0,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error handling time_duration field', [
                 'field_id' => $field->id,
                 'error' => $e->getMessage()
@@ -292,7 +294,7 @@ class DailyReportAuthorizationService
                 ],
                 'compliance_score' => $inputValue ? (($validIndicator == '1') ? 100 : 0) : 0,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error handling time_range field', [
                 'field_id' => $field->id,
                 'error' => $e->getMessage()
@@ -326,7 +328,7 @@ class DailyReportAuthorizationService
             if (in_array($field->field_type, ['text', '']) && is_string($fieldValue) && !empty(trim($fieldValue))) {
                 $this->updateHistorySuggestions($field, $fieldValue);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error handling regular field', [
                 'field_id' => $field->id,
                 'error' => $e->getMessage()
@@ -348,7 +350,7 @@ class DailyReportAuthorizationService
                 array_unshift($currentSuggestions, $newValue);
                 $field->update(['history_suggestions' => $currentSuggestions]);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Error updating history suggestions', [
                 'field_id' => $field->id,
                 'error' => $e->getMessage()
@@ -364,7 +366,7 @@ class DailyReportAuthorizationService
     {
         try {
             return Carbon::createFromFormat('Y-m-d', $reportDate);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Invalid report date format, using today', [
                 'date' => $reportDate,
                 'error' => $e->getMessage()
@@ -391,7 +393,7 @@ class DailyReportAuthorizationService
             }
 
             return $template;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error validating template access', [
                 'template_id' => $templateId,
                 'user_id' => $user->id,

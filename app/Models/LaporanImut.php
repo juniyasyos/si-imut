@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Collection;
 use App\Support\CacheKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,9 +31,9 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * @property int $recommendation_analysis_duration
  * @property int $created_by
  * @property-read User $createdBy
- * @property-read \Illuminate\Support\Collection|UnitKerja[] $unitKerjas
- * @property-read \Illuminate\Support\Collection|LaporanUnitKerja[] $laporanUnitKerjas
- * @property-read \Illuminate\Support\Collection|ImutPenilaian[] $imutPenilaians
+ * @property-read Collection|UnitKerja[] $unitKerjas
+ * @property-read Collection|LaporanUnitKerja[] $laporanUnitKerjas
+ * @property-read Collection|ImutPenilaian[] $imutPenilaians
  */
 class LaporanImut extends Model
 {
@@ -406,7 +408,7 @@ class LaporanImut extends Model
      * Validate unique period combination
      *
      * @param LaporanImut $laporan
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     protected static function validateUniquePeriod(self $laporan): void
     {
@@ -439,7 +441,7 @@ class LaporanImut extends Model
             $monthName = $monthNames[$laporan->report_month] ?? $laporan->report_month;
             $message = "Laporan untuk periode {$monthName} {$laporan->report_year} sudah ada dengan nama: \"{$existingReport->name}\"";
 
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'report_month' => [$message],
                 'report_year' => [$message],
             ]);

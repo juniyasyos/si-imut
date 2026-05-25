@@ -2,6 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use App\Traits\HasActiveIcon;
+use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\ImutDataResource\Pages\ListImutData;
+use App\Filament\Resources\ImutDataResource\Pages\CreateImutData;
+use App\Filament\Resources\ImutDataResource\Pages\EditImutData;
+use App\Filament\Resources\ImutProfileResource\Pages\CreateImutProfile;
+use App\Filament\Resources\ImutProfileResource\Pages\EditImutProfile;
+use App\Filament\Resources\RegionTypeBencmarkingResource\Pages\ListRegionTypeBencmarkings;
+use App\Filament\Resources\ImutProfileResource\Pages\ManageFormBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\FormBuilder;
+use App\Filament\Resources\ImutProfileResource\Pages\ListDailyReports;
 use App\Filament\Resources\ImutDataResource\Pages;
 use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
@@ -14,7 +26,6 @@ use App\Models\ImutData;
 use App\Support\CacheKey;
 use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
@@ -23,7 +34,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ImutDataResource extends Resource implements HasShieldPermissions
 {
-    use \App\Traits\HasActiveIcon;
+    use HasActiveIcon;
 
     /**
      * Request-scoped memoized navigation badges to avoid repeated cache store reads.
@@ -34,7 +45,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
 
     protected static ?string $model = ImutData::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar';
 
     protected static ?int $navigationSort = 3;
 
@@ -143,9 +154,9 @@ class ImutDataResource extends Resource implements HasShieldPermissions
         return null;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(ImutDataSchema::make());
+        return $schema->components(ImutDataSchema::make());
     }
 
     public static function table(Table $table): Table
@@ -157,14 +168,14 @@ class ImutDataResource extends Resource implements HasShieldPermissions
             ->filters(TableSchema::filters())
             ->filtersLayout(FiltersLayout::Dropdown)
             ->filtersFormColumns(2) // 🔥 bikin 3 kolom
-            ->actions(TableSchema::actions())
-            ->bulkActions(TableSchema::bulkActions());
+            ->recordActions(TableSchema::actions())
+            ->toolbarActions(TableSchema::bulkActions());
     }
 
-    public static function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getTableQuery(): Builder
     {
         $query = static::getModel()::query();
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
 
         if ($user->can('view_all_data_imut::data')) {
             return $query;
@@ -182,17 +193,17 @@ class ImutDataResource extends Resource implements HasShieldPermissions
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListImutData::route('/'),
-            'create' => Pages\CreateImutData::route('/create'),
-            'edit' => Pages\EditImutData::route('/edit={record:slug}'),
-            'create-profile' => \App\Filament\Resources\ImutProfileResource\Pages\CreateImutProfile::route('/{imutDataSlug}/profile/create'),
-            'edit-profile' => \App\Filament\Resources\ImutProfileResource\Pages\EditImutProfile::route('/{imutDataSlug}/profile/edit={record}'),
-            'bencmarking-region-type' => \App\Filament\Resources\RegionTypeBencmarkingResource\Pages\ListRegionTypeBencmarkings::route('/bencmarkings/region-type'),
+            'index' => ListImutData::route('/'),
+            'create' => CreateImutData::route('/create'),
+            'edit' => EditImutData::route('/edit={record:slug}'),
+            'create-profile' => CreateImutProfile::route('/{imutDataSlug}/profile/create'),
+            'edit-profile' => EditImutProfile::route('/{imutDataSlug}/profile/edit={record}'),
+            'bencmarking-region-type' => ListRegionTypeBencmarkings::route('/bencmarkings/region-type'),
             'overview-unit-kerja' => UnitKerjaOverview::route('/overview/unit-kerja'),
             'overview-imut-data' => SummaryDiagram::route('overview/summary-imut-data'),
-            'manage-form-builder' => \App\Filament\Resources\ImutProfileResource\Pages\ManageFormBuilder::route('/{imutDataSlug}/{record:slug}/form-builder/{templateId?}'),
-            'preview-form' => \App\Filament\Resources\ImutProfileResource\Pages\FormBuilder::route('/{imutDataSlug}/{record:slug}/form-builder/preview'),
-            'list-daily-reports' => \App\Filament\Resources\ImutProfileResource\Pages\ListDailyReports::route('/{imutDataSlug}/{record:slug}/daily-reports'),
+            'manage-form-builder' => ManageFormBuilder::route('/{imutDataSlug}/{record:slug}/form-builder/{templateId?}'),
+            'preview-form' => FormBuilder::route('/{imutDataSlug}/{record:slug}/form-builder/preview'),
+            'list-daily-reports' => ListDailyReports::route('/{imutDataSlug}/{record:slug}/daily-reports'),
         ];
     }
 }

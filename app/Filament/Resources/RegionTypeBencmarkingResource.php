@@ -2,16 +2,22 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\RegionTypeBencmarkingResource\Pages\ListRegionTypeBencmarkings;
 use App\Filament\Resources\RegionTypeBencmarkingResource\Pages;
 use App\Models\RegionType;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -20,7 +26,7 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
 {
     protected static ?string $model = RegionType::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -81,21 +87,21 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
         return __('filament-forms::imut-data.navigation.group');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('type')
+        return $schema->components([
+            TextInput::make('type')
                 ->label('Nama Region Type')
                 ->required()
                 ->maxLength(255)
                 ->placeholder('contoh: 🌍 Nasional'),
 
-            Forms\Components\ColorPicker::make('display_color')
+            ColorPicker::make('display_color')
                 ->label('Warna Chart')
                 ->placeholder('#3b82f6')
                 ->nullable(),
 
-            Forms\Components\Select::make('chart_type')
+            Select::make('chart_type')
                 ->label('Tipe Chart')
                 ->options(RegionType::getChartTypes())
                 ->default('column')
@@ -108,26 +114,26 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label('Region Type')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\ColorColumn::make('display_color')
+                ColorColumn::make('display_color')
                     ->label('Warna')
                     ->sortable()
                     ->default('#3b82f6')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('display_color')
+                TextColumn::make('display_color')
                     ->label('Kode Warna')
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn($state) => $state ?? '#3b82f6 (default)')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('chart_type')
+                TextColumn::make('chart_type')
                     ->label('Tipe Chart')
                     ->badge()
                     ->formatStateUsing(fn($state) => match($state) {
@@ -143,7 +149,7 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime('d M Y H:i')
                     ->sortable()
                     ->label('Dibuat')
@@ -152,7 +158,7 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
             ->filters([
                 // Removed TrashedFilter since we no longer use SoftDeletes
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make()
                     ->modalHeading('Edit Region Type')
                     ->modalWidth('2xl')
@@ -179,7 +185,7 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
                         }
                     }),
             ])
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
     public static function getRelations(): array
@@ -190,7 +196,7 @@ class RegionTypeBencmarkingResource extends Resource implements HasShieldPermiss
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRegionTypeBencmarkings::route('/bencmarkings'),
+            'index' => ListRegionTypeBencmarkings::route('/bencmarkings'),
         ];
     }
 }

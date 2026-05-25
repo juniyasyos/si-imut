@@ -2,6 +2,12 @@
 
 namespace App\Livewire\Reports;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use App\Models\ImutProfile;
+use Throwable;
+use Illuminate\Support\Facades\Log;
+use Filament\Actions\ExportAction;
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Models\ImutCategory;
 use App\Models\ImutPenilaian;
@@ -18,7 +24,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -31,8 +36,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTable
+class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
     use HasPercentageColor;
@@ -71,7 +77,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
         // Resolve record id from imut_profile_id when explicit record not provided
         if (!$recordId && $imutProfileId) {
-            $penilaian = \App\Models\ImutPenilaian::where('imut_profil_id', (int) $imutProfileId)
+            $penilaian = ImutPenilaian::where('imut_profil_id', (int) $imutProfileId)
                 ->whereHas('laporanUnitKerja', function ($q) {
                     if ($this->laporanId) {
                         $q->where('laporan_imut_id', $this->laporanId);
@@ -86,12 +92,12 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
 
         // Resolve record id from form_template_id -> imut_profile -> penilaian
         if (!$recordId && $formTemplateId) {
-            $profile = \App\Models\ImutProfile::whereHas('formTemplates', function ($q) use ($formTemplateId) {
+            $profile = ImutProfile::whereHas('formTemplates', function ($q) use ($formTemplateId) {
                 $q->where('id', (int) $formTemplateId);
             })->first();
 
             if ($profile) {
-                $penilaian = \App\Models\ImutPenilaian::where('imut_profil_id', $profile->id)
+                $penilaian = ImutPenilaian::where('imut_profil_id', $profile->id)
                     ->whereHas('laporanUnitKerja', function ($q) {
                         if ($this->laporanId) {
                             $q->where('laporan_imut_id', $this->laporanId);
@@ -114,9 +120,9 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                     // mountTableAction is provided by Filament Tables (InteractsWithTable)
                     $this->mountTableAction($action, (int) $recordId);
                     $mounted = true;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // log and fallback to client-side trigger
-                    \Illuminate\Support\Facades\Log::warning('mountTableAction failed', ['action' => $action, 'record' => $recordId, 'exception' => $e->getMessage()]);
+                    Log::warning('mountTableAction failed', ['action' => $action, 'record' => $recordId, 'exception' => $e->getMessage()]);
                 }
             }
 
@@ -170,9 +176,9 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             ->columns($this->getTableColumnsArray())
             ->filters($this->getTableFiltersArray())
             ->headerActions($this->getTableHeaderActionsArray())
-            ->actions($this->getTableActionsArray())
+            ->recordActions($this->getTableActionsArray())
             ->recordAction('isi_penilaian')
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
     protected function getTableQuery()

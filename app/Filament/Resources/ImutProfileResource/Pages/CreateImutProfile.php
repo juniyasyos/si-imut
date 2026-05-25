@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use App\Models\ImutProfile;
+use Exception;
 use App\Filament\Resources\ImutDataResource;
 use Filament\Actions;
 use App\Models\ImutData;
@@ -53,7 +55,7 @@ class CreateImutProfile extends CreateRecord
         ]);
     }
 
-    protected function handleRecordCreation(array $data): \App\Models\ImutProfile
+    protected function handleRecordCreation(array $data): ImutProfile
     {
         try {
             $record = parent::handleRecordCreation($data);
@@ -68,7 +70,7 @@ class CreateImutProfile extends CreateRecord
                 ->send();
 
             return $record;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Handle validation errors from the model
             Notification::make()
                 ->title('Gagal membuat profil')

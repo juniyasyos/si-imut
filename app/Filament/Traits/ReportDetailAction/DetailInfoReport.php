@@ -2,21 +2,21 @@
 
 namespace App\Filament\Traits\ReportDetailAction;
 
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Fieldset;
 use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
 use App\Models\LaporanImut;
 use App\Services\Form\FormCalculationService;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Forms\Form;
-use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
@@ -112,10 +112,10 @@ trait DetailInfoReport
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)
             // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
-            ->mountUsing(function (Form $form, $record) {
-                $form->fill($this->getProfileFormFillData($record));
+            ->mountUsing(function (Schema $schema, $record) {
+                $schema->fill($this->getProfileFormFillData($record));
             })
-            ->form(function () use ($livewireComponent) {
+            ->schema(function () use ($livewireComponent) {
                 return array_merge(
                     self::ImutPenilaianProfileSchema(),
                     self::basicInformationSchemaProfile(),

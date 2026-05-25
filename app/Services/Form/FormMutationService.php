@@ -2,6 +2,8 @@
 
 namespace App\Services\Form;
 
+use Exception;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Models\DailyReportResponse;
 use App\Models\FieldResponse;
 use App\Models\FormTemplate;
@@ -22,7 +24,7 @@ class FormMutationService
      * @param FormTemplate $formTemplate
      * @param string|null $reportDate
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function prepareDailyReportData(
         array $data,
@@ -32,13 +34,13 @@ class FormMutationService
         $user = Auth::user();
 
         if (!$user) {
-            throw new \Exception('Anda harus login terlebih dahulu');
+            throw new Exception('Anda harus login terlebih dahulu');
         }
 
         $unitKerjaId = $user->unitKerjas()->first()?->id;
 
         if (!$unitKerjaId) {
-            throw new \Exception('Anda tidak terdaftar di unit kerja mana pun');
+            throw new Exception('Anda tidak terdaftar di unit kerja mana pun');
         }
 
         $date = $reportDate ? Carbon::createFromFormat('Y-m-d', $reportDate) : now();
@@ -63,7 +65,7 @@ class FormMutationService
         array $preparedData,
         FormTemplate $formTemplate
     ): DailyReportResponse {
-        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+        $repo = app(DailyReportResponseRepositoryInterface::class);
 
         // Create DailyReportResponse via repository
         $dailyReport = $repo->createReport([

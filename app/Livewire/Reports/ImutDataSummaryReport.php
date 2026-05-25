@@ -2,6 +2,11 @@
 
 namespace App\Livewire\Reports;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Actions\ExportAction;
+use Filament\Actions\Action;
 use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
 use App\Models\ImutCategory;
@@ -9,8 +14,6 @@ use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -21,8 +24,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataSummaryReport extends Component implements HasForms, HasTable
+class ImutDataSummaryReport extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
     use HasPercentageColor;
@@ -39,7 +43,7 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
         $this->dispatch('$refresh');
     }
 
-    public function getTableRecordKey($record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         if (! $record || ! $record->getKey()) {
             return (string) uniqid('record_', true);
@@ -171,7 +175,7 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                     ->multiple()
                     ->placeholder('Semua Kategori'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('details')
                     ->label('Lihat Detail')
                     ->icon('heroicon-o-eye')
@@ -186,7 +190,7 @@ class ImutDataSummaryReport extends Component implements HasForms, HasTable
                 'laporan_id' => $record->laporan_imut_id,
                 'imut_data_id' => $record->id,
             ]))
-            ->bulkActions([
+            ->toolbarActions([
                 // ...
             ]);
     }

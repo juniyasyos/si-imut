@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use App\Filament\Resources\RoleResource\Pages\ListRoles;
+use App\Filament\Resources\RoleResource\Pages\CreateRole;
+use App\Filament\Resources\RoleResource\Pages\ViewRole;
+use App\Filament\Resources\RoleResource\Pages\EditRole;
+use Filament\Panel;
 use App\Traits\HasActiveIcon;
 use Filament\Resources\Resource;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Filament\Resources\RoleResource\Pages;
 use App\Filament\Resources\RoleResource\Schema\RoleResourceSchema;
@@ -36,9 +41,9 @@ class RoleResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(RoleResourceSchema::make());
+        return $schema->components(RoleResourceSchema::make());
     }
 
     public static function table(Table $table): Table
@@ -46,8 +51,8 @@ class RoleResource extends Resource implements HasShieldPermissions
         return $table
             ->columns(RoleResourceTable::columns())
             ->filters(RoleResourceTable::filters())
-            ->actions(RoleResourceTable::actions())
-            ->bulkActions(RoleResourceTable::bulkActions());
+            ->recordActions(RoleResourceTable::actions())
+            ->toolbarActions(RoleResourceTable::bulkActions());
     }
 
     public static function getRelations(): array
@@ -60,10 +65,10 @@ class RoleResource extends Resource implements HasShieldPermissions
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRoles::route('/'),
-            'create' => Pages\CreateRole::route('/create'),
-            'view' => Pages\ViewRole::route('/{record}'),
-            'edit' => Pages\EditRole::route('/{record}/edit'),
+            'index' => ListRoles::route('/'),
+            'create' => CreateRole::route('/create'),
+            'view' => ViewRole::route('/{record}'),
+            'edit' => EditRole::route('/{record}/edit'),
         ];
     }
 
@@ -116,7 +121,7 @@ class RoleResource extends Resource implements HasShieldPermissions
         return Utils::getResourceNavigationSort();
     }
 
-    public static function getSlug(): string
+    public static function getSlug(?Panel $panel = null): string
     {
         return Utils::getResourceSlug();
     }

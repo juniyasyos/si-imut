@@ -24,7 +24,7 @@ class CreateImutData extends CreateRecord
 
     /**
      * @param array<string, mixed> $data
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     protected function handleRecordCreation(array $data): Model
     {

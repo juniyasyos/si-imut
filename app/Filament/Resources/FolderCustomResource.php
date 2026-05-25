@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Panel;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\FolderCustomResource\Pages\ListFoldersCustom;
+use Juniyasyos\FilamentMediaManager\Resources\FolderResource\Pages\ViewFolder;
+use App\Filament\Resources\MediaCustomResource\Pages\ListMediaCustom;
 use App\Traits\HasActiveIcon;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Tables;
@@ -35,7 +45,7 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
     /**
      * Override slug resource secara statik.
      */
-    public static function getSlug(): string
+    public static function getSlug(?Panel $panel = null): string
     {
         return config('filament-media-manager.slug_folder', 'folder-custom');
     }
@@ -47,7 +57,7 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
     {
         return $table
             ->query(function () {
-                $user = \Illuminate\Support\Facades\Auth::user();
+                $user = Auth::user();
                 $query = Folder::query();
 
                 // IMPORTANT: Filter hanya root folders (parent_id = null)
@@ -57,7 +67,7 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
                 if (! $user->can('view_all_folder::custom') && $user->can('view_by_unit_kerja_folder::custom')) {
                     $unitKerjas = $user->unitKerjas
                         ->pluck('unit_name')
-                        ->map(fn($name) => \Illuminate\Support\Str::slug($name))
+                        ->map(fn($name) => Str::slug($name))
                         ->toArray();
 
                     // Filter by collection karena collection pakai slug
@@ -73,7 +83,7 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
 
             ->content(fn() => view('filament-media-manager::pages.folders'))
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(trans('filament-media-manager::messages.folders.columns.name'))
                     ->sortable()
                     ->searchable(),
@@ -81,12 +91,12 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
             ->defaultPaginationPageOption(12)
             ->paginationPageOptions(['12', '24', '48', '96'])
             ->filters([])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -94,9 +104,9 @@ class FolderCustomResource extends BaseFolderResource implements HasShieldPermis
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\FolderCustomResource\Pages\ListFoldersCustom::route('/'),
-            'view' => \Juniyasyos\FilamentMediaManager\Resources\FolderResource\Pages\ViewFolder::route('/{folder}'),
-            'media' => \App\Filament\Resources\MediaCustomResource\Pages\ListMediaCustom::route('/{folder}/media'),
+            'index' => ListFoldersCustom::route('/'),
+            'view' => ViewFolder::route('/{folder}'),
+            'media' => ListMediaCustom::route('/{folder}/media'),
         ];
     }
 }

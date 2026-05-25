@@ -2,6 +2,7 @@
 
 namespace App\Services\Reporting;
 
+use InvalidArgumentException;
 use Carbon\Carbon;
 use App\Repositories\Interfaces\ImutPenilaianRepositoryInterface;
 use App\Services\Support\PeriodParserService;
@@ -30,7 +31,7 @@ class CategoryAggregationService
             $dates = $this->periodParser->parse($periode);
             $startDate = $dates['startDate'];
             $endDate = $dates['endDate'];
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw $e;
         }
 

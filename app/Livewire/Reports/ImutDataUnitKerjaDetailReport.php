@@ -2,6 +2,12 @@
 
 namespace App\Livewire\Reports;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\ExportAction;
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSchema;
 use App\Models\ImutCategory;
@@ -11,15 +17,11 @@ use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Carbon\Carbon;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -32,8 +34,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTable
+class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
     use HasPercentageColor;
@@ -158,9 +161,9 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
                     ->label('Ekspor laporan IMUT Unit Kerja')
                     ->color('gray'),
             ])
-            ->actions([])
+            ->recordActions([])
             // ->recordAction('lihat')
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
     protected function buildIsiPenilaianAction(): Action
@@ -178,15 +181,15 @@ class ImutDataUnitKerjaDetailReport extends Component implements HasForms, HasTa
             ->modalSubmitActionLabel('Simpan')
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)
-            ->mountUsing(function (Form $form, $record) {
-                $form->fill([
+            ->mountUsing(function (Schema $schema, $record) {
+                $schema->fill([
                     'numerator_value'   => $record->numerator_value ?? null,
                     'denominator_value' => $record->denominator_value ?? null,
                     'analysis'          => $record->analysis ?? '',
                     'recommendations'   => $record->recommendations ?? '',
                 ]);
             })
-            ->form(function () use ($livewireComponent) {
+            ->schema(function () use ($livewireComponent) {
                 return [
                     Section::make('Perhitungan')
                         ->schema($this->buildPerhitunganSchemaForAction($livewireComponent))

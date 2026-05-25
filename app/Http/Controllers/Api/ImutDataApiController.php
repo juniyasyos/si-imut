@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\ImutData;
 use App\Models\ImutDataNote;
@@ -32,7 +33,7 @@ class ImutDataApiController extends Controller
         $records = $query->get();
 
         // Get region types for dynamic columns
-        $regionTypes = \App\Models\RegionType::all();
+        $regionTypes = RegionType::all();
 
         // Calculate summaries
         $totalN = $records->sum('total_numerator');
@@ -126,8 +127,8 @@ class ImutDataApiController extends Controller
         }
 
         $historicalData = $historicalQuery->get()->map(function ($item) use ($laporan, $imutData, $regionTypes) {
-            $start = $item->assessment_period_start ? \Carbon\Carbon::parse($item->assessment_period_start) : $laporan->assessment_period_start;
-            $end = $item->assessment_period_end ? \Carbon\Carbon::parse($item->assessment_period_end) : $laporan->assessment_period_end;
+            $start = $item->assessment_period_start ? Carbon::parse($item->assessment_period_start) : $laporan->assessment_period_start;
+            $end = $item->assessment_period_end ? Carbon::parse($item->assessment_period_end) : $laporan->assessment_period_end;
 
             // Get benchmark data for all region types
             $benchmarks = [];
@@ -251,8 +252,8 @@ class ImutDataApiController extends Controller
                 if (empty($allMonths)) return [null, null];
 
                 sort($allMonths);
-                $startDate = \Carbon\Carbon::create($year, min($allMonths), 1)->startOfMonth();
-                $endDate = \Carbon\Carbon::create($year, max($allMonths), 1)->endOfMonth();
+                $startDate = Carbon::create($year, min($allMonths), 1)->startOfMonth();
+                $endDate = Carbon::create($year, max($allMonths), 1)->endOfMonth();
 
                 return [$startDate, $endDate];
 
@@ -275,8 +276,8 @@ class ImutDataApiController extends Controller
                 if (empty($allMonths)) return [null, null];
 
                 sort($allMonths);
-                $startDate = \Carbon\Carbon::create($year, min($allMonths), 1)->startOfMonth();
-                $endDate = \Carbon\Carbon::create($year, max($allMonths), 1)->endOfMonth();
+                $startDate = Carbon::create($year, min($allMonths), 1)->startOfMonth();
+                $endDate = Carbon::create($year, max($allMonths), 1)->endOfMonth();
 
                 return [$startDate, $endDate];
 
@@ -287,8 +288,8 @@ class ImutDataApiController extends Controller
                 $years = (array)$years;
                 sort($years);
 
-                $startDate = \Carbon\Carbon::create(min($years), 1, 1)->startOfYear();
-                $endDate = \Carbon\Carbon::create(max($years), 12, 31)->endOfYear();
+                $startDate = Carbon::create(min($years), 1, 1)->startOfYear();
+                $endDate = Carbon::create(max($years), 12, 31)->endOfYear();
 
                 return [$startDate, $endDate];
 
@@ -299,8 +300,8 @@ class ImutDataApiController extends Controller
                 $endMonth = $request->get('end_month', 12);
                 $endYear = $request->get('end_year', now()->year);
 
-                $startDate = \Carbon\Carbon::create($startYear, $startMonth, 1)->startOfMonth();
-                $endDate = \Carbon\Carbon::create($endYear, $endMonth, 1)->endOfMonth();
+                $startDate = Carbon::create($startYear, $startMonth, 1)->startOfMonth();
+                $endDate = Carbon::create($endYear, $endMonth, 1)->endOfMonth();
 
                 return [$startDate, $endDate];
         }

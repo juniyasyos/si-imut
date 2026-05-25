@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\ImutDataResource\RelationManagers;
 
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ReplicateAction;
+use Illuminate\Support\Str;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\ImutProfile;
@@ -10,13 +16,9 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\ImutDataResource;
 use Filament\Actions\ActionGroup;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Actions\{Action, ActionGroup as ActionsActionGroup, CreateAction, EditAction, DeleteAction, DeleteBulkAction, BulkActionGroup};
 use Illuminate\Support\Facades\Auth;
@@ -86,7 +88,7 @@ class ProfilesRelationManager extends RelationManager
                     }),
             ])
             ->headerActions([
-                CreateAction::make()
+                \Filament\Actions\CreateAction::make()
                     ->label('Tambah Data')
                     ->icon('heroicon-m-plus')
                     ->visible(function ($livewire) {
@@ -100,15 +102,15 @@ class ProfilesRelationManager extends RelationManager
             ->filters([
                 TrashedFilter::make(),
             ])
-            ->actions([
-                DeleteAction::make()
+            ->recordActions([
+                \Filament\Actions\DeleteAction::make()
                     ->visible(function (Model $record) {
                         return Auth::user()?->can('delete_imut::profile') && $record->imutData->created_by === Auth::id();
                     }),
                 RestoreAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
                 ForceDeleteAction::make()->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
-                ActionsActionGroup::make([
-                    Action::make('edit')
+                ActionGroup::make([
+                    \Filament\Actions\Action::make('edit')
                         ->label(fn($record) => (
                             $record && $record->created_by !== Auth::id() && !Auth::user()->can('force_editable_imut::profile')
                         ) ? 'Lihat' : 'Ubah')
@@ -120,7 +122,7 @@ class ProfilesRelationManager extends RelationManager
                             'imutDataSlug' => $livewire->ownerRecord->slug,
                             'record' => $record->slug,
                         ])),
-                    \Filament\Tables\Actions\ReplicateAction::make()
+                    ReplicateAction::make()
                         ->using(function (Model $record) {
                             // Load relationships needed for replication
                             $record->load('formTemplates.formFields.options');
@@ -131,8 +133,8 @@ class ProfilesRelationManager extends RelationManager
                             $newVersion = "Copy dari $originalVersion";
                             $newRecord->version = $newVersion;
 
-                            $slugBase = \Illuminate\Support\Str::slug($newVersion); // slugify version
-                            $uuid = \Illuminate\Support\Str::uuid()->toString();
+                            $slugBase = Str::slug($newVersion); // slugify version
+                            $uuid = Str::uuid()->toString();
 
                             $newRecord->slug = "{$slugBase}-{$uuid}";
 
@@ -177,9 +179,9 @@ class ProfilesRelationManager extends RelationManager
                     ->button()
                     ->label('Aksi'),
             ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
+            ->toolbarActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make()
                         ->visible(
                             (Auth::user()?->can('delete_imut::profile'))
                                 || Auth::user()?->can('force_editable_imut::profile')

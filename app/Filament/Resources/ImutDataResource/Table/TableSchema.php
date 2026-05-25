@@ -2,21 +2,27 @@
 
 namespace App\Filament\Resources\ImutDataResource\Table;
 
+use Illuminate\Support\Facades\Auth;
+use Filament\Actions\EditAction;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
+use Illuminate\Support\Facades\Gate;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
+use App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager;
+use App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Carbon\Carbon;
+use Filament\Actions\ExportAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use App\Filament\Exports\ImutDataExporter;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
 use App\Models\User;
 use App\Repositories\Interfaces\ImutDataRepositoryInterface;
-use Filament\Tables\Actions\Action as ActionTable;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -25,11 +31,11 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-class TableSchema extends ImutDataResource
+class TableSchema
 {
     public static function query(): Builder
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
 
         return app(ImutDataRepositoryInterface::class)->getTableQueryForUser($user);
     }
@@ -100,50 +106,50 @@ class TableSchema extends ImutDataResource
                 ->visible(fn($record) => !is_null($record)),
 
             ActionGroup::make([
-                ActionTable::make('summary')
+                Action::make('summary')
                     ->label('Summary')
                     ->icon('heroicon-o-presentation-chart-line')
                     ->color('success')
-                    ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
+                    ->visible(fn() => Gate::allows('view_all_data_imut::data', User::class))
                     ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
-                ActionTable::make('catatan')
+                Action::make('catatan')
                     ->label('Analisis & Rekomendasi per Triwulan/Tahun')
                     ->icon('heroicon-o-document-text')
                     ->color('primary')
                     ->slideOver()
                     ->modalWidth('8xl')
-                    ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
+                    ->visible(fn() => Gate::allows('view_all_data_imut::data', User::class))
                     ->modalHeading(fn($record) => ($record->title ?? ''))
                     ->modalContent(fn($record) => view('filament.resources.imut-data-resource.widgets.imut-data-notes-slide-over', ['record' => $record])),
 
-                \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('unit-kerja')
+                RelationManagerAction::make('unit-kerja')
                     ->slideOver()
                     ->modalWidth('8xl')
                     ->label('Unit Kerja')
                     ->icon('heroicon-o-building-office-2')
                     ->color('info')
-                    ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
-                    ->relationManager(\App\Filament\Resources\ImutDataResource\RelationManagers\UnitKerjaRelationManager::make()),
+                    ->visible(fn() => Gate::allows('view_all_data_imut::data', User::class))
+                    ->relationManager(UnitKerjaRelationManager::make()),
 
-                \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('profiles')
+                RelationManagerAction::make('profiles')
                     ->slideOver()
                     ->modalWidth('8xl')
                     ->label('Profiles')
                     ->icon('heroicon-o-document-text')
                     ->color('')
-                    ->relationManager(\App\Filament\Resources\ImutDataResource\RelationManagers\ProfilesRelationManager::make()),
+                    ->relationManager(ProfilesRelationManager::make()),
 
                 RestoreAction::make('restore')
                     ->visible(
-                        fn($record) => \Illuminate\Support\Facades\Gate::allows('restore', $record) &&
+                        fn($record) => Gate::allows('restore', $record) &&
                         method_exists($record, 'trashed') &&
                         $record->trashed()
                     ),
 
                 ForceDeleteAction::make('forceDelete')
                     ->visible(
-                        fn($record) => \Illuminate\Support\Facades\Gate::allows('forceDelete', $record) &&
+                        fn($record) => Gate::allows('forceDelete', $record) &&
                         method_exists($record, 'trashed') &&
                         $record->trashed()
                     ),
@@ -212,7 +218,7 @@ class TableSchema extends ImutDataResource
 
             Filter::make('active_period')
                 ->label('Periode Aktif Kustom')
-                ->form([
+                ->schema([
                     DatePicker::make('from')
                         ->label('Mulai Tanggal')
                         ->placeholder('Pilih tanggal mulai')
@@ -262,13 +268,13 @@ class TableSchema extends ImutDataResource
 
                     if ($data['from'] && $data['until']) {
                         $indicators[] = 'Periode: ' .
-                            \Carbon\Carbon::parse($data['from'])->format('d/m/Y') .
+                            Carbon::parse($data['from'])->format('d/m/Y') .
                             ' - ' .
-                            \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                            Carbon::parse($data['until'])->format('d/m/Y');
                     } elseif ($data['from']) {
-                        $indicators[] = 'Aktif dari: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                        $indicators[] = 'Aktif dari: ' . Carbon::parse($data['from'])->format('d/m/Y');
                     } elseif ($data['until']) {
-                        $indicators[] = 'Aktif sampai: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                        $indicators[] = 'Aktif sampai: ' . Carbon::parse($data['until'])->format('d/m/Y');
                     }
 
                     return $indicators;

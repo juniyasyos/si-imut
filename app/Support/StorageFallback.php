@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Throwable;
 use Aws\S3\S3Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -45,7 +46,7 @@ class StorageFallback
             }
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Log at debug level to avoid noisy logs in production
             Log::debug('S3 availability check failed: ' . $e->getMessage());
 

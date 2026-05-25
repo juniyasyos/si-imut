@@ -2,17 +2,18 @@
 
 namespace App\Filament\Traits\ReportDetailAction;
 
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Services\Form\FormCalculationService;
 use Carbon\Carbon;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -36,10 +37,10 @@ trait BuildIsiPenilaian
             ->closeModalByClickingAway(false)
             ->closeModalByEscaping(false)
             // ->disabled(fn() => $livewireComponent->isLaporanPeriodClosed() && Gate::denies('force_editable_imut::penilaian'))
-            ->mountUsing(function (Form $form, $record) {
-                $form->fill($this->getPenilaianFormFillData($record));
+            ->mountUsing(function (Schema $schema, $record) {
+                $schema->fill($this->getPenilaianFormFillData($record));
             })
-            ->form(function ($record) use ($livewireComponent) {
+            ->schema(function ($record) use ($livewireComponent) {
                 // Get record to build table view parameters
                 $formTemplateId = null;
                 $imutProfileId = null;
@@ -67,7 +68,7 @@ trait BuildIsiPenilaian
                             // 1. Not monthly data (original logic) OR
                             // 2. Has existing media files uploaded
                             $hasExistingMedia = false;
-                            $penilaian = \App\Models\ImutPenilaian::find($record->id);
+                            $penilaian = ImutPenilaian::find($record->id);
                             if ($penilaian) {
                                 $hasExistingMedia = $penilaian->getMedia('*')->count() > 0;
                             }
@@ -82,7 +83,7 @@ trait BuildIsiPenilaian
                             // 1. Is monthly data (original logic) AND
                             // 2. Has NO existing media files uploaded
                             $hasExistingMedia = false;
-                            $penilaian = \App\Models\ImutPenilaian::find($record->id);
+                            $penilaian = ImutPenilaian::find($record->id);
                             if ($penilaian) {
                                 // dd($penilaian->getMedia('*'));
                                 $hasExistingMedia = $penilaian->getMedia('*')->count() > 0;
@@ -92,7 +93,7 @@ trait BuildIsiPenilaian
                         })
                         ->description('Tidak ada dokumen pendukung. Lihat data laporan harian untuk informasi lebih detail.')
                         ->schema([
-                            \Filament\Forms\Components\View::make('filament.forms.components.alternative-data-section')
+                            View::make('filament.forms.components.alternative-data-section')
                                 ->columnSpanFull()
                                 ->viewData(fn($record) => [
                                     'formTemplateId' => $formTemplateId,

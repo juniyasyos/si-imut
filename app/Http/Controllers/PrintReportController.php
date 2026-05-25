@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ImutData;
+use App\Models\LaporanImut;
+use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +22,7 @@ class PrintReportController extends Controller
     /**
      * Preview print laporan IMUT dengan dummy data
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function previewImutDataReport()
     {
@@ -213,7 +216,7 @@ class PrintReportController extends Controller
      * Generate real print laporan IMUT
      *
      * @param Request $request
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function printImutDataReport(Request $request)
     {
@@ -231,7 +234,7 @@ class PrintReportController extends Controller
     /**
      * Preview print laporan per indikator mutu dengan data asli
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function previewImutIndicatorReport(Request $request)
     {
@@ -248,16 +251,16 @@ class PrintReportController extends Controller
 
         // Cari imut data
         if ($imutDataId) {
-            $imutData = \App\Models\ImutData::with(['categories', 'notes'])->find($imutDataId);
+            $imutData = ImutData::with(['categories', 'notes'])->find($imutDataId);
         } else {
             // Default: Kebersihan Tangan atau first available
-            $imutData = \App\Models\ImutData::with(['categories', 'notes'])
+            $imutData = ImutData::with(['categories', 'notes'])
                 ->where('title', 'LIKE', '%Kebersihan Tangan%')
                 ->orWhere('title', 'LIKE', '%Hand Hygiene%')
                 ->first();
 
             if (!$imutData) {
-                $imutData = \App\Models\ImutData::with(['categories', 'notes'])->first();
+                $imutData = ImutData::with(['categories', 'notes'])->first();
             }
         }
 
@@ -269,15 +272,15 @@ class PrintReportController extends Controller
 
         // Ambil laporan
         if ($laporanId) {
-            $laporan = \App\Models\LaporanImut::with('createdBy')->find($laporanId);
+            $laporan = LaporanImut::with('createdBy')->find($laporanId);
         } else {
-            $laporan = \App\Models\LaporanImut::with('createdBy')
+            $laporan = LaporanImut::with('createdBy')
                 ->where('status', 'complete')
                 ->latest('assessment_period_end')
                 ->first();
 
             if (!$laporan) {
-                $laporan = \App\Models\LaporanImut::with('createdBy')
+                $laporan = LaporanImut::with('createdBy')
                     ->latest('assessment_period_end')
                     ->first();
             }
@@ -357,7 +360,7 @@ class PrintReportController extends Controller
         $monthRange = $this->getMonthRangeByFilter($periodFilter);
 
         // Ambil semua laporan di tahun ini sesuai filter
-        $laporans = \App\Models\LaporanImut::where('report_year', $year)
+        $laporans = LaporanImut::where('report_year', $year)
             ->whereIn('report_month', $monthRange)
             ->orderBy('report_month')
             ->get();
@@ -435,7 +438,7 @@ class PrintReportController extends Controller
         // Query untuk setiap bulan
         foreach ($months as $monthData) {
             // Cari laporan untuk bulan tersebut
-            $laporan = \App\Models\LaporanImut::where('report_year', $monthData['year'])
+            $laporan = LaporanImut::where('report_year', $monthData['year'])
                 ->where('report_month', $monthData['month'])
                 ->first();
 
@@ -494,7 +497,7 @@ class PrintReportController extends Controller
      * Generate real print laporan per indikator
      *
      * @param Request $request
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function printImutIndicatorReport(Request $request)
     {

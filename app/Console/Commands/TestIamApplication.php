@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use App\Services\IamApplicationService;
 
@@ -45,7 +46,7 @@ class TestIamApplication extends Command
                 $this->line('  Total accessible apps: ' . ($raw['total_accessible_apps'] ?? count($raw['applications'] ?? [])));
                 $this->line('  Applications count: ' . count($raw['applications'] ?? []));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('  ✗ Error: ' . $e->getMessage());
         }
         $this->newLine();
@@ -70,7 +71,7 @@ class TestIamApplication extends Command
                     ])->toArray()
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('  ✗ Error: ' . $e->getMessage());
         }
 

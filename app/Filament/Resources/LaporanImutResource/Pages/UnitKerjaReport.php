@@ -17,7 +17,7 @@ class UnitKerjaReport extends Page
 
     protected static string $resource = LaporanImutResource::class;
 
-    protected static string $view = 'filament.resources.laporan-imut-resource.pages.unit-kerja-report';
+    protected string $view = 'filament.resources.laporan-imut-resource.pages.unit-kerja-report';
 
     protected static bool $shouldRegisterNavigation = false;
 

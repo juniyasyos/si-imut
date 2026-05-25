@@ -11,9 +11,9 @@ use Illuminate\Support\Carbon;
 
 class BenchmarkComparisonChart extends ChartWidget
 {
-    protected static ?string $heading = 'Perbandingan Benchmark Antar Region';
+    protected ?string $heading = 'Perbandingan Benchmark Antar Region';
 
-    protected static string $color = 'info';
+    protected string $color = 'info';
 
     public ImutData $imutData;
 

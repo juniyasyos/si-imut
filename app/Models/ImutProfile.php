@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Str;
 use App\Models\ImutBenchmarking;
 use Spatie\Activitylog\LogOptions;
@@ -113,7 +115,7 @@ class ImutProfile extends Model
      */
     public function isValidOnDate($date): bool
     {
-        $checkDate = is_string($date) ? \Carbon\Carbon::parse($date) : $date;
+        $checkDate = is_string($date) ? Carbon::parse($date) : $date;
 
         // Harus sudah mulai berlaku
         if ($this->valid_from && $checkDate->lt($this->valid_from)) {
@@ -133,8 +135,8 @@ class ImutProfile extends Model
      */
     public function isValidForPeriod($startDate, $endDate): bool
     {
-        $start = is_string($startDate) ? \Carbon\Carbon::parse($startDate) : $startDate;
-        $end = is_string($endDate) ? \Carbon\Carbon::parse($endDate) : $endDate;
+        $start = is_string($startDate) ? Carbon::parse($startDate) : $startDate;
+        $end = is_string($endDate) ? Carbon::parse($endDate) : $endDate;
 
         // Profil harus berlaku sebelum atau pada akhir periode
         if ($this->valid_from && $this->valid_from->gt($end)) {
@@ -196,7 +198,7 @@ class ImutProfile extends Model
         })->exists();
 
         if ($overlapping) {
-            throw new \Exception(
+            throw new Exception(
                 "Period overlap detected for ImutData ID {$this->imut_data_id}. "
                     . "Period {$this->valid_from} to {$validUntil} overlaps with existing profile periods. "
                     . "Each ImutData can only have one active profile per time period."
@@ -235,7 +237,7 @@ class ImutProfile extends Model
         })->exists();
 
         if ($overlapping) {
-            throw new \Exception(
+            throw new Exception(
                 "Multiple active profiles detected for ImutData ID {$this->imut_data_id}. "
                     . "Only one profile can be active at any given time. Please set valid_until date on existing active profiles before creating a new one."
             );
@@ -269,7 +271,7 @@ class ImutProfile extends Model
      */
     public function scopeValidOnDate($query, $date)
     {
-        $checkDate = is_string($date) ? \Carbon\Carbon::parse($date)->toDateString() : $date->toDateString();
+        $checkDate = is_string($date) ? Carbon::parse($date)->toDateString() : $date->toDateString();
 
         return $query->where(function ($q) use ($checkDate) {
             $q->whereNull('valid_from')
@@ -285,8 +287,8 @@ class ImutProfile extends Model
      */
     public function scopeValidForPeriod($query, $startDate, $endDate)
     {
-        $start = is_string($startDate) ? \Carbon\Carbon::parse($startDate)->startOfDay() : $startDate;
-        $end = is_string($endDate) ? \Carbon\Carbon::parse($endDate)->endOfDay() : $endDate;
+        $start = is_string($startDate) ? Carbon::parse($startDate)->startOfDay() : $startDate;
+        $end = is_string($endDate) ? Carbon::parse($endDate)->endOfDay() : $endDate;
 
         return $query->where(function ($q) use ($end) {
             // Profil harus sudah mulai berlaku sebelum atau pada akhir periode

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
+use Carbon\Carbon;
+use App\Services\Support\SignatoryService;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
@@ -31,7 +34,7 @@ class UnitKerjaLaporanController extends Controller
         // Get date range from period filter
         try {
             $dateRange = PeriodFilter::getDateRange($tipe, $periode);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             abort(400, 'Invalid period format');
         }
 
@@ -43,8 +46,8 @@ class UnitKerjaLaporanController extends Controller
         $imutDataItems = $unit->imutData()
             ->where('status', true)
             ->whereHas('profiles', function ($q) use ($dateRange) {
-                $start = is_string($dateRange['start']) ? \Carbon\Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
-                $end = is_string($dateRange['end']) ? \Carbon\Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
+                $start = is_string($dateRange['start']) ? Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
+                $end = is_string($dateRange['end']) ? Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
 
                 // Mirror the logic of scopeValidForPeriod:
                 $q->where(function ($q2) use ($end) {
@@ -80,8 +83,8 @@ class UnitKerjaLaporanController extends Controller
             // implementation instead of using the scope)
             $profile = $imutData->profiles()
                 ->where(function ($q) use ($dateRange) {
-                    $start = is_string($dateRange['start']) ? \Carbon\Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
-                    $end = is_string($dateRange['end']) ? \Carbon\Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
+                    $start = is_string($dateRange['start']) ? Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
+                    $end = is_string($dateRange['end']) ? Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
 
                     $q->where(function ($q2) use ($end) {
                         $q2->whereNull('valid_from')
@@ -203,7 +206,7 @@ class UnitKerjaLaporanController extends Controller
         $chartData = $this->buildChartData($dataByImut);
 
         // Prepare signatories for footer using SignatoryService
-        $signatoryService = new \App\Services\Support\SignatoryService();
+        $signatoryService = new SignatoryService();
         $signatories = $signatoryService->pickForUnit($unit);
 
         // Format users for blade component (keep compatibility with existing props)

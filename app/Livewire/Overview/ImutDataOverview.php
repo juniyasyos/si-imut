@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Overview;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Resources\ImutDataResource;
 use App\Models\ImutData;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -12,8 +14,9 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Livewire\Component;
 
-class ImutDataOverview extends Component implements HasForms, HasTable
+class ImutDataOverview extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

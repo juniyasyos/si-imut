@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders;
 
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Grid;
+use Exception;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Hidden;
@@ -23,7 +24,7 @@ class TimeRangeFieldBuilder
      * @param string $defaultStartTime Default start time
      * @param string $defaultEndTime Default end time
      * @param array $customLabels Custom labels for start_time and end_time fields
-     * @return Grid
+     * @return \Filament\Schemas\Components\Grid
      */
     public static function create(
         string $fieldKey,
@@ -149,7 +150,7 @@ class TimeRangeFieldBuilder
     {
         try {
             return Carbon::parse($time)->format('H:i');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $time;
         }
     }
@@ -193,7 +194,7 @@ class TimeRangeFieldBuilder
             $end = $today->copy()->setTimeFromTimeString($endTime);
 
             return $input->between($start, $end, true); // inclusive
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

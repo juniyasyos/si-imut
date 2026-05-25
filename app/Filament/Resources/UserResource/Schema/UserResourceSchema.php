@@ -2,11 +2,12 @@
 
 namespace App\Filament\Resources\UserResource\Schema;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use App\Support\StorageFallback;
 use App\Filament\Resources\UserResource;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -117,7 +118,7 @@ class UserResourceSchema
                 ->schema([
                     FileUpload::make('ttd_url')
                         ->label(__('filament-forms::users.fields.ttd_url'))
-                        ->disk(\App\Support\StorageFallback::isS3Available() ? 's3' : 'public')
+                        ->disk(StorageFallback::isS3Available() ? 's3' : 'public')
                         ->directory('ttd')
                         ->image()
                         ->openable()

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
+use App\Support\CacheKey;
 use App\Models\User;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
@@ -17,7 +18,7 @@ use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 class ImutDataUnitKerjaReport extends Page
 {
     protected static string $resource = LaporanImutResource::class;
-    protected static string $view = 'filament.resources.laporan-imut-resource.pages.imut-data-unit-kerja-report';
+    protected string $view = 'filament.resources.laporan-imut-resource.pages.imut-data-unit-kerja-report';
     protected static bool $shouldRegisterNavigation = false;
 
     public array $data = [];
@@ -56,7 +57,7 @@ class ImutDataUnitKerjaReport extends Page
             return;
         }
 
-        $cacheKey = \App\Support\CacheKey::laporanImutDetail($laporanId, $imutDataId);
+        $cacheKey = CacheKey::laporanImutDetail($laporanId, $imutDataId);
 
         $this->data = Cache::remember($cacheKey, now()->addMinutes(30), fn() => [
             'laporanId' => $this->laporan->id,

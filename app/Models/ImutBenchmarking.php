@@ -17,20 +17,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $imut_data_id
  * @property int $region_type_id
  * @property float $benchmark_value
- * @property \Illuminate\Support\Carbon $period_start
- * @property \Illuminate\Support\Carbon|null $period_end
+ * @property Carbon $period_start
+ * @property Carbon|null $period_end
  * @property bool $is_active
  * @property string|null $notes
  * @property int|null $created_by
  * @property int|null $updated_by
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read int $year Computed from period_start
  * @property-read int $month Computed from period_start
- * @property-read \App\Models\ImutData $imutData
- * @property-read \App\Models\RegionType $regionType
- * @property-read \App\Models\User|null $creator
- * @property-read \App\Models\User|null $updater
+ * @property-read ImutData $imutData
+ * @property-read RegionType $regionType
+ * @property-read User|null $creator
+ * @property-read User|null $updater
  *
  * @mixin \Eloquent
  */
@@ -124,10 +124,10 @@ class ImutBenchmarking extends Model
      * Scope: Filter benchmarking yang aktif untuk periode tertentu
      *
      * @param Builder $query
-     * @param \Carbon\Carbon|\Illuminate\Support\Carbon $date
+     * @param \Carbon\Carbon|Carbon $date
      * @return Builder
      */
-    public function scopeActiveForPeriod(Builder $query, \Carbon\Carbon|\Illuminate\Support\Carbon $date): Builder
+    public function scopeActiveForPeriod(Builder $query, \Carbon\Carbon|Carbon $date): Builder
     {
         return $query->where('is_active', true)
             ->where(function ($q) use ($date) {
@@ -196,10 +196,10 @@ class ImutBenchmarking extends Model
     /**
      * Check apakah benchmarking ini valid untuk periode tertentu
      *
-     * @param \Carbon\Carbon|\Illuminate\Support\Carbon $date
+     * @param \Carbon\Carbon|Carbon $date
      * @return bool
      */
-    public function isValidForPeriod(\Carbon\Carbon|\Illuminate\Support\Carbon $date): bool
+    public function isValidForPeriod(\Carbon\Carbon|Carbon $date): bool
     {
         // Tidak aktif = tidak valid
         if (!$this->is_active) {
@@ -224,13 +224,13 @@ class ImutBenchmarking extends Model
      *
      * @param int $imutDataId
      * @param int $regionTypeId
-     * @param \Carbon\Carbon|\Illuminate\Support\Carbon $date
+     * @param \Carbon\Carbon|Carbon $date
      * @return float|null
      */
     public static function getValueForPeriod(
         int $imutDataId,
         int $regionTypeId,
-        \Carbon\Carbon|\Illuminate\Support\Carbon $date
+        \Carbon\Carbon|Carbon $date
     ): ?float {
         $benchmark = static::query()
             ->forIndicator($imutDataId)

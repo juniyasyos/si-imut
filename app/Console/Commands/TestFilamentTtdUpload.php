@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Http\File;
+use Exception;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
@@ -27,7 +30,7 @@ class TestFilamentTtdUpload extends Command
             file_put_contents($testImagePath, $imageData);
 
             // Simulasi file upload ke temp
-            $uploadedFile = new \Illuminate\Http\File($testImagePath);
+            $uploadedFile = new File($testImagePath);
 
             // Ini adalah apa yang Filament FileUpload lakukan
             $file = fopen($testImagePath, 'r');
@@ -47,7 +50,7 @@ class TestFilamentTtdUpload extends Command
             }
 
             @unlink($testImagePath);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 
@@ -95,7 +98,7 @@ class TestFilamentTtdUpload extends Command
         // 4. Test dengan user model
         $this->line("\n4. Testing update dengan user:");
         try {
-            $user = \App\Models\User::first();
+            $user = User::first();
             if ($user) {
                 $testPath = 'ttd/test-user-' . time() . '.png';
 
@@ -122,7 +125,7 @@ class TestFilamentTtdUpload extends Command
             } else {
                 $this->warn("   ⚠ Tidak ada user di database untuk testing");
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 
@@ -148,7 +151,7 @@ class TestFilamentTtdUpload extends Command
             if ($disk->delete($testPath)) {
                 $this->line("   ✓ Delete permission: OK");
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Permission error: " . $e->getMessage());
         }
 

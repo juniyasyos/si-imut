@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Services\DailyReport\UnifiedComplianceService;
+use Exception;
+use DB;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -82,7 +86,7 @@ class FormTemplate extends Model
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by_user_id');
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
     // Query Scopes
@@ -141,7 +145,7 @@ class FormTemplate extends Model
     public function calculateCompliance(array $fieldResponses): array
     {
         // Delegate to UnifiedComplianceService to ensure single source of truth
-        $service = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+        $service = app(UnifiedComplianceService::class);
         $result = $service->calculate($this, $fieldResponses);
 
         // Keep backward-compatible shape expected by callers
@@ -189,7 +193,7 @@ class FormTemplate extends Model
             ->exists();
 
         if ($existingActive) {
-            throw new \Exception(
+            throw new Exception(
                 'Only one form template can be active per profile at a time. ' .
                     'Please deactivate the current active template first.'
             );
@@ -232,7 +236,7 @@ class FormTemplate extends Model
      */
     public function activate(): bool
     {
-        return \DB::transaction(function () {
+        return DB::transaction(function () {
             // Deactivate other templates for this profile
             static::where('imut_profile_id', $this->imut_profile_id)
                 ->where('id', '!=', $this->id)
@@ -255,7 +259,7 @@ class FormTemplate extends Model
      */
     public function createNewVersion(array $data = []): FormTemplate
     {
-        return \DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data) {
             // Load relationships needed for replication
             $this->load('formFields.options');
 
@@ -307,7 +311,7 @@ class FormTemplate extends Model
     /**
      * Check if this template is valid for a given date
      */
-    public function isValidOnDate(\Carbon\Carbon $date): bool
+    public function isValidOnDate(Carbon $date): bool
     {
         if ($this->valid_from && $date->lt($this->valid_from)) {
             return false;

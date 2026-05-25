@@ -2,6 +2,8 @@
 
 namespace App\Services\Support;
 
+use InvalidArgumentException;
+use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -22,7 +24,7 @@ class PeriodParserService
      *
      * @param string $periode
      * @return array{startDate: Carbon, endDate: Carbon}
-     * @throws \Exception
+     * @throws Exception
      */
     public function parse(string $periode): array
     {
@@ -38,7 +40,7 @@ class PeriodParserService
             // month
             [$year, $month] = [intval($m[1]), intval($m[2])];
             if ($month < 1 || $month > 12) {
-                throw new \InvalidArgumentException('Bulan tidak valid dalam parameter periode');
+                throw new InvalidArgumentException('Bulan tidak valid dalam parameter periode');
             }
             $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
             $endDate = (clone $startDate)->endOfMonth();
@@ -62,13 +64,13 @@ class PeriodParserService
             try {
                 $startDate = Carbon::parse($p1)->startOfMonth();
                 $endDate = Carbon::parse($p2)->endOfMonth();
-            } catch (\Exception $e) {
-                throw new \InvalidArgumentException('Format custom periode tidak valid: ' . $e->getMessage());
+            } catch (Exception $e) {
+                throw new InvalidArgumentException('Format custom periode tidak valid: ' . $e->getMessage());
             }
         }
 
         if (!$startDate || !$endDate) {
-            throw new \InvalidArgumentException('Parameter periode tidak valid');
+            throw new InvalidArgumentException('Parameter periode tidak valid');
         }
 
         return [

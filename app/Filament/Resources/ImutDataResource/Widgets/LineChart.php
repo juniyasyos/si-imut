@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\ImutDataResource\Widgets;
 
+use Filament\Support\Enums\Width;
+use Carbon\Carbon;
+use Filament\Schemas\Components\Section;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
@@ -9,9 +12,7 @@ use App\Models\RegionType;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -26,7 +27,7 @@ class LineChart extends ApexChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static MaxWidth|string $filterFormWidth = MaxWidth::Large;
+    protected static Width|string $filterFormWidth = Width::Large;
 
     protected static bool $isLazy = false;
 
@@ -109,7 +110,7 @@ class LineChart extends ApexChartWidget
         }
 
         // Desired start = 6 months before selected end (inclusive)
-        $desiredStart = \Carbon\Carbon::create($defaultEndYear, $defaultEndMonth, 1)->subMonths(6);
+        $desiredStart = Carbon::create($defaultEndYear, $defaultEndMonth, 1)->subMonths(6);
 
         // Find the closest available laporan_imut on or before desiredStart
         $startRecord = LaporanImut::where(function ($q) use ($desiredStart) {
@@ -522,7 +523,7 @@ class LineChart extends ApexChartWidget
                     $labelMonth = (int) $labelMonth;
 
                     // Buat tanggal untuk label ini (akhir bulan)
-                    $periodDate = \Carbon\Carbon::create($labelYear, $labelMonth, 1)->endOfMonth();
+                    $periodDate = Carbon::create($labelYear, $labelMonth, 1)->endOfMonth();
 
                     // Cek apakah benchmark valid untuk periode ini
                     if ($item->isValidForPeriod($periodDate)) {

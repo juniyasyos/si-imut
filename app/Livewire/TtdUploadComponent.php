@@ -2,8 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Support\StorageFallback;
+use Filament\Schemas\Schema;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\FileUpload;
 use Jeffgreco13\FilamentBreezy\Livewire\MyProfileComponent;
@@ -30,15 +31,15 @@ class TtdUploadComponent extends MyProfileComponent
 
         // Tentukan disk berdasarkan ketersediaan MinIO
         // gunakan `public` (dapat diakses melalui /storage) sebagai fallback — bukan `local` yang private
-        $this->storageDisk = \App\Support\StorageFallback::isS3Available() ? 's3' : 'public';
+        $this->storageDisk = StorageFallback::isS3Available() ? 's3' : 'public';
 
         $this->form->fill($this->user->only($this->only));
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 FileUpload::make('ttd_url')
                     ->label('Upload Tanda Tangan Digital')
                     ->disk($this->storageDisk)

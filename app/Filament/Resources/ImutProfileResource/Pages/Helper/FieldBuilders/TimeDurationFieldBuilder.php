@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders;
 
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\ToggleButtons;
@@ -17,14 +17,14 @@ class TimeDurationFieldBuilder
 {
     /**
      * Create a time duration field with validation
-     * 
+     *
      * @param string $fieldKey Base field key
      * @param bool $required Whether the field is required
      * @param mixed $visibleCondition Visibility condition
      * @param string $defaultThreshold Default threshold time (HH:MM:SS)
      * @param string $thresholdType Type of threshold validation ('less_than' or 'greater_than')
      * @param array $customLabels Custom labels for start_time and end_time fields
-     * @return Grid
+     * @return \Filament\Schemas\Components\Grid
      */
     public static function create(
         string $fieldKey,

@@ -2,21 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use App\Traits\HasActiveIcon;
+use Filament\Schemas\Schema;
+use App\Filament\Resources\ImutCategoryResource\Pages\ListImutCategories;
+use App\Filament\Resources\ImutCategoryResource\Pages\CreateImutCategory;
+use App\Filament\Resources\ImutCategoryResource\Pages\EditImutCategory;
 use App\Filament\Resources\ImutCategoryResource\Pages;
 use App\Filament\Resources\ImutCategoryResource\Schema\ImutCategoryResourceSchema;
 use App\Filament\Resources\ImutCategoryResource\Tables\ImutCategoryResourceTable;
 use App\Models\ImutCategory;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
 class ImutCategoryResource extends Resource implements HasShieldPermissions
 {
-    use \App\Traits\HasActiveIcon;
+    use HasActiveIcon;
     protected static ?string $model = ImutCategory::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-group';
     protected static ?int $navigationSort = 2;
 
     public static function getPermissionPrefixes(): array
@@ -72,9 +76,9 @@ class ImutCategoryResource extends Resource implements HasShieldPermissions
         return __('filament-forms::imut-category.navigation.group');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(ImutCategoryResourceSchema::make());
+        return $schema->components(ImutCategoryResourceSchema::make());
     }
 
     public static function table(Table $table): Table
@@ -82,8 +86,8 @@ class ImutCategoryResource extends Resource implements HasShieldPermissions
         return $table
             ->columns(ImutCategoryResourceTable::columns())
             ->filters(ImutCategoryResourceTable::filters())
-            ->actions(ImutCategoryResourceTable::actions())
-            ->bulkActions(ImutCategoryResourceTable::bulkActions());
+            ->recordActions(ImutCategoryResourceTable::actions())
+            ->toolbarActions(ImutCategoryResourceTable::bulkActions());
     }
 
     public static function getRelations(): array
@@ -94,9 +98,9 @@ class ImutCategoryResource extends Resource implements HasShieldPermissions
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListImutCategories::route('/'),
-            'create' => Pages\CreateImutCategory::route('/create'),
-            'edit' => Pages\EditImutCategory::route('/{record}/edit'),
+            'index' => ListImutCategories::route('/'),
+            'create' => CreateImutCategory::route('/create'),
+            'edit' => EditImutCategory::route('/{record}/edit'),
         ];
     }
 }

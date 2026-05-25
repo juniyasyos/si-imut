@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\ImutData;
@@ -21,7 +22,7 @@ class TestMatrixDataDetailed extends Command
         $userId = $this->option('user-id');
         $month = $this->option('month');
 
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         if (!$user) {
             $this->error("User {$userId} not found");
             return 1;

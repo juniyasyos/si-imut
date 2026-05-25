@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use Illuminate\Support\Str;
 use App\Models\ImutPenilaian;
 use Illuminate\Console\Command;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
@@ -106,7 +108,7 @@ class PenilaianMediaSummaryCommand extends Command
                         $this->line("      ❌ Missing: {$media->file_name} (Collection: {$media->collection_name})");
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $diskErrors[$media->disk][] = $media->file_name;
             }
         }
@@ -287,7 +289,7 @@ class PenilaianMediaSummaryCommand extends Command
             }
 
             $unitName = $penilaian->laporanUnitKerja->unitKerja->unit_name;
-            $unitSlug = \Illuminate\Support\Str::slug($unitName);
+            $unitSlug = Str::slug($unitName);
             $path = $media->getPath();
 
             // Check if path contains unit name or unit slug

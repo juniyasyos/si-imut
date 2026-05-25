@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use Throwable;
+use Exception;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\LaporanImutResource;
 use App\Models\ImutPenilaian;
@@ -114,7 +116,7 @@ class ProsesPenilaianImut implements ShouldQueue
 
             // Notifikasi akhir proses penilaian ke pembuat laporan
             $this->sendCompletionNotification();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Job ProsesPenilaianImut gagal: ' . $e->getMessage(), [
                 'laporan_id' => $this->laporanId,
                 'exception' => $e,
@@ -160,7 +162,7 @@ class ProsesPenilaianImut implements ShouldQueue
                 'cleaned' => count($orphanedIds),
                 'ids' => $orphanedIds
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("ProsesPenilaianImut [{$laporan->id}]: Cleanup failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

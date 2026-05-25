@@ -2,6 +2,8 @@
 
 namespace App\Services\DailyReport;
 
+use Exception;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Models\FormTemplate;
 use App\Models\User;
 use App\Services\DailyReport\Exports\DailyReportMonitoringExport;
@@ -51,7 +53,7 @@ class DailyReportMonitoringService
             return $templates->map(function ($template) use ($firstUnitKerjaId) {
                 return $this->formatTemplateResponse($template, $firstUnitKerjaId);
             })->toArray();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error loading monitoring templates', [
                 'month' => $selectedMonth,
                 'user_id' => $user->id,
@@ -93,7 +95,7 @@ class DailyReportMonitoringService
                     'response_count' => $template->response_count ?? 0,
                 ];
             })->toArray();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error loading monitoring data for period', [
                 'month' => $month,
                 'user_id' => $user->id,
@@ -122,7 +124,7 @@ class DailyReportMonitoringService
                 $date,
                 $unitKerjaIds
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error fetching report count', [
                 'indicator_id' => $indicatorId,
                 'date' => $date,
@@ -135,7 +137,7 @@ class DailyReportMonitoringService
     /**
      * Export monitoring data to Excel
      */
-    public function exportMonitoring(User $user, int $templateId, string $month): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportMonitoring(User $user, int $templateId, string $month): BinaryFileResponse
     {
         try {
             $date = Carbon::createFromFormat('Y-m', $month);
@@ -163,7 +165,7 @@ class DailyReportMonitoringService
                 new DailyReportMonitoringExport($template),
                 $filename
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Export monitoring data failed', [
                 'template_id' => $templateId,
                 'month' => $month,

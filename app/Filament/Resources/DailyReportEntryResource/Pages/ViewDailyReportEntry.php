@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
 use App\Services\DailyReport\DailyReportEntryContextService;
@@ -12,7 +14,7 @@ class ViewDailyReportEntry extends ViewRecord
 {
     protected static string $resource = DailyReportEntryResource::class;
 
-    protected static string $view = 'filament.pages.create-daily-report-entry';
+    protected string $view = 'filament.pages.create-daily-report-entry';
 
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
@@ -96,11 +98,11 @@ class ViewDailyReportEntry extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make()
+            EditAction::make()
                 ->label('Edit Laporan')
                 ->icon('heroicon-o-pencil-square')
                 ->color('warning'),
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->label('Hapus Laporan')
                 ->icon('heroicon-o-trash')
                 ->color('danger')

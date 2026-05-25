@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Overview;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Models\ImutCategory;
 use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
@@ -20,8 +22,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
+class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
     use HasPercentageColor;
@@ -139,9 +142,9 @@ class ImutDataUnitKerjaTable extends Component implements HasForms, HasTable
                     ->multiple()
                     ->placeholder('Semua Kategori'),
             ])
-            ->actions([
+            ->recordActions([
             ])
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
     public function render()

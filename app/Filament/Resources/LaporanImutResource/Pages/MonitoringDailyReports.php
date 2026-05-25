@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Filament\Resources\LaporanImutResource;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
@@ -13,7 +14,7 @@ class MonitoringDailyReports extends Page
 {
     protected static string $resource = LaporanImutResource::class;
 
-    protected static string $view = 'filament.resources.laporan-imut-resource.pages.monitoring-daily-reports';
+    protected string $view = 'filament.resources.laporan-imut-resource.pages.monitoring-daily-reports';
 
     protected static ?string $title = 'Monitoring Daily Reports';
 
@@ -65,7 +66,7 @@ class MonitoringDailyReports extends Page
             // Expected total reports = indicators × days passed
             $expectedReports = $expectedIndicators * $daysPassed;
 
-            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $repo = app(DailyReportResponseRepositoryInterface::class);
 
             // Get actual reports submitted
             $actualReports = $repo->countBetweenForUnitAndFormIds($unitKerja->id, $start, min($today, $end), $formTemplateIds->toArray());

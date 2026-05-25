@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LaporanLatestWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.laporan-latest-widget';
+    protected string $view = 'filament.widgets.laporan-latest-widget';
 
     public static function canView(): bool
     {

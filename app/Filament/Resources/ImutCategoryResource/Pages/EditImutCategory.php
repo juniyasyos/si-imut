@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutCategoryResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\ImutCategoryResource;
 use App\Models\ImutCategory;
 use Filament\Actions;
@@ -15,7 +16,7 @@ class EditImutCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->visible(fn() => Gate::allows('delete_imut::category', $this->record)),
         ];
     }

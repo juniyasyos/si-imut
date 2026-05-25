@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use DB;
 use App\Http\Controllers\Controller;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
@@ -113,7 +114,7 @@ class ImutIndicatorReportController extends Controller
         $specificMonths = $this->getSpecificMonthsForFilter($filterFormData);
 
         // Query penilaians based on filter
-        $penilaiansQuery = \DB::table('imut_penilaians')
+        $penilaiansQuery = DB::table('imut_penilaians')
             ->join('laporan_unit_kerjas', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
             ->join('laporan_imuts', 'laporan_imuts.id', '=', 'laporan_unit_kerjas.laporan_imut_id')
             ->join('imut_profil', 'imut_profil.id', '=', 'imut_penilaians.imut_profil_id')
@@ -153,7 +154,7 @@ class ImutIndicatorReportController extends Controller
                 'imut_penilaians.denominator_value',
                 'laporan_imuts.report_year',
                 'laporan_imuts.report_month',
-                \DB::raw('MONTHNAME(CONCAT(laporan_imuts.report_year, "-", LPAD(laporan_imuts.report_month, 2, "0"), "-01")) as month_name')
+                DB::raw('MONTHNAME(CONCAT(laporan_imuts.report_year, "-", LPAD(laporan_imuts.report_month, 2, "0"), "-01")) as month_name')
             ])
             ->get();
 

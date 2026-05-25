@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use Filament\Schemas\Schema;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
@@ -12,7 +13,6 @@ use App\Services\DynamicForm\DynamicFormService;
 use App\Services\DynamicForm\ComplianceCalculatorService;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
@@ -34,7 +34,7 @@ class FormBuilder extends Page implements HasForms
 
     protected static string $resource = ImutProfileResource::class;
 
-    protected static string $view = 'filament.resources.imut-profile-resource.pages.preview-form-builder';
+    protected string $view = 'filament.resources.imut-profile-resource.pages.preview-form-builder';
 
     public ?array $data = [];
     public ?ImutProfile $record = null;
@@ -69,17 +69,17 @@ class FormBuilder extends Page implements HasForms
         $this->form->fill($this->previewData);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         if (!$this->formTemplate) {
-            return $form->schema([
+            return $schema->components([
                 Placeholder::make('no_template')
                     ->content('Form template tidak ditemukan.')
             ]);
         }
 
-        return $form
-            ->schema(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
+        return $schema
+            ->components(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
             ->statePath('previewData')
             ->live();
     }

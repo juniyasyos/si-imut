@@ -2,6 +2,7 @@
 
 namespace App\Domain\DailyReport;
 
+use Exception;
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
 use Carbon\Carbon;
@@ -177,7 +178,7 @@ class TableViewDomain
                             } else {
                                 $row[$fieldKey . '_duration'] = '-';
                             }
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $row[$fieldKey . '_duration'] = '-';
                         }
                     } else {

@@ -2,6 +2,7 @@
 
 namespace App\Services\Laporan;
 
+use Throwable;
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;
 use App\Models\ImutProfile;
@@ -41,7 +42,7 @@ class LaporanImutService
                     ->where('status', LaporanImut::STATUS_COMPLETE)
                     ->latest('assessment_period_start')
                     ->first();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('Gagal mengambil laporan terbaru: ' . $e->getMessage());
                 return null;
             }

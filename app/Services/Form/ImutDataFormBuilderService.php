@@ -2,14 +2,15 @@
 
 namespace App\Services\Form;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Illuminate\Support\Str;
 use App\Services\Authorization\ImutDataPermissionService;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -173,7 +174,7 @@ class ImutDataFormBuilderService
 
         // Process slug if title changed
         if (isset($data['title']) && (!$record || $record->title !== $data['title'])) {
-            $data['slug'] = \Illuminate\Support\Str::slug($data['title']);
+            $data['slug'] = Str::slug($data['title']);
         }
 
         return $data;

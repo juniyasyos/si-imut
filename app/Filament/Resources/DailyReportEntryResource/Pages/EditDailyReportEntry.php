@@ -2,13 +2,15 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
 use App\Services\DailyReport\DailyReportEntryContextService;
 use App\Services\DailyReport\UnifiedComplianceService;
 use App\Services\DynamicForm\DynamicFormService;
 use Filament\Actions;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -16,7 +18,7 @@ class EditDailyReportEntry extends EditRecord
 {
     protected static string $resource = DailyReportEntryResource::class;
 
-    protected static string $view = 'filament.pages.edit-daily-report-entry';
+    protected string $view = 'filament.pages.edit-daily-report-entry';
 
     public ?FormTemplate $formTemplate = null;
     public ?string $originalIndicatorId = null;
@@ -102,14 +104,14 @@ class EditDailyReportEntry extends EditRecord
     /**
      * Configure the form
      */
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         if (!$this->formTemplate) {
-            return $form->schema([]);
+            return $schema->components([]);
         }
 
-        return $form
-            ->schema(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
+        return $schema
+            ->components(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
             ->statePath('data')
             ->live();
     }
@@ -293,11 +295,11 @@ class EditDailyReportEntry extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make()
+            ViewAction::make()
                 ->label('Lihat Detail')
                 ->icon('heroicon-o-eye')
                 ->color('info'),
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->label('Hapus')
                 ->icon('heroicon-o-trash')
                 ->successNotificationTitle('Laporan berhasil dihapus'),

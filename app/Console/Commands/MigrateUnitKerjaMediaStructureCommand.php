@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use InvalidArgumentException;
+use Exception;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
@@ -105,7 +107,7 @@ class MigrateUnitKerjaMediaStructureCommand extends Command
         }
 
         if (!in_array($targetDisk, $availableDisks)) {
-            throw new \InvalidArgumentException("Unsupported disk: {$targetDisk}. Supported: " . implode(', ', $availableDisks) . ', all');
+            throw new InvalidArgumentException("Unsupported disk: {$targetDisk}. Supported: " . implode(', ', $availableDisks) . ', all');
         }
 
         return [$targetDisk];
@@ -570,10 +572,10 @@ class MigrateUnitKerjaMediaStructureCommand extends Command
         // Move file on this disk
         if ($storage->exists($oldPath)) {
             if (!$storage->move($oldPath, $newPath)) {
-                throw new \Exception("Failed to move file from {$oldPath} to {$newPath} on {$disk} disk");
+                throw new Exception("Failed to move file from {$oldPath} to {$newPath} on {$disk} disk");
             }
         } else {
-            throw new \Exception("Source file not found: {$oldPath} on {$disk} disk");
+            throw new Exception("Source file not found: {$oldPath} on {$disk} disk");
         }
 
         // Update database record only once (not per disk)

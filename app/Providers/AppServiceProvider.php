@@ -2,6 +2,36 @@
 
 namespace App\Providers;
 
+use App\Repositories\Interfaces\LaporanRepositoryInterface;
+use App\Repositories\LaporanRepository;
+use App\Repositories\Interfaces\ImutPenilaianRepositoryInterface;
+use App\Repositories\ImutPenilaianRepository;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
+use App\Repositories\DailyReportResponseRepository;
+use App\Repositories\Interfaces\FormPersistenceRepositoryInterface;
+use App\Repositories\FormPersistenceRepository;
+use App\Repositories\Interfaces\ImutDataNoteRepositoryInterface;
+use App\Repositories\ImutDataNoteRepository;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
+use App\Repositories\ImutDataRepository;
+use App\Services\Reporting\ImutReportService;
+use App\Services\Support\PeriodParserService;
+use App\Services\Reporting\CategoryAggregationService;
+use App\Services\Reporting\CategoryReportDataBuilderService;
+use App\Services\Form\FormMutationService;
+use App\Services\DailyReport\UnifiedComplianceService;
+use App\Services\DailyReport\FieldResponseBuilderService;
+use App\Services\DailyReport\DailyReportBuildService;
+use Filament\Auth\Http\Responses\Contracts\LogoutResponse;
+use Illuminate\Support\Facades\Cache;
+use App\Support\StorageFallback;
+use App\Jobs\SyncLocalToS3Job;
+use Throwable;
+use Log;
+use SocialiteProviders\Google\Provider;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Exception;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;
@@ -17,8 +47,8 @@ use App\Observers\LaporanImutObserver;
 use App\Observers\MediaObserver;
 use App\Observers\UnitKerjaObserver;
 use App\Observers\FieldResponseObserver;
-use BezhanSalleh\FilamentLanguageSwitch\Enums\Placement;
-use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
+use BezhanSalleh\LanguageSwitch\Enums\Placement;
+use BezhanSalleh\LanguageSwitch\LanguageSwitch;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -44,41 +74,41 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Repository interfaces
         $this->app->bind(
-            \App\Repositories\Interfaces\LaporanRepositoryInterface::class,
-            \App\Repositories\LaporanRepository::class,
+            LaporanRepositoryInterface::class,
+            LaporanRepository::class,
         );
         $this->app->bind(
-            \App\Repositories\Interfaces\ImutPenilaianRepositoryInterface::class,
-            \App\Repositories\ImutPenilaianRepository::class,
+            ImutPenilaianRepositoryInterface::class,
+            ImutPenilaianRepository::class,
         );
         $this->app->bind(
-            \App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class,
-            \App\Repositories\DailyReportResponseRepository::class,
+            DailyReportResponseRepositoryInterface::class,
+            DailyReportResponseRepository::class,
         );
         $this->app->bind(
-            \App\Repositories\Interfaces\FormPersistenceRepositoryInterface::class,
-            \App\Repositories\FormPersistenceRepository::class,
+            FormPersistenceRepositoryInterface::class,
+            FormPersistenceRepository::class,
         );
         $this->app->bind(
-            \App\Repositories\Interfaces\ImutDataNoteRepositoryInterface::class,
-            \App\Repositories\ImutDataNoteRepository::class,
+            ImutDataNoteRepositoryInterface::class,
+            ImutDataNoteRepository::class,
         );
         $this->app->bind(
-            \App\Repositories\Interfaces\ImutDataRepositoryInterface::class,
-            \App\Repositories\ImutDataRepository::class,
+            ImutDataRepositoryInterface::class,
+            ImutDataRepository::class,
         );
 
         // Register Services - Priority 1 & 2 refactoring
-        $this->app->singleton(\App\Services\Reporting\ImutReportService::class);
-        $this->app->singleton(\App\Services\Support\PeriodParserService::class);
-        $this->app->singleton(\App\Services\Reporting\CategoryAggregationService::class);
-        $this->app->singleton(\App\Services\Reporting\CategoryReportDataBuilderService::class);
-        $this->app->singleton(\App\Services\Form\FormMutationService::class);
+        $this->app->singleton(ImutReportService::class);
+        $this->app->singleton(PeriodParserService::class);
+        $this->app->singleton(CategoryAggregationService::class);
+        $this->app->singleton(CategoryReportDataBuilderService::class);
+        $this->app->singleton(FormMutationService::class);
 
         // Register Daily Report Services
-        $this->app->singleton(\App\Services\DailyReport\UnifiedComplianceService::class);
-        $this->app->singleton(\App\Services\DailyReport\FieldResponseBuilderService::class);
-        $this->app->singleton(\App\Services\DailyReport\DailyReportBuildService::class);
+        $this->app->singleton(UnifiedComplianceService::class);
+        $this->app->singleton(FieldResponseBuilderService::class);
+        $this->app->singleton(DailyReportBuildService::class);
 
         // When SSO is enabled we want the Filament logout response to redirect
         // the user through the IAM/SO logout flow instead of just returning to
@@ -86,7 +116,7 @@ class AppServiceProvider extends ServiceProvider
         // can check the `iam.enabled`/`USE_SSO` flag and return the appropriate
         // location.
         $this->app->bind(
-            \Filament\Http\Responses\Auth\Contracts\LogoutResponse::class,
+            LogoutResponse::class,
             \App\Filament\Responses\Auth\LogoutResponse::class,
         );
     }
@@ -109,24 +139,24 @@ class AppServiceProvider extends ServiceProvider
             $cacheCheckKey = 's3_availability_check_throttle';
             $cacheStatusKey = 's3_available_last_status';
 
-            if (!\Illuminate\Support\Facades\Cache::has($cacheCheckKey)) {
-                $isAvailable = \App\Support\StorageFallback::isS3Available();
+            if (!Cache::has($cacheCheckKey)) {
+                $isAvailable = StorageFallback::isS3Available();
 
-                $previous = \Illuminate\Support\Facades\Cache::get($cacheStatusKey, null);
+                $previous = Cache::get($cacheStatusKey, null);
 
                 // jika sebelumnya false (atau null) dan sekarang true -> dispatch sync
                 if ($isAvailable && ($previous === false || $previous === null)) {
                     // dispatch background job untuk sinkronisasi (misal folder 'ttd')
-                    \App\Jobs\SyncLocalToS3Job::dispatch(['ttd']);
+                    SyncLocalToS3Job::dispatch(['ttd']);
                 }
 
                 // simpan status terakhir selama 2 jam (dipakai untuk mendeteksi transisi down->up)
-                \Illuminate\Support\Facades\Cache::put($cacheStatusKey, $isAvailable, now()->addHours(2));
+                Cache::put($cacheStatusKey, $isAvailable, now()->addHours(2));
 
                 // throttle berikutnya: 2 jam (hindari pengecekan berlebih)
-                \Illuminate\Support\Facades\Cache::put($cacheCheckKey, true, now()->addHours(2));
+                Cache::put($cacheCheckKey, true, now()->addHours(2));
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // jangan ganggu bootstrap jika pengecekan gagal
             logger()->debug('S3 availability check in AppServiceProvider failed: ' . $e->getMessage());
         }
@@ -147,7 +177,7 @@ class AppServiceProvider extends ServiceProvider
             $manifestPath = public_path('build/manifest.json');
 
             if (!file_exists($manifestPath)) {
-                \Log::warning('Vite manifest not found at ' . $manifestPath . '. Run: npm run build');
+                Log::warning('Vite manifest not found at ' . $manifestPath . '. Run: npm run build');
             }
         }
     }
@@ -175,7 +205,7 @@ class AppServiceProvider extends ServiceProvider
     protected function registerSocialiteProviders(): void
     {
         Event::listen(function (SocialiteWasCalled $event) {
-            $event->extendSocialite('discord', \SocialiteProviders\Google\Provider::class);
+            $event->extendSocialite('discord', Provider::class);
         });
     }
 
@@ -239,7 +269,7 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            if (!\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+            if (!Schema::hasTable('settings')) {
                 return;
             }
 
@@ -252,7 +282,7 @@ class AppServiceProvider extends ServiceProvider
                 'sso_enabled' => false,
             ];
 
-            $existingSettings = \Illuminate\Support\Facades\DB::table('settings')
+            $existingSettings = DB::table('settings')
                 ->where('group', 'KaidoSetting')
                 ->pluck('name')
                 ->toArray();
@@ -261,7 +291,7 @@ class AppServiceProvider extends ServiceProvider
                 $settingName = "KaidoSetting.{$key}";
 
                 if (!in_array($settingName, $existingSettings)) {
-                    \Illuminate\Support\Facades\DB::table('settings')->insert([
+                    DB::table('settings')->insert([
                         'group' => 'KaidoSetting',
                         'name' => $settingName,
                         'locked' => false,
@@ -271,7 +301,7 @@ class AppServiceProvider extends ServiceProvider
                     ]);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently handle errors to prevent boot failures
             logger()->warning('Failed to ensure KaidoSettings: ' . $e->getMessage());
         }

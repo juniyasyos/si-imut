@@ -2,20 +2,20 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Table;
 
-use App\Filament\Resources\DailyReportEntryResource;
+use Carbon\Carbon;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 
-class DailyReportEntryTable extends DailyReportEntryResource
+class DailyReportEntryTable
 {
     /**
      * Get table columns configuration
@@ -115,7 +115,7 @@ class DailyReportEntryTable extends DailyReportEntryResource
 
             Filter::make('report_date')
                 ->label('Periode Tanggal')
-                ->form([
+                ->schema([
                     DatePicker::make('date_from')
                         ->label('Dari Tanggal')
                         ->native(false)
@@ -142,11 +142,11 @@ class DailyReportEntryTable extends DailyReportEntryResource
                     $indicators = [];
 
                     if ($data['date_from'] ?? null) {
-                        $indicators[] = 'Dari: ' . \Carbon\Carbon::parse($data['date_from'])->format('d M Y');
+                        $indicators[] = 'Dari: ' . Carbon::parse($data['date_from'])->format('d M Y');
                     }
 
                     if ($data['date_until'] ?? null) {
-                        $indicators[] = 'Sampai: ' . \Carbon\Carbon::parse($data['date_until'])->format('d M Y');
+                        $indicators[] = 'Sampai: ' . Carbon::parse($data['date_until'])->format('d M Y');
                     }
 
                     return $indicators;

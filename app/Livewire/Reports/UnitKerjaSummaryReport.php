@@ -2,13 +2,17 @@
 
 namespace App\Livewire\Reports;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\ExportAction;
+use Filament\Forms\Components\Select;
+use App\QueryBuilders\UnitKerjaReportQueryBuilder;
+use Filament\Actions\Action;
 use App\Filament\Exports\SummaryUnitKerjaReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Services\Reporting\ImutReportService;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -22,8 +26,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
+class UnitKerjaSummaryReport extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -101,8 +106,8 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
             ])
             ->filters([
                 Filter::make('completion_status')
-                    ->form([
-                        \Filament\Forms\Components\Select::make('status')
+                    ->schema([
+                        Select::make('status')
                             ->label('Status Kelengkapan')
                             ->options([
                                 'all' => 'Semua',
@@ -114,7 +119,7 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                     ])
                     ->query(function (EloquentBuilder $query, array $data): EloquentBuilder {
                         $status = $data['status'] ?? 'all';
-                        $filledCountExpr = \App\QueryBuilders\UnitKerjaReportQueryBuilder::getFilledCountExpression();
+                        $filledCountExpr = UnitKerjaReportQueryBuilder::getFilledCountExpression();
 
                         if ($status === 'complete') {
                             return $query->havingRaw("{$filledCountExpr} = COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0");
@@ -136,7 +141,7 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                         return null;
                     }),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('details')
                     ->label('Lihat Detail')
                     ->icon('heroicon-o-eye')
@@ -151,7 +156,7 @@ class UnitKerjaSummaryReport extends Component implements HasForms, HasTable
                 'laporan_id' => $record->laporan_imut_id,
                 'unit_kerja_id' => $record->unit_kerja_id,
             ]))
-            ->bulkActions([
+            ->toolbarActions([
                 // ...
             ]);
     }

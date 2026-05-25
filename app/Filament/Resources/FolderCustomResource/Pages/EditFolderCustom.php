@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FolderCustomResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use Filament\Actions;
 use App\Filament\Resources\FolderCustomResource;
 use Juniyasyos\FilamentMediaManager\Resources\FolderResource\Pages\EditFolder;
@@ -13,7 +14,7 @@ class EditFolderCustom extends EditFolder
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

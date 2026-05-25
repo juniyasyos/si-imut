@@ -2,6 +2,7 @@
 
 namespace App\Support\MediaLibrary;
 
+use Juniyasyos\FilamentMediaManager\Models\Folder;
 use App\Support\CacheKey;
 use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -69,7 +70,7 @@ class FolderPathGenerator implements PathGenerator
 
     private function resolveFolderPathFromFolderId(int $folderId): string
     {
-        $folder = \Juniyasyos\FilamentMediaManager\Models\Folder::find($folderId);
+        $folder = Folder::find($folderId);
 
         if (! $folder) {
             return (string) $folderId;
@@ -80,7 +81,7 @@ class FolderPathGenerator implements PathGenerator
 
     private function resolveFolderPathByCollection(string $collection): ?string
     {
-        $folder = \Juniyasyos\FilamentMediaManager\Models\Folder::where('collection', $collection)->first();
+        $folder = Folder::where('collection', $collection)->first();
 
         if (! $folder) {
             return null;
@@ -89,7 +90,7 @@ class FolderPathGenerator implements PathGenerator
         return $this->buildFolderPath($folder);
     }
 
-    private function buildFolderPath(\Juniyasyos\FilamentMediaManager\Models\Folder $folder): string
+    private function buildFolderPath(Folder $folder): string
     {
         $path = [];
         $current = $folder;

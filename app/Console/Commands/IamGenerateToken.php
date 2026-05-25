@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Support\Facades\Http;
+use Exception;
 use Illuminate\Console\Command;
 
 class IamGenerateToken extends Command
@@ -21,7 +23,7 @@ class IamGenerateToken extends Command
 
         try {
             // Coba endpoint untuk generate token
-            $response = \Illuminate\Support\Facades\Http::timeout(10)
+            $response = Http::timeout(10)
                 ->post($iamBaseUrl . '/api/development/generate-token', [
                     'user_id' => $userId,
                     'app_key' => config('iam.app_key', 'siimut'),
@@ -49,7 +51,7 @@ class IamGenerateToken extends Command
 
             $this->error('Failed to generate token: ' . $response->body());
             return 1;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Error: ' . $e->getMessage());
 
             $this->newLine();

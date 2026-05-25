@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use Filament\Schemas\Schema;
 use Illuminate\Console\Command;
 use App\Livewire\TtdUploadComponent;
 use App\Models\User;
@@ -26,7 +28,7 @@ class TestTtdComponent extends Command
             $this->line("   - view: " . $component->view);
             $this->line("   - only: " . json_encode($component->only));
             $this->line("   - data: " . json_encode($component->data ?? []));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 
@@ -34,7 +36,7 @@ class TestTtdComponent extends Command
         $this->line("\n2. Form Method Check:");
         try {
             $component = new TtdUploadComponent();
-            $form = $component->form(\Filament\Forms\Form::make());
+            $form = $component->form(Schema::make());
             $this->line("   ✓ Form method works");
 
             $schema = $form->getSchema();
@@ -45,7 +47,7 @@ class TestTtdComponent extends Command
                     $this->line("   - Field: " . $field->getName());
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 
@@ -59,14 +61,14 @@ class TestTtdComponent extends Command
                 $component->userClass = get_class($user);
 
                 // Initialize form
-                $component->form = \Filament\Forms\Form::make();
+                $component->form = Schema::make();
                 $component->form = $component->form($component->form);
 
                 $this->line("   ✓ Mount simulation successful");
                 $this->line("   User: " . $user->name);
                 $this->line("   Current TTD: " . ($user->ttd_url ?? 'none'));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 

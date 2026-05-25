@@ -2,6 +2,7 @@
 
 namespace App\Services\Support;
 
+use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -52,7 +53,7 @@ class DateFormattingService
 
         try {
             return Carbon::parse($date)->translatedFormat('j F Y');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return 'Format tidak valid';
         }
     }
@@ -103,7 +104,7 @@ class DateFormattingService
             $end = Carbon::parse($endPeriod);
 
             return $checkDate->between($start, $end);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -122,7 +123,7 @@ class DateFormattingService
             $end = Carbon::parse($endDate);
 
             return $start->diffInDays($end) + 1; // Include both start and end days
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return 0;
         }
     }

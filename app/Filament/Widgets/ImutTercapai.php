@@ -2,6 +2,10 @@
 
 namespace App\Filament\Widgets;
 
+use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
+use App\QueryBuilders\UnitKerjaReportQueryBuilder;
 use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Repositories\Interfaces\LaporanRepositoryInterface;
@@ -25,7 +29,7 @@ class ImutTercapai extends BaseWidget
         return Auth::user()?->can('widget_ImutTercapai') ?? false;
     }
 
-    public function table(Tables\Table $table): Tables\Table
+    public function table(Table $table): Table
     {
         $laporan = LaporanImutFacade::getLatestLaporan();
 
@@ -33,7 +37,7 @@ class ImutTercapai extends BaseWidget
             return $table
                 ->query(LaporanUnitKerja::query()->whereRaw('1 = 0'))
                 ->columns([
-                    Tables\Columns\TextColumn::make('message')
+                    TextColumn::make('message')
                         ->label('Informasi')
                         ->getStateUsing(fn() => 'Tidak ada laporan IMUT terbaru.')
                 ]);
@@ -52,14 +56,14 @@ class ImutTercapai extends BaseWidget
                 default  => 'bg-white dark:bg-gray-900/40',
             })
             ->columns([
-                Tables\Columns\TextColumn::make('unit_name')
+                TextColumn::make('unit_name')
                     ->label('Unit Kerja')
                     ->wrap()
                     ->weight('medium')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('completion_status')
+                TextColumn::make('completion_status')
                     ->label('Kelengkapan')
                     ->alignCenter()
                     ->state(fn($record) =>
@@ -80,7 +84,7 @@ class ImutTercapai extends BaseWidget
                         return $query->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) " . $direction);
                     }),
 
-                Tables\Columns\TextColumn::make('below_standard_count')
+                TextColumn::make('below_standard_count')
                     ->label('Di Bawah Standar')
                     ->alignCenter()
                     ->state(fn($record) => number_format($record->below_standard_count ?? 0))
@@ -90,7 +94,7 @@ class ImutTercapai extends BaseWidget
                     ->tooltip('IMUT yang sudah terisi tapi tidak memenuhi standar mutu')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('priority_level')
+                TextColumn::make('priority_level')
                     ->label('Prioritas')
                     ->alignCenter()
                     ->state(fn($record) => $this->getPriorityLevel($record))
@@ -98,8 +102,8 @@ class ImutTercapai extends BaseWidget
                     ->color(fn($record) => $this->getPriorityColor($record))
                     ->icon(fn($record) => $this->getPriorityIcon($record)),
             ])
-            ->actions([
-                Tables\Actions\Action::make('view_details')
+            ->recordActions([
+                Action::make('view_details')
                     ->label('Lihat Detail')
                     ->icon('heroicon-o-eye')
                     ->color('info')
@@ -116,7 +120,7 @@ class ImutTercapai extends BaseWidget
     protected function getIncompleteUnitsQuery(int $laporanId): Builder
     {
         $laporanRepository = app(LaporanRepositoryInterface::class);
-        $filledCountExpr = \App\QueryBuilders\UnitKerjaReportQueryBuilder::getFilledCountExpression();
+        $filledCountExpr = UnitKerjaReportQueryBuilder::getFilledCountExpression();
 
         return $laporanRepository->getReportByUnitKerja($laporanId)
             ->havingRaw("{$filledCountExpr} < COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0")

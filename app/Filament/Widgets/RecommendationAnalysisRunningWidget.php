@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RecommendationAnalysisRunningWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.recommendation-analysis-running-widget';
+    protected string $view = 'filament.widgets.recommendation-analysis-running-widget';
 
     public static function canView(): bool
     {

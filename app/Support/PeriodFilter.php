@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use InvalidArgumentException;
 use Carbon\Carbon;
 
 class PeriodFilter
@@ -47,7 +48,7 @@ class PeriodFilter
         $quarter = (int) $quarter;
 
         if ($quarter < 1 || $quarter > 4) {
-            throw new \InvalidArgumentException("Quarter must be between 1 and 4");
+            throw new InvalidArgumentException("Quarter must be between 1 and 4");
         }
 
         $startMonth = ($quarter - 1) * 3 + 1;
@@ -69,7 +70,7 @@ class PeriodFilter
         $semester = (int) $semester;
 
         if ($semester < 1 || $semester > 2) {
-            throw new \InvalidArgumentException("Semester must be 1 or 2");
+            throw new InvalidArgumentException("Semester must be 1 or 2");
         }
 
         $startMonth = ($semester - 1) * 6 + 1;

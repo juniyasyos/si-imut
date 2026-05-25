@@ -2,6 +2,8 @@
 
 namespace App\Services\Authorization;
 
+use Illuminate\Database\Eloquent\Collection;
+use App\Models\ImutCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -64,9 +66,9 @@ class ImutDataPermissionService
     /**
      * Get filtered IMUT categories based on user permissions
      */
-    public function getAvailableImutCategories(): \Illuminate\Database\Eloquent\Collection
+    public function getAvailableImutCategories(): Collection
     {
-        $query = \App\Models\ImutCategory::query();
+        $query = ImutCategory::query();
 
         if (!$this->canManageImutCategories()) {
             $query->where('is_use_global', true);

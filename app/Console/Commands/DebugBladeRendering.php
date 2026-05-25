@@ -2,6 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\DailyReportEntryResource\Pages\ListDailyReportEntries;
+use Exception;
+use Illuminate\Support\Facades\View;
 use Illuminate\Console\Command;
 
 class DebugBladeRendering extends Command
@@ -14,17 +19,17 @@ class DebugBladeRendering extends Command
     {
         $userId = $this->option('user-id');
 
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         if (!$user) {
             $this->error("User {$userId} not found");
             return 1;
         }
 
         // Simulate Livewire state
-        \Illuminate\Support\Facades\Auth::setUser($user);
+        Auth::setUser($user);
 
         // Simulate what Livewire component has after mount()
-        $component = new \App\Filament\Resources\DailyReportEntryResource\Pages\ListDailyReportEntries();
+        $component = new ListDailyReportEntries();
 
         // Call mount to populate properties
         $component->bootBase();
@@ -58,7 +63,7 @@ class DebugBladeRendering extends Command
             try {
                 $encoded = json_encode($component->matrixData[$firstKey][1]);
                 $this->line("   Sample day 1 JSON: " . substr($encoded, 0, 100) . "...");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->line("   ERROR encoding: " . $e->getMessage());
             }
         }
@@ -72,7 +77,7 @@ class DebugBladeRendering extends Command
             $jsData = json_encode($component->matrixData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APO | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
             $this->line("   ✓ MatrixData can be encoded to JavaScript");
             $this->line("   Size: " . strlen($jsData) . " bytes");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error encoding: " . $e->getMessage());
         }
 
@@ -81,16 +86,16 @@ class DebugBladeRendering extends Command
         $this->info("4. Testing Blade @js() Directive:");
 
         try {
-            $blade = \Illuminate\Support\Facades\View::make('test-js-data', [
+            $blade = View::make('test-js-data', [
                 'matrixData' => $component->matrixData
             ]);
             $this->line("   ✓ Can render template with data");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Template doesn't exist, try inline
             try {
                 $content = "@js(\$matrixData)";
                 $this->line("   Testing inline @js() directive...");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->line("   Could not test inline");
             }
         }

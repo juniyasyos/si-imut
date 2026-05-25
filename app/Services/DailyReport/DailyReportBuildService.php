@@ -2,6 +2,8 @@
 
 namespace App\Services\DailyReport;
 
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
+use Exception;
 use App\Models\DailyReportResponse;
 use App\Models\FieldResponse;
 use App\Models\EnhancedFormField;
@@ -38,7 +40,7 @@ class DailyReportBuildService
      * @param User $submittedBy
      * @param Carbon $reportDate
      * @return DailyReportResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function create(
         FormTemplate $template,
@@ -52,7 +54,7 @@ class DailyReportBuildService
             $template->load('formFields.options');
         }
 
-        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+        $repo = app(DailyReportResponseRepositoryInterface::class);
 
         return DB::transaction(function () use ($template, $formData, $unitKerja, $submittedBy, $reportDate, $repo) {
             // 1. Create DailyReportResponse record via repository

@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use App\Filament\Resources\UnitKerjaResource\Pages\ListUnitKerja;
+use App\Filament\Resources\UnitKerjaResource\Pages\CreateUnitKerja;
+use App\Filament\Resources\UnitKerjaResource\Pages\EditUnitKerja;
 use App\Filament\Resources\UnitKerjaResource\Pages;
 use App\Filament\Resources\UnitKerjaResource\RelationManagers\ImutDataRelationManager;
 use App\Filament\Resources\UnitKerjaResource\Schema\UnitKerjaResourceSchema;
 use App\Filament\Resources\UnitKerjaResource\Tables\UnitKerjaResourceTable;
 use App\Models\UnitKerja;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +22,7 @@ class UnitKerjaResource extends Resource implements HasShieldPermissions
 
     protected static ?string $slug = 'unit-kerjas';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getPermissionPrefixes(): array
     {
@@ -76,9 +79,9 @@ class UnitKerjaResource extends Resource implements HasShieldPermissions
         return (bool) config('iam.sync_unit_kerja', true);
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(UnitKerjaResourceSchema::make());
+        return $schema->components(UnitKerjaResourceSchema::make());
     }
 
     public static function table(Table $table): Table
@@ -87,16 +90,16 @@ class UnitKerjaResource extends Resource implements HasShieldPermissions
             ->columns(UnitKerjaResourceTable::columns())
             ->filters(UnitKerjaResourceTable::filters())
             ->headerActions(UnitKerjaResourceTable::headerActions())
-            ->actions(UnitKerjaResourceTable::actions())
-            ->bulkActions(UnitKerjaResourceTable::bulkActions());
+            ->recordActions(UnitKerjaResourceTable::actions())
+            ->toolbarActions(UnitKerjaResourceTable::bulkActions());
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUnitKerja::route('/'),
-            'create' => Pages\CreateUnitKerja::route('/create'),
-            'edit' => Pages\EditUnitKerja::route('/{record:slug}/edit'),
+            'index' => ListUnitKerja::route('/'),
+            'create' => CreateUnitKerja::route('/create'),
+            'edit' => EditUnitKerja::route('/{record:slug}/edit'),
         ];
     }
 }

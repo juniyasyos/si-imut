@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use Log;
+use Exception;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
 use App\Support\CacheKey;
@@ -12,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
 
 class RecommendationAnalysisUnitKerjaWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.recommendation-analysis-unit-kerja-widget';
+    protected string $view = 'filament.widgets.recommendation-analysis-unit-kerja-widget';
 
     // Cache duration in seconds (30 minutes)
     private const CACHE_DURATION = 1800;
@@ -23,7 +25,7 @@ class RecommendationAnalysisUnitKerjaWidget extends Widget
             $user = Auth::user();
 
             if (!$user) {
-                \Log::debug('RecommendationAnalysisUnitKerjaWidget: No authenticated user');
+                Log::debug('RecommendationAnalysisUnitKerjaWidget: No authenticated user');
                 return false;
             }
 
@@ -32,7 +34,7 @@ class RecommendationAnalysisUnitKerjaWidget extends Widget
 
             $canView = $hasUnitKerja && !$isAdminOrTimMutu;
 
-            \Log::debug('RecommendationAnalysisUnitKerjaWidget::canView', [
+            Log::debug('RecommendationAnalysisUnitKerjaWidget::canView', [
                 'user_id' => $user->id,
                 'has_unit_kerja' => $hasUnitKerja,
                 'is_admin_or_tim_mutu' => $isAdminOrTimMutu,
@@ -40,8 +42,8 @@ class RecommendationAnalysisUnitKerjaWidget extends Widget
             ]);
 
             return $canView;
-        } catch (\Exception $e) {
-            \Log::error('Error in RecommendationAnalysisUnitKerjaWidget::canView', [
+        } catch (Exception $e) {
+            Log::error('Error in RecommendationAnalysisUnitKerjaWidget::canView', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

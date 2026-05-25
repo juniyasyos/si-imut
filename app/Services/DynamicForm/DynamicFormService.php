@@ -2,10 +2,11 @@
 
 namespace App\Services\DynamicForm;
 
+use Filament\Schemas\Components\Section;
+use Exception;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\FormTemplate;
 use App\View\Components\ComplianceDisplay;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\HtmlString;
@@ -75,7 +76,7 @@ class DynamicFormService
                     $currentData[$field->field_key] = $get($field->field_key);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $currentData = [];
         }
 

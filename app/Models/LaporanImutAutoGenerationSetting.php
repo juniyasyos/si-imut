@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -172,6 +173,6 @@ class LaporanImutAutoGenerationSetting extends Model
             $month = $month ?? date('m');
         }
 
-        return (int)\Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('d');
+        return (int)Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('d');
     }
 }

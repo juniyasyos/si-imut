@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
+use App\Models\ImutData;
+use App\Models\UnitKerja;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\UnitKerjaChart;
 use App\Repositories\Interfaces\ImutDataRepositoryInterface;
@@ -12,13 +14,13 @@ class UnitKerjaOverview extends Page
 {
     protected static string $resource = ImutDataResource::class;
 
-    protected static string $view = 'filament.resources.imut-data-resource.pages.imut-data-unit-kerja-overview';
+    protected string $view = 'filament.resources.imut-data-resource.pages.imut-data-unit-kerja-overview';
 
     public array $data = [];
 
-    public ?\App\Models\ImutData $imutData = null;
+    public ?ImutData $imutData = null;
 
-    public ?\App\Models\UnitKerja $unitKerja = null;
+    public ?UnitKerja $unitKerja = null;
 
     public static function canAccess(array $parameters = []): bool
     {

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Exception;
 use App\Models\LaporanImut;
 use App\Services\Reporting\DailyReportAggregationService;
 use Filament\Notifications\Notification;
@@ -39,7 +40,7 @@ class CalculateLaporanFromDailyReports implements ShouldQueue
                 ->send();
 
             Log::info("CalculateLaporanFromDailyReports [{$laporan->id}]: Completed successfully. Calculated: {$calculatedCount}, Skipped: {$skippedCount}");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("CalculateLaporanFromDailyReports [{$this->laporanId}]: Error - " . $e->getMessage());
 
             // Error notification

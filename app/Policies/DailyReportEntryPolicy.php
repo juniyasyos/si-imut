@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\FormTemplate;
 use App\Models\DailyReportEntry;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -37,7 +38,7 @@ class DailyReportEntryPolicy
             return false;
         }
 
-        $template = \App\Models\FormTemplate::with('imutProfile.imutData.unitKerja')
+        $template = FormTemplate::with('imutProfile.imutData.unitKerja')
             ->find($indicatorId);
 
         if (! $template) {

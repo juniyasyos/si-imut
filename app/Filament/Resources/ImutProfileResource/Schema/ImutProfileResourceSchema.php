@@ -2,22 +2,29 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Schema;
 
+use Filament\Forms\Components\Hidden;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Fieldset;
+use App\Models\ImutProfile;
+use Filament\Notifications\Notification;
+use Exception;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\ImutProfileResource;
 
-class ImutProfileResourceSchema extends ImutProfileResource
+class ImutProfileResourceSchema
 {
     /**
      * Check if profile field should be disabled based on ImutData creator.
@@ -39,23 +46,23 @@ class ImutProfileResourceSchema extends ImutProfileResource
     /**
      * Summary of make
      *
-     * @return Forms\Components\Wizard[]
+     * @return \Filament\Schemas\Components\Wizard[]
      */
     public static function make(): array
     {
         return [
-            \Filament\Forms\Components\Hidden::make('imut_data_id'),
+            Hidden::make('imut_data_id'),
             Wizard::make([
-                Wizard\Step::make('ℹ️ Informasi Dasar')
+                Step::make('ℹ️ Informasi Dasar')
                     ->schema(self::basicInformationSchema()),
 
-                Wizard\Step::make('🧮 Perhitungan')
+                Step::make('🧮 Perhitungan')
                     ->schema(self::operationalDefinitionSchema()),
 
-                Wizard\Step::make('📋 Data Resource')
+                Step::make('📋 Data Resource')
                     ->schema(self::dataResourceSchema()),
 
-                Wizard\Step::make('🎯 Analisis')
+                Step::make('🎯 Analisis')
                     ->schema(self::AnalysisSchema()),
             ])
                 ->columnSpan(['lg' => 2])
@@ -95,7 +102,7 @@ class ImutProfileResourceSchema extends ImutProfileResource
                             ->default(now()->toDateString())
                             ->helperText('Tanggal profil ini mulai berlaku')
                             ->reactive()
-                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get, ?Model $record) {
+                            ->afterStateUpdated(function ($state, Set $set, Get $get, ?Model $record) {
                                 self::checkForOverlaps($state, $get('valid_until'), $get('imut_data_id'), $record);
                             }),
 
@@ -105,7 +112,7 @@ class ImutProfileResourceSchema extends ImutProfileResource
                             ->helperText('Kosongkan jika profil berlaku selamanya. Isi jika ingin membatasi masa berlaku.')
                             ->reactive()
                             ->afterOrEqual('valid_from')
-                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get, ?Model $record) {
+                            ->afterStateUpdated(function ($state, Set $set, Get $get, ?Model $record) {
                                 self::checkForOverlaps($get('valid_from'), $state, $get('imut_data_id'), $record);
                             }),
 
@@ -382,7 +389,7 @@ class ImutProfileResourceSchema extends ImutProfileResource
         }
 
         try {
-            $query = \App\Models\ImutProfile::where('imut_data_id', $imutDataId);
+            $query = ImutProfile::where('imut_data_id', $imutDataId);
 
             // Exclude current record if editing
             if ($record && $record->exists) {
@@ -408,14 +415,14 @@ class ImutProfileResourceSchema extends ImutProfileResource
                     return "• {$profile->version} ({$profile->valid_from->format('d/m/Y')} s/d {$until})";
                 })->join("\n");
 
-                \Filament\Notifications\Notification::make()
+                Notification::make()
                     ->title('⚠️ Peringatan: Periode Bertumpang Tindih!')
                     ->body("Periode yang Anda masukkan bertumpang tindih dengan profil lain:\n\n{$conflictDetails}\n\nHarap sesuaikan tanggal untuk menghindari konflik.")
                     ->warning()
                     ->persistent()
                     ->send();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently fail to avoid blocking form interaction
             logger()->error('Error checking overlaps in form: ' . $e->getMessage());
         }

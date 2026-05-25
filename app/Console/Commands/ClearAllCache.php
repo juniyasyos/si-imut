@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -90,7 +91,7 @@ class ClearAllCache extends Command
                 Artisan::call($command, [], $this->getOutput());
                 return true;
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->components->warn("Failed to run: {$command}");
             $this->error("Error: {$e->getMessage()}");
         }
@@ -120,7 +121,7 @@ class ClearAllCache extends Command
                 try {
                     File::delete($file->getPathname());
                     $deleted++;
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Continue on error
                 }
             }
@@ -173,7 +174,7 @@ class ClearAllCache extends Command
     {
         try {
             return collect(Artisan::all())->has($command);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

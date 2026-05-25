@@ -2,6 +2,7 @@
 
 namespace App\Services\Reporting;
 
+use Exception;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
@@ -140,7 +141,7 @@ class DailyReportAggregationService
                 try {
                     $this->updatePenilaian($penilaian);
                     $results['calculated']++;
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $results['skipped']++;
                     $results['errors'][] = [
                         'penilaian_id' => $penilaian->id,

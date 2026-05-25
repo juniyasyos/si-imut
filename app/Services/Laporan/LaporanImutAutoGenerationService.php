@@ -2,6 +2,7 @@
 
 namespace App\Services\Laporan;
 
+use Exception;
 use App\Jobs\ProsesPenilaianImut;
 use App\Models\LaporanImut;
 use App\Models\LaporanImutAutoGenerationSetting;
@@ -62,7 +63,7 @@ class LaporanImutAutoGenerationService
 
                 return $laporan;
             });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to auto-generate laporan', [
                 'month' => $month,
                 'year' => $year,

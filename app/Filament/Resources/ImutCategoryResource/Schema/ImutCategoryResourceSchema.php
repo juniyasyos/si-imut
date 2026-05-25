@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\ImutCategoryResource\Schema;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use App\Filament\Resources\ImutCategoryResource;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;

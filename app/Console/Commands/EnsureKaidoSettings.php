@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Settings\KaidoSetting;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +83,7 @@ class EnsureKaidoSettings extends Command
             $this->line("   - login_enabled: " . ($settings->login_enabled ? 'true' : 'false'));
             $this->line("   - password_reset_enabled: " . ($settings->password_reset_enabled ? 'true' : 'false'));
             $this->line("   - sso_enabled: " . ($settings->sso_enabled ? 'true' : 'false'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("✗ Failed to load KaidoSetting: " . $e->getMessage());
             return 1;
         }

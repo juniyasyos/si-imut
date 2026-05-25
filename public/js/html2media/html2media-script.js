@@ -1,97 +1,40 @@
-document.addEventListener('DOMContentLoaded', function () {
-    Livewire.on('triggerPrint', function (options = {}) {
-        console.log('triggerPrint', options);
+document.addEventListener('triggerPrint', event => {
+    // The new PHP trait sends an object with 'element' and 'options' keys.
+    const { element, options } = event.detail[0];
 
-        performAction(options);
-    });
-});
-
-function performAction({ action = 'print', element, ...customOptions } = {}) {
-    const printElement = document.getElementById(`print-smart-content-${element}`);
-
-    // Default options for html2pdf
-    const defaultOptions = {
-        filename: 'document.pdf',
-        pagebreak: {
-            mode: ['css', 'legacy'],
-            after: 'section'
-        },
-        jsPDF: {
-            unit: 'mm',
-            format: 'a4',
-            orientation: 'portrait'
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true,
-            logging: true
-        },
-        margin: 0
-    };
-
-    // Merge custom options with defaults
-    const options = {
-        ...defaultOptions,
-        ...customOptions,
-        pagebreak: {
-            ...defaultOptions.pagebreak,
-            ...(customOptions.pagebreak || {})
-        },
-        jsPDF: {
-            ...defaultOptions.jsPDF,
-            ...(customOptions.jsPDF || {})
-        },
-        html2canvas: {
-            ...defaultOptions.html2canvas,
-            ...(customOptions.html2canvas || {})
-        }
-    };
-
-    if (printElement) {
-        switch (action) {
-            case 'savePdf':
-                // Save as PDF
-                html2pdf()
-                    .from(printElement)
-                    .set(options)
-                    .save();
-                break;
-            case 'print':
-                // Print action
-                html2pdf()
-                    .from(printElement)
-                    .set(options)
-                    .toPdf()
-                    .get('pdf')
-                    .then(function (pdf) {
-                        const blob = pdf.output('blob');
-                        const url = URL.createObjectURL(blob);
-                        const iframe = document.getElementById(`print-smart-iframe-${element}`);
-                        iframe.src = url;
-
-                        iframe.onload = function () {
-                            iframe.contentWindow.focus();
-                            iframe.contentWindow.print();
-                            iframe.contentWindow.onafterprint = function () {
-                                URL.revokeObjectURL(url);
-                            };
-                        };
-                    });
-                break;
-            default:
-                console.error('Unsupported action:', action);
-        }
-    } else {
-        console.error(`Element with ID "print-smart-content-${element}" not found.`);
+    if (!element) {
+        console.error('Html2Media: No element content was provided to print.');
+        return;
     }
-}
 
-function replaceSpacesInTextNodes(element) {
-    element.childNodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
-            node.textContent = node.textContent.replace(/\s/g, "\u00a0");
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            replaceSpacesInTextNodes(node);
-        }
-    });
-}
+    if (!options) {
+        console.error('Html2Media: No options were provided.');
+        return;
+    }
+
+    console.log('Html2Media: Generating PDF with options:', options);
+
+    // Chain the methods to configure and generate the PDF.
+    const instance = html2media()
+        .from(element)         // 1. Set the HTML content
+        .options(options);     // 2. Apply all options from the backend at once
+
+    // 3. Execute the final action based on the 'output' option.
+    switch (options.output) {
+        case 'download':
+            instance.save(options.filename);
+            break;
+        case 'print':
+            instance.print();
+            break;
+        case 'iframe':
+            // This is used for the modal preview.
+            instance.open();
+            break;
+        default:
+            // Fallback to iframe if the output mode is unknown.
+            console.warn(`Html2Media: Unknown output mode '${options.output}'. Defaulting to iframe preview.`);
+            instance.open();
+            break;
+    }
+});

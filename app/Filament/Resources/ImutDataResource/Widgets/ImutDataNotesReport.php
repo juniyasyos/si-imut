@@ -2,18 +2,20 @@
 
 namespace App\Filament\Resources\ImutDataResource\Widgets;
 
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use App\Models\ImutDataNote;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Get;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -246,15 +248,15 @@ class ImutDataNotesReport extends BaseWidget
                     ->label('Tambah Catatan')
                     ->icon('heroicon-o-plus')
                     ->modalHeading('Tambah Catatan Baru')
-                    ->form($this->getFormSchema())
-                    ->mutateFormDataUsing(function (array $data): array {
+                    ->schema($this->getFormSchema())
+                    ->mutateDataUsing(function (array $data): array {
                         $data['imut_data_id'] = $this->imutDataId;
                         $data['created_by'] = Auth::id();
                         return $data;
                     })
                     ->successNotificationTitle('Catatan berhasil ditambahkan'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->label('Lihat')
                     ->icon('heroicon-o-eye')
@@ -270,7 +272,7 @@ class ImutDataNotesReport extends BaseWidget
                     ->label('Edit')
                     ->icon('heroicon-o-pencil')
                     ->modalHeading('Edit Catatan')
-                    ->form($this->getFormSchema())
+                    ->schema($this->getFormSchema())
                     ->successNotificationTitle('Catatan berhasil diperbarui'),
 
                 DeleteAction::make()
@@ -279,9 +281,9 @@ class ImutDataNotesReport extends BaseWidget
                     ->successNotificationTitle('Catatan berhasil dihapus')
                     ->requiresConfirmation(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->requiresConfirmation(),
                 ]),
             ])

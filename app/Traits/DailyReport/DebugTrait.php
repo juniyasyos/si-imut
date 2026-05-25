@@ -2,6 +2,7 @@
 
 namespace App\Traits\DailyReport;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 trait DebugTrait
@@ -24,7 +25,7 @@ trait DebugTrait
         $realStatus = $this->matrixService->getRealIndicatorStatus($indicatorId, $date);
 
         // Get matrix data for comparison
-        $day = \Carbon\Carbon::parse($date)->day;
+        $day = Carbon::parse($date)->day;
         $matrixCell = $this->matrixData[$indicatorId][$day] ?? null;
 
         $result = [

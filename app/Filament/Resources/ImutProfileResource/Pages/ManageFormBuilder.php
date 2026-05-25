@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use App\Models\FormTemplate;
+use Filament\Schemas\Schema;
+use Exception;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutProfile;
@@ -13,7 +16,6 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
@@ -27,11 +29,11 @@ class ManageFormBuilder extends Page implements HasForms
 
     protected static string $resource = ImutProfileResource::class;
 
-    protected static string $view = 'filament.resources.imut-profile-resource.pages.manage-form-builder';
+    protected string $view = 'filament.resources.imut-profile-resource.pages.manage-form-builder';
 
     public ?array $data = [];
     public ?ImutProfile $record = null;
-    public ?\App\Models\FormTemplate $formTemplate = null;
+    public ?FormTemplate $formTemplate = null;
     public ?int $selectedTemplateId = null;
     public bool $autoSaveEnabled = false;
     public bool $hasExistingResponses = false;
@@ -61,7 +63,7 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Determine which template to load. Load minimal relations for permission checks.
         if ($requestedTemplateId) {
-            $this->formTemplate = \App\Models\FormTemplate::with('imutProfile.imutData')
+            $this->formTemplate = FormTemplate::with('imutProfile.imutData')
                 ->where('id', $requestedTemplateId)
                 ->where('imut_profile_id', $record->id)
                 ->first();
@@ -127,10 +129,10 @@ class ManageFormBuilder extends Page implements HasForms
         return Auth::user()->can('delete_imut::profile');
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema(FormSchemaBuilder::buildFormSchema($this->hasExistingResponses))
+        return $schema
+            ->components(FormSchemaBuilder::buildFormSchema($this->hasExistingResponses))
             ->statePath('data')
             ->model($this->formTemplate ?? $this->record)
             ->disabled($this->hasExistingResponses && !$this->canForceUpdate);
@@ -251,7 +253,7 @@ class ManageFormBuilder extends Page implements HasForms
                 ->title('Form berhasil disimpan!')
                 ->success()
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
 
             Notification::make()
@@ -284,7 +286,7 @@ class ManageFormBuilder extends Page implements HasForms
             DB::commit();
 
             // Silent save - no notification to avoid disrupting user
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             // Silent fail - only log error, don't show notification
             Log::warning('Auto-save failed: ' . $e->getMessage());
@@ -304,7 +306,7 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Reload selected template
         if ($this->selectedTemplateId) {
-            $this->formTemplate = \App\Models\FormTemplate::with('imutProfile.imutData')->find($this->selectedTemplateId);
+            $this->formTemplate = FormTemplate::with('imutProfile.imutData')->find($this->selectedTemplateId);
         } else {
             $this->formTemplate = $this->record?->activeFormTemplate?->load('imutProfile.imutData') ?? $this->formTemplate;
             $this->selectedTemplateId = $this->formTemplate?->id;
@@ -354,7 +356,7 @@ class ManageFormBuilder extends Page implements HasForms
             $this->refreshVersionInfo();
 
             Notification::make()->title('Reset berhasil')->success()->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Notification::make()->title('Reset gagal')->body($e->getMessage())->danger()->send();
         }
@@ -367,7 +369,7 @@ class ManageFormBuilder extends Page implements HasForms
                 $data = $this->form->getState();
                 $formPersistenceService = new FormPersistenceService();
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Continue to preview even if save fails
             }
         }
@@ -410,7 +412,7 @@ class ManageFormBuilder extends Page implements HasForms
             $this->refreshVersionInfo();
 
             Notification::make()->title('Semua respons dihapus')->success()->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Notification::make()->title('Penghapusan respons gagal')->body($e->getMessage())->danger()->send();
         }

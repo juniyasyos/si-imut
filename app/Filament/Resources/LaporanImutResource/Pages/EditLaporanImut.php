@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Pages;
 
+use Illuminate\Database\Eloquent\Model;
+use Exception;
+use App\Models\UnitKerja;
+use App\Services\Support\LaporanRedirectService;
 use App\Filament\Resources\LaporanImutResource;
 use App\Jobs\CalculateLaporanFromDailyReports;
 use App\Jobs\ProsesPenilaianImut;
@@ -24,9 +28,9 @@ class EditLaporanImut extends EditRecord
 
     protected array $originalUnitKerjaIds = [];
 
-    protected function resolveRecord(int|string $key): \Illuminate\Database\Eloquent\Model
+    protected function resolveRecord(int|string $key): Model
     {
-        return \App\Models\LaporanImut::where('slug', $key)->firstOrFail();
+        return LaporanImut::where('slug', $key)->firstOrFail();
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
@@ -82,7 +86,7 @@ class EditLaporanImut extends EditRecord
         return $data;
     }
 
-    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
         try {
             return parent::handleRecordUpdate($record, $data);
@@ -119,7 +123,7 @@ class EditLaporanImut extends EditRecord
                     ->warning()
                     ->persistent()
                     ->actions([
-                        \Filament\Notifications\Actions\Action::make('lihat')
+                        Action::make('lihat')
                             ->label('Lihat Laporan Existing')
                             ->url(
                                 $existingReport ?
@@ -163,7 +167,7 @@ class EditLaporanImut extends EditRecord
             // Use getRawState() to avoid validation errors when form is not fully filled
             $formData = $this->form->getRawState();
             $currentUnitKerjaIds = $formData['unitKerjas'] ?? [];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // If getRawState() also fails, fall back to current record's unit kerjas
             $currentUnitKerjaIds = $this->record->unitKerjas->pluck('id')->toArray();
         }
@@ -194,7 +198,7 @@ class EditLaporanImut extends EditRecord
                     ->count();
 
                 if ($penilaianCount > 0) {
-                    $unitKerja = \App\Models\UnitKerja::find($unitKerjaId);
+                    $unitKerja = UnitKerja::find($unitKerjaId);
                     $unitsWithData[] = [
                         'id' => $unitKerjaId,
                         'name' => $unitKerja?->unit_name ?? "Unit Kerja #{$unitKerjaId}",
@@ -217,7 +221,7 @@ class EditLaporanImut extends EditRecord
             // Use getRawState() to avoid validation errors when form is not fully filled
             $formData = $this->form->getRawState();
             $currentUnitKerjaIds = $formData['unitKerjas'] ?? [];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // If getRawState() also fails, fall back to current record's unit kerjas
             $currentUnitKerjaIds = $this->record->unitKerjas->pluck('id')->toArray();
         }
@@ -237,13 +241,13 @@ class EditLaporanImut extends EditRecord
 
         // Get added units
         foreach ($addedIds as $unitKerjaId) {
-            $unitKerja = \App\Models\UnitKerja::find($unitKerjaId);
+            $unitKerja = UnitKerja::find($unitKerjaId);
             $changes['added'][] = $unitKerja?->unit_name ?? "Unit Kerja #{$unitKerjaId}";
         }
 
         // Get removed units
         foreach ($removedIds as $unitKerjaId) {
-            $unitKerja = \App\Models\UnitKerja::find($unitKerjaId);
+            $unitKerja = UnitKerja::find($unitKerjaId);
             $unitName = $unitKerja?->unit_name ?? "Unit Kerja #{$unitKerjaId}";
 
             $laporanUnitKerja = LaporanUnitKerja::where('laporan_imut_id', $this->record->id)
@@ -390,7 +394,7 @@ class EditLaporanImut extends EditRecord
                     ->label('Berdasarkan IMUT Data')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('primary')
-                    ->url(fn($record) => \App\Services\Support\LaporanRedirectService::getRedirectUrlForImutData($record->id))
+                    ->url(fn($record) => LaporanRedirectService::getRedirectUrlForImutData($record->id))
                     ->disabled(fn($record) => is_null($record->imutPenilaians))
                     ->visible(fn() => Gate::any([
                         'view_imut_data_report_laporan::imut',
@@ -401,7 +405,7 @@ class EditLaporanImut extends EditRecord
                     ->label('Berdasarkan Unit Kerja')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('success')
-                    ->url(fn($record) => \App\Services\Support\LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
+                    ->url(fn($record) => LaporanRedirectService::getRedirectUrlForUnitKerja($record->id))
                     ->visible(fn() => Gate::any([
                         'view_unit_kerja_report_laporan::imut',
                         'view_unit_kerja_report_detail_laporan::imut',
@@ -464,7 +468,7 @@ class EditLaporanImut extends EditRecord
                             ->count();
 
                         if ($penilaianCount > 0) {
-                            $unitKerja = \App\Models\UnitKerja::find($unitKerjaId);
+                            $unitKerja = UnitKerja::find($unitKerjaId);
                             $deletedStats[] = [
                                 'name' => $unitKerja?->unit_name ?? "Unit Kerja #{$unitKerjaId}",
                                 'total' => $penilaianCount,

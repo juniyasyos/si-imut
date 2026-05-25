@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Support\Facades\Storage;
 use App\Jobs\SyncLocalToS3Job;
 use App\Support\StorageFallback;
 use Illuminate\Console\Command;
@@ -27,8 +28,8 @@ class SyncLocalToS3 extends Command
 
         if ($this->option('dry-run')) {
             // run a lightweight discovery across public + local
-            $local = \Illuminate\Support\Facades\Storage::disk('local');
-            $public = \Illuminate\Support\Facades\Storage::disk('public');
+            $local = Storage::disk('local');
+            $public = Storage::disk('public');
 
             foreach ($paths as $path) {
                 $publicCount = $public->exists($path) ? count($public->allFiles($path)) : 0;

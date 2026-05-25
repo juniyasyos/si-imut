@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use InvalidArgumentException;
+use Illuminate\Support\Facades\DB;
+use App\Models\ImutDataNote;
+use App\Models\ImutCategory;
+use App\Services\Support\SignatoryService;
+use Spatie\Permission\Models\Role;
+use Throwable;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
 use App\Models\ImutPenilaian;
@@ -31,7 +38,7 @@ class CategoryReportController extends Controller
                 try {
                     $aggregationService = app(CategoryAggregationService::class);
                     $aggregatedData = $aggregationService->aggregate($categories, $periode);
-                } catch (\InvalidArgumentException $e) {
+                } catch (InvalidArgumentException $e) {
                     abort(400, $e->getMessage());
                 }
 
@@ -66,7 +73,7 @@ class CategoryReportController extends Controller
             ->when(count($yearMonthStrings) > 0, function ($q) use ($yearMonthStrings, $startDate, $endDate) {
                 $q->whereHas('laporanUnitKerja.laporanImut', function ($q2) use ($yearMonthStrings, $startDate, $endDate) {
                     $q2->whereIn(
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(report_year,'-',LPAD(report_month,2,'0'))"),
+                        DB::raw("CONCAT(report_year,'-',LPAD(report_month,2,'0'))"),
                         $yearMonthStrings
                     )
                         // if report_year/month not populated, fall back to raw period range
@@ -129,7 +136,7 @@ class CategoryReportController extends Controller
         $imutIds = array_column($results, 'imut_data_id');
         if (count($imutIds) > 0) {
             // Build filter criteria untuk notes berdasarkan periode yang sedang dilihat
-            $notesQuery = \App\Models\ImutDataNote::active()
+            $notesQuery = ImutDataNote::active()
                 ->whereIn('imut_data_id', $imutIds);
 
             // Determine period filtering based on $periode format
@@ -536,17 +543,17 @@ class CategoryReportController extends Controller
         $categoryNames = [];
         $categoryDetails = collect();
         if (count($categories) > 0) {
-            $categoryDetails = \App\Models\ImutCategory::whereIn('id', $categories)
+            $categoryDetails = ImutCategory::whereIn('id', $categories)
                 ->get(['id', 'category_name', 'description', 'scope']);
             $categoryNames = $categoryDetails->pluck('category_name')->toArray();
         }
 
         // Resolve Tim Mutu users for left signer dropdown ("Mengetahui")
-        $signatoryService = app(\App\Services\Support\SignatoryService::class);
+        $signatoryService = app(SignatoryService::class);
         $timMutuUsersData = [];
         $defaultLeftSignerIndex = 0;
         try {
-            if (class_exists(\Spatie\Permission\Models\Role::class) && \Spatie\Permission\Models\Role::where('name', 'tim_mutu')->exists()) {
+            if (class_exists(Role::class) && Role::where('name', 'tim_mutu')->exists()) {
                 $timMutuUsers = User::role('tim_mutu')->orderBy('name')->get();
                 $timMutuUsersData = $timMutuUsers->map(fn($u) => [
                     'id'      => $u->id,
@@ -560,7 +567,7 @@ class CategoryReportController extends Controller
                     }
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $timMutuUsersData = [];
         }
 

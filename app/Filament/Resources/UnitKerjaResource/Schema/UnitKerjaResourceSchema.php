@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\UnitKerjaResource\Schema;
 
-use App\Filament\Resources\UnitKerjaResource;
+use Filament\Schemas\Components\Section;
 use Dom\Text;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 

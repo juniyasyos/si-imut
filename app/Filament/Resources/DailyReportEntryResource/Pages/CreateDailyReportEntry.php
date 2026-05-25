@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
+use Carbon\Carbon;
+use Exception;
+use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\FormTemplate;
 use App\Services\DailyReport\DailyReportBuildService;
 use App\Services\DailyReport\DailyReportAuthorizationService;
 use App\Services\DynamicForm\DynamicFormService;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +22,7 @@ class CreateDailyReportEntry extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
-    protected static string $view = 'filament.pages.create-daily-report-entry';
+    protected string $view = 'filament.pages.create-daily-report-entry';
 
     private DailyReportAuthorizationService $creationService;
     private DailyReportBuildService $buildService;
@@ -184,8 +187,8 @@ class CreateDailyReportEntry extends CreateRecord
 
         if ($date) {
             try {
-                return \Carbon\Carbon::createFromFormat('Y-m-d', $date)->format('d F Y');
-            } catch (\Exception $e) {
+                return Carbon::createFromFormat('Y-m-d', $date)->format('d F Y');
+            } catch (Exception $e) {
                 return now()->format('d F Y');
             }
         }
@@ -211,14 +214,14 @@ class CreateDailyReportEntry extends CreateRecord
     /**
      * Configure the form
      */
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         if (!$this->formTemplate) {
-            return $form->schema([]);
+            return $schema->components([]);
         }
 
-        return $form
-            ->schema(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
+        return $schema
+            ->components(DynamicFormService::buildFormSchema($this->formTemplate, true, true))
             ->statePath('data')
             ->live();
     }
@@ -232,15 +235,15 @@ class CreateDailyReportEntry extends CreateRecord
             $user = Auth::user();
 
             if (!$user) {
-                throw new \Exception('Anda harus login terlebih dahulu');
+                throw new Exception('Anda harus login terlebih dahulu');
             }
 
             if (!$user->id) {
-                throw new \Exception('User ID tidak valid. Silakan logout dan login kembali.');
+                throw new Exception('User ID tidak valid. Silakan logout dan login kembali.');
             }
 
             if (!$this->formTemplate) {
-                throw new \Exception('Form template tidak ditemukan');
+                throw new Exception('Form template tidak ditemukan');
             }
 
             // Log user info for debugging
@@ -254,7 +257,7 @@ class CreateDailyReportEntry extends CreateRecord
             $unitKerja = $user->unitKerjas()->first();
 
             if (! $unitKerja) {
-                throw new \Exception('User tidak terdaftar di unit kerja mana pun');
+                throw new Exception('User tidak terdaftar di unit kerja mana pun');
             }
 
             $this->record = $this->buildService->create(
@@ -262,11 +265,11 @@ class CreateDailyReportEntry extends CreateRecord
                 $data,
                 $unitKerja,
                 $user,
-                \Carbon\Carbon::createFromFormat('Y-m-d', $this->originalDate)
+                Carbon::createFromFormat('Y-m-d', $this->originalDate)
             );
 
             return [];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error in mutateFormDataBeforeCreate', [
                 'user_id' => Auth::id(),
                 'template_id' => $this->formTemplate?->id,
@@ -291,7 +294,7 @@ class CreateDailyReportEntry extends CreateRecord
     /**
      * Override record creation to prevent Filament from creating a second record
      */
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         // The record is already created in mutateFormDataBeforeCreate
         // So we just return it here

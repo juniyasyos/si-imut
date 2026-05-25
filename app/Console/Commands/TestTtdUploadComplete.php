@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,7 +27,7 @@ class TestTtdUploadComplete extends Command
             $files = collect(iterator_to_array($disk->listContents('ttd')));
             $this->info("✓ MinIO connection OK");
             $this->line("  Files in ttd/: " . $files->count());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("✗ MinIO connection FAILED: " . $e->getMessage());
             return 1;
         }
@@ -58,7 +60,7 @@ class TestTtdUploadComplete extends Command
             }
 
             @unlink($testPath);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("✗ Upload error: " . $e->getMessage());
             return 1;
         }
@@ -121,7 +123,7 @@ class TestTtdUploadComplete extends Command
         $this->line('─' . str_repeat('─', 48));
 
         try {
-            $user = \App\Models\User::first();
+            $user = User::first();
             if ($user) {
                 $this->info("✓ User found: " . $user->name);
 
@@ -141,7 +143,7 @@ class TestTtdUploadComplete extends Command
             } else {
                 $this->warn("⚠ No users in database");
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("✗ Error: " . $e->getMessage());
         }
 

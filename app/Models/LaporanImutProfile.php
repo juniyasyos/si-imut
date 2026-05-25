@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,10 +14,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $laporan_imut_id
  * @property int $imut_data_id
  * @property int $imut_profil_id
- * @property \Carbon\Carbon $selected_at
+ * @property Carbon $selected_at
  * @property array|null $selection_metadata
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  *
  * @property-read LaporanImut $laporanImut
  * @property-read ImutData $imutData

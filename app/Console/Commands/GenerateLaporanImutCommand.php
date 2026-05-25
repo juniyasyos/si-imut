@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Services\Laporan\LaporanImutAutoGenerationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -70,7 +71,7 @@ class GenerateLaporanImutCommand extends Command
                 $this->components->warn('⚠️  Laporan tidak dibuat (mungkin sudah ada atau auto generation dinonaktifkan)');
                 return Command::FAILURE;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->components->error("❌ Error: {$e->getMessage()}");
             $this->error($e->getTraceAsString());
             return Command::FAILURE;

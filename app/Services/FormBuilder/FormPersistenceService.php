@@ -2,6 +2,9 @@
 
 namespace App\Services\FormBuilder;
 
+use InvalidArgumentException;
+use Illuminate\Database\QueryException;
+use App\Services\DailyReport\UnifiedComplianceService;
 use App\Models\ImutProfile;
 use App\Models\FormTemplate;
 use App\Models\EnhancedFormField;
@@ -73,7 +76,7 @@ class FormPersistenceService
             : ($formTemplate->valid_until ? Carbon::parse($formTemplate->valid_until)->toDateString() : null);
 
         if (blank($validFrom)) {
-            throw new \InvalidArgumentException('Tanggal berlaku mulai wajib diisi.');
+            throw new InvalidArgumentException('Tanggal berlaku mulai wajib diisi.');
         }
 
         $profileValidFrom = $profile->valid_from ? Carbon::parse($profile->valid_from)->startOfDay() : null;
@@ -82,19 +85,19 @@ class FormPersistenceService
         $selectedValidUntil = blank($validUntil) ? null : Carbon::parse($validUntil)->endOfDay();
 
         if ($selectedValidUntil && $selectedValidUntil->lt($selectedValidFrom)) {
-            throw new \InvalidArgumentException('Berlaku sampai tidak boleh lebih kecil dari berlaku mulai.');
+            throw new InvalidArgumentException('Berlaku sampai tidak boleh lebih kecil dari berlaku mulai.');
         }
 
         if ($profileValidFrom && $selectedValidFrom->lt($profileValidFrom)) {
-            throw new \InvalidArgumentException('Berlaku mulai tidak boleh kurang dari tanggal valid profile terkait.');
+            throw new InvalidArgumentException('Berlaku mulai tidak boleh kurang dari tanggal valid profile terkait.');
         }
 
         if ($profileValidUntil && $selectedValidFrom->gt($profileValidUntil)) {
-            throw new \InvalidArgumentException('Berlaku mulai tidak boleh melebihi tanggal valid profile terkait.');
+            throw new InvalidArgumentException('Berlaku mulai tidak boleh melebihi tanggal valid profile terkait.');
         }
 
         if ($profileValidUntil && $selectedValidUntil && $selectedValidUntil->gt($profileValidUntil)) {
-            throw new \InvalidArgumentException('Berlaku sampai tidak boleh melebihi tanggal valid profile terkait.');
+            throw new InvalidArgumentException('Berlaku sampai tidak boleh melebihi tanggal valid profile terkait.');
         }
     }
 
@@ -135,7 +138,7 @@ class FormPersistenceService
                     'compliance_method' => $complianceMethod,
                     'auto_fail_on_critical' => $autoFailOnCritical,
                 ]);
-            } catch (\Illuminate\Database\QueryException $e) {
+            } catch (QueryException $e) {
                 // Handle potential race condition - fetch active template
                 if (str_contains($e->getMessage(), 'unique_profile_version') || str_contains($e->getMessage(), 'Duplicate entry')) {
                     // Another active template might exist; fetch and update it instead
@@ -440,7 +443,7 @@ class FormPersistenceService
         if ($formTemplate) {
             // Calculate compliance based on form structure (without actual responses)
             // Use centralized compliance service
-            $complianceService = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+            $complianceService = app(UnifiedComplianceService::class);
             $complianceScore = $complianceService->calculate($formTemplate, []);
 
             // Update record dengan compliance score
@@ -489,11 +492,11 @@ class FormPersistenceService
         foreach ($templatesToDelete as $template) {
             // Check for parent relationships before deletion
             $hasChildTemplates = FormTemplate::where('parent_template_id', $template->id)->exists();
-            
+
             if ($hasChildTemplates) {
                 continue; // Skip deletion if this template is a parent
             }
-            
+
             // Migrate any responses to the latest template
             DB::table('daily_report_responses')
                 ->where('form_template_id', $template->id)

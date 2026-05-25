@@ -2,6 +2,7 @@
 
 namespace App\Services\Form;
 
+use Illuminate\Database\UniqueConstraintViolationException;
 use App\Models\FormTemplate;
 use App\Models\ImutProfile;
 use Illuminate\Database\Eloquent\Collection;
@@ -48,7 +49,7 @@ class FormTemplateVersionService
 
                     return $newTemplate;
                 });
-            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            } catch (UniqueConstraintViolationException $e) {
                 $attempt++;
 
                 // If this is the last attempt, throw the exception

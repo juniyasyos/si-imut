@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\UserResource\Schema;
 
-use Filament\Infolists\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Group;
 use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Support\Enums\FontWeight;
 
@@ -14,7 +14,7 @@ class UserResourceInfolist
     {
         return [
             // Section untuk informasi pribadi pengguna
-            InfolistSection::make(__('filament-forms::users.infolist.personal_info_title'))
+            Section::make(__('filament-forms::users.infolist.personal_info_title'))
                 ->columns(3)
                 ->schema([
                     // Kolom pertama: Avatar Pengguna
@@ -66,7 +66,7 @@ class UserResourceInfolist
                 ]),
 
             // Section untuk informasi kontak pengguna
-            InfolistSection::make(__('filament-forms::users.infolist.contact_info_title'))
+            Section::make(__('filament-forms::users.infolist.contact_info_title'))
                 ->columns(2)
                 ->schema([
                     TextEntry::make('phone_number')
@@ -79,7 +79,7 @@ class UserResourceInfolist
                 ->visible(fn($record) => filled($record->phone_number) || filled($record->address_ktp)),
 
             // Section untuk informasi akun dan status pengguna
-            InfolistSection::make(__('filament-forms::users.infolist.account_info_title'))
+            Section::make(__('filament-forms::users.infolist.account_info_title'))
                 ->columns(2)
                 ->schema([
                     TextEntry::make('email')

@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
+use App\Models\ImutCategory;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
 use App\Services\DailyReport\MatrixDataService;
 use App\Services\DailyReport\SlideOverService;
 use App\Traits\DailyReport\NavigationTrait;
@@ -15,7 +18,7 @@ abstract class BaseDailyReportMonitoring extends Page
     use NavigationTrait;
     use ReportManagementTrait;
 
-    protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
+    protected string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
 
     protected MatrixDataService $matrixService;
     protected SlideOverService $slideOverService;
@@ -67,7 +70,7 @@ abstract class BaseDailyReportMonitoring extends Page
         $this->slideOverService = app(SlideOverService::class);
 
         // load category list and pre‑compute CSS classes for each
-        $this->imutCategories = \App\Models\ImutCategory::query()
+        $this->imutCategories = ImutCategory::query()
             ->orderBy('id')
             ->get(['id', 'category_name'])
             ->map(function ($c) {
@@ -138,8 +141,8 @@ abstract class BaseDailyReportMonitoring extends Page
 
             // Get reports with custom filter
             $reportsQueryOrCollection = $this->getReportsQuery($startDate, $endDate);
-            if ($reportsQueryOrCollection instanceof \Illuminate\Contracts\Support\Arrayable || $reportsQueryOrCollection instanceof \Illuminate\Support\Collection) {
-                $reports = $reportsQueryOrCollection instanceof \Illuminate\Support\Collection ? $reportsQueryOrCollection : collect($reportsQueryOrCollection->toArray());
+            if ($reportsQueryOrCollection instanceof Arrayable || $reportsQueryOrCollection instanceof Collection) {
+                $reports = $reportsQueryOrCollection instanceof Collection ? $reportsQueryOrCollection : collect($reportsQueryOrCollection->toArray());
             } else {
                 $reports = $reportsQueryOrCollection->get();
             }

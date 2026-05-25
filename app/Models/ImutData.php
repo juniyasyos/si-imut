@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\ImutDataFactory;
+use Illuminate\Database\Eloquent\Builder;
 use App\Support\CacheKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +20,7 @@ use App\Traits\HasUniqueWithSoftDeletes;
 
 class ImutData extends Model
 {
-    /** @use HasFactory<\Database\Factories\ImutDataFactory> */
+    /** @use HasFactory<ImutDataFactory> */
     use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
     /**
@@ -240,9 +242,9 @@ class ImutData extends Model
     /**
      * Scope helper to filter by monthly flag.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param Builder $query
      * @param bool $value
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeMonthly($query, bool $value = true)
     {

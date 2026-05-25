@@ -2,6 +2,8 @@
 
 namespace App\Services\DailyReport;
 
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
+use Exception;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\LaporanImutAutoGenerationSetting;
@@ -17,7 +19,7 @@ class DailyReportEntryContextService
         }
 
         if ($recordId) {
-            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $repo = app(DailyReportResponseRepositoryInterface::class);
             $record = $repo->getByIdWithRelations((int)$recordId, ['formTemplate.formFields.options', 'formTemplate.imutProfile.imutData.categories']);
 
             return $record?->formTemplate ?? null;
@@ -37,7 +39,7 @@ class DailyReportEntryContextService
 
         try {
             return Carbon::createFromFormat('Y-m-d', $date)->format('d F Y');
-        } catch (\Exception) {
+        } catch (Exception) {
             return now()->format('d F Y');
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use Carbon\Carbon;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\EnhancedFormField;
@@ -141,7 +142,7 @@ trait BuildsDynamicForm
 
         return match ($type) {
             'bool' => $value ? '✅ Ya' : '❌ Tidak',
-            'date' => \Carbon\Carbon::parse($value)->format('d/m/Y'),
+            'date' => Carbon::parse($value)->format('d/m/Y'),
             'checkbox' => is_array($value) ? implode(', ', $value) : $value,
             default => $value,
         };

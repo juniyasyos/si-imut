@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use Exception;
 use App\Models\ImutProfile;
 use App\Models\FormTemplate;
 use App\Models\EnhancedFormField;
@@ -113,7 +114,7 @@ class ImutProfileObserver
                 $this->createDefaultYesNoTemplate($imutProfile);
                 Log::info("Default FormTemplate created for ImutProfile {$imutProfile->id}");
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Failed to create FormTemplate for ImutProfile {$imutProfile->id}", [
                 'error' => $e->getMessage(),
                 'imut_data_title' => $imutProfile->imutData->title ?? 'Unknown',

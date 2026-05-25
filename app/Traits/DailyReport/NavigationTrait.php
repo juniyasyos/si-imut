@@ -2,6 +2,7 @@
 
 namespace App\Traits\DailyReport;
 
+use App\Models\LaporanImutAutoGenerationSetting;
 use Carbon\Carbon;
 
 trait NavigationTrait
@@ -19,7 +20,7 @@ trait NavigationTrait
     public function isInWeek(int $day): bool
     {
         $realToday = now();
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
         $start = $realToday->copy()->subDays($backDays)->startOfDay();
         $cellDate = Carbon::createFromFormat('Y-m', $this->selectedMonth)->day($day)->startOfDay();
 

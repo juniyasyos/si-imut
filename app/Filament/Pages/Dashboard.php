@@ -9,5 +9,5 @@ class Dashboard extends \Filament\Pages\Dashboard
     /**
      * @var view-string
      */
-    protected static string $view = 'filament.pages.dashboard-custom';
+    protected string $view = 'filament.pages.dashboard-custom';
 }

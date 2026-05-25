@@ -2,6 +2,9 @@
 
 namespace App\Services\DailyReport;
 
+use App\Models\LaporanImutAutoGenerationSetting;
+use Illuminate\Support\Collection;
+use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Support\CacheKey;
 use Carbon\Carbon;
@@ -27,7 +30,7 @@ class MatrixDataService
             return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
         }
 
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
 
         // Get indicators
         $indicators = $this->getIndicators($unitKerjaIds);
@@ -86,13 +89,13 @@ class MatrixDataService
      * Get compliance summaries for the month
      * Optimized query structure with efficient grouping
      */
-    private function getComplianceSummaries(array $unitKerjaIds, Carbon $date): \Illuminate\Support\Collection
+    private function getComplianceSummaries(array $unitKerjaIds, Carbon $date): Collection
     {
         $startDate = $date->copy()->startOfMonth()->format('Y-m-d');
         $endDate = $date->copy()->endOfMonth()->format('Y-m-d');
         $now = now();
 
-        return \App\Models\DailyReportResponse::select([
+        return DailyReportResponse::select([
             'form_templates.id as form_template_id',
             DB::raw('DATE(daily_report_responses.report_date) as report_date'),
             DB::raw('COUNT(*) as total_count'),
@@ -211,7 +214,7 @@ class MatrixDataService
             return ['error' => 'No unit kerja found', 'status' => 'error', 'count' => 0];
         }
 
-        $reports = \App\Models\DailyReportResponse::select([
+        $reports = DailyReportResponse::select([
             'daily_report_responses.id',
             'daily_report_responses.report_date',
             'daily_report_responses.compliance_status',
@@ -229,7 +232,7 @@ class MatrixDataService
         $today = now()->startOfDay();
         
         // Get cached setting instead of querying repeatedly
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
         $sixDaysAgo = $today->copy()->subDays($backDays)->startOfDay();
 
         if ($count > 0) {

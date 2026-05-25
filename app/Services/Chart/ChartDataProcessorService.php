@@ -2,6 +2,7 @@
 
 namespace App\Services\Chart;
 
+use Carbon\Carbon;
 use App\Services\Core\ImutCalculatorService;
 use Illuminate\Support\Collection;
 
@@ -175,10 +176,10 @@ class ChartDataProcessorService
     {
         return $laporans->map(function ($laporan) {
             $start = $laporan->assessment_period_start
-                ? \Carbon\Carbon::parse($laporan->assessment_period_start)
+                ? Carbon::parse($laporan->assessment_period_start)
                 : null;
             $end = $laporan->assessment_period_end
-                ? \Carbon\Carbon::parse($laporan->assessment_period_end)
+                ? Carbon::parse($laporan->assessment_period_end)
                 : null;
 
             if (!$start || !$end) {
@@ -227,7 +228,7 @@ class ChartDataProcessorService
             );
             $target = round($row->target ?? 0, 2);
 
-            $labelKey = \Carbon\Carbon::parse($row->periode . '-01')->format('Y-m');
+            $labelKey = Carbon::parse($row->periode . '-01')->format('Y-m');
             $labels[$labelKey] = $label;
             $dataNilai[$labelKey] = $percentage;
             $dataTarget[$labelKey] = $target;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
@@ -155,7 +156,7 @@ class ChartController extends Controller
     {
         // Reference date for active period check
         $middleMonth = ceil(($startMonth + $endMonth) / 2);
-        $referenceDate = \Carbon\Carbon::create($year, $middleMonth, 15);
+        $referenceDate = Carbon::create($year, $middleMonth, 15);
 
         // Query benchmarks
         $benchmarkingQuery = ImutBenchmarking::query()
@@ -242,7 +243,7 @@ class ChartController extends Controller
 
         $year = $request->integer('year', now()->year);
         $month = $request->integer('month', now()->month);
-        $referenceDate = \Carbon\Carbon::create($year, $month, 15);
+        $referenceDate = Carbon::create($year, $month, 15);
 
         $benchmarks = ImutBenchmarking::query()
             ->with(['regionType:id,type', 'imutData:id,title'])

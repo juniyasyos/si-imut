@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use Filament\Support\Enums\Width;
+use Filament\Schemas\Components\Section;
 use App\Models\LaporanImut;
 use App\Services\Chart\ChartDataProcessorService;
 use App\Services\Core\ImutSqlExpressionBuilder;
@@ -12,9 +14,7 @@ use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -25,7 +25,7 @@ class ImutCapaianWidget extends ApexChartWidget
     protected static ?string $heading = 'Capaian IMUT Per Kategori (Persentase)';
     protected static ?string $description = 'Grafik ini memperlihatkan persentase indikator IMUT yang berhasil memenuhi target untuk setiap kategori dalam satu laporan terpilih.';
     protected static ?int $sort = 5;
-    protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
+    protected static Width|string $filterFormWidth = Width::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
 
     public ?array $statistikData = null;

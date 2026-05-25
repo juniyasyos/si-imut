@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\ImutProfileResource\RelationManagers;
 
-use Filament\Forms\Form;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use App\Models\FormTemplate;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Filters\TrashedFilter;
 use App\Filament\Resources\ImutDataResource;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Actions\{Action, ActionGroup as ActionsActionGroup, CreateAction, EditAction, DeleteAction, DeleteBulkAction, BulkActionGroup};
 use Illuminate\Support\Facades\Auth;
@@ -107,7 +107,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                Action::make('manage_form_builder')
+                \Filament\Actions\Action::make('manage_form_builder')
                     ->label('Manage Form Builder')
                     ->icon('heroicon-m-cog-8-tooth')
                     ->visible(function ($livewire) {
@@ -121,7 +121,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                         'templateId' => $livewire->ownerRecord->activeFormTemplate?->id,
                     ])),
 
-                Action::make('create_from_latest')
+                \Filament\Actions\Action::make('create_from_latest')
                     ->label('Create Version from Latest')
                     ->icon('heroicon-m-document-duplicate')
                     ->color('info')
@@ -153,8 +153,8 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     ->modalDescription('This will create a new version based on your latest form template. You can then modify it as needed.')
                     ->modalSubmitActionLabel('Create Version'),
             ])
-            ->actions([
-                Action::make('activate')
+            ->recordActions([
+                \Filament\Actions\Action::make('activate')
                     ->label('Activate')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -173,7 +173,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     ->modalHeading('Activate Template Version')
                     ->modalDescription('This will deactivate all other versions and make this version active. Are you sure?'),
 
-                Action::make('deactivate')
+                \Filament\Actions\Action::make('deactivate')
                     ->label('Deactivate')
                     ->icon('heroicon-o-x-circle')
                     ->color('warning')
@@ -190,7 +190,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     })
                     ->requiresConfirmation(),
 
-                DeleteAction::make()
+                \Filament\Actions\DeleteAction::make()
                     ->visible(function (FormTemplate $record) {
                         return !$record->is_active &&
                             (Auth::user()?->can('delete_form_template') || Auth::user()?->can('force_editable_imut::profile'));
@@ -204,8 +204,8 @@ class FormTemplateVersionsRelationManager extends RelationManager
                 ForceDeleteAction::make()
                     ->visible(fn(Model $record) => method_exists($record, 'trashed') && $record->trashed()),
 
-                ActionsActionGroup::make([
-                    Action::make('edit')
+                \Filament\Actions\ActionGroup::make([
+                    \Filament\Actions\Action::make('edit')
                         ->label('Edit Template')
                         ->icon('heroicon-o-pencil-square')
                         ->url(fn(FormTemplate $record, $livewire) => ImutDataResource::getUrl('manage-form-builder', [
@@ -214,7 +214,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                             'templateId' => $record->id,
                         ])),
 
-                    Action::make('duplicate')
+                    \Filament\Actions\Action::make('duplicate')
                         ->label('Create New Version')
                         ->icon('heroicon-o-document-duplicate')
                         ->action(function (FormTemplate $record) {
@@ -231,7 +231,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                         ->modalHeading('Create New Version')
                         ->modalDescription('This will create a copy of this template version that you can modify independently.'),
 
-                    Action::make('view_fields')
+                    \Filament\Actions\Action::make('view_fields')
                         ->label('View Fields')
                         ->icon('heroicon-o-list-bullet')
                         ->url(fn(FormTemplate $record, $livewire) => ImutDataResource::getUrl('manage-form-builder', [
@@ -240,7 +240,7 @@ class FormTemplateVersionsRelationManager extends RelationManager
                             'templateId' => $record->id,
                         ])),
 
-                    Action::make('preview')
+                    \Filament\Actions\Action::make('preview')
                         ->label('Preview Form')
                         ->icon('heroicon-o-eye')
                         ->url(fn(FormTemplate $record, $livewire) => ImutDataResource::getUrl('preview-form', [
@@ -253,9 +253,9 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     ->button()
                     ->label('Actions'),
             ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
+            ->toolbarActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make()
                         ->visible(Auth::user()?->can('delete_form_template') || Auth::user()?->can('force_editable_imut::profile'))
                         ->deselectRecordsAfterCompletion(),
                     RestoreBulkAction::make(),
@@ -267,10 +267,10 @@ class FormTemplateVersionsRelationManager extends RelationManager
             ->defaultPaginationPageOption(10);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('version')
                     ->label('Version')
                     ->required()

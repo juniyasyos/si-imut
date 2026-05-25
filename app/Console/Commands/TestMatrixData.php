@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use App\Services\DailyReport\MatrixDataService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -19,7 +20,7 @@ class TestMatrixData extends Command
         $month = $this->option('month') ?? now()->format('Y-m');
 
         // Set authenticated user
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         if (!$user) {
             $this->error("User {$userId} not found");
             return 1;

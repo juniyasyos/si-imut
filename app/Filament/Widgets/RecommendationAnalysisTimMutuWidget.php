@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use Log;
+use Exception;
 use App\Models\LaporanImut;
 use App\Support\CacheKey;
 use Filament\Widgets\Widget;
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 
 class RecommendationAnalysisTimMutuWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.recommendation-analysis-tim-mutu-widget';
+    protected string $view = 'filament.widgets.recommendation-analysis-tim-mutu-widget';
 
     // Cache duration in seconds (30 minutes)
     private const CACHE_DURATION = 1800;
@@ -22,19 +24,19 @@ class RecommendationAnalysisTimMutuWidget extends Widget
             $user = Auth::user();
 
             if (!$user) {
-                \Log::debug('RecommendationAnalysisTimMutuWidget: No authenticated user');
+                Log::debug('RecommendationAnalysisTimMutuWidget: No authenticated user');
                 return false;
             }
 
             $hasRole = $user->hasAnyRole(['super_admin', 'admin', 'tim_mutu']);
-            \Log::debug('RecommendationAnalysisTimMutuWidget::canView', [
+            Log::debug('RecommendationAnalysisTimMutuWidget::canView', [
                 'user_id' => $user->id,
                 'has_tim_mutu_role' => $hasRole,
             ]);
 
             return $hasRole;
-        } catch (\Exception $e) {
-            \Log::error('Error in RecommendationAnalysisTimMutuWidget::canView', [
+        } catch (Exception $e) {
+            Log::error('Error in RecommendationAnalysisTimMutuWidget::canView', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

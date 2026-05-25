@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Throwable;
 use App\Support\StorageFallback;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -61,7 +62,7 @@ class SyncLocalToS3Job implements ShouldQueue
                     if ($source->mimeType($file) === null) {
                         continue;
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // continue attempting copy
                 }
 
@@ -97,7 +98,7 @@ class SyncLocalToS3Job implements ShouldQueue
                         $local->delete($file);
                         Log::info("SyncLocalToS3Job: deleted local copy {$file}");
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::error("SyncLocalToS3Job: failed to upload {$file} — " . $e->getMessage());
                 } finally {
                     if (is_resource($stream)) {

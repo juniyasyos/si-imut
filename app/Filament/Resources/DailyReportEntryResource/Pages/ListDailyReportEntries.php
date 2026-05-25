@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
+use Exception;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Http\RedirectResponse;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\Access\AuthorizationException;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\DailyReportResponse;
 use App\Services\DailyReport\DailyReportMonitoringService;
@@ -78,7 +84,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                     $this->loadMatrixData();
                     $this->openSlideOver((int) $indicatorId, $validDate);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning('Invalid date format in URL parameter', ['date' => $date]);
             }
         }
@@ -212,14 +218,14 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
      * Export monitoring data to Excel
      * Delegates to service layer
      */
-    public function exportMonitoring(int $templateId, ?string $month = null): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+    public function exportMonitoring(int $templateId, ?string $month = null): BinaryFileResponse|RedirectResponse
     {
         try {
             $user = Auth::user();
             $currentMonth = $month ?? $this->monitoringMonth ?? now()->format('Y-m');
 
             return $this->monitoringService->exportMonitoring($user, $templateId, $currentMonth);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Export monitoring data failed', [
                 'template_id' => $templateId,
                 'month' => $currentMonth ?? 'unknown',
@@ -253,17 +259,17 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     public function deleteReport($recordId): void
     {
         try {
-            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $repo = app(DailyReportResponseRepositoryInterface::class);
             $record = $repo->findById($recordId);
 
             if (! $record) {
-                throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
+                throw new ModelNotFoundException();
             }
 
             // Delete the record via repository
             $deleted = $repo->deleteById($recordId);
             if (! $deleted) {
-                throw new \Exception('Gagal menghapus laporan');
+                throw new Exception('Gagal menghapus laporan');
             }
 
             // Close slide-over if open
@@ -278,19 +284,19 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
             // Reload data
             $this->loadMatrixData();
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             Notification::make()
                 ->danger()
                 ->title('Akses Ditolak')
                 ->body('Anda tidak memiliki izin untuk menghapus laporan ini')
                 ->send();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             Notification::make()
                 ->danger()
                 ->title('Data Tidak Ditemukan')
                 ->body('Laporan yang akan dihapus tidak ditemukan')
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error deleting daily report response', [
                 'id' => $recordId,
                 'error' => $e->getMessage(),

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -56,7 +57,7 @@ class DebugIamTtdApi extends Command
                 if ($token) {
                     $this->info("✓ Generated test token: " . substr($token, 0, 50) . "...");
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("Could not generate token: {$e->getMessage()}");
                 return self::FAILURE;
             }
@@ -110,7 +111,7 @@ class DebugIamTtdApi extends Command
                 $this->warn('⚠ Response received but no TTD URL in body');
                 return self::SUCCESS;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("❌ API Call Failed: {$e->getMessage()}");
             return self::FAILURE;
         }
@@ -132,7 +133,7 @@ class DebugIamTtdApi extends Command
             }
 
             return null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->warn("Token generation error: {$e->getMessage()}");
             return null;
         }

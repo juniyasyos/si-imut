@@ -2,6 +2,7 @@
 
 namespace App\Services\DynamicForm;
 
+use App\Services\DailyReport\UnifiedComplianceService;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
 use App\Models\FormTemplate;
 
@@ -13,7 +14,7 @@ class ComplianceCalculatorService
     public static function calculateCompliance(FormTemplate $formTemplate, array $data): array
     {
         // Delegate to UnifiedComplianceService to avoid duplicate scoring logic
-        $service = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+        $service = app(UnifiedComplianceService::class);
         $unified = $service->calculate($formTemplate, $data);
 
         // Map unified structure to legacy shape expected by callers of this class

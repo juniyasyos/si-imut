@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+use Illuminate\Support\Str;
+use Juniyasyos\FilamentMediaManager\Models\Folder;
 use App\Models\UnitKerja;
 use App\Repositories\Interfaces\UnitKerjaFolderRepositoryInterface;
 use Illuminate\Support\Facades\Log;
@@ -20,8 +22,8 @@ class UnitKerjaObserver
     {
         try {
             // Additional safety check to prevent duplicates
-            $collection = \Illuminate\Support\Str::slug($unitKerja->unit_name);
-            $existingFolder = \Juniyasyos\FilamentMediaManager\Models\Folder::where('collection', $collection)
+            $collection = Str::slug($unitKerja->unit_name);
+            $existingFolder = Folder::where('collection', $collection)
                 ->whereNull('parent_id')
                 ->exists();
 

@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\ImutDataResource\Schema;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Grid;
+use App\Models\ImutCategory;
+use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use App\Filament\Resources\ImutDataResource;
 use App\Models\RegionType;
 use App\Models\UnitKerja;
@@ -13,14 +19,10 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -32,7 +34,7 @@ use Guava\FilamentModalRelationManagers\Actions\Action\RelationManagerAction;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
-class ImutDataSchema extends ImutDataResource
+class ImutDataSchema
 {
     public static function make(): array
     {
@@ -96,7 +98,7 @@ class ImutDataSchema extends ImutDataResource
 
                                         $user = Auth::user();
 
-                                        $query = \App\Models\ImutCategory::query();
+                                        $query = ImutCategory::query();
 
                                         if (! ($user->can('create_imut::category') && $user->can('update_imut::category'))) {
                                             $query->where('is_use_global', true);
@@ -189,14 +191,14 @@ class ImutDataSchema extends ImutDataResource
                                         ->label('Unit Kerja yang Bisa Menilai')
                                         ->relationship('unitKerja', 'unit_name')
                                         ->options(function () {
-                                            return app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                                            return app(ImutDataRepositoryInterface::class)
                                                 ->getAllUnitKerjaOptions();
                                         })
                                         ->columns(3)
                                         ->required()
                                         ->bulkToggleable()
                                         ->default(function () {
-                                            return app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
+                                            return app(ImutDataRepositoryInterface::class)
                                                 ->getUserUnitKerjaIds(Auth::user());
                                         })
                                         ->visible(fn() => Auth::user()->can('attach_imut_data_to_unit_kerja_unit::kerja'))

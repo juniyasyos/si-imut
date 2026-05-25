@@ -12,7 +12,7 @@ use App\Services\DailyReport\WidgetDataService;
 
 class LaporanUnitWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.laporan-unit-widget';
+    protected string $view = 'filament.widgets.laporan-unit-widget';
 
     public static function canView(): bool
     {
@@ -37,13 +37,7 @@ class LaporanUnitWidget extends Widget
     /**
      * Summaries per unit kerja that belong to current user and are part of latest laporan
      *
-     * @return array<int,array{
-     *     unit_id:int,
-     *     unit_name:string,
-     *     today:int,
-     *     perfect:int,
-     *     last_submission:?\Illuminate\Support\Carbon
-     * }>
+     * @return array<int, array{unit_id: int, unit_name: string, today: int, perfect: int, last_submission: ?Carbon}>
      */
     public function getUnitSummaries(): array
     {

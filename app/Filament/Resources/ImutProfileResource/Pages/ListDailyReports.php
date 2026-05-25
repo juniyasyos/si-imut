@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages;
 
+use Filament\Actions\ViewAction;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Actions\Action;
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Filament\Resources\ImutProfileResource;
 use App\Models\ImutProfile;
 use App\Models\DailyReportResponse;
@@ -12,17 +18,12 @@ use Filament\Tables\Table;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\CreateAction;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\Grid;
-use Filament\Infolists\Infolist;
 
 class ListDailyReports extends Page implements HasTable
 {
@@ -30,7 +31,7 @@ class ListDailyReports extends Page implements HasTable
 
     protected static string $resource = ImutProfileResource::class;
 
-    protected static string $view = 'filament.pages.list-daily-reports';
+    protected string $view = 'filament.pages.list-daily-reports';
 
     public ?ImutProfile $record = null;
 
@@ -100,7 +101,7 @@ class ListDailyReports extends Page implements HasTable
                     ]),
 
                 Filter::make('report_date')
-                    ->form([
+                    ->schema([
                         DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal'),
                         DatePicker::make('sampai_tanggal')
@@ -118,14 +119,14 @@ class ListDailyReports extends Page implements HasTable
                             );
                     }),
             ])
-            ->actions([
+            ->recordActions([
                 ViewAction::make()
                     ->label('Lihat Detail')
                     ->modalHeading(fn($record) => 'Detail Laporan Harian - ' . $record->report_date->format('d/m/Y'))
                     ->modalWidth('5xl')
-                    ->infolist(
-                        fn(Infolist $infolist): Infolist => $infolist
-                            ->schema([
+                    ->schema(
+                        fn(Schema $schema): Schema => $schema
+                            ->components([
                                 Section::make('Informasi Laporan')
                                     ->schema([
                                         Grid::make(3)
@@ -229,7 +230,7 @@ class ListDailyReports extends Page implements HasTable
 
     protected function getTableQuery()
     {
-        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+        $repo = app(DailyReportResponseRepositoryInterface::class);
         return $repo->getQueryForProfile($this->record->id);
     }
 
@@ -249,14 +250,14 @@ class ListDailyReports extends Page implements HasTable
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('create_report')
+            Action::make('create_report')
                 ->label('Tambah Laporan Harian')
                 ->icon('heroicon-o-plus')
                 ->color('primary')
                 ->url(fn() => "#") // TODO: implement create functionality
                 ->visible(fn() => $this->record->formTemplates()->exists()),
 
-            \Filament\Actions\Action::make('export')
+            Action::make('export')
                 ->label('Export Data')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('gray')

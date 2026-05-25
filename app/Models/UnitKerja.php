@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,11 +21,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $unit_name
  * @property string|null $description
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ImutData[] $imutData
+ * @property Carbon|null $deleted_at
+ * @property-read Collection|User[] $users
+ * @property-read Collection|ImutData[] $imutData
  * @property-read Folder|null $folder
- * @property-read \App\Models\LaporanImut|null $laporanImut
+ * @property-read LaporanImut|null $laporanImut
  */
 class UnitKerja extends Model
 {
@@ -62,7 +65,7 @@ class UnitKerja extends Model
         parent::boot();
 
         static::saving(function ($model) {
-            $model->slug = \Illuminate\Support\Str::slug($model->unit_name);
+            $model->slug = Str::slug($model->unit_name);
         });
     }
 
@@ -109,7 +112,7 @@ class UnitKerja extends Model
 
     public function laporanUnitKerjas(): HasMany
     {
-        return $this->hasMany(\App\Models\LaporanUnitKerja::class, 'unit_kerja_id');
+        return $this->hasMany(LaporanUnitKerja::class, 'unit_kerja_id');
     }
 
     /**

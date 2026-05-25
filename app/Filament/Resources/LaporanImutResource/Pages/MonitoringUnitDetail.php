@@ -36,7 +36,7 @@ class MonitoringUnitDetail extends BaseDailyReportMonitoring
 
     protected function getReportsQuery($startDate, $endDate)
     {
-        $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+        $repo = app(DailyReportResponseRepositoryInterface::class);
         // Return a collection directly from repository; Base loader accepts collections now
         return $repo->getTableViewEntries(
             auth()->user(),

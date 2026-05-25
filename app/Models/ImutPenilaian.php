@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Database\Factories\ImutPenilaianFactory;
 use App\Support\CacheKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +17,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class ImutPenilaian extends Model implements HasMedia
 {
-    /** @use HasFactory<\Database\Factories\ImutPenilaianFactory> */
+    /** @use HasFactory<ImutPenilaianFactory> */
     use HasFactory, InteractsWithMedia, LogsActivity;
 
     /**
@@ -92,7 +94,7 @@ class ImutPenilaian extends Model implements HasMedia
             Cache::forget(CacheKey::recommendationAnalysisCompletionStatsUnitKerja($laporanId, $unitKerjaId));
 
             // Clear for all users' unit kerja widgets
-            $userIds = \App\Models\User::whereHas('unitKerjas', function ($q) use ($unitKerjaId) {
+            $userIds = User::whereHas('unitKerjas', function ($q) use ($unitKerjaId) {
                 $q->where('unit_kerja.id', $unitKerjaId);
             })->pluck('id')->toArray();
 
@@ -105,7 +107,7 @@ class ImutPenilaian extends Model implements HasMedia
 
             if ($laporanImut && $this->profile) {
                 $imutDataId = $this->profile->imut_data_id;
-                $year = \Carbon\Carbon::parse($laporanImut->assessment_period_start)->year;
+                $year = Carbon::parse($laporanImut->assessment_period_start)->year;
 
                 Cache::forget(CacheKey::imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId));
                 Cache::forget(CacheKey::imutPenilaian($imutDataId, $year));

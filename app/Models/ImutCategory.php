@@ -57,7 +57,7 @@ class ImutCategory extends Model
     /**
      * Relasi ke model ImutData.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function imutData(): HasMany
     {

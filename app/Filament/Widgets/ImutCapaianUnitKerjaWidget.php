@@ -2,6 +2,10 @@
 
 namespace App\Filament\Widgets;
 
+use Filament\Support\Enums\Width;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
 use App\Services\Chart\UnitKerjaChartDataService;
@@ -11,11 +15,7 @@ use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -24,7 +24,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 {
     protected static ?string $chartId = 'imutCapaianUnitKerjaWidget';
     protected static ?int $sort = 20;
-    protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
+    protected static Width|string $filterFormWidth = Width::ExtraLarge;
     protected int|string|array $columnSpan = 'full';
 
     public function getUnitKerjaChartService(): UnitKerjaChartDataService
@@ -100,13 +100,13 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $cacheKey = 'imut_capaian_unit_kerja_' . md5(serialize($this->filters));
+        $cacheKey = 'imut_capaian_unit_kerja_' . md5(serialize($this->pageFilters));
 
         return Cache::remember($cacheKey, now()->addMinutes(30), function () {
             // Get categories once and pass to service
             $categories = ImutCategory::all();
             $laporans = $this->chartDataService->getCachedLaporans();
-            $chartSeries = $this->chartDataService->buildUnitKerjaChartSeries($laporans, $this->filters, $categories);
+            $chartSeries = $this->chartDataService->buildUnitKerjaChartSeries($laporans, $this->pageFilters, $categories);
 
             return [
                 'chart' => [

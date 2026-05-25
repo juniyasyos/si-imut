@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Services\Support\SignatoryService;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Database\Factories\UserFactory;
 use App\Support\CacheKey;
 use Filament\Panel;
 use App\Models\UnitKerja;
@@ -35,41 +39,41 @@ use App\Traits\HasUniqueWithSoftDeletes;
  * @property string $nip
  * @property string $name
  * @property string $place_of_birth
- * @property \Carbon\Carbon $date_of_birth
+ * @property Carbon $date_of_birth
  * @property string $gender
  * @property string $address_ktp
  * @property string|null $phone_number
  * @property string|null $email
  * @property string|null $password
  * @property string|null $status
- * @property \Carbon\Carbon|null $email_verified_at
- * @property \Carbon\Carbon|null $created_at
- * @property \Carbon\Carbon|null $updated_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon|null $email_verified_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  *
- * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User query()
- * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereNip($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePlaceOfBirth($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereDateOfBirth($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereGender($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereAddressKtp($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePhoneNumber($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePositionId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerifiedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereDeletedAt($value)
+ * @method static Builder|User newModelQuery()
+ * @method static Builder|User newQuery()
+ * @method static Builder|User query()
+ * @method static Builder|User whereId($value)
+ * @method static Builder|User whereNip($value)
+ * @method static Builder|User whereName($value)
+ * @method static Builder|User wherePlaceOfBirth($value)
+ * @method static Builder|User whereDateOfBirth($value)
+ * @method static Builder|User whereGender($value)
+ * @method static Builder|User whereAddressKtp($value)
+ * @method static Builder|User wherePhoneNumber($value)
+ * @method static Builder|User whereEmail($value)
+ * @method static Builder|User wherePassword($value)
+ * @method static Builder|User whereStatus($value)
+ * @method static Builder|User wherePositionId($value)
+ * @method static Builder|User whereEmailVerifiedAt($value)
+ * @method static Builder|User whereCreatedAt($value)
+ * @method static Builder|User whereUpdatedAt($value)
+ * @method static Builder|User whereDeletedAt($value)
  */
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles, TwoFactorAuthenticatable, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
 
     /**
@@ -199,7 +203,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     public function getTtdPresignedUrlAttribute(): ?string
     {
-        return app(\App\Services\Support\SignatoryService::class)->getTtdUrl($this);
+        return app(SignatoryService::class)->getTtdUrl($this);
     }
 
     /**

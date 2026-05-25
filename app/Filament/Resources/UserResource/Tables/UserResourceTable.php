@@ -2,24 +2,24 @@
 
 namespace App\Filament\Resources\UserResource\Tables;
 
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\ExportBulkAction;
 use App\Filament\Exports\UserExporter;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ExportBulkAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
@@ -140,7 +140,7 @@ class UserResourceTable
 
             Action::make(__('filament-forms::users.actions.set_role'))
                 ->icon('heroicon-m-adjustments-vertical')
-                ->form([
+                ->schema([
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->options(function (): array {

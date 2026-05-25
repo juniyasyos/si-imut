@@ -16,5 +16,5 @@ class AccountWidget extends Widget
      * @var view-string
      */
     // protected static string $view = 'filament-panels::widgets.account-widget';
-    protected static string $view = 'filament.widgets.account-widget';
+    protected string $view = 'filament.widgets.account-widget';
 }

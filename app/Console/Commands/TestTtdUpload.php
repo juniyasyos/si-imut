@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use Illuminate\Http\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -40,7 +42,7 @@ class TestTtdUpload extends Command
                     $this->line("      - " . $file['path']);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Koneksi gagal: " . $e->getMessage());
             return 1;
         }
@@ -81,7 +83,7 @@ class TestTtdUpload extends Command
             }
 
             @unlink($testImagePath);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
             $this->error("   Stack: " . $e->getTraceAsString());
         }
@@ -96,7 +98,7 @@ class TestTtdUpload extends Command
             file_put_contents($testImagePath, $imageData);
 
             // Gunakan Storage::putFile seperti Filament FileUpload
-            $path = Storage::disk('s3')->putFile('ttd', new \Illuminate\Http\File($testImagePath), 'public');
+            $path = Storage::disk('s3')->putFile('ttd', new File($testImagePath), 'public');
 
             if ($path) {
                 $this->line("   ✓ putFile berhasil");
@@ -107,7 +109,7 @@ class TestTtdUpload extends Command
             }
 
             @unlink($testImagePath);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 
@@ -127,7 +129,7 @@ class TestTtdUpload extends Command
                     $this->line("   - " . $file['path'] . " (" . $size . " bytes)");
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ✗ Error: " . $e->getMessage());
         }
 

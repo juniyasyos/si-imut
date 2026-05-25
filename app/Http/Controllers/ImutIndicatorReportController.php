@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Spatie\Permission\Models\Role;
+use Throwable;
+use Carbon\Carbon;
 use App\Models\ImutData;
 use App\Models\LaporanImut;
 use App\Models\User;
@@ -28,10 +31,10 @@ class ImutIndicatorReportController extends Controller
         // Guard against missing role to avoid RoleDoesNotExist exceptions.
         $timMutuUser = null;
         try {
-            if (class_exists(\Spatie\Permission\Models\Role::class) && \Spatie\Permission\Models\Role::where('name', 'Tim Mutu')->exists()) {
+            if (class_exists(Role::class) && Role::where('name', 'Tim Mutu')->exists()) {
                 $timMutuUser = User::role('Tim Mutu')->orderBy('name')->first();
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // swallow - treat as not found
             $timMutuUser = null;
         }
@@ -66,7 +69,7 @@ class ImutIndicatorReportController extends Controller
                 if (config('filesystems.disks.s3') && Storage::disk('s3')->exists(ltrim($path, '/'))) {
                     return true;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 return false;
             }
             return false;
@@ -85,7 +88,7 @@ class ImutIndicatorReportController extends Controller
 
         // Signature date (prefer laporan.created_at, fallback to report month/year or today)
         $signatureDate = $laporan->created_at?->translatedFormat('j F Y')
-            ?? (($laporan->report_month && $laporan->report_year) ? \Carbon\Carbon::create($laporan->report_year, $laporan->report_month, 1)->translatedFormat('j F Y') : now()->translatedFormat('j F Y'));
+            ?? (($laporan->report_month && $laporan->report_year) ? Carbon::create($laporan->report_year, $laporan->report_month, 1)->translatedFormat('j F Y') : now()->translatedFormat('j F Y'));
 
         // Return the HTML view with Alpine.js — pass only ready-to-render variables
         return view('reports.imut-indicator-report')->with([

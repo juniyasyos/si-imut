@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Spatie\Browsershot\Browsershot;
 
@@ -15,7 +16,7 @@ class CategoryReportPdfController extends Controller
      * internally and captures the rendered HTML as PDF.
      *
      * @param  Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function download(Request $request)
     {

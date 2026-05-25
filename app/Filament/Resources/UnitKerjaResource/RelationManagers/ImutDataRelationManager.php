@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\UnitKerjaResource\RelationManagers;
 
+use Filament\Actions\AttachAction;
+use Filament\Actions\Action;
+use Filament\Actions\DetachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachBulkAction;
 use App\Filament\Resources\ImutDataResource;
 use App\Models\ImutData;
 use App\Models\User;
@@ -9,7 +14,6 @@ use Filament\Forms\Components\Select;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -65,7 +69,7 @@ class ImutDataRelationManager extends RelationManager
                     ->boolean()
                     ->alignCenter()
                     ->size('xl')
-                    ->disabled(fn() => \Illuminate\Support\Facades\Gate::any([
+                    ->disabled(fn() => Gate::any([
                         'update_imut::data',
                     ]))
                     ->tooltip(fn(Model $record) => $record->status ? 'Active' : 'Unactive')
@@ -93,7 +97,7 @@ class ImutDataRelationManager extends RelationManager
                     ->preload(),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()
+                AttachAction::make()
                     ->label(__('filament-forms::imut-data-relationship-user.actions.attach.label'))
                     ->color('primary')
                     ->recordSelect(function ($livewire) {
@@ -125,23 +129,23 @@ class ImutDataRelationManager extends RelationManager
                     ->attachAnother(false)
                     ->recordSelectSearchColumns(['title']),
             ])
-            ->actions([
-                Tables\Actions\Action::make('edit')
+            ->recordActions([
+                Action::make('edit')
                     ->label(__('Edit'))
                     ->icon('heroicon-m-pencil-square')
                     ->url(fn($record) => ImutDataResource::getUrl('edit', ['record' => $record->slug]))
                     ->color('primary')
                     ->visible(fn() => Gate::allows('update_imut::data')),
-                Tables\Actions\DetachAction::make()
+                DetachAction::make()
                     ->requiresConfirmation()
                     ->visible(fn() => Gate::allows('attach_imut_data_to_unit_kerja_unit::kerja', User::class))
                     ->label(__('filament-forms::imut-data-relationship-user.actions.detach.label'))
                     ->modalHeading(__('filament-forms::imut-data-relationship-user.actions.detach.heading'))
                     ->modalDescription(__('filament-forms::imut-data-relationship-user.actions.detach.description')),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make()
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make()
                         ->label(__('filament-forms::imut-data-relationship-user.actions.detach_bulk.label')),
                 ]),
             ]);

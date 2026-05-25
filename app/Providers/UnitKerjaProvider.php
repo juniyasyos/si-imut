@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Interfaces\UnitKerjaFolderRepositoryInterface;
+use App\Repositories\UnitKerjaFolderRepository;
 use Illuminate\Support\ServiceProvider;
 
 class UnitKerjaProvider extends ServiceProvider
@@ -12,8 +14,8 @@ class UnitKerjaProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Repositories\Interfaces\UnitKerjaFolderRepositoryInterface::class,
-            \App\Repositories\UnitKerjaFolderRepository::class,
+            UnitKerjaFolderRepositoryInterface::class,
+            UnitKerjaFolderRepository::class,
         );
 
     }

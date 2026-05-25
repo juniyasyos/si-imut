@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\User;
 use App\Services\Support\SignatoryService;
 use Illuminate\Console\Command;
@@ -82,7 +83,7 @@ class TestTtdUrlResolver extends Command
                 }
 
                 return self::SUCCESS;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("❌ Error during resolution: {$e->getMessage()}");
                 $this->line("Stack trace: {$e->getTraceAsString()}");
                 return self::FAILURE;
@@ -99,7 +100,7 @@ class TestTtdUrlResolver extends Command
         try {
             $headers = @get_headers($url, 1);
             return is_array($headers) && strpos($headers[0], '200') !== false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

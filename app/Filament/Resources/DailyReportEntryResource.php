@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use App\Filament\Resources\DailyReportEntryResource\Pages\ListDailyReportEntries;
+use App\Filament\Resources\DailyReportEntryResource\Pages\CreateDailyReportEntry;
+use App\Filament\Resources\DailyReportEntryResource\Pages\ViewDailyReportEntry;
+use App\Filament\Resources\DailyReportEntryResource\Pages\EditDailyReportEntry;
+use App\Models\User;
 use App\Filament\Resources\DailyReportEntryResource\Infolist\DailyReportEntryInfolist;
 use App\Filament\Resources\DailyReportEntryResource\Pages;
 use App\Filament\Resources\DailyReportEntryResource\Schema\DailyReportEntrySchema;
@@ -9,8 +15,6 @@ use App\Filament\Resources\DailyReportEntryResource\Table\DailyReportEntryTable;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Form;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,15 +24,13 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = DailyReportResponse::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?string $navigationLabel = 'Laporan Harian';
 
     protected static ?string $modelLabel = 'Laporan Harian';
 
     protected static ?string $pluralModelLabel = 'Laporan Harian';
-
-    protected static ?string $navigationGroup = 'Quality Indicators';
 
     protected static ?int $navigationSort = 1;
 
@@ -49,9 +51,9 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     /**
      * Get the form schema for create and edit pages
      */
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(DailyReportEntrySchema::make());
+        return $schema->components(DailyReportEntrySchema::make());
     }
 
     /**
@@ -79,8 +81,8 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             )
             ->columns(DailyReportEntryTable::columns())
             ->filters(DailyReportEntryTable::filters())
-            ->actions(DailyReportEntryTable::actions())
-            ->bulkActions(DailyReportEntryTable::bulkActions())
+            ->recordActions(DailyReportEntryTable::actions())
+            ->toolbarActions(DailyReportEntryTable::bulkActions())
             ->defaultSort('report_date', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100])
@@ -97,9 +99,9 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     /**
      * Get the infolist schema for view page
      */
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist->schema(DailyReportEntryInfolist::make());
+        return $schema->components(DailyReportEntryInfolist::make());
     }
 
     /**
@@ -116,10 +118,10 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDailyReportEntries::route('/'),
-            'create' => Pages\CreateDailyReportEntry::route('/create'),
-            'view' => Pages\ViewDailyReportEntry::route('/{record}'),
-            'edit' => Pages\EditDailyReportEntry::route('/{record}/edit'),
+            'index' => ListDailyReportEntries::route('/'),
+            'create' => CreateDailyReportEntry::route('/create'),
+            'view' => ViewDailyReportEntry::route('/{record}'),
+            'edit' => EditDailyReportEntry::route('/{record}/edit'),
             // 'list' => Pages\ListUnitKerjaDailyReport::route('/list'),
         ];
     }
@@ -131,7 +133,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (!$user) {
             return false;
         }
 
@@ -149,7 +151,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (!$user) {
             return false;
         }
 
@@ -161,7 +163,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
 
         $indicatorId = request('indicator');
 
-        if (! $indicatorId) {
+        if (!$indicatorId) {
             return false;
         }
 
@@ -169,7 +171,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             ->with(['imutProfile.imutData.unitKerja:id'])
             ->find($indicatorId);
 
-        if (! $template) {
+        if (!$template) {
             return false;
         }
 
@@ -179,7 +181,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
 
         $unitKerjaQuery = $template->imutProfile?->imutData?->unitKerja();
 
-        if (! $unitKerjaQuery) {
+        if (!$unitKerjaQuery) {
             return false;
         }
 
@@ -200,8 +202,8 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return false;
         }
 
-        /** @var \App\Models\User $user */
-        if (! $user->hasUnitKerjaCached()) {
+        /** @var User $user */
+        if (!$user->hasUnitKerjaCached()) {
             return false;
         }
 
@@ -221,8 +223,8 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return false;
         }
 
-        /** @var \App\Models\User $user */
-        if (! $user->hasUnitKerjaCached()) {
+        /** @var User $user */
+        if (!$user->hasUnitKerjaCached()) {
             return false;
         }
 
@@ -242,8 +244,8 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return false;
         }
 
-        /** @var \App\Models\User $user */
-        if (! $user->hasUnitKerjaCached()) {
+        /** @var User $user */
+        if (!$user->hasUnitKerjaCached()) {
             return false;
         }
 
@@ -263,7 +265,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return false;
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         return $user->hasUnitKerjaCached();
     }
 
@@ -302,7 +304,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             return null;
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         if (!$user->hasRole('Unit Kerja')) {
             return null;
         }

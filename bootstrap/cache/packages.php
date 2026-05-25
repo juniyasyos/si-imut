@@ -42,7 +42,14 @@
   array (
     'providers' => 
     array (
-      0 => 'BezhanSalleh\\FilamentLanguageSwitch\\FilamentLanguageSwitchServiceProvider',
+      0 => 'BezhanSalleh\\LanguageSwitch\\LanguageSwitchServiceProvider',
+    ),
+  ),
+  'bezhansalleh/filament-plugin-essentials' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'BezhanSalleh\\PluginEssentials\\PluginEssentialsServiceProvider',
     ),
   ),
   'bezhansalleh/filament-shield' => 
@@ -134,6 +141,20 @@
       0 => 'Filament\\Notifications\\NotificationsServiceProvider',
     ),
   ),
+  'filament/query-builder' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Filament\\QueryBuilder\\QueryBuilderServiceProvider',
+    ),
+  ),
+  'filament/schemas' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Filament\\Schemas\\SchemasServiceProvider',
+    ),
+  ),
   'filament/spatie-laravel-settings-plugin' => 
   array (
     'providers' => 
@@ -202,17 +223,6 @@
       0 => 'Jeffgreco13\\FilamentBreezy\\FilamentBreezyServiceProvider',
     ),
   ),
-  'jenssegers/agent' => 
-  array (
-    'aliases' => 
-    array (
-      'Agent' => 'Jenssegers\\Agent\\Facades\\Agent',
-    ),
-    'providers' => 
-    array (
-      0 => 'Jenssegers\\Agent\\AgentServiceProvider',
-    ),
-  ),
   'juniyasyos/auth-bridge-client' => 
   array (
     'providers' => 
@@ -245,7 +255,7 @@
   array (
     'providers' => 
     array (
-      0 => 'Juniyasyos\\FilamentPWA\\FilamentPwaServiceProvider',
+      0 => 'Juniyasyos\\FilamentPWA\\Infrastructure\\Providers\\FilamentPwaServiceProvider',
     ),
   ),
   'juniyasyos/filament-settings-hub-kaido' => 

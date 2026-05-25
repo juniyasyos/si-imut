@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ImutDataResource\Pages;
 
+use App\Models\ImutData;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Widgets\LineChart;
 use App\Repositories\Interfaces\ImutDataRepositoryInterface;
@@ -16,11 +17,11 @@ class SummaryDiagram extends Page
 {
     protected static string $resource = ImutDataResource::class;
 
-    protected static string $view = 'filament.resources.imut-data-resource.pages.summary-imut-data-diagram';
+    protected string $view = 'filament.resources.imut-data-resource.pages.summary-imut-data-diagram';
 
     public array $data = [];
 
-    public ?\App\Models\ImutData $imutData = null;
+    public ?ImutData $imutData = null;
 
     /**
      * @param  array<string, mixed>  $parameters

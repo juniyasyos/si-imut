@@ -2,23 +2,24 @@
 
 namespace App\Filament\Resources\UnitKerjaResource\Tables;
 
+use Filament\Actions\Action;
+use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use App\Filament\Exports\UnitKerjaExporter;
 use App\Filament\Resources\UnitKerjaResource;
 use App\Filament\Resources\UnitKerjaResource\RelationManagers\ImutDataRelationManager;
 use App\Filament\Resources\UnitKerjaResource\RelationManagers\UsersRelationManager;
 use App\Models\UnitKerja;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ExportAction;
-use Filament\Tables\Actions\ForceDeleteAction;
-use Filament\Tables\Actions\ForceDeleteBulkAction;
-use Filament\Tables\Actions\RestoreAction;
-use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Artisan;
@@ -81,7 +82,7 @@ class UnitKerjaResourceTable
     public static function actions(): array
     {
         return [
-            \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('users')
+            RelationManagerAction::make('users')
                 ->slideOver()
                 ->modalWidth('7xl')
                 ->label('Pegawai')
@@ -90,7 +91,7 @@ class UnitKerjaResourceTable
                 ->visible(UnitKerjaResource::isCrudAllowed())
                 ->relationManager(UsersRelationManager::make()),
 
-            \Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction::make('imutData')
+            RelationManagerAction::make('imutData')
                 ->slideOver()
                 ->modalWidth('7xl')
                 ->label('Imut Data')

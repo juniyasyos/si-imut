@@ -17,7 +17,7 @@ class ImutDataReport extends Page
 
     protected static string $resource = LaporanImutResource::class;
 
-    protected static string $view = 'filament.resources.laporan-imut-resource.pages.imut-data-report';
+    protected string $view = 'filament.resources.laporan-imut-resource.pages.imut-data-report';
 
     protected static bool $shouldRegisterNavigation = false;
 

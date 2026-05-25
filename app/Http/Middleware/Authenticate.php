@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,7 @@ class Authenticate extends Middleware
             }
 
             // Check if Filament login exists
-            if (\Illuminate\Support\Facades\Route::has('filament.siimut.auth.login')) {
+            if (Route::has('filament.siimut.auth.login')) {
                 return route('filament.siimut.auth.login');
             }
 

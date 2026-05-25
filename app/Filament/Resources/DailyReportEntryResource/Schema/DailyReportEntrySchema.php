@@ -2,15 +2,16 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Schema;
 
-use App\Filament\Resources\DailyReportEntryResource;
+use Filament\Schemas\Components\Section;
+use Carbon\Carbon;
+use Exception;
 use App\Models\FormTemplate;
 use App\Traits\BuildsDynamicForm;
 use App\Services\DailyReport\DailyReportEntryContextService;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 
-class DailyReportEntrySchema extends DailyReportEntryResource
+class DailyReportEntrySchema
 {
     use BuildsDynamicForm;
 
@@ -86,8 +87,8 @@ class DailyReportEntrySchema extends DailyReportEntryResource
                 $dateParam = request()->query('date');
                 if ($dateParam) {
                     try {
-                        return \Carbon\Carbon::createFromFormat('Y-m-d', $dateParam);
-                    } catch (\Exception $e) {
+                        return Carbon::createFromFormat('Y-m-d', $dateParam);
+                    } catch (Exception $e) {
                         return now();
                     }
                 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FolderCustomResource\Pages;
 
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\FolderCustomResource;
 use Juniyasyos\FilamentMediaManager\Resources\FolderResource\Pages\CreateFolder;
 
@@ -12,7 +13,7 @@ class CreateFolderCustom extends CreateFolder
     public static function canAccess(array $parameters = []): bool
     {
         /** @var User $user */
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
 
         return $user->can('create_folder::custom');
     }

@@ -2,21 +2,20 @@
 
 namespace App\Filament\Resources\LaporanImutResource\Schema;
 
-use App\Filament\Resources\LaporanImutResource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use App\Models\LaporanImutAutoGenerationSetting;
 use App\Models\UnitKerja;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Illuminate\Support\Facades\Auth;
 
-class LaporanImutSchema extends LaporanImutResource
+class LaporanImutSchema
 {
     public static function make(): array
     {

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Exception;
 use App\Models\LaporanImutAutoGenerationSetting;
 use App\Services\Laporan\LaporanImutAutoGenerationService;
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class GenerateMonthlyLaporanImut implements ShouldQueue
                     'target_date' => $this->targetDate->format('Y-m-d'),
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to generate monthly laporan', [
                 'target_date' => $this->targetDate->format('Y-m-d'),
                 'error' => $e->getMessage(),

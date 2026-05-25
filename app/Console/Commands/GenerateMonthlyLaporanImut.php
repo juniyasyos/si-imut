@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\LaporanImut;
 use App\Models\LaporanImutAutoGenerationSetting;
 use App\Models\UnitKerja;
@@ -118,7 +119,7 @@ class GenerateMonthlyLaporanImut extends Command
             Log::info("Auto-generated laporan for {$monthName} {$year}", ['laporan_id' => $laporan->id]);
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("❌ Failed to create report: " . $e->getMessage());
             Log::error("Failed to auto-generate laporan: " . $e->getMessage(), ['exception' => $e]);
             return Command::FAILURE;

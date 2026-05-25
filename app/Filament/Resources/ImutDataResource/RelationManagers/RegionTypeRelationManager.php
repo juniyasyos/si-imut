@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\ImutDataResource\RelationManagers;
 
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use App\Models\RegionType;
 use Filament\Forms\Components\ColorPicker;
@@ -18,10 +18,10 @@ class RegionTypeRelationManager extends RelationManager
 {
     protected static string $relationship = 'regionTypes';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('type')
                     ->label('Nama Region Type')
                     ->placeholder('Contoh: 🌍 Nasional, 📍 Provinsi')
@@ -70,20 +70,20 @@ class RegionTypeRelationManager extends RelationManager
                     ->color('primary'),
             ])
             ->headerActions([
-                CreateAction::make()
+                \Filament\Actions\CreateAction::make()
                     ->label('Tambah Region Type')
                     ->icon('heroicon-m-plus')
                     ->visible(Auth::user()->can('create_region::type::bencmarking')),
             ])
-            ->actions([
-                EditAction::make()
+            ->recordActions([
+                \Filament\Actions\EditAction::make()
                     ->visible(Auth::user()->can('update_region::type::bencmarking')),
-                DeleteAction::make()
+                \Filament\Actions\DeleteAction::make()
                     ->visible(Auth::user()->can('delete_region::type::bencmarking')),
             ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
+            ->toolbarActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make()
                         ->visible(Auth::user()->can('delete_region::type::bencmarking')),
                 ]),
             ])

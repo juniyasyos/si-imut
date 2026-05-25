@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use App\Traits\HasActiveIcon;
+use Filament\Schemas\Schema;
+use App\Filament\Resources\LaporanImutResource\Pages\ListLaporanImuts;
+use App\Filament\Resources\LaporanImutResource\Pages\CreateLaporanImut;
+use App\Filament\Resources\LaporanImutResource\Pages\EditLaporanImut;
+use App\Filament\Resources\LaporanImutResource\Pages\MonitoringDailyReports;
+use App\Filament\Resources\LaporanImutResource\Pages\MonitoringUnitDetail;
+use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\LaporanImutResource\Pages;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
@@ -11,7 +19,6 @@ use App\Filament\Resources\LaporanImutResource\Schema\LaporanImutSchema;
 use App\Filament\Resources\LaporanImutResource\Table\LaporanImutTable;
 use App\Models\LaporanImut;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -20,11 +27,11 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanImutResource extends Resource implements HasShieldPermissions
 {
-    use \App\Traits\HasActiveIcon;
+    use HasActiveIcon;
 
     protected static ?string $model = LaporanImut::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?int $navigationSort = 5;
 
@@ -94,9 +101,9 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
         return __('filament-forms::imut-data.navigation.group');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema(LaporanImutSchema::make());
+        return $schema->components(LaporanImutSchema::make());
     }
 
     // ===================== Table Start Component =======================
@@ -110,8 +117,8 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
             ->columns(LaporanImutTable::columns())
             ->filters(LaporanImutTable::filters())
             ->headerActions(LaporanImutTable::headerActions())
-            ->actions(LaporanImutTable::actions())
-            ->bulkActions(LaporanImutTable::bulkActions());
+            ->recordActions(LaporanImutTable::actions())
+            ->toolbarActions(LaporanImutTable::bulkActions());
     }
 
     public static function getRelations(): array
@@ -122,11 +129,11 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListLaporanImuts::route('/'),
-            'create' => Pages\CreateLaporanImut::route('/create'),
-            'edit' => Pages\EditLaporanImut::route('/{record:slug}/edit'),
-            'monitoring-daily-reports' => Pages\MonitoringDailyReports::route('/{record:slug}/monitoring-daily-reports'),
-            'monitoring-unit-detail' => Pages\MonitoringUnitDetail::route('/{record:slug}/monitoring-unit-detail/{unit}'),
+            'index' => ListLaporanImuts::route('/'),
+            'create' => CreateLaporanImut::route('/create'),
+            'edit' => EditLaporanImut::route('/{record:slug}/edit'),
+            'monitoring-daily-reports' => MonitoringDailyReports::route('/{record:slug}/monitoring-daily-reports'),
+            'monitoring-unit-detail' => MonitoringUnitDetail::route('/{record:slug}/monitoring-unit-detail/{unit}'),
             'unit-kerja-report' => UnitKerjaReport::route('/unit-kerja-report'),
             'unit-kerja-imut-data-report-detail' => UnitKerjaImutDataReport::route('/unit-kerja-imut-data-report'),
             'imut-data-report' => ImutDataReport::route('/imut-data-report'),
@@ -134,7 +141,7 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
             ->orderByDesc('assessment_period_start');

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Pages;
 
+use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\UnitKerja;
 use Carbon\Carbon;
@@ -12,7 +13,7 @@ class MonitoringDailyReports extends Page
 {
     protected static string $resource = DailyReportEntryResource::class;
 
-    protected static string $view = 'filament.resources.daily-report-entry-resource.pages.monitoring-daily-reports';
+    protected string $view = 'filament.resources.daily-report-entry-resource.pages.monitoring-daily-reports';
 
     protected static ?string $title = 'Monitoring Daily Reports';
 
@@ -80,7 +81,7 @@ class MonitoringDailyReports extends Page
                 : 0;
 
             // Get last submission
-            $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
+            $repo = app(DailyReportResponseRepositoryInterface::class);
             $lastSubmission = $repo->getLatestForUnitAndFormIds($unit->id, $startDate, $endDate, []);
 
             // Determine status

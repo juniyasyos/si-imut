@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use App\Services\DailyReport\UnifiedComplianceService;
 use Illuminate\View\Component;
 use Illuminate\Support\HtmlString;
 use App\Models\FormTemplate;
@@ -18,7 +19,7 @@ class ComplianceDisplay extends Component
         $this->currentData = $currentData;
 
         // Perform compliance calculation here (off Livewire handler)
-        $unified = app(\App\Services\DailyReport\UnifiedComplianceService::class)
+        $unified = app(UnifiedComplianceService::class)
             ->calculate($this->formTemplate, $this->currentData);
 
         $fieldBreakdown = $unified['calculation_details']['field_breakdown'] ?? [];

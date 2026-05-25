@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\DailyReportEntryResource\Infolist;
 
-use App\Filament\Resources\DailyReportEntryResource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Flex;
+use Filament\Schemas\Components\Grid;
 use App\Traits\BuildsDynamicForm;
-use Filament\Infolists\Components\Grid;
-use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 
-class DailyReportEntryInfolist extends DailyReportEntryResource
+class DailyReportEntryInfolist
 {
     use BuildsDynamicForm;
 
@@ -32,7 +31,7 @@ class DailyReportEntryInfolist extends DailyReportEntryResource
     {
         return Section::make()
             ->schema([
-                Split::make([
+                Flex::make([
                     Grid::make(2)
                         ->schema([
                             TextEntry::make('formTemplate.imutProfile.imutData.title')

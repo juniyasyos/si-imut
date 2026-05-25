@@ -2,13 +2,18 @@
 
 namespace App\Livewire\Overview;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\RegionType;
+use Filament\Actions\Action;
+use App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport;
 use App\Models\ImutCategory;
 use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -20,8 +25,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Number;
 use Livewire\Component;
 
-class ImutDataSummaryTable extends Component implements HasForms, HasTable
+class ImutDataSummaryTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
     use HasPercentageColor;
@@ -39,7 +45,7 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
         $this->dispatch('$refresh');
     }
 
-    public function getTableRecordKey($record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         if (! $record) {
             return (string) uniqid('record_', true);
@@ -125,7 +131,7 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
         ];
 
         // Add dynamic benchmarking columns
-        $regionTypes = \App\Models\RegionType::all();
+        $regionTypes = RegionType::all();
         foreach ($regionTypes as $regionType) {
             $columns[] = TextColumn::make("benchmark_{$regionType->id}")
                 ->label("{$regionType->type}")
@@ -177,23 +183,23 @@ class ImutDataSummaryTable extends Component implements HasForms, HasTable
                     ->multiple()
                     ->placeholder('Semua Kategori'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view_details')
                     ->label('Lihat Detail')
                     ->icon('heroicon-o-eye')
                     ->color('info')
                     ->url(function ($record) {
-                        return \App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport::getUrl([
+                        return ImutDataReport::getUrl([
                             'laporan_id' => $record->laporan_imut_id,
                         ]);
                     }),
             ])
             ->recordUrl(function ($record) {
-                return \App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport::getUrl([
+                return ImutDataReport::getUrl([
                     'laporan_id' => $record->laporan_imut_id,
                 ]);
             })
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 
     public function render()

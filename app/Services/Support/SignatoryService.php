@@ -2,6 +2,7 @@
 
 namespace App\Services\Support;
 
+use Throwable;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Models\DailyReportResponse;
@@ -29,17 +30,16 @@ class SignatoryService
      * @param Collection|null $entries  Collection of DailyReportResponse (optional)
      * @return array{pengumpul: ?User, validator: ?User, unit_users: Collection}
      */
-
     /**
      * Resolve TTD URL for a user.
      * - If IAM enabled: Call IAM API to get presigned URL (cached 15 min)
      * - If IAM disabled or fails: Use local logic (S3 fallback to public disk)
      * - If already absolute URL: return as-is
      *
-     * @param \App\Models\User $user
+     * @param User $user
      * @return string|null
      */
-    public function getTtdUrl(\App\Models\User $user): ?string
+    public function getTtdUrl(User $user): ?string
     {
         if (! $user || ! $user->ttd_url) {
             return null;
@@ -57,7 +57,7 @@ class SignatoryService
                 if ($iamUrl) {
                     return $iamUrl;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::warning('Failed to get TTD URL from IAM: ' . $e->getMessage());
                 // fall back to local logic
             }
@@ -109,7 +109,7 @@ class SignatoryService
             } else {
                 Log::warning("IAM TTD API error: {$response->status()} - {$response->body()}");
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning("IAM TTD API error: {$e->getMessage()}");
         }
 
@@ -132,7 +132,7 @@ class SignatoryService
             if (Storage::disk('s3')->exists($user->ttd_url)) {
                 return trim($this->buildS3Url($user->ttd_url));
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // ignore and fallback to public
         }
 
@@ -143,7 +143,7 @@ class SignatoryService
                 $pathOnly = parse_url($rawPublicUrl, PHP_URL_PATH) ?: $rawPublicUrl;
                 return '/' . ltrim($pathOnly, '/');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // nothing else to do
         }
 

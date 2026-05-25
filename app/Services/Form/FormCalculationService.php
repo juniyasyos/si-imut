@@ -2,6 +2,8 @@
 
 namespace App\Services\Form;
 
+use Illuminate\Support\Carbon;
+use Exception;
 use App\Services\Core\ImutCalculatorService;
 
 /**
@@ -49,7 +51,7 @@ class FormCalculationService
         }
 
         try {
-            $startDate = \Illuminate\Support\Carbon::parse($start);
+            $startDate = Carbon::parse($start);
             $endDate = match ($type) {
                 'mingguan' => $startDate->copy()->addWeeks($value),
                 'bulanan' => $startDate->copy()->addMonths($value),
@@ -57,7 +59,7 @@ class FormCalculationService
             };
 
             $set('end_period', $endDate->format('Y-m-d'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             logger()->error('Perhitungan end_period gagal:', [
                 'start' => $start,
                 'type' => $type,

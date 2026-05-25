@@ -2,9 +2,9 @@
 
 namespace App\Traits\DailyReport;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use App\Models\FormTemplate;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -17,10 +17,10 @@ trait FormHandlerTrait
     /**
      * Get the form for report entry - Simple Google Form style
      */
-    public function reportEntryForm(Form $form): Form
+    public function reportEntryForm(Schema $form): Schema
     {
         if (!$this->formTemplate) {
-            return $form->schema([
+            return $form->components([
                 Placeholder::make('no_template')
                     ->content('Form template tidak ditemukan.')
             ]);
@@ -152,7 +152,7 @@ trait FormHandlerTrait
             ]);
 
         return $form
-            ->schema($schema)
+            ->components($schema)
             ->statePath('reportData')
             ->live();
     }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -163,15 +165,15 @@ class EnhancedFormField extends Model
         try {
             // Try HH:mm:ss first, then fallback to HH:mm
             try {
-                $start = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
-            } catch (\Exception $e) {
-                $start = \Carbon\Carbon::createFromFormat('H:i', $startTime);
+                $start = Carbon::createFromFormat('H:i:s', $startTime);
+            } catch (Exception $e) {
+                $start = Carbon::createFromFormat('H:i', $startTime);
             }
 
             try {
-                $end = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
-            } catch (\Exception $e) {
-                $end = \Carbon\Carbon::createFromFormat('H:i', $endTime);
+                $end = Carbon::createFromFormat('H:i:s', $endTime);
+            } catch (Exception $e) {
+                $end = Carbon::createFromFormat('H:i', $endTime);
             }
 
             // Handle case where end time is next day
@@ -183,7 +185,7 @@ class EnhancedFormField extends Model
 
             // Score 100 jika durasi <= threshold, 0 jika tidak
             return ($durationInMinutes <= $threshold) ? 100 : 0;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return 0;
         }
     }
@@ -276,9 +278,9 @@ class EnhancedFormField extends Model
     private function convertTimeToMinutes(string $time): int
     {
         try {
-            $carbon = \Carbon\Carbon::createFromFormat('H:i:s', $time);
+            $carbon = Carbon::createFromFormat('H:i:s', $time);
             return ($carbon->hour * 60) + $carbon->minute;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return 480; // fallback 8 hours
         }
     }

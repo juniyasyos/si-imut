@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 class UnitKerjaInfo extends Widget
 {
-    protected static string $view = 'filament.widgets.unit-kerja-info';
+    protected string $view = 'filament.widgets.unit-kerja-info';
 
     protected int|string|array $columnSpan = 'full';
 
