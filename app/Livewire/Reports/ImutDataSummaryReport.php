@@ -5,7 +5,7 @@ namespace App\Livewire\Reports;
 use App\Filament\Exports\SummaryImutDataReportExport;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataUnitKerjaReport;
 use App\Models\ImutCategory;
-use App\Services\ImutReportService;
+use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;

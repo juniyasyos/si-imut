@@ -6,7 +6,7 @@ use App\Filament\Exports\SummaryUnitKerjaReportDetailExport;
 use App\Models\ImutCategory;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
-use App\Services\ImutReportService;
+use App\Services\Reporting\ImutReportService;
 use App\Models\UnitKerja;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;

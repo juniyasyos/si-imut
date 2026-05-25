@@ -3,7 +3,7 @@
 namespace App\Livewire\Overview;
 
 use App\Models\ImutCategory;
-use App\Services\ImutReportService;
+use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Filament\Forms\Concerns\InteractsWithForms;

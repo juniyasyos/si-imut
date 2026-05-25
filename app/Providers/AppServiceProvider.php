@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
         );
 
         // Register Services - Priority 1 & 2 refactoring
-        $this->app->singleton(\App\Services\ImutReportService::class);
+        $this->app->singleton(\App\Services\Reporting\ImutReportService::class);
         $this->app->singleton(\App\Services\Support\PeriodParserService::class);
         $this->app->singleton(\App\Services\Reporting\CategoryAggregationService::class);
         $this->app->singleton(\App\Services\Reporting\CategoryReportDataBuilderService::class);

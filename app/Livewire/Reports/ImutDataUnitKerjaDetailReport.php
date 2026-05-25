@@ -7,7 +7,7 @@ use App\Filament\Resources\ImutPenilaianResource\Schema\ImutPenilaianResourceSch
 use App\Models\ImutCategory;
 use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
-use App\Services\ImutReportService;
+use App\Services\Reporting\ImutReportService;
 use App\Traits\HasPercentageColor;
 use App\Traits\HasTableHelpers;
 use Carbon\Carbon;
