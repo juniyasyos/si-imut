@@ -2,56 +2,32 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
-use Filament\Schemas\Components\Component;
 use App\Models\User;
+use Filament\Forms\Form;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
-use Illuminate\Contracts\View\View;
-use Filament\Forms\Components\TextInput;
 use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Validation\ValidationException;
-use DiogoGPinto\AuthUIEnhancer\Pages\Auth\Concerns\HasCustomLayout;
-use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Auth\Pages\Login as BaseLogin;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 
-class Login extends \Filament\Auth\Pages\Login
+class Login extends BaseLogin
 {
-    use HasCustomLayout;
-
-    protected string $view = 'vendor.filament-panels.pages.auth.login';
-
     public function mount(): void
     {
         parent::mount();
 
-        // If SSO is enabled, redirect to SSO login route immediately
-        // This prevents any custom login form from being rendered
-        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
-        if ($ssoEnabled) {
-            $this->redirect(route('sso.login'), navigate: false);
-            return;
-        }
-
-        // Auto-fill credentials in local environment for development
-        if (app()->isLocal()) {
-            $this->form->fill([
-                'nip' => '0000.00000',
-                'password' => 'adminpassword',
-                'remember' => true,
-            ]);
-        }
+        // Don't auto-fill credentials to prevent accidental re-login after logout
+        // Users still see demo credentials in placeholder text
     }
 
     public function authenticate(): ?LoginResponse
     {
-        // Prevent custom login if SSO is enabled
-        // This is a safeguard in case form submission happens despite redirect
-        $ssoEnabled = config('iam.enabled', false) || env('USE_SSO', false);
-        if ($ssoEnabled) {
-            return $this->redirect(route('sso.login'), navigate: false);
-        }
-
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException $exception) {
@@ -62,84 +38,56 @@ class Login extends \Filament\Auth\Pages\Login
 
         $data = $this->form->getState();
 
-        // build credentials once for reuse
-        $credentials = $this->getCredentialsFromFormData($data);
+        $identifier = $data['identifier'];
 
-        // lookup user by NIP so we can check status before attempting auth
-        $user = User::where('nip', $data['nip'])->first();
+        // Cari user berdasarkan NIP atau No HP
+        $user = User::where('nip', $identifier)
+            ->first();
 
-        if ($user && in_array($user->status, ['inactive', 'suspended'])) {
-            $statusMessage = match ($user->status) {
-                'inactive' => 'Akun Anda belum diaktifkan. Silakan hubungi administrator.',
-                'suspended' => 'Akun Anda sedang ditangguhkan karena pelanggaran atau alasan lain.',
-            };
-
-            $notificationType = match ($user->status) {
-                'inactive' => 'warning',
-                'suspended' => 'danger',
-            };
-
-            Notification::make()
-                ->title('Akses Ditolak')
-                ->body($statusMessage)
-                ->$notificationType()
-                ->persistent()
-                ->send();
-
-            throw ValidationException::withMessages([
-                'data.nip' => $statusMessage,
-            ]);
-        }
-
-        // attempt login once, password is verified internally by the guard
-        if (!Filament::auth()->attempt($credentials, $data['remember'] ?? false)) {
-            // Determine whether the problem is a non-existent NIP or a wrong password
-            if (! $user) {
-                $message = 'NIP tidak ditemukan. Silakan periksa kembali.';
-                $field = 'data.nip';
-            } else {
-                $message = 'Password salah. Silakan coba lagi.';
-                $field = 'data.password';
-            }
-
+        if (!$user || !Hash::check($data['password'], $user->password)) {
             Notification::make()
                 ->title('Login Gagal')
-                ->body($message)
+                ->body('NIP atau password salah. Silakan coba lagi.')
                 ->danger()
                 ->persistent()
                 ->send();
 
             throw ValidationException::withMessages([
-                $field => $message,
+                'data.identifier' => __('filament-panels::pages/auth/login.messages.failed'),
             ]);
         }
 
-        $user = Filament::auth()->user();
-
         if (
             ($user instanceof FilamentUser) &&
-            (!$user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
+            (!$user->canAccessPanel(Filament::getCurrentPanel()))
         ) {
-            Filament::auth()->logout();
-
             $this->throwFailureValidationException();
         }
+
+        Filament::auth()->login($user, $data['remember'] ?? false);
 
         session()->regenerate();
 
         return app(LoginResponse::class);
     }
 
-    /**
-     * @return array<int|string, string|\Filament\Schemas\Schema>
-     */
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                $this->getIdentifierFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getRememberFormComponent(),
+            ]);
+    }
+
     protected function getForms(): array
     {
         return [
             'form' => $this->form(
                 $this->makeForm()
-                    ->components([
-                        $this->getNIPFormComponent(),
+                    ->schema([
+                        $this->getIdentifierFormComponent(),
                         $this->getPasswordFormComponent(),
                         $this->getRememberFormComponent(),
                     ])
@@ -148,25 +96,13 @@ class Login extends \Filament\Auth\Pages\Login
         ];
     }
 
-    protected function getNIPFormComponent(): Component
+    protected function getIdentifierFormComponent(): Component
     {
-        return TextInput::make('nip')
-            ->label(__('nip'))
+        return TextInput::make('identifier')
+            ->label('NIP')
             ->required()
-            ->autocomplete()
+            ->autocomplete('username')
             ->autofocus()
             ->extraInputAttributes(['tabindex' => 1]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    protected function getCredentialsFromFormData(array $data): array
-    {
-        return [
-            'nip' => $data['nip'],
-            'password' => $data['password'],
-        ];
     }
 }
