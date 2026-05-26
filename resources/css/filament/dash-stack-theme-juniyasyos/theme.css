@@ -124,8 +124,8 @@
 }
 
 /* Topbar Start */
-.fi-topbar {
-    >nav {
+.fi-topbar-ctn {
+    >.fi-topbar {
         @apply ring-offset-0 ring-0 shadow-none;
         @apply border-b-[0.5px] border-b-[#E0E0E0] dark:border-none;
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
@@ -207,7 +207,25 @@
 /* Topbar End */
 
 /* Sidebar Start */
-.fi-sidebar.fi-sidebar-open {
+.fi-main-sidebar {
+    @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
+    @apply border-r-[1px] border-r-gray-200 dark:border-r-white/10;
+
+    .fi-sidebar-header-ctn,
+    .fi-sidebar-footer {
+        @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
+    }
+
+    .fi-sidebar-header-ctn {
+        @apply border-b-[1px] border-b-gray-200 dark:border-b-white/10;
+    }
+
+    .fi-sidebar-footer {
+        @apply border-t-[1px] border-t-gray-200 dark:border-t-white/10;
+    }
+}
+
+.fi-main-sidebar.fi-sidebar-open {
     .fi-sidebar-header {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
         @apply justify-center;
@@ -225,7 +243,7 @@
     .fi-sidebar-nav {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
         @apply border-r-[1px] border-r-gray-200 dark:border-r-white/10;
-        @apply py-4 px-0;
+        @apply py-4 px-4;
 
         >.fi-sidebar-nav-groups {
             @apply gap-y-4 -mr-4;
@@ -300,7 +318,7 @@
 
 }
 
-.fi-sidebar:not(.fi-sidebar-open) {
+.fi-main-sidebar:not(.fi-sidebar-open) {
     .fi-sidebar-header {
         @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
         @apply justify-center;
