@@ -260,14 +260,14 @@
 
                 >.fi-sidebar-group-items {
                     >.fi-sidebar-item {
-                        @apply relative px-10 rtl:pr-14 rtl:pl-6;
+                        @apply relative px-5 rtl:pr-10 rtl:pl-6;
 
                         /* Hover effect */
                         &:hover::after {
                             @apply bg-primary-600;
                         }
 
-                        >.fi-sidebar-item-button {
+                        >.fi-sidebar-item-btn {
                             @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
                             @apply px-4 py-3 gap-x-6;
 
@@ -278,29 +278,25 @@
                         }
                     }
 
-                    >.fi-sidebar-item.fi-sidebar-item-active {
-                        >.fi-sidebar-item-button {
+                    >.fi-sidebar-item.fi-active {
+                        >.fi-sidebar-item-btn {
                             @apply bg-primary-600;
 
                             >.fi-sidebar-item-icon,
                             >.fi-sidebar-item-label {
                                 @apply text-white;
                             }
-
-                            .fi-badge {
-                                @apply dark:bg-primary-700 dark:text-white ring-white font-extrabold;
-                            }
                         }
                     }
 
                     >.fi-sidebar-item::after {
                         content: '';
-                        @apply absolute left-0 rtl:right-4 top-0 w-4 h-full rounded-lg;
+                        @apply absolute left-0 rtl:right-0 -ml-4 top-0 w-4 h-full rounded-lg;
                         @apply bg-transparent;
                         transition: background-color 0.3s ease;
                     }
 
-                    >.fi-sidebar-item.fi-sidebar-item-active::after {
+                    >.fi-sidebar-item.fi-active::after {
                         @apply bg-primary-600;
                     }
 
@@ -355,7 +351,7 @@
                     >.fi-sidebar-item {
                         @apply relative rtl:pr-8;
 
-                        >.fi-sidebar-item-button {
+                        >.fi-sidebar-item-btn {
                             @apply bg-white dark:bg-[var(--ds-dark-bg-secondary-color)];
                             @apply px-4 py-3 gap-x-6;
 
@@ -366,8 +362,8 @@
                         }
                     }
 
-                    >.fi-sidebar-item.fi-sidebar-item-active {
-                        >.fi-sidebar-item-button {
+                    >.fi-sidebar-item.fi-active {
+                        >.fi-sidebar-item-btn {
 
                             >.fi-sidebar-item-icon,
                             >.fi-sidebar-item-label {
@@ -381,7 +377,7 @@
                         @apply absolute left-0 rtl:right-4 top-0 w-4 h-full rounded-lg;
                     }
 
-                    >.fi-sidebar-item.fi-sidebar-item-active::after {
+                    >.fi-sidebar-item.fi-active::after {
                         @apply bg-primary-600;
                     }
                 }
