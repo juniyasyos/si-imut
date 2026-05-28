@@ -103,10 +103,12 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn($query) => $query->with([
-                'unitKerjas:id,unit_name',
-                'createdBy:id,name',
-            ]))
+            ->modifyQueryUsing(
+                fn($query) => $query->with([
+                    'unitKerjas:id,unit_name',
+                    'createdBy:id,name',
+                ])->latest()
+            )
             ->columns(LaporanImutTable::columns())
             ->filters(LaporanImutTable::filters())
             ->headerActions(LaporanImutTable::headerActions())

@@ -15,6 +15,8 @@ class LaporanImutAutoGenerationSetting extends Model
     protected $fillable = [
         'is_enabled',
         'frequency',
+        'schedule_day_of_month',
+        'schedule_run_time',
         'report_month_based_on',
         'back_data_entry_duration',
         'recommendation_analysis_duration',
@@ -38,6 +40,7 @@ class LaporanImutAutoGenerationSetting extends Model
         'notification_targets' => 'array',
         'back_data_entry_duration' => 'integer',
         'recommendation_analysis_duration' => 'integer',
+        'schedule_day_of_month' => 'integer',
     ];
 
     protected static function boot()
@@ -90,6 +93,8 @@ class LaporanImutAutoGenerationSetting extends Model
         return [
             'is_enabled' => false,
             'frequency' => 'monthly',
+            'schedule_day_of_month' => 1,
+            'schedule_run_time' => '01:00',
             'report_month_based_on' => 'start',
             'back_data_entry_duration' => 6,
             'recommendation_analysis_duration' => 2,
