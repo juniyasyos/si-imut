@@ -39,7 +39,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Juniyasyos\DashStackTheme\DashStackThemePlugin;
-use Juniyasyos\FilamentLaravelBackup\FilamentLaravelBackupPlugin;
+// use Juniyasyos\FilamentLaravelBackup\FilamentLaravelBackupPlugin;
 use Juniyasyos\FilamentMediaManager\FilamentMediaManagerPlugin;
 use Juniyasyos\FilamentPWA\FilamentPWAPlugin;
 use Juniyasyos\FilamentSettingsHub\FilamentSettingsHubPlugin;
@@ -125,7 +125,7 @@ class AdminPanelProvider extends PanelProvider
             FilamentShieldPlugin::make(),
             FilamentPWAPlugin::make(),
             FilamentSettingsHubPlugin::make(),
-            FilamentLaravelBackupPlugin::make(),
+            // FilamentLaravelBackupPlugin::make(),
             FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
             ActivitylogPlugin::make()
                 ->navigationIcon('heroicon-o-clock')
