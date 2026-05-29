@@ -227,6 +227,13 @@
       0 => 'Juniyasyos\\DashStackTheme\\DashStackThemeServiceProvider',
     ),
   ),
+  'juniyasyos/filament-backup' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Juniyasyos\\FilamentLaravelBackup\\FilamentLaravelBackupServiceProvider',
+    ),
+  ),
   'juniyasyos/filament-media-manager' => 
   array (
     'providers' => 
@@ -455,6 +462,13 @@
       0 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
     ),
   ),
+  'spatie/laravel-backup' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Spatie\\Backup\\BackupServiceProvider',
+    ),
+  ),
   'spatie/laravel-medialibrary' => 
   array (
     'providers' => 
@@ -474,6 +488,17 @@
     'providers' => 
     array (
       0 => 'Spatie\\LaravelSettings\\LaravelSettingsServiceProvider',
+    ),
+  ),
+  'spatie/laravel-signal-aware-command' => 
+  array (
+    'aliases' => 
+    array (
+      'Signal' => 'Spatie\\SignalAwareCommand\\Facades\\Signal',
+    ),
+    'providers' => 
+    array (
+      0 => 'Spatie\\SignalAwareCommand\\SignalAwareCommandServiceProvider',
     ),
   ),
   'spatie/laravel-sitemap' => 
