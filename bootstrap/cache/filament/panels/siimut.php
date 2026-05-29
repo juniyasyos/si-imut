@@ -81,7 +81,6 @@
     'app.filament.widgets.unit-kerja.unit-kerja-info' => 'App\\Filament\\Widgets\\UnitKerja\\UnitKerjaInfo',
     'juniyasyos.filament-p-w-a.filament.pages.p-w-a-settings-page' => 'Juniyasyos\\FilamentPWA\\Filament\\Pages\\PWASettingsPage',
     'juniyasyos.filament-laravel-backup.pages.backups' => 'Juniyasyos\\FilamentLaravelBackup\\Pages\\Backups',
-    'juniyasyos.filament-laravel-backup.pages.backup-settings' => 'Juniyasyos\\FilamentLaravelBackup\\Pages\\BackupSettings',
     'jeffgreco13.filament-breezy.pages.my-profile-page' => 'Jeffgreco13\\FilamentBreezy\\Pages\\MyProfilePage',
     'filament.livewire.database-notifications' => 'Filament\\Livewire\\DatabaseNotifications',
     'filament.pages.auth.edit-profile' => 'Filament\\Pages\\Auth\\EditProfile',
@@ -109,8 +108,7 @@
     0 => 'App\\Filament\\Pages\\Dashboard',
     1 => 'Juniyasyos\\FilamentPWA\\Filament\\Pages\\PWASettingsPage',
     2 => 'Juniyasyos\\FilamentLaravelBackup\\Pages\\Backups',
-    3 => 'Juniyasyos\\FilamentLaravelBackup\\Pages\\BackupSettings',
-    4 => 'Jeffgreco13\\FilamentBreezy\\Pages\\MyProfilePage',
+    3 => 'Jeffgreco13\\FilamentBreezy\\Pages\\MyProfilePage',
   ),
   'pageDirectories' => 
   array (
