@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c8b4c39108fc0cbf5e7f145bcce2ce6a",
+    "content-hash": "b31229155544c1f573bc1044b1a8a1ca",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3674,16 +3674,16 @@
         },
         {
             "name": "juniyasyos/filament-backup",
-            "version": "v3.0.0",
+            "version": "v3.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/filament-backup-juniyasyos.git",
-                "reference": "d760b673210278b5720e11d9e651ea9944f31fdb"
+                "reference": "f3954b4064a65f45a5699fe24ee220c232da3dfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/d760b673210278b5720e11d9e651ea9944f31fdb",
-                "reference": "d760b673210278b5720e11d9e651ea9944f31fdb",
+                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/f3954b4064a65f45a5699fe24ee220c232da3dfb",
+                "reference": "f3954b4064a65f45a5699fe24ee220c232da3dfb",
                 "shasum": ""
             },
             "require": {
@@ -3741,9 +3741,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/filament-backup-juniyasyos/issues",
-                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v3.0.0"
+                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v3.0.1"
             },
-            "time": "2026-05-29T20:55:14+00:00"
+            "time": "2026-05-29T22:17:14+00:00"
         },
         {
             "name": "juniyasyos/filament-media-manager",
