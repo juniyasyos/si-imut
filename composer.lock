@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "79ea55cf05b107b786df6b72ce16b09d",
+    "content-hash": "c8b4c39108fc0cbf5e7f145bcce2ce6a",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3674,22 +3674,22 @@
         },
         {
             "name": "juniyasyos/filament-backup",
-            "version": "v1.0.0",
+            "version": "v3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/filament-backup-juniyasyos.git",
-                "reference": "e9860999629b6b7858647a9108f1d905ca42325e"
+                "reference": "d760b673210278b5720e11d9e651ea9944f31fdb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/e9860999629b6b7858647a9108f1d905ca42325e",
-                "reference": "e9860999629b6b7858647a9108f1d905ca42325e",
+                "url": "https://api.github.com/repos/juniyasyos/filament-backup-juniyasyos/zipball/d760b673210278b5720e11d9e651ea9944f31fdb",
+                "reference": "d760b673210278b5720e11d9e651ea9944f31fdb",
                 "shasum": ""
             },
             "require": {
                 "calebporzio/sushi": "^2.4",
                 "filament/filament": "^3.0",
-                "php": "^8.3",
+                "php": "^8.2",
                 "spatie/laravel-backup": "^8.0|^9.0",
                 "spatie/laravel-package-tools": "^1.15"
             },
@@ -3725,8 +3725,11 @@
             "authors": [
                 {
                     "name": "Shuvro Roy",
-                    "email": "shuvro.nsu.cse@gmail.com",
-                    "role": "Developer"
+                    "email": "shuvro.nsu.cse@gmail.com"
+                },
+                {
+                    "name": "Ahmad Ilyas",
+                    "email": "ahmadilyasdahlan@gmail.com"
                 }
             ],
             "description": "This plugin is built on top of Spatie's Laravel-backup package",
@@ -3738,9 +3741,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/filament-backup-juniyasyos/issues",
-                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v1.0.0"
+                "source": "https://github.com/juniyasyos/filament-backup-juniyasyos/tree/v3.0.0"
             },
-            "time": "2025-03-12T15:13:18+00:00"
+            "time": "2026-05-29T20:55:14+00:00"
         },
         {
             "name": "juniyasyos/filament-media-manager",
