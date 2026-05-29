@@ -245,7 +245,7 @@ trait BuildIsiPenilaian
                 ->required(!$shouldLock)
                 ->minLength(20)
                 ->maxLength(100000)
-                ->readOnly($shouldLock)
+                ->disabled(!$shouldLock)
                 ->live(onBlur: true)
                 ->placeholder('Tuliskan hasil analisis lengkap minimal 20 karakter. Contoh: Berdasarkan data yang terkumpul, tingkat kepatuhan cuci tangan masih rendah karena...')
                 ->helperText(function ($state) {
@@ -272,7 +272,7 @@ trait BuildIsiPenilaian
                 ->required(!$shouldLock)
                 ->minLength(20)
                 ->maxLength(100000)
-                ->readOnly($shouldLock)
+                ->disabled(!$shouldLock)
                 ->live(onBlur: true)
                 ->placeholder('Berikan rekomendasi tindak lanjut minimal 20 karakter. Contoh: Disarankan untuk meningkatkan sosialisasi protokol cuci tangan dan melakukan monitoring...')
                 ->helperText(function ($state) {
