@@ -50,6 +50,10 @@ class TimeDurationFieldBuilder
                     ->default('0')
                     ->dehydrated(true),
 
+
+                self::createValidationIndicator($fieldKey)
+                    ->columnSpanFull(),
+
                 Fieldset::make('Waktu Mulai dan Selesai')
                     ->columnSpanFull()
                     ->schema([
@@ -61,10 +65,6 @@ class TimeDurationFieldBuilder
                     ->columnSpanFull(),
 
                 self::createThresholdPicker($fieldKey, $defaultThreshold)
-                    ->columnSpanFull(),
-
-
-                self::createValidationIndicator($fieldKey)
                     ->columnSpanFull(),
             ])
             ->visible($visibleCondition)
@@ -391,6 +391,7 @@ class TimeDurationFieldBuilder
                 $typeLabel = $thresholdType === 'greater_than' ? 'minimal' : 'maksimal';
                 return "Threshold Durasi Valid ({$typeLabel} jam:menit)";
             })
+            ->hidden()
             ->helperText(function (callable $get) use ($fieldKey) {
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 if ($thresholdType === 'greater_than') {
@@ -436,81 +437,95 @@ class TimeDurationFieldBuilder
                 self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
 
                 $isValid = (string) ($get($fieldKey . '_valid_indicator') ?? '0') === '1';
-                $operator = $thresholdType === 'greater_than' ? '≥' : '≤';
-                $ruleText = "Durasi {$operator} {$thresholdTime}";
 
-                if ($isValid) {
-                    return new HtmlString(<<<HTML
-                    <div class="w-full rounded-xl border border-success-200 bg-success-50 p-4 shadow-sm dark:border-success-500/30 dark:bg-success-500/10">
-                        <div class="flex flex-col gap-3">
-                            <div class="flex items-start gap-3">
-                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-300">
-                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m4.5 12.75 6 6 9-13.5" />
-                                    </svg>
-                                </div>
-
-                                <div class="min-w-0">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <p class="text-sm font-semibold text-success-900 dark:text-success-100">
-                                            Status Validasi
-                                        </p>
-
-                                        <span class="inline-flex items-center rounded-md bg-success-100 px-2 py-0.5 text-xs font-medium text-success-700 ring-1 ring-inset ring-success-600/20 dark:bg-success-500/20 dark:text-success-300 dark:ring-success-500/30">
-                                            Valid
-                                        </span>
-                                    </div>
-
-                                    <p class="mt-1 text-sm text-success-800/80 dark:text-success-100/80">
-                                        Durasi sudah memenuhi aturan validasi.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-success-800 ring-1 ring-success-600/20 dark:bg-white/5 dark:text-success-200 dark:ring-success-500/20">
-                                {$ruleText}
-                            </div>
-                        </div>
-                    </div>
-                HTML);
-                }
-
-                return new HtmlString(<<<HTML
-                <div class="w-full rounded-xl border border-danger-200 bg-danger-50 p-4 shadow-sm dark:border-danger-500/30 dark:bg-danger-500/10">
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-start gap-3">
-                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-300">
-                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18 18 6M6 6l12 12" />
-                                </svg>
-                            </div>
-
-                            <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <p class="text-sm font-semibold text-danger-900 dark:text-danger-100">
-                                        Status Validasi
-                                    </p>
-
-                                    <span class="inline-flex items-center rounded-md bg-danger-100 px-2 py-0.5 text-xs font-medium text-danger-700 ring-1 ring-inset ring-danger-600/20 dark:bg-danger-500/20 dark:text-danger-300 dark:ring-danger-500/30">
-                                        Tidak Valid
-                                    </span>
-                                </div>
-
-                                <p class="mt-1 text-sm text-danger-800/80 dark:text-danger-100/80">
-                                    Durasi belum memenuhi aturan validasi yang ditentukan.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-danger-800 ring-1 ring-danger-600/20 dark:bg-white/5 dark:text-danger-200 dark:ring-danger-500/20">
-                            {$ruleText}
-                        </div>
-                    </div>
-                </div>
-            HTML);
+                return self::renderValidationStatusCard(
+                    isValid: $isValid,
+                    ruleText: self::buildDurationRuleText($thresholdType, $thresholdTime),
+                );
             })
             ->reactive();
     }
+
+    private static function buildDurationRuleText(string $thresholdType, string $thresholdTime): string
+    {
+        $operator = $thresholdType === 'greater_than' ? '≥' : '≤';
+        $operatorText = $thresholdType === 'greater_than'
+            ? 'minimal'
+            : 'maksimal';
+
+        $durationText = self::formatDurationText($thresholdTime);
+
+        return "Valid apabila durasi {$operatorText} {$durationText}.";
+    }
+
+    private static function formatDurationText(?string $time): string
+    {
+        if (!$time || !str_contains($time, ':')) {
+            return '0 menit';
+        }
+
+        [$hours, $minutes] = array_map('intval', explode(':', $time));
+
+        if ($hours > 0 && $minutes > 0) {
+            return "{$hours} jam {$minutes} menit";
+        }
+
+        if ($hours > 0) {
+            return "{$hours} jam";
+        }
+
+        return "{$minutes} menit";
+    }
+
+    private static function renderValidationStatusCard(bool $isValid, string $ruleText): HtmlString
+    {
+        $tone = $isValid ? 'success' : 'danger';
+
+        $statusLabel = $isValid ? 'Valid' : 'Tidak Valid';
+
+        $description = $isValid
+            ? 'Durasi sudah memenuhi aturan validasi yang ditentukan.'
+            : 'Durasi belum memenuhi aturan validasi yang ditentukan.';
+
+        $iconPath = $isValid
+            ? 'm4.5 12.75 6 6 9-13.5'
+            : 'M6 18 18 6M6 6l12 12';
+
+        return new HtmlString(<<<HTML
+        <div class="w-full rounded-xl border border-{$tone}-200 bg-{$tone}-50 p-4 shadow-sm dark:border-{$tone}-500/30 dark:bg-{$tone}-500/10">
+            <div class="flex flex-col gap-3">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-{$tone}-100 text-{$tone}-700 dark:bg-{$tone}-500/20 dark:text-{$tone}-300">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{$iconPath}" />
+                        </svg>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="text-sm font-semibold text-{$tone}-900 dark:text-{$tone}-100">
+                                Status Validasi
+                            </p>
+
+                            <span class="inline-flex items-center rounded-md bg-{$tone}-100 px-2 py-0.5 text-xs font-medium text-{$tone}-700 ring-1 ring-inset ring-{$tone}-600/20 dark:bg-{$tone}-500/20 dark:text-{$tone}-300 dark:ring-{$tone}-500/30">
+                                {$statusLabel}
+                            </span>
+                        </div>
+
+                        <p class="mt-1 text-sm text-{$tone}-800/80 dark:text-{$tone}-100/80">
+                            {$description}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-{$tone}-800 ring-1 ring-{$tone}-600/20 dark:bg-white/5 dark:text-{$tone}-200 dark:ring-{$tone}-500/20">
+                    {$ruleText}
+                </div>
+            </div>
+        </div>
+    HTML);
+    }
+
 
     /**
      * Validate duration and update indicator
