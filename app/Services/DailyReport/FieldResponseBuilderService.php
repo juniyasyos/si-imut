@@ -130,6 +130,6 @@ class FieldResponseBuilderService
             return $fieldValue;
         }
 
-        return $fieldValue;
+        return $fieldValue ?? [];
     }
 }

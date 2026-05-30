@@ -81,7 +81,7 @@ class ManageFormBuilder extends Page implements HasForms
         $this->form->fill($this->data);
 
         // Check if selected template has existing responses
-        $formPersistenceService = new FormPersistenceService();
+        $formPersistenceService =  app(FormPersistenceService::class);
         if ($this->formTemplate) {
             $this->hasExistingResponses = $formPersistenceService->hasExistingResponsesForTemplate($this->formTemplate);
             $this->responseCount = $formPersistenceService->getResponseCountForTemplate($this->formTemplate);
@@ -227,7 +227,7 @@ class ManageFormBuilder extends Page implements HasForms
         try {
             DB::beginTransaction();
 
-            $formPersistenceService = new FormPersistenceService();
+            $formPersistenceService =  app(FormPersistenceService::class);
 
             // NOTE: Do NOT delete existing responses during a normal save.
             // Reset of the form template and deletion of responses are
@@ -273,7 +273,7 @@ class ManageFormBuilder extends Page implements HasForms
         try {
             DB::beginTransaction();
 
-            $formPersistenceService = new FormPersistenceService();
+            $formPersistenceService =  app(FormPersistenceService::class);
 
             if ($this->formTemplate) {
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
@@ -317,7 +317,7 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Also refresh response count for selected template
         if ($this->formTemplate) {
-            $formPersistenceService = new FormPersistenceService();
+            $formPersistenceService =  app(FormPersistenceService::class);
             $this->hasExistingResponses = $formPersistenceService->hasExistingResponsesForTemplate($this->formTemplate);
             $this->responseCount = $formPersistenceService->getResponseCountForTemplate($this->formTemplate);
             // Re-evaluate canForceUpdate after refreshing template/response info
@@ -365,7 +365,7 @@ class ManageFormBuilder extends Page implements HasForms
         if (!$this->hasExistingResponses && $this->formTemplate) {
             try {
                 $data = $this->form->getState();
-                $formPersistenceService = new FormPersistenceService();
+                $formPersistenceService =  app(FormPersistenceService::class);
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
             } catch (\Exception $e) {
                 // Continue to preview even if save fails

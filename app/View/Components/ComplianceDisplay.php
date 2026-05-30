@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use App\Models\FieldResponse;
 use Illuminate\View\Component;
 use Illuminate\Support\HtmlString;
 use App\Models\FormTemplate;
@@ -33,8 +34,18 @@ class ComplianceDisplay extends Component
             }
         }
 
+        // if ($unified['calculation_details']['weighted_percentage'] > 80) {
+        //     dd([
+        //         'score' => ($unified['calculation_details']['weighted_percentage'] ?? 0),
+        //         'total_score' => $unified['calculation_details']['raw_score'] ?? 0,
+        //         'fields' => $fieldsAssoc,
+        //         'warnings' => $unified['calculation_details']['warnings'] ?? [],
+        //         'auto_fail' => $unified['critical_failed'] ?? false,
+        //     ]);
+        // }
+
         $this->compliance = [
-            'score' => $unified['score'] ?? ($unified['calculation_details']['weighted_percentage'] ?? 0),
+            'score' => ($unified['calculation_details']['weighted_percentage'] ?? 0),
             'total_score' => $unified['calculation_details']['raw_score'] ?? 0,
             'fields' => $fieldsAssoc,
             'warnings' => $unified['calculation_details']['warnings'] ?? [],

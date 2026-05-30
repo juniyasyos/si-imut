@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders;
 
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Carbon\Carbon;
+use Illuminate\Support\HtmlString;
 
 /**
  * Builder for time range fields with validation
@@ -49,9 +51,17 @@ class TimeRangeFieldBuilder
                         $value = blank($state) ? $defaultEndTime : $state;
                         $set($fieldKey . '_end_time', self::normalizeTime($value));
                     }),
-                self::createInputValuePicker($fieldKey, $required),
+                Hidden::make($fieldKey . '_valid_indicator')
+                    ->default('0')
+                    ->dehydrated(true),
                 self::createRangeDisplay($fieldKey, $customLabels),
-                self::createValidationIndicator($fieldKey),
+                Fieldset::make($fieldKey . '_input_fieldset')
+                    ->label('Input Nilai Waktu')
+                    ->columnSpanFull()
+                    ->schema([
+                        self::createValidationIndicator($fieldKey),
+                        self::createInputValuePicker($fieldKey, $required),
+                    ])
             ])
             ->visible($visibleCondition)
             ->columnSpanFull();
@@ -70,6 +80,7 @@ class TimeRangeFieldBuilder
             ->label('Nilai Waktu Input')
             ->required($required)
             ->seconds(false)
+            ->columnSpanFull()
             ->format('H:i')
             ->displayFormat('H:i')
             ->debounce(1000)
@@ -96,47 +107,177 @@ class TimeRangeFieldBuilder
         $endTimeLabel = $customLabels['end_time'] ?? 'Waktu Selesai';
 
         return Placeholder::make($fieldKey . '_range_display')
-            ->label('Rentang Waktu Valid')
-            ->content(function (callable $get) use ($fieldKey, $startTimeLabel, $endTimeLabel) {
+            ->label(false)
+            ->content(function (callable $get) use ($fieldKey, $startTimeLabel, $endTimeLabel): HtmlString {
                 $startTime = $get($fieldKey . '_start_time');
                 $endTime = $get($fieldKey . '_end_time');
 
                 if (!$startTime || !$endTime) {
-                    return '⚠️ Rentang waktu belum diatur';
+                    return new HtmlString(<<<HTML
+                    <div class="w-full rounded-xl border border-warning-200 bg-warning-50 p-4 shadow-sm dark:border-warning-500/30 dark:bg-warning-500/10">
+                        <div class="flex items-start gap-3">
+                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning-100 text-warning-700 dark:bg-warning-500/20 dark:text-warning-300">
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                                </svg>
+                            </div>
+
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-warning-900 dark:text-warning-100">
+                                    Rentang waktu belum diatur
+                                </p>
+
+                                <p class="mt-1 text-sm text-warning-800/80 dark:text-warning-100/80">
+                                    Lengkapi {$startTimeLabel} dan {$endTimeLabel} terlebih dahulu agar validasi waktu dapat dihitung.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                HTML);
                 }
 
                 $startTimeFormatted = self::normalizeTime($startTime);
                 $endTimeFormatted = self::normalizeTime($endTime);
 
-                return "⏰ Rentang valid: {$startTimeLabel} ({$startTimeFormatted}) - {$endTimeLabel} ({$endTimeFormatted})";
+                return new HtmlString(<<<HTML
+                <div class="w-full rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-900">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z" />
+                                    </svg>
+                                </div>
+
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-950 dark:text-white">
+                                        Rentang Waktu Valid
+                                    </p>
+
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        Periode waktu yang digunakan sebagai batas valid pengisian indikator.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <div class="rounded-lg border border-gray-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                        {$startTimeLabel}
+                                    </span>
+
+                                    <span class="rounded-md bg-white px-2 py-0.5 text-xs font-medium text-gray-500 ring-1 ring-gray-200 dark:bg-slate-900 dark:text-gray-400 dark:ring-white/10">
+                                        Mulai
+                                    </span>
+                                </div>
+
+                                <p class="mt-2 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                                    {$startTimeFormatted}
+                                </p>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                        {$endTimeLabel}
+                                    </span>
+
+                                    <span class="rounded-md bg-white px-2 py-0.5 text-xs font-medium text-gray-500 ring-1 ring-gray-200 dark:bg-slate-900 dark:text-gray-400 dark:ring-white/10">
+                                        Selesai
+                                    </span>
+                                </div>
+
+                                <p class="mt-2 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                                    {$endTimeFormatted}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            HTML);
             })
             ->reactive()
-            ->columnSpan(1);
+            ->columnSpanFull();
     }
 
     /**
      * Create validation indicator
      *
      * @param string $fieldKey Base field key
-     * @return ToggleButtons
+     * @return Placeholder
      */
-    public static function createValidationIndicator(string $fieldKey): ToggleButtons
+    public static function createValidationIndicator(string $fieldKey): Placeholder
     {
-        return ToggleButtons::make($fieldKey . '_valid_indicator')
-            ->label('Status Validasi')
-            ->options([
-                '1' => '✅ Valid',
-                '0' => '❌ Tidak Valid',
-            ])
-            ->inline()
-            ->disabled()
-            ->dehydrated(false)
-            ->default('0')
-            ->afterStateHydrated(function ($state, callable $set, callable $get) use ($fieldKey) {
+        return Placeholder::make($fieldKey . '_valid_indicator_display')
+            ->label(false)
+            ->content(function (callable $get, callable $set) use ($fieldKey): HtmlString {
                 self::validateInputValue($get, $set, $fieldKey);
+
+                $isValid = (string) ($get($fieldKey . '_valid_indicator') ?? '0') === '1';
+
+                if ($isValid) {
+                    return new HtmlString(<<<HTML
+                    <div class="w-full rounded-xl border border-success-200 bg-success-50 p-4 shadow-sm dark:border-success-500/30 dark:bg-success-500/10">
+                        <div class="flex items-start gap-3">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-300">
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                            </div>
+
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="text-sm font-semibold text-success-900 dark:text-success-100">
+                                        Status Validasi
+                                    </p>
+
+                                    <span class="inline-flex items-center rounded-md bg-success-100 px-2 py-0.5 text-xs font-medium text-success-700 ring-1 ring-inset ring-success-600/20 dark:bg-success-500/20 dark:text-success-300 dark:ring-success-500/30">
+                                        Valid
+                                    </span>
+                                </div>
+
+                                <p class="mt-1 text-sm text-success-800/80 dark:text-success-100/80">
+                                    Input sudah memenuhi aturan validasi waktu yang ditentukan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                HTML);
+                }
+
+                return new HtmlString(<<<HTML
+                <div class="w-full rounded-xl border border-danger-200 bg-danger-50 p-4 shadow-sm dark:border-danger-500/30 dark:bg-danger-500/10">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-danger-100 text-danger-700 dark:bg-danger-500/20 dark:text-danger-300">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <p class="text-sm font-semibold text-danger-900 dark:text-danger-100">
+                                    Status Validasi
+                                </p>
+
+                                <span class="inline-flex items-center rounded-md bg-danger-100 px-2 py-0.5 text-xs font-medium text-danger-700 ring-1 ring-inset ring-danger-600/20 dark:bg-danger-500/20 dark:text-danger-300 dark:ring-danger-500/30">
+                                    Tidak Valid
+                                </span>
+                            </div>
+
+                            <p class="mt-1 text-sm text-danger-800/80 dark:text-danger-100/80">
+                                Input belum memenuhi aturan validasi waktu. Periksa kembali nilai, waktu mulai, dan waktu selesai.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            HTML);
             })
             ->reactive()
-            ->columnSpan(1);
+            ->columnSpanFull();
     }
 
     /**

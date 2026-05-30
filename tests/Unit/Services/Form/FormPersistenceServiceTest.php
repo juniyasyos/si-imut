@@ -92,7 +92,7 @@ class FormPersistenceServiceTest extends TestCase
             ],
         ];
 
-        $service = new FormPersistenceService();
+        $service =  app(FormPersistenceService::class);
         $service->saveFormData($profile, $payload);
 
         // existing FieldResponse must still exist and still refer to the same field id
@@ -183,7 +183,7 @@ class FormPersistenceServiceTest extends TestCase
             ],
         ];
 
-        $service = new FormPersistenceService();
+        $service =  app(FormPersistenceService::class);
         $service->saveFormData($profile, $payload);
 
         // field that had responses must still exist

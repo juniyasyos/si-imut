@@ -172,7 +172,7 @@ $isLocked = ($this->selectedDate)
                                     <!-- Report Header - Compact Version -->
                                     <div class="flex items-center justify-between mb-4">
                                         <div class="flex items-center gap-3">
-                                            @if($report['total_score'] >= 80)
+                                            @if($report['total_score'] >= 100)
                                             <div class="flex items-center gap-2">
                                                 <span class="text-2xl">🟢</span>
                                                 <span class="text-lg font-bold text-green-700 dark:text-green-400">Patuh</span>
@@ -183,7 +183,7 @@ $isLocked = ($this->selectedDate)
                                                 <span class="text-lg font-bold text-red-700 dark:text-red-400">Tidak Patuh</span>
                                             </div>
                                             @endif
-                                            <div class="text-3xl font-bold {{ $report['total_score'] >= 80 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
+                                            <div class="text-3xl font-bold {{ $report['total_score'] >= 100 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500' }}">
                                                 {{ number_format($report['total_score'], 0) }}%
                                             </div>
                                         </div>

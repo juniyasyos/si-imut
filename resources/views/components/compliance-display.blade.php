@@ -44,8 +44,8 @@
 
                         $weight = $field->compliance_weight ?? 0;
                         $score = $fieldData['score'] ?? 0;
-                        $percentage = $weight > 0 ? ($score / $weight) * 100 : 100;
-                        $fieldCompliant = $weight <= 0 || $percentage >= 100;
+                        $percentage = $score;
+                        $fieldCompliant = $percentage >= 100;
                         $statusColor = $fieldCompliant ? 'green' : 'red';
                     @endphp
 
@@ -60,11 +60,6 @@
                                 {!! $field->field_label !!}
 
                                 {!! $field->is_critical_field ? '<span class="ml-1 text-yellow-500 dark:text-yellow-400">⚠</span>' : '' !!}
-                            </span>
-
-                            <span
-                                class="whitespace-nowrap text-xs sm:text-sm font-semibold text-{{ $statusColor }}-700 dark:text-{{ $statusColor }}-300">
-                                {{ number_format($percentage, 1) }}%
                             </span>
                         </div>
 
