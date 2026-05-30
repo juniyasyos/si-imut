@@ -59,8 +59,8 @@ class TimeRangeFieldBuilder
                     ->label('Input Nilai Waktu')
                     ->columnSpanFull()
                     ->schema([
-                        self::createValidationIndicator($fieldKey),
                         self::createInputValuePicker($fieldKey, $required),
+                        self::createValidationIndicator($fieldKey),
                     ])
             ])
             ->visible($visibleCondition)
