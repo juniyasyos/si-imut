@@ -60,14 +60,12 @@ return [
 
             'dump' => [
                 'use_single_transaction' => true,
-                'add_extra_option' => '--ssl=0',
+                'add_extra_option' => '--skip-ssl',
             ],
 
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            'options' => [],
         ],
-        
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
