@@ -58,9 +58,14 @@ return [
             'strict' => false,
             'engine' => null,
 
-            'dump' => [
+            'dump' => array_filter([
                 'use_single_transaction' => true,
-            ],
+                'timeout' => env('DB_DUMP_TIMEOUT', 3600),
+
+                'add_extra_option' => env('DB_DUMP_DISABLE_SSL', false)
+                    ? '--ssl=0'
+                    : env('DB_DUMP_EXTRA_OPTION'),
+            ]),
 
             'options' => [],
         ],
