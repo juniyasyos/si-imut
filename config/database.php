@@ -60,7 +60,6 @@ return [
 
             'dump' => [
                 'use_single_transaction' => true,
-                'add_extra_option' => '--skip-ssl',
             ],
 
             'options' => [],
