@@ -7,6 +7,7 @@ use App\Models\UnitKerja;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Log;
 
 class TableViewDomain
 {
@@ -473,40 +474,179 @@ class TableViewDomain
 
     private function formatTimeDurationField(string $fieldKey, mixed $fieldValue): array
     {
+        Log::debug('Time duration formatting started', [
+            'field_key' => $fieldKey,
+            'raw_value' => $fieldValue,
+        ]);
+
         if (!is_array($fieldValue)) {
-            return [
+            $result = [
                 $fieldKey . '_start' => '-',
                 $fieldKey . '_end' => '-',
                 $fieldKey . '_valid' => 0,
                 $fieldKey . '_duration' => '-',
             ];
+
+            Log::debug('Time duration formatting skipped: invalid field value', [
+                'field_key' => $fieldKey,
+                'raw_value' => $fieldValue,
+                'result' => $result,
+            ]);
+
+            return $result;
         }
 
-        return [
-            $fieldKey . '_start' => $fieldValue['start_time'] ?? '-',
-            $fieldKey . '_end' => $fieldValue['end_time'] ?? '-',
+        $rawStartDateTime = $fieldValue['start_time'] ?? null;
+        $rawEndDateTime = $fieldValue['end_time'] ?? null;
+
+        $sameDate = $this->isSameDate($rawStartDateTime, $rawEndDateTime);
+
+        $formattedStart = $this->formatDateTimeForReport($rawStartDateTime, $sameDate);
+        $formattedEnd = $this->formatDateTimeForReport($rawEndDateTime, $sameDate);
+
+        $duration = $this->calculateDuration($rawStartDateTime, $rawEndDateTime);
+        $durationInMinutes = $this->calculateDurationInMinutes($rawStartDateTime, $rawEndDateTime);
+
+        $result = [
+            $fieldKey . '_start' => $formattedStart ?? '-',
+            $fieldKey . '_end' => $formattedEnd ?? '-',
             $fieldKey . '_valid' => $fieldValue['valid_indicator'] ?? 0,
-            $fieldKey . '_duration' => $this->calculateDuration(
-                $fieldValue['start_time'] ?? null,
-                $fieldValue['end_time'] ?? null
-            ),
+            $fieldKey . '_duration' => $duration,
         ];
+
+        Log::debug('Time duration formatting completed', [
+            'field_key' => $fieldKey,
+            'before' => [
+                'start_datetime' => $rawStartDateTime,
+                'end_datetime' => $rawEndDateTime,
+                'valid_indicator' => $fieldValue['valid_indicator'] ?? null,
+                'valid_duration_setting' => $fieldValue['valid_duration_setting'] ?? null,
+            ],
+            'after' => [
+                'same_date' => $sameDate,
+                'start_display' => $formattedStart,
+                'end_display' => $formattedEnd,
+                'valid_indicator' => $result[$fieldKey . '_valid'],
+                'duration' => $duration,
+            ],
+            'diff' => [
+                'total_minutes' => $durationInMinutes,
+                'hours' => is_int($durationInMinutes) ? intdiv($durationInMinutes, 60) : null,
+                'minutes' => is_int($durationInMinutes) ? $durationInMinutes % 60 : null,
+                'formatted' => $duration,
+            ],
+            'result' => $result,
+        ]);
+
+        return $result;
     }
 
-    private function calculateDuration(?string $startTime, ?string $endTime): string
+    private function isSameDate(?string $startDateTime, ?string $endDateTime): bool
     {
-        if (!$startTime || !$endTime) {
-            return '-';
+        if (blank($startDateTime) || blank($endDateTime)) {
+            return false;
         }
 
         try {
-            $start = Carbon::createFromFormat('H:i', $startTime);
-            $end = Carbon::createFromFormat('H:i', $endTime);
-            $diff = $start->diff($end);
+            return Carbon::parse($startDateTime)->isSameDay(
+                Carbon::parse($endDateTime)
+            );
+        } catch (\Throwable $exception) {
+            Log::warning('Same date checking failed', [
+                'start_datetime' => $startDateTime,
+                'end_datetime' => $endDateTime,
+                'error' => $exception->getMessage(),
+            ]);
 
-            return sprintf('%02d:%02d', $diff->h, $diff->i);
-        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private function formatDateTimeForReport(?string $value, bool $sameDate): ?string
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->format(
+                $sameDate ? 'H:i' : 'd/m, H:i'
+            );
+        } catch (\Throwable $exception) {
+            Log::warning('Datetime formatting failed', [
+                'raw_value' => $value,
+                'same_date' => $sameDate,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function calculateDuration(?string $startDateTime, ?string $endDateTime): string
+    {
+        $totalMinutes = $this->calculateDurationInMinutes($startDateTime, $endDateTime);
+
+        if (!is_int($totalMinutes)) {
             return '-';
+        }
+
+        $hours = intdiv($totalMinutes, 60);
+        $minutes = $totalMinutes % 60;
+
+        return sprintf('%02d:%02d', $hours, $minutes);
+    }
+
+    private function calculateDurationInMinutes(?string $startDateTime, ?string $endDateTime): ?int
+    {
+        if (blank($startDateTime) || blank($endDateTime)) {
+            Log::debug('Duration calculation skipped: missing datetime', [
+                'start_datetime' => $startDateTime,
+                'end_datetime' => $endDateTime,
+            ]);
+
+            return null;
+        }
+
+        try {
+            $start = Carbon::parse($startDateTime);
+            $end = Carbon::parse($endDateTime);
+
+            if ($end->lessThan($start)) {
+                Log::warning('Duration calculation failed: end datetime is before start datetime', [
+                    'start_datetime' => $start->format('Y-m-d H:i'),
+                    'end_datetime' => $end->format('Y-m-d H:i'),
+                ]);
+
+                return null;
+            }
+
+            $totalMinutes = (int) $start->diffInMinutes($end);
+
+            Log::debug('Duration calculation completed', [
+                'start_datetime' => $start->format('Y-m-d H:i'),
+                'end_datetime' => $end->format('Y-m-d H:i'),
+                'diff' => [
+                    'total_minutes' => $totalMinutes,
+                    'hours' => intdiv($totalMinutes, 60),
+                    'minutes' => $totalMinutes % 60,
+                    'formatted' => sprintf(
+                        '%02d:%02d',
+                        intdiv($totalMinutes, 60),
+                        $totalMinutes % 60
+                    ),
+                ],
+            ]);
+
+            return $totalMinutes;
+        } catch (\Throwable $exception) {
+            Log::warning('Duration calculation failed', [
+                'start_datetime' => $startDateTime,
+                'end_datetime' => $endDateTime,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
         }
     }
 

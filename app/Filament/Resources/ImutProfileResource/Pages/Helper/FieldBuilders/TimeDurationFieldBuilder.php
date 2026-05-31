@@ -391,7 +391,6 @@ class TimeDurationFieldBuilder
                 $typeLabel = $thresholdType === 'greater_than' ? 'minimal' : 'maksimal';
                 return "Threshold Durasi Valid ({$typeLabel} jam:menit)";
             })
-            ->hidden()
             ->helperText(function (callable $get) use ($fieldKey) {
                 $thresholdType = $get($fieldKey . '_threshold_type') ?? 'less_than';
                 if ($thresholdType === 'greater_than') {
@@ -416,7 +415,9 @@ class TimeDurationFieldBuilder
                 self::validateDurationAndSetIndicator($get, $set, $fieldKey, $thresholdType);
             })
             ->live()
-            ->reactive(); // Make it reactive to update label when threshold type changes
+            ->visible(false)
+            ->dehydratedWhenHidden(true)
+            ->dehydrated(true);
     }
 
     /**
