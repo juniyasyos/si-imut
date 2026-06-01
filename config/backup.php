@@ -83,7 +83,7 @@ return [
              * For a complete list of available customization options, see https://github.com/spatie/db-dumper
              */
             'databases' => [
-                env('DB_CONNECTION', 'mysql'),
+                env('BACKUP_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
             ],
         ],
 
@@ -146,7 +146,7 @@ return [
              *
              * Setting of 0 for some algorithms may switch to the strongest compression.
              */
-            'compression_level' => 9,
+            'compression_level' => 4,
 
             /*
              * The filename prefix used for the backup zip file.

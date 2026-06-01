@@ -61,10 +61,8 @@ return [
             'dump' => array_filter([
                 'use_single_transaction' => true,
                 'timeout' => env('DB_DUMP_TIMEOUT', 3600),
-
-                'add_extra_option' => env('DB_DUMP_DISABLE_SSL', false)
-                    ? '--ssl=0'
-                    : env('DB_DUMP_EXTRA_OPTION'),
+                'skip_ssl' => env('DB_DUMP_DISABLE_SSL', false),
+                'add_extra_option' => env('DB_DUMP_EXTRA_OPTION'),
             ]),
 
             'options' => [],
@@ -91,7 +89,7 @@ return [
         ],
 
         'pgsql' => [
-            'driver' => 'pgsql',
+             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
