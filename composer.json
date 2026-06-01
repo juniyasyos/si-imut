@@ -12,7 +12,7 @@
         "admin-panel",
         "starter-kit"
     ],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.3",
         "asmit/resized-column": "^1.0",

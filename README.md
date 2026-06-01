@@ -1,6 +1,6 @@
 # 🏥 SIIMUT - Sistem Indikator Mutu untuk Rumah Sakit  
 
-![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
+![License](https://img.shields.io/badge/License-Proprietary-red?style=flat-square)
 ![PHP Version](https://img.shields.io/badge/PHP-8.3-blue?style=flat-square&logo=php)
 ![Laravel Version](https://img.shields.io/badge/Laravel-11.0-red?style=flat-square&logo=laravel)
 ![Filament Version](https://img.shields.io/badge/Filament-3.2-purple?style=flat-square)
@@ -271,6 +271,11 @@ Kami menyambut kontribusi dari komunitas! Untuk berkontribusi:
 📧 **Kontak** – [Email Support](mailto:your-email@example.com)  
 
 ---
+
+## 📜 License
+
+This project is proprietary software. All rights reserved. See the `LICENSE` file for details.
+
 
 ## ⭐ Dukung Proyek Ini  
 
