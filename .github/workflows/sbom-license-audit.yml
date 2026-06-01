@@ -1,0 +1,76 @@
+name: SBOM License Audit
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Generate and check SBOM licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: mbstring, xml, zip
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          composer CycloneDX:make-sbom \
+            --output-format=JSON \
+            --output-file=docs/sbom-cyclonedx.json \
+            --omit=dev \
+            --omit=plugin \
+            --output-reproducible \
+            --validate
+
+      - name: Check SBOM licenses
+        run: |
+          php -r '
+          $path = "docs/sbom-cyclonedx.json";
+          $data = json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+          $components = $data["components"] ?? [];
+          $missing = [];
+          $summary = [];
+
+          foreach ($components as $component) {
+              $name = $component["name"] ?? "unknown";
+              $licenses = [];
+
+              foreach ($component["licenses"] ?? [] as $licenseEntry) {
+                  $license = $licenseEntry["license"] ?? [];
+                  $licenseName = $license["name"] ?? $license["id"] ?? null;
+
+                  if ($licenseName !== null && $licenseName !== "") {
+                      $licenses[] = $licenseName;
+                      $summary[$licenseName] = ($summary[$licenseName] ?? 0) + 1;
+                  }
+              }
+
+              if ($licenses === []) {
+                  $missing[] = $name;
+              }
+          }
+
+          if ($missing !== []) {
+              fwrite(STDERR, "SBOM components without license data:\n- " . implode("\n- ", $missing) . "\n");
+              exit(1);
+          }
+
+          ksort($summary);
+          echo "SBOM license summary:\n";
+          foreach ($summary as $license => $count) {
+              echo sprintf("- %s: %d\n", $license, $count);
+          }
+          '

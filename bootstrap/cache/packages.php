@@ -220,13 +220,6 @@
       0 => 'Juniyasyos\\DashStackTheme\\DashStackThemeServiceProvider',
     ),
   ),
-  'juniyasyos/filament-backup' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Juniyasyos\\FilamentLaravelBackup\\FilamentLaravelBackupServiceProvider',
-    ),
-  ),
   'juniyasyos/filament-media-manager' => 
   array (
     'providers' => 

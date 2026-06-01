@@ -146,7 +146,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "juniyasyos/filament-backup"
+            ]
         }
     },
     "config": {

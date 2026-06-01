@@ -3,6 +3,7 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\AuthServiceProvider::class,
+    App\Providers\FilamentBackupServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
     App\Providers\LaporanImutServiceProvider::class,
     App\Providers\UnitKerjaProvider::class,
