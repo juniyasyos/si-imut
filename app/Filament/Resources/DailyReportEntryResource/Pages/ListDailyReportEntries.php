@@ -184,9 +184,19 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     {
         parent::closeSlideOver();
 
-        // Clean URL parameters immediately
+        $selectedMonth = json_encode($this->selectedMonth);
+        $selectedDate = json_encode($this->selectedDate);
+        $view = json_encode($this->currentView);
+
+        // Restore the filtered list URL immediately using the browser URL,
+        // not the Livewire request endpoint.
         $this->js("
-            const cleanUrl = window.location.pathname;
+            const params = new URLSearchParams();
+            params.set('selectedMonth', {$selectedMonth});
+            params.set('selectedDate', {$selectedDate});
+            " . ($this->currentView !== 'input' ? "params.set('view', {$view});" : "") . "
+
+            const cleanUrl = window.location.pathname + '?' + params.toString();
             console.log('🔗 Cleaning URL to:', cleanUrl);
             window.history.replaceState({}, '', cleanUrl);
         ");
