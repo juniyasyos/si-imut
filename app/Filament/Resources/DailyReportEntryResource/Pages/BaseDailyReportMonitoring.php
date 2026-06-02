@@ -20,17 +20,22 @@ abstract class BaseDailyReportMonitoring extends Page
     protected MatrixDataService $matrixService;
     protected SlideOverService $slideOverService;
 
+    // View state - URL bound for bookmarkability
+    #[Url(as: 'view')]
+    public string $currentView = 'input';
+
     // Page mode
     public bool $isMonitoringMode = false;
 
     // Matrix properties
     #[Url]
-    public string $selectedMonth;
+    public string $selectedMonth = '';
 
     public ?string $selectedDate = null;
     public array $indicators = [];
     public array $matrixData = [];
     public array $daysInMonth = [];
+    public array $daysWithData = [];
     public array $monitoringTemplates = [];
 
     // Category info pulled from database – used by the frontend to render
@@ -40,6 +45,7 @@ abstract class BaseDailyReportMonitoring extends Page
     // Loading states
     public bool $loadingMatrix = false;
     public bool $loadingSlideOver = false;
+    public bool $isDateLoading = false;
 
     // Slide over properties (used by view even if not all pages use them)
     public bool $slideOverOpen = false;
@@ -88,7 +94,7 @@ abstract class BaseDailyReportMonitoring extends Page
 
     public function bootBase(): void
     {
-        $this->selectedMonth = $this->selectedMonth ?? now()->format('Y-m');
+        $this->selectedMonth = $this->selectedMonth ?: now()->format('Y-m');
         $this->selectedDate = now()->format('Y-m-d');
     }
 
@@ -98,14 +104,69 @@ abstract class BaseDailyReportMonitoring extends Page
     public function loadMatrixData(): void
     {
         if ($this->shouldUseMatrixService()) {
-            $this->loadMatrixFromService();
+            $this->loadMatrixFromServiceOptimized();
         } else {
             $this->loadMatrixManually();
         }
     }
 
     /**
-     * Use MatrixDataService for loading (default for ListDailyReportEntries)
+     * Load matrix with caching - metadata + full data
+     */
+    protected function loadMatrixFromServiceOptimized(): void
+    {
+        // Load metadata (fast, cached)
+        $metadata = $this->matrixService->loadMatrixMetadata($this->selectedMonth);
+        $this->indicators = $metadata['indicators'];
+        $this->daysInMonth = $metadata['daysInMonth'];
+        $this->daysWithData = $metadata['daysWithData'];
+
+        // Load full matrix data (cached)
+        $fullData = $this->matrixService->loadFullMatrixData($this->selectedMonth);
+        $this->matrixData = $fullData['matrixData'];
+
+        // ensure color map includes any categories returned by the service
+        foreach ($this->indicators as $indicator) {
+            if (!empty($indicator['category']) && !isset($this->categoryColors[$indicator['category']])) {
+                $id = $indicator['category_id'] ?? null;
+                $this->categoryColors[$indicator['category']] = $this->getCategoryColorClass($id);
+            }
+        }
+    }
+
+    /**
+     * Load matrix metadata only (indicators + daysWithData) - FAST, used on mount
+     */
+    protected function loadMatrixMetadata(): void
+    {
+        $result = $this->matrixService->loadMatrixMetadata($this->selectedMonth);
+
+        $this->indicators = $result['indicators'];
+        $this->daysInMonth = $result['daysInMonth'];
+        $this->daysWithData = $result['daysWithData'];
+        
+        // ensure color map includes any categories returned by the service
+        foreach ($this->indicators as $indicator) {
+            if (!empty($indicator['category']) && !isset($this->categoryColors[$indicator['category']])) {
+                // compute color by id if available
+                $id = $indicator['category_id'] ?? null;
+                $this->categoryColors[$indicator['category']] = $this->getCategoryColorClass($id);
+            }
+        }
+    }
+
+    /**
+     * Livewire method: Load full matrix data via AJAX/Livewire call
+     * Called after mount or when month changes
+     */
+    public function getMatrixData(): array
+    {
+        $result = $this->matrixService->loadFullMatrixData($this->selectedMonth);
+        return $result['matrixData'] ?? [];
+    }
+
+    /**
+     * Use MatrixDataService for loading (legacy - now use loadMatrixFromServiceOptimized)
      */
     protected function loadMatrixFromService(): void
     {

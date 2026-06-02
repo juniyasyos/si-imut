@@ -15,18 +15,18 @@
             <!-- Tab Navigation -->
             <div class="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                 <button
-                    @click="currentView = 'input'"
-                    :class="currentView === 'input'
+                    @click="$wire.changeView('input')"
+                    :class="$wire.currentView === 'input'
                         ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-white shadow-sm'
-                        : 'text-gray-500 dark:text-gray-400'"
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
                     class="px-4 py-2 text-sm font-medium rounded-md transition-all">
                     Input Harian
                 </button>
                 <button
-                    @click="currentView = 'monitoring'"
-                    :class="currentView === 'monitoring'
+                    @click="$wire.changeView('monitoring')"
+                    :class="$wire.currentView === 'monitoring'
                         ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-white shadow-sm'
-                        : 'text-gray-500 dark:text-gray-400'"
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
                     class="px-4 py-2 text-sm font-medium rounded-md transition-all">
                     Monitoring Bulanan
                 </button>

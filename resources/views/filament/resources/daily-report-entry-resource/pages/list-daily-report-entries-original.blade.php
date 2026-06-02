@@ -1,10 +1,9 @@
 <x-filament-panels::page>
     <div x-data="{
-            selectedDate: '{{ now()->format('Y-m-d') }}',
-            selectedMonth: '{{ $selectedMonth }}',
-            currentDate: new Date('{{ $selectedMonth }}-01'),
+            selectedDate: '{{ request()->query('selectedDate') ? request()->query('selectedDate') : now()->format('Y-m-d') }}',
+            selectedMonth: '{{ request()->query('selectedMonth') ? request()->query('selectedMonth') : now()->format('Y-m') }}',
+            currentDate: new Date('{{ ($selectedMonth ?: now()->format('Y-m')) }}-01'),
             isMobile: false,
-            currentView: 'input',
             searchQuery: '',
             statusFilter: 'all',
             indicators: @js($indicators),
@@ -13,14 +12,24 @@
             // category palette generated on server based on ImutCategory model
             categoryColors: @js($categoryColors),
             monitoringSearchQuery: '',
-            monitoringMonth: '{{ $selectedMonth }}',
+            monitoringMonth: '{{ $selectedMonth ?: now()->format("Y-m") }}',
             isDateLoading: false,
+            isLoadingMonth: false,
             
             init() {
+                console.log('📊 [Alpine init] Starting init');
+                console.log('📊 [Alpine init] Initial state:', {
+                    selectedDate: this.selectedDate,
+                    selectedMonth: this.selectedMonth,
+                });
                 this.initResize();
                 this.selectToday();
                 this.ensureValidSelectedDate();
                 this.monitoringMonth = this.selectedMonth;
+                console.log('📊 [Alpine init] After init:', {
+                    selectedDate: this.selectedDate,
+                    selectedMonth: this.selectedMonth,
+                });
             },
             
             initResize() {
@@ -33,9 +42,10 @@
             ensureValidSelectedDate() {
                 // Ensure selectedDate always has a valid value
                 if (!this.selectedDate) {
-                    this.selectedDate = '{{ now()->format('Y-m-d') }}';
+                    this.selectedDate = '{{ now()->format("Y-m-d") }}';
+                    console.log('📊 [ensureValidSelectedDate] Set to:', this.selectedDate);
                 }
-                console.log('Selected date initialized to:', this.selectedDate);
+                console.log('📊 [ensureValidSelectedDate] Final:', this.selectedDate);
             },
             
             selectToday() {
@@ -43,6 +53,7 @@
                 const month = today.toISOString().slice(0, 7);
                 if (month === this.selectedMonth) {
                     this.selectedDate = today.toISOString().slice(0, 10);
+                    console.log('📊 [selectToday] Updated to:', this.selectedDate);
                 } else {
                     // If not viewing current month, ensure we have a valid date
                     this.ensureValidSelectedDate();
@@ -50,10 +61,9 @@
             },
             
             selectDate(date) {
-                this.isDateLoading = true;
-                this.selectedDate = date || '{{ now()->format('Y-m-d') }}';
-                console.log('Date selected:', this.selectedDate);
-                setTimeout(() => { this.isDateLoading = false; }, 1000);
+                const oldDate = this.selectedDate;
+                this.selectedDate = date || '{{ now()->format("Y-m-d") }}';
+                console.log('📊 [selectDate] Changed from', oldDate, 'to:', this.selectedDate);
             },
             
             get filteredIndicators() {
@@ -184,7 +194,7 @@
                 } else if (direction === 'next') {
                     date.setMonth(date.getMonth() + 1);
                 } else if (direction === 'current') {
-                    this.monitoringMonth = '{{ now()->format('Y-m') }}';
+                    this.monitoringMonth = '{{ now()->format("Y-m") }}';
                     this.loadMonitoringData();
                     return;
                 }
@@ -217,7 +227,7 @@
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.header.header-section')
 
             <!-- Main Content -->
-            <div x-show="currentView === 'input'" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div x-show="$wire.currentView === 'input'" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Sidebar: Date Navigation (Livewire Isolated) -->
                 <div class="lg:col-span-3" x-data="{}">
                     @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-navigation')
@@ -237,7 +247,7 @@
                                  } else {
                                      // If Livewire sends null/empty, keep current selectedDate or use today
                                      if (!this.selectedDate || this.selectedDate === 'null' || this.selectedDate === '') {
-                                         this.selectedDate = '{{ now()->format('Y-m-d') }}';
+                                         this.selectedDate = '{{ now()->format("Y-m-d") }}';
                                      }
                                  }
                              });
@@ -246,7 +256,7 @@
                              if (this.contentSelectedDate && this.contentSelectedDate !== 'null' && this.contentSelectedDate !== '') {
                                  this.selectedDate = this.contentSelectedDate;
                              } else {
-                                 this.selectedDate = '{{ now()->format('Y-m-d') }}';
+                                 this.selectedDate = '{{ now()->format("Y-m-d") }}';
                              }
                          }
                      }">

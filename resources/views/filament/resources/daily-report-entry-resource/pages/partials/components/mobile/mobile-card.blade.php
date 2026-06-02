@@ -3,7 +3,7 @@ $state = $cellData['cell_state'] ?? 'disabled';
 $summary = $cellData['summary'] ?? null;
 $dateStr = $cellData['date'] ?? '';
 $isToday = $cellData['is_today'] ?? false;
-$d = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->day($day);
+$d = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth ?: now()->format('Y-m'))->day($day);
 @endphp
 
 <div class="min-w-[150px] rounded-xl p-3 flex-shrink-0 snap-start border transition {{ $isToday

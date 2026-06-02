@@ -6,6 +6,7 @@ use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\DailyReportEntry;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\DailyReport\CachedSettingsService;
 
 trait ReportManagementTrait
 {
@@ -16,7 +17,7 @@ trait ReportManagementTrait
     {
         if ($this->selectedIndicatorId && $this->selectedDate) {
             // Check if the selected date is within the back-entry window
-            $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+            $backDays = CachedSettingsService::getBackDataEntryDays();
             $sixDaysAgo = now()->subDays($backDays)->startOfDay();
             $isLocked = \Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo);
 
@@ -74,7 +75,7 @@ trait ReportManagementTrait
     {
         // Guard: refuse edit on locked periods
         if ($this->selectedDate) {
-            $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+            $backDays = CachedSettingsService::getBackDataEntryDays();
             $sixDaysAgo = now()->subDays($backDays)->startOfDay();
             if (\Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo)) {
                 \Filament\Notifications\Notification::make()

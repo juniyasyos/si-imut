@@ -3,6 +3,7 @@
 namespace App\Traits\DailyReport;
 
 use Carbon\Carbon;
+use App\Services\DailyReport\CachedSettingsService;
 
 trait NavigationTrait
 {
@@ -19,7 +20,7 @@ trait NavigationTrait
     public function isInWeek(int $day): bool
     {
         $realToday = now();
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = CachedSettingsService::getBackDataEntryDays();
         $start = $realToday->copy()->subDays($backDays)->startOfDay();
         $cellDate = Carbon::createFromFormat('Y-m', $this->selectedMonth)->day($day)->startOfDay();
 
@@ -94,6 +95,22 @@ trait NavigationTrait
 
         // Emit date selected event for other components
         $this->dispatch('dateSelected', date: $date);
+
+        // Update browser URL to reflect selected date (for bookmarking/filtering)
+        try {
+            $params = http_build_query(['selectedMonth' => $this->selectedMonth, 'selectedDate' => $date]);
+            $newUrl = request()->url() . '?' . $params;
+            \Illuminate\Support\Facades\Log::info('selectDate URL update', [
+                'selectedMonth' => $this->selectedMonth,
+                'selectedDate' => $date,
+                'params' => $params,
+                'newUrl' => $newUrl,
+            ]);
+            // Use dispatch() instead of dispatchBrowserEvent() for Livewire v3
+            $this->dispatch('updateUrl', url: $newUrl);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('selectDate URL update failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -103,7 +120,28 @@ trait NavigationTrait
     {
         $date = Carbon::parse($this->selectedMonth . '-01')->subMonth();
         $this->selectedMonth = $date->format('Y-m');
+        
+        // Set selectedDate to first day of new month if not explicitly set
+        if (!$this->selectedDate) {
+            $this->selectedDate = $date->format('Y-m-d');
+        }
+        
         $this->loadMatrixData();
+        // Update URL to include month/date
+        try {
+            $params = http_build_query(['selectedMonth' => $this->selectedMonth, 'selectedDate' => $this->selectedDate]);
+            $newUrl = request()->url() . '?' . $params;
+            \Illuminate\Support\Facades\Log::info('previousMonth URL update', [
+                'selectedMonth' => $this->selectedMonth,
+                'selectedDate' => $this->selectedDate,
+                'params' => $params,
+                'newUrl' => $newUrl,
+            ]);
+            // Use dispatch() instead of dispatchBrowserEvent() for Livewire v3
+            $this->dispatch('updateUrl', url: $newUrl);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('previousMonth URL update failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -117,7 +155,28 @@ trait NavigationTrait
 
         $date = Carbon::parse($this->selectedMonth . '-01')->addMonth();
         $this->selectedMonth = $date->format('Y-m');
+        
+        // Set selectedDate to first day of new month if not explicitly set
+        if (!$this->selectedDate) {
+            $this->selectedDate = $date->format('Y-m-d');
+        }
+        
         $this->loadMatrixData();
+        // Update URL to include month/date
+        try {
+            $params = http_build_query(['selectedMonth' => $this->selectedMonth, 'selectedDate' => $this->selectedDate]);
+            $newUrl = request()->url() . '?' . $params;
+            \Illuminate\Support\Facades\Log::info('nextMonth URL update', [
+                'selectedMonth' => $this->selectedMonth,
+                'selectedDate' => $this->selectedDate,
+                'params' => $params,
+                'newUrl' => $newUrl,
+            ]);
+            // Use dispatch() instead of dispatchBrowserEvent() for Livewire v3
+            $this->dispatch('updateUrl', url: $newUrl);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('nextMonth URL update failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

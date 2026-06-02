@@ -110,6 +110,10 @@ class FormTemplate extends Model
         return $query->where('version', $version);
     }
 
+    /**
+     * Scope: Filter templates active at current date
+     * Use MonitoringTemplateService + FormTemplateRepository for complex monitoring queries
+     */
     public function scopeActiveForCurrentDate(Builder $query): Builder
     {
         $now = now();
@@ -123,6 +127,10 @@ class FormTemplate extends Model
             });
     }
 
+    /**
+     * Scope: Filter monthly indicators only
+     * Use MonitoringTemplateService + FormTemplateRepository for complex monitoring queries
+     */
     public function scopeMonthlyIndicators(Builder $query): Builder
     {
         return $query->whereHas('imutProfile.imutData', function ($q) {
@@ -131,6 +139,10 @@ class FormTemplate extends Model
         });
     }
 
+    /**
+     * Scope: Filter templates for given unit kerja IDs
+     * Use MonitoringTemplateService + FormTemplateRepository for complex monitoring queries
+     */
     public function scopeForUserUnitKerjas(Builder $query, array $unitKerjaIds): Builder
     {
         return $query->whereHas('imutProfile.imutData.unitKerja', function ($q) use ($unitKerjaIds) {

@@ -8,11 +8,106 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Services\DailyReport\CachedSettingsService;
 
 class MatrixDataService
 {
+    // Cache TTL: 5 minutes for matrix data
+    const CACHE_TTL = 300;
+
     /**
-     * Load matrix data for selected month
+     * Load matrix metadata only (indicators + daysWithData map)
+     * Fast, lightweight - used for sidebar & initial render
+     */
+    public function loadMatrixMetadata(string $selectedMonth): array
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return ['indicators' => [], 'daysWithData' => [], 'daysInMonth' => []];
+        }
+
+        $cacheKey = "matrix_metadata_{$user->id}_{$selectedMonth}";
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function() use ($selectedMonth, $user) {
+            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+
+            if (empty($unitKerjaIds)) {
+                return ['indicators' => [], 'daysWithData' => [], 'daysInMonth' => []];
+            }
+
+            // Get indicators
+            $indicators = $this->getIndicators($unitKerjaIds);
+
+            // Calculate days in selected month
+            $date = Carbon::parse($selectedMonth . '-01');
+            $daysInMonth = range(1, $date->daysInMonth);
+
+            // Get compliance summaries (for hasAnyData check only)
+            $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
+
+            // Build daysWithData map (fast, no heavy computation)
+            $daysWithData = [];
+            foreach ($daysInMonth as $day) {
+                $dateStr = $date->copy()->day($day)->format('Y-m-d');
+                $hasData = false;
+                
+                // Check if ANY indicator has data for this day
+                foreach ($indicators as $indicator) {
+                    if ($complianceSummaries->get($indicator['id'])?->get($dateStr)) {
+                        $hasData = true;
+                        break;
+                    }
+                }
+                $daysWithData[$day] = $hasData;
+            }
+
+            return [
+                'indicators' => $indicators,
+                'daysWithData' => $daysWithData,
+                'daysInMonth' => $daysInMonth
+            ];
+        });
+    }
+
+    /**
+     * Load full matrix data for selected month
+     * Heavy computation - cached, callable via Livewire
+     */
+    public function loadFullMatrixData(string $selectedMonth): array
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return ['matrixData' => []];
+        }
+
+        $cacheKey = "matrix_full_{$user->id}_{$selectedMonth}";
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function() use ($selectedMonth, $user) {
+            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+
+            if (empty($unitKerjaIds)) {
+                return ['matrixData' => []];
+            }
+
+            $backDays = CachedSettingsService::getBackDataEntryDays();
+
+            // Get indicators & days
+            $indicators = $this->getIndicators($unitKerjaIds);
+            $date = Carbon::parse($selectedMonth . '-01');
+            $daysInMonth = range(1, $date->daysInMonth);
+
+            // Get compliance summaries
+            $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
+
+            // Build matrix data
+            $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
+
+            return ['matrixData' => $matrixData];
+        });
+    }
+
+    /**
+     * Load full matrix data (legacy method for backward compatibility)
      */
     public function loadMatrixData(string $selectedMonth): array
     {
@@ -27,7 +122,7 @@ class MatrixDataService
             return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
         }
 
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = CachedSettingsService::getBackDataEntryDays();
 
         // Get indicators
         $indicators = $this->getIndicators($unitKerjaIds);
@@ -229,7 +324,7 @@ class MatrixDataService
         $today = now()->startOfDay();
         
         // Get cached setting instead of querying repeatedly
-        $backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        $backDays = CachedSettingsService::getBackDataEntryDays();
         $sixDaysAgo = $today->copy()->subDays($backDays)->startOfDay();
 
         if ($count > 0) {

@@ -1,5 +1,5 @@
 <!-- Filters and Search Section -->
-<div x-show="currentView === 'input'" class="border-t border-slate-200 dark:border-slate-700 pt-4">
+<div x-show="$wire.currentView === 'input'" class="border-t border-slate-200 dark:border-slate-700 pt-4">
     <div class="flex flex-col lg:flex-row gap-4">
         <!-- Search -->
         <div class="flex-1">

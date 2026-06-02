@@ -2,9 +2,9 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('dailyReportData', () => ({
-            selectedDate: '{{ now()->format('Y - m - d ') }}',
-            selectedMonth: '{{ $selectedMonth }}',
-            currentDate: new Date('{{ $selectedMonth }}-01'),
+            selectedDate: '{{ now()->format('Y-m-d') }}',
+            selectedMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
+            currentDate: new Date('{{ ($selectedMonth ?: now()->format('Y-m')) }}-01'),
             isMobile: false,
             currentView: 'input',
 
@@ -77,28 +77,140 @@
         }));
     });
 
-    // Listen for URL update events from Livewire
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('url-updated', (event) => {
-            console.log('URL update event received:', event);
-            if (event[0] && event[0].url) {
-                console.log('Updating URL to:', event[0].url);
-                // Update browser URL without page refresh
-                window.history.replaceState({}, '', event[0].url);
-            }
+    // Parse URL params on page load and sync Alpine state
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📍 [DOMContentLoaded] Page loaded');
+        const urlParams = new URLSearchParams(window.location.search);
+        const dateParam = urlParams.get('selectedDate');
+        const monthParam = urlParams.get('selectedMonth');
+        
+        console.log('📍 [DOMContentLoaded] URL params from window.location.search:', {
+            selectedDate: dateParam,
+            selectedMonth: monthParam,
+            fullSearch: window.location.search,
         });
+        
+        if (dateParam || monthParam) {
+            console.log('📍 [DOMContentLoaded] URL params found, syncing with Alpine');
+            const Alpine = window.Alpine;
+            if (Alpine && Alpine.store) {
+                // Try to sync Alpine data if available
+                const dailyReportEl = document.querySelector('[x-data*="dailyReportData"]');
+                if (dailyReportEl && dailyReportEl.__x) {
+                    if (dateParam) {
+                        dailyReportEl.__x.$data.selectedDate = dateParam;
+                        console.log('📍 [DOMContentLoaded] Set Alpine selectedDate to:', dateParam);
+                    }
+                    if (monthParam) {
+                        dailyReportEl.__x.$data.selectedMonth = monthParam;
+                        console.log('📍 [DOMContentLoaded] Set Alpine selectedMonth to:', monthParam);
+                    }
+                }
+            }
+        } else {
+            console.log('📍 [DOMContentLoaded] No URL params found, Alpine will use defaults');
+        }
     });
 
-    // Alternative event listener (fallback)
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof Livewire !== 'undefined') {
-            Livewire.on('url-updated', function(data) {
-                console.log('Alternative listener - URL update:', data);
-                if (data && data.url) {
-                    window.history.replaceState({}, '', data.url);
+    // Listen for URL update events from Livewire and update browser URL
+    // Also sync Alpine state and reload matrix data if needed
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('updateUrl', (urlPayload) => {
+            console.log('🔗 [updateUrl event] Event received');
+            console.log('🔗 [updateUrl event] URL to set:', urlPayload);
+            
+            if (urlPayload) {
+                try {
+                    // Normalize url string (Livewire 3 sometimes passes objects or arrays for events)
+                    let urlString = urlPayload;
+                    if (typeof urlPayload === 'object' && urlPayload !== null) {
+                        urlString = urlPayload.url || (Array.isArray(urlPayload) ? urlPayload[0] : Object.values(urlPayload)[0]);
+                    }
+                    
+                    if (typeof urlString !== 'string') {
+                         console.warn('🔗 [updateUrl] Extracted URL is not a string:', urlString);
+                         return;
+                    }
+
+                    console.log('🔗 [updateUrl] Updating browser URL to:', urlString);
+                    
+                    // Extract query params from the URL (could be from /livewire/update endpoint)
+                    let urlParams = new URLSearchParams();
+                    
+                    // Try to parse as full URL, otherwise as query string
+                    try {
+                        const parsedUrl = new URL(urlString);
+                        urlParams = new URLSearchParams(parsedUrl.search);
+                    } catch (e) {
+                        // If it fails, try treating it as a query string
+                        if (urlString.includes('?')) {
+                            urlParams = new URLSearchParams(urlString.split('?')[1]);
+                        } else {
+                            urlParams = new URLSearchParams(urlString);
+                        }
+                    }
+                    
+                    const newMonth = urlParams.get('selectedMonth');
+                    const newDate = urlParams.get('selectedDate');
+                    
+                    console.log('🔗 [updateUrl] Parsed params:', {
+                        selectedMonth: newMonth,
+                        selectedDate: newDate,
+                    });
+                    
+                    // Build proper page URL using current pathname
+                    const pageUrl = window.location.pathname + '?' + urlParams.toString();
+                    
+                    console.log('🔗 [updateUrl] Proper page URL:', pageUrl);
+                    
+                    // Update browser URL without page refresh
+                    window.history.replaceState({}, '', pageUrl);
+                    console.log('🔗 [updateUrl] History state updated');
+                    
+                    const mainEl = document.querySelector('[x-data*="selectedDate"]');
+                    console.log('🔗 [updateUrl] Found mainEl:', !!mainEl);
+                    
+                    if (mainEl && mainEl.__x) {
+                        const oldMonth = mainEl.__x.$data.selectedMonth;
+                        const oldDate = mainEl.__x.$data.selectedDate;
+                        
+                        console.log('🔗 [updateUrl] Old Alpine state:', { oldMonth, oldDate });
+                        
+                        // Update Alpine state from URL
+                        if (newMonth && mainEl.__x.$data.selectedMonth !== newMonth) {
+                            mainEl.__x.$data.selectedMonth = newMonth;
+                            console.log('🔗 [updateUrl] Updated selectedMonth to:', newMonth);
+                        }
+                        if (newDate && mainEl.__x.$data.selectedDate !== newDate) {
+                            mainEl.__x.$data.selectedDate = newDate;
+                            console.log('🔗 [updateUrl] Updated selectedDate to:', newDate);
+                        }
+                        
+                        console.log('🔗 [updateUrl] New Alpine state:', {
+                            selectedMonth: mainEl.__x.$data.selectedMonth,
+                            selectedDate: mainEl.__x.$data.selectedDate,
+                        });
+                        
+                        // If month changed, reload matrix data
+                        if (newMonth && oldMonth !== newMonth) {
+                            console.log('🔗 [updateUrl] Month changed, will reload matrix data');
+                            setTimeout(() => {
+                                if (mainEl.__x.$data.loadMatrixDataAsync) {
+                                    mainEl.__x.$data.loadMatrixDataAsync();
+                                }
+                            }, 100);
+                        }
+                    } else {
+                        console.warn('🔗 [updateUrl] Could not find mainEl or __x data');
+                    }
+                } catch (error) {
+                    console.error('🔗 [updateUrl] Error processing URL:', error);
                 }
-            });
-        }
+            } else {
+                console.error('🔗 [updateUrl] No URL received:', url);
+            }
+        });
+        console.log('🔗 [init] Livewire updateUrl listener registered');
     });
 </script>
 

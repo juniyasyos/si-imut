@@ -1,5 +1,5 @@
 @php
-$backDays = \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+$backDays = \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays();
 $sixDaysAgo = now()->subDays($backDays)->startOfDay();
 $isLocked = ($this->selectedDate)
 ? \Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo)

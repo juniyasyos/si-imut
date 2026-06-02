@@ -38,6 +38,64 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     public function mount(): void   
     {
         $this->bootBase();
+        // If URL contains `selectedDate` and/or `selectedMonth` query parameters, initialize page state from them
+        $reqDate = request()->query('selectedDate');
+        $reqMonth = request()->query('selectedMonth');
+        
+        \Illuminate\Support\Facades\Log::info('ListDailyReportEntries mount', [
+            'reqDate' => $reqDate,
+            'reqMonth' => $reqMonth,
+            'url' => request()->url(),
+        ]);
+        
+        if ($reqMonth) {
+            try {
+                $validMonth = Carbon::createFromFormat('Y-m', $reqMonth)->format('Y-m');
+                $this->selectedMonth = $validMonth;
+                \Illuminate\Support\Facades\Log::info('Mount: selectedMonth set', ['selectedMonth' => $validMonth]);
+            } catch (\Exception $e) {
+                // ignore invalid month formats
+                \Illuminate\Support\Facades\Log::warning('Mount: invalid month format', ['reqMonth' => $reqMonth]);
+            }
+        }
+        
+        if ($reqDate) {
+            try {
+                $validDate = Carbon::createFromFormat('Y-m-d', $reqDate)->format('Y-m-d');
+                $this->selectedDate = $validDate;
+                $this->selectedMonth = Carbon::createFromFormat('Y-m-d', $validDate)->format('Y-m');
+                \Illuminate\Support\Facades\Log::info('Mount: selectedDate set', ['selectedDate' => $validDate, 'selectedMonth' => $this->selectedMonth]);
+            } catch (\Exception $e) {
+                // ignore invalid date formats
+                \Illuminate\Support\Facades\Log::warning('Mount: invalid date format', ['reqDate' => $reqDate]);
+            }
+        }
+        
+        // Ensure selectedDate always has a value (default: today)
+        if (!$this->selectedDate) {
+            $this->selectedDate = now()->format('Y-m-d');
+            $this->selectedMonth = now()->format('Y-m');
+            \Illuminate\Support\Facades\Log::info('Mount: set defaults', ['selectedDate' => $this->selectedDate, 'selectedMonth' => $this->selectedMonth]);
+        }
+        
+        \Illuminate\Support\Facades\Log::info('Mount final state', [
+            'selectedDate' => $this->selectedDate,
+            'selectedMonth' => $this->selectedMonth,
+        ]);
+
+        // Read view from URL query parameter
+        $requestedView = request()->query('view', 'input');
+        if (in_array($requestedView, ['input', 'monitoring'])) {
+            $this->currentView = $requestedView;
+        }
+        
+        \Illuminate\Support\Facades\Log::info('📋 [Page Init] View and period loaded', [
+            'view' => $this->currentView,
+            'month' => $this->selectedMonth,
+            'date' => $this->selectedDate,
+            'url' => request()->fullUrl(),
+        ]);
+
         $this->loadMatrixData();
         $this->loadMonitoringTemplates();
         $this->checkAndOpenSlideOverFromUrl();
@@ -184,6 +242,72 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $user,
             $this->selectedMonth
         );
+        
+        \Log::info('📊 [Monitoring] Templates loaded', [
+            'month' => $this->selectedMonth,
+            'count' => count($this->monitoringTemplates),
+            'user_id' => $user->id,
+            'timestamp' => now()->format('Y-m-d H:i:s')
+        ]);
+    }
+
+    /**
+     * Change current view and update URL
+     * 
+     * @param string $view 'input' or 'monitoring'
+     */
+    public function changeView(string $view): void
+    {
+        if (!in_array($view, ['input', 'monitoring'])) {
+            return;
+        }
+
+        // Simply update the property - #[Url] binding will handle URL update automatically
+        $this->currentView = $view;
+    }
+
+    /**
+     * Update selected month and refresh monitoring data
+     * Automatically updates URL via #[Url] binding
+     * 
+     * @param string $month Format: Y-m (e.g., 2026-06)
+     */
+    public function selectMonth(string $month): void
+    {
+        // Validate month format
+        if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
+            \Log::warning('📅 [Monitoring] Invalid month format provided', ['month' => $month]);
+            return;
+        }
+
+        // Parse and validate the date
+        try {
+            $date = Carbon::createFromFormat('Y-m', $month);
+            $oldMonth = $this->selectedMonth;
+            $this->selectedMonth = $month;
+            
+            \Log::info('📅 [Monitoring] Month changed', [
+                'from' => $oldMonth,
+                'to' => $month,
+                'user_id' => Auth::id(),
+                'timestamp' => now()->format('Y-m-d H:i:s')
+            ]);
+            
+            // Reload monitoring templates for the new month
+            $this->loadMonitoringTemplates();
+            
+            \Log::debug('📅 [Monitoring] Templates loaded for month', [
+                'month' => $month,
+                'template_count' => count($this->monitoringTemplates)
+            ]);
+        } catch (\Exception $e) {
+            // Invalid date, do nothing
+            \Log::error('📅 [Monitoring] Error changing month', [
+                'month' => $month,
+                'error' => $e->getMessage()
+            ]);
+            return;
+        }
     }
 
     /**

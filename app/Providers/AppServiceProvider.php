@@ -80,6 +80,36 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\DailyReport\FieldResponseBuilderService::class);
         $this->app->singleton(\App\Services\DailyReport\DailyReportBuildService::class);
 
+        // Register Layered Architecture - Monitoring Module
+        // QueryBuilder layer
+        $this->app->singleton(\App\QueryBuilders\FormTemplateQueryBuilder::class);
+        
+        // Repository layer
+        $this->app->singleton(
+            \App\Repositories\DailyReport\FormTemplateRepository::class,
+            fn($app) => new \App\Repositories\DailyReport\FormTemplateRepository(
+                $app->make(\App\QueryBuilders\FormTemplateQueryBuilder::class)
+            )
+        );
+        
+        // Service layer
+        $this->app->singleton(
+            \App\Services\DailyReport\Monitoring\MonitoringTemplateService::class,
+            fn($app) => new \App\Services\DailyReport\Monitoring\MonitoringTemplateService(
+                $app->make(\App\Repositories\DailyReport\FormTemplateRepository::class)
+            )
+        );
+
+        // Facade service - routes to appropriate layers
+        $this->app->singleton(
+            \App\Services\DailyReport\DailyReportMonitoringService::class,
+            fn($app) => new \App\Services\DailyReport\DailyReportMonitoringService(
+                $app->make(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class),
+                $app->make(\App\Services\DailyReport\Monitoring\MonitoringTemplateService::class),
+                $app->make(\App\Repositories\DailyReport\FormTemplateRepository::class)
+            )
+        );
+
         // When SSO is enabled we want the Filament logout response to redirect
         // the user through the IAM/SO logout flow instead of just returning to
         // the Filament login page.  We bind our own implementation here so it

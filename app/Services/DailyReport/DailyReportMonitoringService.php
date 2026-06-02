@@ -5,6 +5,8 @@ namespace App\Services\DailyReport;
 use App\Models\FormTemplate;
 use App\Models\User;
 use App\Services\DailyReport\Exports\DailyReportMonitoringExport;
+use App\Services\DailyReport\Monitoring\MonitoringTemplateService;
+use App\Repositories\DailyReport\FormTemplateRepository;
 use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Support\CacheKey;
 use Carbon\Carbon;
@@ -15,92 +17,57 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 /**
- * Service for Daily Report Monitoring operations
- * Handles all business logic for monitoring templates, responses, and exports
+ * Facade/Coordinator Service for Daily Report Monitoring operations
+ * 
+ * Coordinates between multiple specialized services and repositories.
+ * Routes requests to appropriate service layer components.
+ * 
+ * NEW ARCHITECTURE:
+ * - MonitoringTemplateService: Handles business logic for monitoring templates
+ * - FormTemplateRepository: Handles data access and caching
+ * - FormTemplateQueryBuilder: Encapsulates complex query building
  */
 class DailyReportMonitoringService
 {
     public function __construct(
         private readonly DailyReportResponseRepositoryInterface $dailyReportRepository,
+        private readonly MonitoringTemplateService $monitoringTemplateService,
+        private readonly FormTemplateRepository $formTemplateRepository,
     ) {
     }
 
     /**
      * Load monitoring templates for a specific period
+     * Routes to MonitoringTemplateService for business logic
      */
     public function loadMonitoringTemplates(User $user, string $selectedMonth): array
     {
-        try {
-            $date = Carbon::createFromFormat('Y-m', $selectedMonth);
-            $startDate = $date->copy()->startOfMonth()->startOfDay();
-            $endDate = $date->copy()->endOfMonth()->endOfDay();
-
-            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
-
-            $templates = $this->getMonitoringTemplatesQuery($user, $unitKerjaIds)
-                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
-                    $query->whereBetween('report_date', [$startDate, $endDate]);
-                    if (!empty($unitKerjaIds)) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    }
-                }])
-                ->get();
-
-            $firstUnitKerjaId = $unitKerjaIds[0] ?? null;
-
-            return $templates->map(function ($template) use ($firstUnitKerjaId) {
-                return $this->formatTemplateResponse($template, $firstUnitKerjaId);
-            })->toArray();
-        } catch (\Exception $e) {
-            Log::error('Error loading monitoring templates', [
-                'month' => $selectedMonth,
-                'user_id' => $user->id,
-                'error' => $e->getMessage()
-            ]);
-            return [];
-        }
+        return $this->monitoringTemplateService->loadTemplatesForPeriod($user, $selectedMonth);
     }
 
     /**
      * Load monitoring data for a specific period
+     * Routes to MonitoringTemplateService for business logic
      */
     public function loadMonitoringForPeriod(User $user, string $month): array
     {
-        try {
-            $date = Carbon::createFromFormat('Y-m', $month);
-            $startDate = $date->copy()->startOfMonth()->startOfDay();
-            $endDate = $date->copy()->endOfMonth()->endOfDay();
+        return $this->monitoringTemplateService->loadMonitoringForPeriod($user, $month);
+    }
 
-            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+    /**
+     * Get total monitoring templates count
+     */
+    public function getMonitoringTemplateCount(User $user): int
+    {
+        return $this->monitoringTemplateService->getTotalMonitoringCount($user);
+    }
 
-            $templates = $this->getMonitoringTemplatesQuery($user, $unitKerjaIds)
-                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
-                    $query->whereBetween('report_date', [$startDate, $endDate]);
-                    if (!empty($unitKerjaIds)) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                    }
-                }])
-                ->get();
-
-            return $templates->map(function ($template) {
-                return [
-                    'id' => $template->id,
-                    'title' => $template->imutProfile->imutData->title,
-                    'description' => $template->description,
-                    'profile_name' => $template->imutProfile?->title ?? null,
-                    'imut_profile_version' => $template->imutProfile?->version ?? null,
-                    'category' => null,
-                    'response_count' => $template->response_count ?? 0,
-                ];
-            })->toArray();
-        } catch (\Exception $e) {
-            Log::error('Error loading monitoring data for period', [
-                'month' => $month,
-                'user_id' => $user->id,
-                'error' => $e->getMessage()
-            ]);
-            return [];
-        }
+    /**
+     * Check if user has monitoring templates
+     */
+    public function hasMonitoringTemplates(User $user): bool
+    {
+        return $this->monitoringTemplateService->hasMonitoringTemplates($user);
     }
 
     /**
@@ -194,45 +161,6 @@ class DailyReportMonitoringService
     {
         $user = User::find($userId);
         return $user?->unitKerjas()?->pluck('unit_kerja.id')->toArray() ?? [];
-    }
-
-    /**
-     * Get base query for monitoring templates
-     */
-    private function getMonitoringTemplatesQuery(User $user, array $unitKerjaIds)
-    {
-        return FormTemplate::query()
-            ->forUserUnits($user)
-            ->where('is_active', true)
-            ->with(['imutProfile.imutData.categories'])
-            ->whereHas('imutProfile', function ($query) {
-                $query->where('valid_from', '<=', now())
-                    ->where(function ($q) {
-                        $q->whereNull('valid_until')
-                            ->orWhere('valid_until', '>=', now());
-                    });
-            })
-            ->whereHas('imutProfile.imutData', function ($query) {
-                $query->where('is_monthly', true);
-            });
-    }
-
-    /**
-     * Format template response data
-     */
-    private function formatTemplateResponse($template, ?int $firstUnitKerjaId = null): array
-    {
-        return [
-            'id' => $template->id,
-            'imut_profile_id' => $template->imutProfile?->id,
-            'unit_kerja_id' => $firstUnitKerjaId,
-            'title' => $template->imutProfile->imutData->title,
-            'description' => $template->description,
-            'profile_name' => $template->imutProfile?->title ?? null,
-            'imut_profile_version' => $template->imutProfile?->version ?? null,
-            'category' => null,
-            'response_count' => $template->response_count ?? 0,
-        ];
     }
 
     /**

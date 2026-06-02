@@ -12,7 +12,7 @@
                 </p>
                 <p class="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
                     @svg("heroicon-m-information-circle", "w-4 h-4")
-                    Bisa input H+{{ \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays() }}
+                    Bisa input H+{{ \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays() }}
                 </p>
             </div>
         </div>

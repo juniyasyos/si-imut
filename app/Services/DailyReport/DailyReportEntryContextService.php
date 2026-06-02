@@ -6,6 +6,7 @@ use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
 use App\Models\LaporanImutAutoGenerationSetting;
 use Carbon\Carbon;
+use App\Services\DailyReport\CachedSettingsService;
 
 class DailyReportEntryContextService
 {
@@ -28,7 +29,7 @@ class DailyReportEntryContextService
 
     public function getBackDataEntryDays(): int
     {
-        return LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays();
+        return CachedSettingsService::getBackDataEntryDays();
     }
 
     public function getFormattedDate(?string $date = null): string

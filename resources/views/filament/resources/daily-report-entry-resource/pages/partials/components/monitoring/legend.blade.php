@@ -19,7 +19,7 @@
             </div>
             <div class="flex flex-col">
                 <span class="text-xs font-semibold text-gray-900 dark:text-white">Belum Diisi</span>
-                <span class="text-[10px] text-gray-500 dark:text-gray-400">Dapat input (&le;{{ \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays() }} hari)</span>
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">Dapat input (&le;{{ \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays() }} hari)</span>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
             </div>
             <div class="flex flex-col">
                 <span class="text-xs font-semibold text-gray-900 dark:text-white">Terkunci</span>
-                <span class="text-[10px] text-gray-500 dark:text-gray-400">Lewat {{ \App\Models\LaporanImutAutoGenerationSetting::getInstance()->getBackDataEntryDays() }} hari</span>
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">Lewat {{ \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays() }} hari</span>
             </div>
         </div>
 
