@@ -96,8 +96,36 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             'url' => request()->fullUrl(),
         ]);
 
+        \Log::info('📦 [DailyReport] Data load plan', [
+            'source' => 'mount',
+            'selectedMonth' => $this->selectedMonth,
+            'selectedDate' => $this->selectedDate,
+            'view' => $this->currentView,
+            'loadMatrix' => true,
+            'loadMonitoring' => $this->currentView === 'monitoring',
+        ]);
+
         $this->loadMatrixData();
-        $this->loadMonitoringTemplates();
+
+        \Log::info('📦 [DailyReport] Matrix data loaded', [
+            'source' => 'mount',
+            'selectedMonth' => $this->selectedMonth,
+            'indicators_count' => count($this->indicators),
+            'matrix_rows_count' => count($this->matrixData),
+            'daysInMonth_count' => count($this->daysInMonth),
+            'daysWithData_count' => count($this->daysWithData),
+        ]);
+
+        if ($this->currentView === 'monitoring') {
+            $this->loadMonitoringTemplates();
+        } else {
+            \Log::info('📦 [DailyReport] Monitoring data skipped', [
+                'source' => 'mount',
+                'selectedMonth' => $this->selectedMonth,
+                'view' => $this->currentView,
+            ]);
+        }
+
         $this->checkAndOpenSlideOverFromUrl();
     }
 
@@ -246,10 +274,19 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     protected function loadMonitoringTemplates(): void
     {
         $user = Auth::user();
+
+        \Log::info('📦 [DailyReport] Loading monitoring data', [
+            'source' => 'loadMonitoringTemplates',
+            'selectedMonth' => $this->selectedMonth,
+            'selectedDate' => $this->selectedDate,
+            'view' => $this->currentView,
+        ]);
+
         $this->monitoringTemplates = $this->monitoringService->loadMonitoringTemplates(
             $user,
             $this->selectedMonth
         );
+        $this->monitoringTemplatesLoadedForMonth = $this->selectedMonth;
         
         \Log::info('📊 [Monitoring] Templates loaded', [
             'month' => $this->selectedMonth,
@@ -272,6 +309,18 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
         // Simply update the property - #[Url] binding will handle URL update automatically
         $this->currentView = $view;
+
+        \Log::info('📦 [DailyReport] View changed', [
+            'source' => 'changeView',
+            'view' => $view,
+            'selectedMonth' => $this->selectedMonth,
+            'monitoringAlreadyLoadedForMonth' => $this->monitoringTemplatesLoadedForMonth,
+            'willLoadMonitoring' => $view === 'monitoring' && $this->monitoringTemplatesLoadedForMonth !== $this->selectedMonth,
+        ]);
+
+        if ($view === 'monitoring' && $this->monitoringTemplatesLoadedForMonth !== $this->selectedMonth) {
+            $this->loadMonitoringTemplates();
+        }
     }
 
     /**
@@ -300,14 +349,23 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 'user_id' => Auth::id(),
                 'timestamp' => now()->format('Y-m-d H:i:s')
             ]);
-            
-            // Reload monitoring templates for the new month
-            $this->loadMonitoringTemplates();
-            
-            \Log::debug('📅 [Monitoring] Templates loaded for month', [
-                'month' => $month,
-                'template_count' => count($this->monitoringTemplates)
+
+            \Log::info('📦 [DailyReport] Matrix data reload requested', [
+                'source' => 'selectMonth',
+                'selectedMonth' => $this->selectedMonth,
+                'view' => $this->currentView,
+                'loadMonitoring' => $this->currentView === 'monitoring',
             ]);
+            
+            if ($this->currentView === 'monitoring') {
+                // Reload monitoring templates only when the monitoring tab is visible
+                $this->loadMonitoringTemplates();
+
+                \Log::debug('📅 [Monitoring] Templates loaded for month', [
+                    'month' => $month,
+                    'template_count' => count($this->monitoringTemplates)
+                ]);
+            }
         } catch (\Exception $e) {
             // Invalid date, do nothing
             \Log::error('📅 [Monitoring] Error changing month', [

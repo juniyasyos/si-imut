@@ -37,6 +37,7 @@ abstract class BaseDailyReportMonitoring extends Page
     public array $daysInMonth = [];
     public array $daysWithData = [];
     public array $monitoringTemplates = [];
+    public ?string $monitoringTemplatesLoadedForMonth = null;
 
     // Category info pulled from database – used by the frontend to render
     public array $imutCategories = [];

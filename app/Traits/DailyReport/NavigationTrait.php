@@ -125,10 +125,32 @@ trait NavigationTrait
             : Carbon::parse($this->selectedMonth . '-01');
 
         $date = Carbon::parse($this->selectedMonth . '-01')->subMonth();
+        
+            \Log::info('📦 [DailyReport] Month navigation started', [
+            'source' => 'previousMonth',
+            'fromMonth' => $this->selectedMonth,
+            'fromDate' => $this->selectedDate,
+            'toMonth' => $date->format('Y-m'),
+            'toDate' => $date->copy()->day(min($currentDate->day, $date->daysInMonth))->format('Y-m-d'),
+            'loadMatrix' => true,
+            'loadMonitoring' => false,
+            'currentView' => $this->currentView,
+        ]);
+
         $this->selectedMonth = $date->format('Y-m');
         $this->selectedDate = $date->copy()->day(min($currentDate->day, $date->daysInMonth))->format('Y-m-d');
         
         $this->loadMatrixData();
+
+            \Log::info('📦 [DailyReport] Month navigation matrix loaded', [
+            'source' => 'previousMonth',
+            'selectedMonth' => $this->selectedMonth,
+            'selectedDate' => $this->selectedDate,
+            'indicators_count' => count($this->indicators),
+            'matrix_rows_count' => count($this->matrixData),
+            'loadMonitoring' => false,
+        ]);
+
         $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());
         // Update URL to include month/date
         try {
@@ -161,10 +183,32 @@ trait NavigationTrait
             : Carbon::parse($this->selectedMonth . '-01');
 
         $date = Carbon::parse($this->selectedMonth . '-01')->addMonth();
+        
+            \Log::info('📦 [DailyReport] Month navigation started', [
+            'source' => 'nextMonth',
+            'fromMonth' => $this->selectedMonth,
+            'fromDate' => $this->selectedDate,
+            'toMonth' => $date->format('Y-m'),
+            'toDate' => $date->copy()->day(min($currentDate->day, $date->daysInMonth))->format('Y-m-d'),
+            'loadMatrix' => true,
+            'loadMonitoring' => false,
+            'currentView' => $this->currentView,
+        ]);
+
         $this->selectedMonth = $date->format('Y-m');
         $this->selectedDate = $date->copy()->day(min($currentDate->day, $date->daysInMonth))->format('Y-m-d');
         
         $this->loadMatrixData();
+
+            \Log::info('📦 [DailyReport] Month navigation matrix loaded', [
+            'source' => 'nextMonth',
+            'selectedMonth' => $this->selectedMonth,
+            'selectedDate' => $this->selectedDate,
+            'indicators_count' => count($this->indicators),
+            'matrix_rows_count' => count($this->matrixData),
+            'loadMonitoring' => false,
+        ]);
+
         $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());
         // Update URL to include month/date
         try {
