@@ -2,6 +2,7 @@
 
 namespace App\Services\DailyReport;
 
+use App\Models\User;
 use App\Models\FormTemplate;
 use App\Support\CacheKey;
 use Carbon\Carbon;
@@ -14,6 +15,27 @@ class MatrixDataService
 {
     // Cache TTL: 5 minutes for matrix data
     const CACHE_TTL = 300;
+
+    /**
+     * In-memory cache to avoid repeated unit kerja lookups in one request.
+     *
+     * @var array<int, array<int, int>>
+     */
+    private array $userUnitKerjaIdsCache = [];
+
+    /**
+     * In-memory cache for matrix indicators per request.
+     *
+     * @var array<string, array<int, array<string, mixed>>>
+     */
+    private array $indicatorsCache = [];
+
+    /**
+     * In-memory cache for compliance summaries per request.
+     *
+     * @var array<string, \Illuminate\Support\Collection>
+     */
+    private array $complianceSummariesCache = [];
 
     /**
      * Load matrix metadata only (indicators + daysWithData map)
@@ -150,6 +172,12 @@ class MatrixDataService
      */
     private function getIndicators(array $unitKerjaIds): array
     {
+        $cacheKey = $this->getMatrixQueryCacheKey($unitKerjaIds);
+
+        if (isset($this->indicatorsCache[$cacheKey])) {
+            return $this->indicatorsCache[$cacheKey];
+        }
+
         $formTemplates = FormTemplate::forUserUnitKerjas($unitKerjaIds)
             ->monthlyIndicators()
             ->activeForCurrentDate()
@@ -166,7 +194,7 @@ class MatrixDataService
             ->distinct()
             ->get();
 
-        return $formTemplates->map(function ($formTemplate) {
+        return $this->indicatorsCache[$cacheKey] = $formTemplates->map(function ($formTemplate) {
             return [
                 'id' => $formTemplate->id,
                 'title' => $formTemplate->imutProfile?->imutData?->title ?? $formTemplate->title,
@@ -183,11 +211,17 @@ class MatrixDataService
      */
     private function getComplianceSummaries(array $unitKerjaIds, Carbon $date): \Illuminate\Support\Collection
     {
+        $cacheKey = $this->getMatrixQueryCacheKey($unitKerjaIds, $date->format('Y-m'));
+
+        if (isset($this->complianceSummariesCache[$cacheKey])) {
+            return $this->complianceSummariesCache[$cacheKey];
+        }
+
         $startDate = $date->copy()->startOfMonth()->format('Y-m-d');
         $endDate = $date->copy()->endOfMonth()->format('Y-m-d');
         $now = now();
 
-        return \App\Models\DailyReportResponse::select([
+        $summaries = \App\Models\DailyReportResponse::select([
             'form_templates.id as form_template_id',
             DB::raw('DATE(daily_report_responses.report_date) as report_date'),
             DB::raw('COUNT(*) as total_count'),
@@ -213,6 +247,8 @@ class MatrixDataService
                     return Carbon::parse($item->report_date)->format('Y-m-d');
                 });
             });
+
+        return $this->complianceSummariesCache[$cacheKey] = $summaries;
     }
 
     /**
@@ -352,10 +388,35 @@ class MatrixDataService
      */
     private function getUserUnitKerjaIds(int $userId): array
     {
-        return Cache::remember(
+        if (isset($this->userUnitKerjaIdsCache[$userId])) {
+            return $this->userUnitKerjaIdsCache[$userId];
+        }
+
+        $ids = Cache::remember(
             CacheKey::userHasUnitKerjaIds($userId),
             3600,
-            fn() => Auth::user()?->unitKerjas()?->pluck('unit_kerja.id')->toArray() ?? []
+            function () use ($userId) {
+                $user = User::query()->with('unitKerjas:id')->find($userId);
+
+                return $user?->unitKerjas?->pluck('id')->all() ?? [];
+            }
         );
+
+        return $this->userUnitKerjaIdsCache[$userId] = $ids;
+    }
+
+    /**
+     * Build a stable in-memory cache key for matrix queries.
+     */
+    private function getMatrixQueryCacheKey(array $unitKerjaIds, ?string $suffix = null): string
+    {
+        sort($unitKerjaIds);
+        $key = md5(implode(',', $unitKerjaIds));
+
+        if ($suffix !== null) {
+            $key .= ':' . $suffix;
+        }
+
+        return $key;
     }
 }

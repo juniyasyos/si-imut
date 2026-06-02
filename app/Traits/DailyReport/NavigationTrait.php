@@ -120,13 +120,13 @@ trait NavigationTrait
      */
     public function previousMonth(): void
     {
+        $currentDate = $this->selectedDate
+            ? Carbon::parse($this->selectedDate)
+            : Carbon::parse($this->selectedMonth . '-01');
+
         $date = Carbon::parse($this->selectedMonth . '-01')->subMonth();
         $this->selectedMonth = $date->format('Y-m');
-        
-        // Set selectedDate to first day of new month if not explicitly set
-        if (!$this->selectedDate) {
-            $this->selectedDate = $date->format('Y-m-d');
-        }
+        $this->selectedDate = $date->copy()->day(min($currentDate->day, $date->daysInMonth))->format('Y-m-d');
         
         $this->loadMatrixData();
         $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());
@@ -156,13 +156,13 @@ trait NavigationTrait
             return;
         }
 
+        $currentDate = $this->selectedDate
+            ? Carbon::parse($this->selectedDate)
+            : Carbon::parse($this->selectedMonth . '-01');
+
         $date = Carbon::parse($this->selectedMonth . '-01')->addMonth();
         $this->selectedMonth = $date->format('Y-m');
-        
-        // Set selectedDate to first day of new month if not explicitly set
-        if (!$this->selectedDate) {
-            $this->selectedDate = $date->format('Y-m-d');
-        }
+        $this->selectedDate = $date->copy()->day(min($currentDate->day, $date->daysInMonth))->format('Y-m-d');
         
         $this->loadMatrixData();
         $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());

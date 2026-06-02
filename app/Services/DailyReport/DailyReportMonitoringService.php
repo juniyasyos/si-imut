@@ -29,6 +29,13 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class DailyReportMonitoringService
 {
+    /**
+     * In-memory cache to avoid repeated unit kerja lookups in one request.
+     *
+     * @var array<int, array<int, int>>
+     */
+    private array $userUnitKerjaIdsCache = [];
+
     public function __construct(
         private readonly DailyReportResponseRepositoryInterface $dailyReportRepository,
         private readonly MonitoringTemplateService $monitoringTemplateService,
@@ -147,11 +154,17 @@ class DailyReportMonitoringService
      */
     public function getUserUnitKerjaIds(int $userId): array
     {
-        return Cache::remember(
+        if (isset($this->userUnitKerjaIdsCache[$userId])) {
+            return $this->userUnitKerjaIdsCache[$userId];
+        }
+
+        $ids = Cache::remember(
             CacheKey::userHasUnitKerjaIds($userId),
             3600,
             fn() => $this->fetchUserUnitKerjaIds($userId)
         );
+
+        return $this->userUnitKerjaIdsCache[$userId] = $ids;
     }
 
     /**
@@ -159,8 +172,9 @@ class DailyReportMonitoringService
      */
     private function fetchUserUnitKerjaIds(int $userId): array
     {
-        $user = User::find($userId);
-        return $user?->unitKerjas()?->pluck('unit_kerja.id')->toArray() ?? [];
+        $user = User::query()->with('unitKerjas:id')->find($userId);
+
+        return $user?->unitKerjas?->pluck('id')->all() ?? [];
     }
 
     /**

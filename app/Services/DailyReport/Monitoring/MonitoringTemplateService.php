@@ -16,6 +16,13 @@ use Illuminate\Support\Facades\Log;
  */
 class MonitoringTemplateService
 {
+    /**
+     * In-memory cache to avoid repeated unit kerja lookups in one request.
+     *
+     * @var array<int, array<int, int>>
+     */
+    private array $userUnitKerjaIdsCache = [];
+
     public function __construct(
         private readonly FormTemplateRepository $formTemplateRepository
     ) {
@@ -103,13 +110,15 @@ class MonitoringTemplateService
 
             // Map to simple array format
             return $templates->map(function ($template) {
+                $imutData = $template->imutProfile?->imutData;
+
                 return [
                     'id' => $template->id,
-                    'title' => $template->imutProfile?->imutData?->title ?? $template->title,
+                    'title' => $imutData?->title ?? $template->title,
                     'description' => $template->description,
                     'profile_name' => $template->imutProfile?->title ?? null,
                     'imut_profile_version' => $template->imutProfile?->version ?? null,
-                    'category' => $template->imutProfile?->imutData?->categories?->first()?->category_name ?? null,
+                    'category' => $imutData?->categories?->category_name ?? null,
                     'response_count' => $template->response_count ?? 0,
                 ];
             })->toArray();
@@ -166,15 +175,17 @@ class MonitoringTemplateService
         $firstUnitKerjaId = $unitKerjaIds[0] ?? null;
 
         return $templates->map(function ($template) use ($firstUnitKerjaId) {
+            $imutData = $template->imutProfile?->imutData;
+
             return [
                 'id' => $template->id,
                 'imut_profile_id' => $template->imutProfile?->id,
                 'unit_kerja_id' => $firstUnitKerjaId,
-                'title' => $template->imutProfile?->imutData?->title ?? $template->title,
+                'title' => $imutData?->title ?? $template->title,
                 'description' => $template->description,
                 'profile_name' => $template->imutProfile?->title ?? null,
                 'imut_profile_version' => $template->imutProfile?->version ?? null,
-                'category' => $template->imutProfile?->imutData?->categories?->first()?->category_name ?? null,
+                'category' => $imutData?->categories?->category_name ?? null,
                 'response_count' => $template->response_count ?? 0,
             ];
         })->toArray();
@@ -188,9 +199,12 @@ class MonitoringTemplateService
      */
     private function getUserUnitKerjaIds(int $userId): array
     {
-        return User::find($userId)
-            ->unitKerjas()
-            ->pluck('unit_kerja.id')
-            ->toArray() ?? [];
+        if (isset($this->userUnitKerjaIdsCache[$userId])) {
+            return $this->userUnitKerjaIdsCache[$userId];
+        }
+
+        $user = User::query()->with('unitKerjas:id')->find($userId);
+
+        return $this->userUnitKerjaIdsCache[$userId] = $user?->unitKerjas?->pluck('id')->all() ?? [];
     }
 }

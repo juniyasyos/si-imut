@@ -3,6 +3,9 @@
     x-data="{
          // status for refreshing the card
          refreshing: false,
+         reportCount: 0,
+         reportCountLoading: false,
+         reportCountDate: null,
 
          async refreshStatus() {
              if (this.refreshing) return;
@@ -10,28 +13,43 @@
              try {
                  // Force refresh matrix data from server
                  await $wire.call('refreshMatrixData');
+                 await this.loadReportCount();
                  // Give a small delay for visual feedback
                  setTimeout(() => this.refreshing = false, 300);
              } catch (error) {
                  console.error('Error refreshing status:', error);
                  this.refreshing = false;
              }
+         },
+
+         async loadReportCount() {
+             if (!indicator?.id || !selectedDate) {
+                 this.reportCount = 0;
+                 this.reportCountDate = selectedDate || null;
+                 return;
+             }
+
+             const currentDate = selectedDate;
+             this.reportCountLoading = true;
+
+             try {
+                 const count = await $wire.call('getReportCountForIndicatorDate', indicator.id, currentDate);
+                 this.reportCount = Number(count || 0);
+                 this.reportCountDate = currentDate;
+             } catch (error) {
+                 console.error('Error loading report count:', error);
+                 this.reportCount = 0;
+             } finally {
+                 this.reportCountLoading = false;
+             }
          }
      }">
+    <div x-effect="if (selectedDate && reportCountDate !== selectedDate && !reportCountLoading) { loadReportCount(); }"></div>
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <!-- Indicator Info -->
         <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white leading-snug" x-text="indicator.title"></h3>
-                <!-- Refresh indicator -->
-                <button @click="refreshStatus()"
-                    :disabled="refreshing"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    title="Refresh status">
-                    <svg :class="{ 'animate-spin': refreshing }" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                </button>
             </div>
 
             <div class="flex items-center gap-4 mt-2">
@@ -64,15 +82,15 @@
             <div class="mt-2">
                 <span
                     class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md"
-                    :class="getReportCount(indicator.id, selectedDate) > 0 
-            ? 'bg-green-100 text-green-700' 
-            : 'bg-gray-100 text-gray-500'">
+                    :class="reportCountLoading 
+            ? 'bg-gray-100 text-gray-500' 
+            : (reportCount > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500')">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6M7 8h10M5 3h14a2 2 0 012 2v14l-4-3H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
                     </svg>
 
-                    <span x-text="getReportCount(indicator.id, selectedDate) + ' laporan'"></span>
+                    <span x-text="reportCountLoading ? 'Memuat...' : (reportCount + ' laporan')"></span>
                 </span>
             </div>
         </div>

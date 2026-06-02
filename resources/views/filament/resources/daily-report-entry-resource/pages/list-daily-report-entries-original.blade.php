@@ -211,14 +211,6 @@
                 return version.replace('/version-', 'v');
             },
 
-            // helper to get report count for an indicator and date (fallback using matrixData)
-            getReportCount(indicatorId, selectedDate) {
-                const date = new Date(selectedDate);
-                const day = date.getDate();
-                const cell = this.matrixData[indicatorId] && this.matrixData[indicatorId][day];
-                return cell ? cell.count : 0;
-            },
-            
             // Monitoring functions
             get filteredMonitoringData() {
                 let filtered = this.monitoringData;
