@@ -7,10 +7,6 @@ use App\Filament\Resources\LaporanImutResource;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaReport;
-use App\Models\ImutPenilaian;
-use App\Support\CacheKey;
-use App\Tables\Columns\ProgressColumn;
-use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -25,10 +21,9 @@ use Filament\Tables\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
+use App\Models\LaporanImutAutoGenerationSetting;
 
 class LaporanImutTable extends LaporanImutResource
 {
@@ -36,20 +31,41 @@ class LaporanImutTable extends LaporanImutResource
     {
         return [
             TextColumn::make('name')
-                ->label('Nama Laporan')
+                ->label('Laporan')
+                ->searchable()
                 ->sortable()
-                ->searchable(),
-
-            TextColumn::make('createdBy.name')
-                ->label('Pembuat Laporan')
-                ->alignCenter()
-                ->sortable()
-                ->searchable(),
-
+                ->description(fn($record) => sprintf(
+                    'Analisis & Rekomendasi: %s/%s Terisi',
+                    number_format($record->completed_penilaians_count),
+                    number_format($record->imut_penilaians_count),
+                )),
             TextColumn::make('assessment_period')
-                ->label('Periode Asesmen')
+                ->label('Periode')
+                ->icon('heroicon-m-calendar')
+                ->getStateUsing(fn($record) => self::formatAssessmentPeriod($record))
+                ->description(function ($record) {
+                    $end = Carbon::parse($record->assessment_period_end);
+
+                    $analysisDuration =
+                        $record->recommendation_analysis_duration
+                        ?? LaporanImutAutoGenerationSetting::getInstance()->recommendation_analysis_duration;
+
+                    return 'Analisis: '
+                        . $end->translatedFormat('d M Y')
+                        . ' → '
+                        . $end->copy()->addDays($analysisDuration)->translatedFormat('d M Y');
+                }),
+
+            TextColumn::make('imut_data_summary')
+                ->label('IMUT Data')
                 ->alignCenter()
-                ->getStateUsing(fn($record) => self::formatAssessmentPeriod($record)),
+                ->getStateUsing(fn($record): string => sprintf(
+                    'Harian: %s • Bulanan: %s',
+                    number_format($record->daily_imut_data_count ?? 0),
+                    number_format($record->monthly_imut_data_count ?? 0),
+                ))
+                ->badge()
+                ->color('gray'),
 
             TextColumn::make('status')
                 ->label('Status')
@@ -62,6 +78,13 @@ class LaporanImutTable extends LaporanImutResource
                     'complete' => 'success',
                     default => 'secondary',
                 }),
+
+            TextColumn::make('created_at')
+                ->label('Dibuat')
+                ->alignCenter()
+                ->dateTime()
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
         ];
     }
 
@@ -95,31 +118,43 @@ class LaporanImutTable extends LaporanImutResource
     {
         return [
             Action::make('isi_penilaian')
-                ->label(fn($record) => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'Laporan belum Dibuka',
-                    'complete' => 'Lihat Hasil',
-                    default => 'Input Penilaian',
+                ->button()
+                ->label(fn($record): string => match (self::resolveStatus($record)) {
+                    'coming_soon' => 'Periode Belum Dibuka',
+                    'complete' => 'Lihat Data IMUT',
+                    default => 'Isi Data IMUT',
                 })
-                ->icon(fn($record) => match (self::resolveStatus($record)) {
+                ->icon(fn($record): string => match (self::resolveStatus($record)) {
                     'coming_soon' => 'heroicon-o-clock',
-                    'complete' => 'heroicon-o-document-check',
+                    'complete' => 'heroicon-o-eye',
                     default => 'heroicon-o-clipboard-document-list',
                 })
-                ->color(fn($record) => match (self::resolveStatus($record)) {
+                ->color(fn($record): string => match (self::resolveStatus($record)) {
                     'coming_soon' => 'gray',
                     'complete' => 'success',
                     default => 'primary',
                 })
-                ->disabled(fn($record) => self::resolveStatus($record) === 'coming_soon')
-                ->visible(
-                    fn($record) =>
-                    method_exists($record, 'trashed') &&
-                        ! $record->trashed() &&
-                        self::userHasAccessToLaporan($record)
+                ->tooltip(fn($record): string => match (self::resolveStatus($record)) {
+                    'coming_soon' => 'Periode pengisian data indikator mutu belum dimulai.',
+                    'complete' => 'Lihat hasil pengisian data indikator mutu.',
+                    default => 'Input data indikator mutu untuk periode laporan ini.',
+                })
+                ->disabled(
+                    fn($record): bool =>
+                    self::resolveStatus($record) === 'coming_soon'
                 )
-                ->url(function ($record) {
+                ->visible(
+                    fn($record): bool =>
+                    method_exists($record, 'trashed')
+                    && !$record->trashed()
+                    && self::userHasAccessToLaporan($record)
+                )
+                ->url(function ($record): ?string {
                     $url = self::getIsiPenilaianUrl($record);
-                    if (! $url) return null;
+
+                    if (!$url) {
+                        return null;
+                    }
 
                     return self::resolveStatus($record) === 'complete'
                         ? $url . '&readonly=1'
@@ -133,8 +168,8 @@ class LaporanImutTable extends LaporanImutResource
                     ->color('info')
                     ->visible(
                         fn($record) => method_exists($record, 'trashed') &&
-                            ! $record->trashed() &&
-                            Auth::user()->can('view_unit_kerja_report_laporan::imut')
+                        !$record->trashed() &&
+                        Auth::user()->can('view_unit_kerja_report_laporan::imut')
                     )
                     ->url(fn($record) => UnitKerjaReport::getUrl(['laporan_id' => $record->id])),
 
@@ -144,8 +179,8 @@ class LaporanImutTable extends LaporanImutResource
                     ->color('info')
                     ->visible(
                         fn($record) => method_exists($record, 'trashed') &&
-                            ! $record->trashed() &&
-                            Auth::user()->can('view_imut_data_report_laporan::imut')
+                        !$record->trashed() &&
+                        Auth::user()->can('view_imut_data_report_laporan::imut')
                     )
                     ->url(fn($record) => ImutDataReport::getUrl(['laporan_id' => $record->id])),
             ])
@@ -161,15 +196,15 @@ class LaporanImutTable extends LaporanImutResource
                     ->visible(
                         fn($record) =>
                         Gate::allows('restore', $record) &&
-                            method_exists($record, 'trashed') &&
-                            $record->trashed()
+                        method_exists($record, 'trashed') &&
+                        $record->trashed()
                     ),
                 ForceDeleteAction::make()
                     ->visible(
                         fn($record) =>
                         Gate::allows('forceDelete', $record) &&
-                            method_exists($record, 'trashed') &&
-                            $record->trashed()
+                        method_exists($record, 'trashed') &&
+                        $record->trashed()
                     ),
             ])
                 ->tooltip('Kelola Laporan')
@@ -187,8 +222,8 @@ class LaporanImutTable extends LaporanImutResource
 
         return match (true) {
             $today->lt($start) => 'coming_soon',
-            $today->gt($end)   => 'complete',
-            default            => 'process',
+            $today->gt($end) => 'complete',
+            default => 'process',
         };
     }
 
@@ -199,7 +234,7 @@ class LaporanImutTable extends LaporanImutResource
         $userUnitKerjaIds = $user->unitKerjas->pluck('id')->toArray();
         $laporanUnitKerjaIds = $record->unitKerjas->pluck('id')->toArray();
 
-        return ! empty(array_intersect($userUnitKerjaIds, $laporanUnitKerjaIds));
+        return !empty(array_intersect($userUnitKerjaIds, $laporanUnitKerjaIds));
     }
 
     protected static function getIsiPenilaianUrl($record): ?string
@@ -229,6 +264,6 @@ class LaporanImutTable extends LaporanImutResource
         $start = Carbon::parse($record->assessment_period_start)->translatedFormat('d M');
         $end = Carbon::parse($record->assessment_period_end)->translatedFormat('d M Y');
 
-        return "$start - $end";
+        return "$start → $end";
     }
 }

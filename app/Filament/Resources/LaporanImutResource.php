@@ -103,12 +103,69 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(
-                fn($query) => $query->with([
+            ->modifyQueryUsing(function ($query) {
+                $query = $query->with([
                     'unitKerjas:id,unit_name',
                     'createdBy:id,name',
-                ])->latest()
-            )
+                ]);
+
+                // Determine current user's unit_kerja ids to scope penilaian counts
+                $user = auth()->user();
+                $userUnitIds = [];
+                if ($user) {
+                    $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+                }
+
+                // withCount for unitKerjas remains global, but imutPenilaians counts are scoped to user's units
+                $query->withCount(['unitKerjas']);
+
+                if (!empty($userUnitIds)) {
+                    $unitScope = fn($q) => $q->whereIn('unit_kerja_id', $userUnitIds);
+
+                    $query->withCount([
+                        'imutPenilaians as imut_penilaians_count' => fn($q) => $q
+                            ->whereHas('laporanUnitKerja', $unitScope),
+
+                        'imutPenilaians as completed_penilaians_count' => fn($q) => $q
+                            ->whereNotNull('numerator_value')
+                            ->whereHas('laporanUnitKerja', $unitScope),
+                    ]);
+
+                    $query->addSelect([
+                        'daily_imut_data_count' => DB::table('imut_data as d')
+                            ->selectRaw('COUNT(DISTINCT d.id)')
+                            ->join('imut_data_unit_kerja as du', 'du.imut_data_id', '=', 'd.id')
+                            ->join('imut_profil as p', 'p.imut_data_id', '=', 'd.id')
+                            ->whereIn('du.unit_kerja_id', $userUnitIds)
+                            ->whereColumn('p.valid_from', '<=', 'laporan_imuts.assessment_period_end')
+                            ->where(function ($q) {
+                                $q->whereNull('p.valid_until')
+                                    ->orWhereColumn('p.valid_until', '>=', 'laporan_imuts.assessment_period_start');
+                            })
+                            ->where('d.is_monthly', false),
+
+                        'monthly_imut_data_count' => DB::table('imut_data as d')
+                            ->selectRaw('COUNT(DISTINCT d.id)')
+                            ->join('imut_data_unit_kerja as du', 'du.imut_data_id', '=', 'd.id')
+                            ->join('imut_profil as p', 'p.imut_data_id', '=', 'd.id')
+                            ->whereIn('du.unit_kerja_id', $userUnitIds)
+                            ->whereColumn('p.valid_from', '<=', 'laporan_imuts.assessment_period_end')
+                            ->where(function ($q) {
+                                $q->whereNull('p.valid_until')
+                                    ->orWhereColumn('p.valid_until', '>=', 'laporan_imuts.assessment_period_start');
+                            })
+                            ->where('d.is_monthly', true),
+                    ]);
+                } else {
+                    // Fallback to global counts when user has no unit assignments
+                    $query->withCount([
+                        'imutPenilaians as imut_penilaians_count',
+                        'imutPenilaians as completed_penilaians_count' => fn($q) => $q->whereNotNull('numerator_value'),
+                    ]);
+                }
+
+                return $query->latest();
+            })
             ->columns(LaporanImutTable::columns())
             ->filters(LaporanImutTable::filters())
             ->headerActions(LaporanImutTable::headerActions())

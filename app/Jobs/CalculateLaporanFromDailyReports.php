@@ -33,7 +33,7 @@ class CalculateLaporanFromDailyReports implements ShouldQueue
             // Success notification
             Notification::make()
                 ->title('✅ Perhitungan Berhasil Diselesaikan')
-                ->body("Laporan **{$laporan->name}**\n\nBerhasil menghitung {$calculatedCount} dari {$totalPenilaian} penilaian.\n{$skippedCount} penilaian tidak memiliki data daily report.")
+                ->body("Laporan **{$laporan->name}**\n\nBerhasil menghitung {$calcuulatedCount} dari {$totalPenilaian} penilaian.\n{$skippedCount} penilaian tidak memiliki data daily report.")
                 ->success()
                 ->duration(10000)
                 ->send();
