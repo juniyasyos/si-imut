@@ -22,6 +22,12 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
 {
     use \App\Traits\HasActiveIcon;
 
+    protected static ?int $authUserId = null;
+
+    protected static array $authUserUnitKerjaIds = [];
+
+    protected static bool $authCanCreateImutData = false;
+
     protected static ?string $model = LaporanImut::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
@@ -52,6 +58,36 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
     public static function getGlobalSearchResultUrl(Model $record): ?string
     {
         return static::getUrl(name: 'edit', parameters: ['record' => $record]);
+    }
+
+    protected static function resolveAuthContext(): void
+    {
+        $user = Auth::user();
+        $userId = $user?->id;
+
+        if (static::$authUserId === $userId) {
+            return;
+        }
+
+        static::$authUserId = $userId;
+        static::$authUserUnitKerjaIds = $user
+            ? $user->unitKerjas->pluck('id')->toArray()
+            : [];
+        static::$authCanCreateImutData = $user?->can('create_imut::data') ?? false;
+    }
+
+    protected static function getAuthUserUnitKerjaIds(): array
+    {
+        static::resolveAuthContext();
+
+        return static::$authUserUnitKerjaIds;
+    }
+
+    protected static function canCreateImutData(): bool
+    {
+        static::resolveAuthContext();
+
+        return static::$authCanCreateImutData;
     }
 
     public static function getPermissionPrefixes(): array
@@ -109,17 +145,42 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
                     'createdBy:id,name',
                 ]);
 
-                // Determine current user's unit_kerja ids to scope penilaian counts
-                $user = auth()->user();
-                $userUnitIds = [];
-                if ($user) {
-                    $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
-                }
+                $userUnitIds = static::getAuthUserUnitKerjaIds();
+                $canCreateImutData = static::canCreateImutData();
 
                 // withCount for unitKerjas remains global, but imutPenilaians counts are scoped to user's units
                 $query->withCount(['unitKerjas']);
 
-                if (!empty($userUnitIds)) {
+                if ($canCreateImutData) {
+                    // User with create IMUT data permission sees global counts
+                    $query->withCount([
+                        'imutPenilaians as imut_penilaians_count',
+                        'imutPenilaians as completed_penilaians_count' => fn($q) => $q->whereNotNull('numerator_value'),
+                    ]);
+
+                    $query->addSelect([
+                        'daily_imut_data_count' => DB::table('imut_data as d')
+                            ->selectRaw('COUNT(DISTINCT d.id)')
+                            ->join('imut_profil as p', 'p.imut_data_id', '=', 'd.id')
+                            ->whereColumn('p.valid_from', '<=', 'laporan_imuts.assessment_period_end')
+                            ->where(function ($q) {
+                                $q->whereNull('p.valid_until')
+                                    ->orWhereColumn('p.valid_until', '>=', 'laporan_imuts.assessment_period_start');
+                            })
+                            ->where('d.is_monthly', false),
+
+                        'monthly_imut_data_count' => DB::table('imut_data as d')
+                            ->selectRaw('COUNT(DISTINCT d.id)')
+                            ->join('imut_profil as p', 'p.imut_data_id', '=', 'd.id')
+                            ->whereColumn('p.valid_from', '<=', 'laporan_imuts.assessment_period_end')
+                            ->where(function ($q) {
+                                $q->whereNull('p.valid_until')
+                                    ->orWhereColumn('p.valid_until', '>=', 'laporan_imuts.assessment_period_start');
+                            })
+                            ->where('d.is_monthly', true),
+                    ]);
+                } else {
+                    // User without create IMUT data permission sees counts scoped to their unit kerja
                     $unitScope = fn($q) => $q->whereIn('unit_kerja_id', $userUnitIds);
 
                     $query->withCount([
@@ -155,12 +216,6 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
                                     ->orWhereColumn('p.valid_until', '>=', 'laporan_imuts.assessment_period_start');
                             })
                             ->where('d.is_monthly', true),
-                    ]);
-                } else {
-                    // Fallback to global counts when user has no unit assignments
-                    $query->withCount([
-                        'imutPenilaians as imut_penilaians_count',
-                        'imutPenilaians as completed_penilaians_count' => fn($q) => $q->whereNotNull('numerator_value'),
                     ]);
                 }
 

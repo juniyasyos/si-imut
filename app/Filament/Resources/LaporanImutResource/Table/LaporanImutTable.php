@@ -7,6 +7,8 @@ use App\Filament\Resources\LaporanImutResource;
 use App\Filament\Resources\LaporanImutResource\Pages\ImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
 use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaReport;
+use App\Models\LaporanImutAutoGenerationSetting;
+use Carbon\Carbon;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -22,11 +24,15 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Carbon\Carbon;
-use App\Models\LaporanImutAutoGenerationSetting;
 
 class LaporanImutTable extends LaporanImutResource
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Columns
+    |--------------------------------------------------------------------------
+    */
+
     public static function columns(): array
     {
         return [
@@ -34,36 +40,18 @@ class LaporanImutTable extends LaporanImutResource
                 ->label('Laporan')
                 ->searchable()
                 ->sortable()
-                ->description(fn($record) => sprintf(
-                    'Analisis & Rekomendasi: %s/%s Terisi',
-                    number_format($record->completed_penilaians_count),
-                    number_format($record->imut_penilaians_count),
-                )),
+                ->description(fn($record): string => self::formatCompletionSummary($record)),
+
             TextColumn::make('assessment_period')
                 ->label('Periode')
                 ->icon('heroicon-m-calendar')
-                ->getStateUsing(fn($record) => self::formatAssessmentPeriod($record))
-                ->description(function ($record) {
-                    $end = Carbon::parse($record->assessment_period_end);
-
-                    $analysisDuration =
-                        $record->recommendation_analysis_duration
-                        ?? LaporanImutAutoGenerationSetting::getInstance()->recommendation_analysis_duration;
-
-                    return 'Analisis: '
-                        . $end->translatedFormat('d M Y')
-                        . ' → '
-                        . $end->copy()->addDays($analysisDuration)->translatedFormat('d M Y');
-                }),
+                ->getStateUsing(fn($record): string => self::formatAssessmentPeriod($record))
+                ->description(fn($record): string => self::formatAnalysisPeriod($record)),
 
             TextColumn::make('imut_data_summary')
-                ->label('IMUT Data')
+                ->label('Data IMUT')
                 ->alignCenter()
-                ->getStateUsing(fn($record): string => sprintf(
-                    'Harian: %s • Bulanan: %s',
-                    number_format($record->daily_imut_data_count ?? 0),
-                    number_format($record->monthly_imut_data_count ?? 0),
-                ))
+                ->getStateUsing(fn($record): string => self::formatImutDataSummary($record))
                 ->badge()
                 ->color('gray'),
 
@@ -71,13 +59,9 @@ class LaporanImutTable extends LaporanImutResource
                 ->label('Status')
                 ->badge()
                 ->alignCenter()
-                ->getStateUsing(fn($record) => self::resolveStatus($record))
-                ->color(fn($state) => match ($state) {
-                    'coming_soon' => 'gray',
-                    'process' => 'primary',
-                    'complete' => 'success',
-                    default => 'secondary',
-                }),
+                ->getStateUsing(fn($record): string => self::resolveStatus($record))
+                ->formatStateUsing(fn(string $state): string => self::formatStatusLabel($state))
+                ->color(fn(string $state): string => self::statusColor($state)),
 
             TextColumn::make('created_at')
                 ->label('Dibuat')
@@ -88,6 +72,12 @@ class LaporanImutTable extends LaporanImutResource
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Filters
+    |--------------------------------------------------------------------------
+    */
+
     public static function filters(): array
     {
         return [
@@ -96,12 +86,25 @@ class LaporanImutTable extends LaporanImutResource
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Header Actions
+    |--------------------------------------------------------------------------
+    */
+
     public static function headerActions(): array
     {
         return [
-            ExportAction::make()->exporter(LaporanImutExporter::class),
+            ExportAction::make()
+                ->exporter(LaporanImutExporter::class),
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bulk Actions
+    |--------------------------------------------------------------------------
+    */
 
     public static function bulkActions(): array
     {
@@ -110,109 +113,83 @@ class LaporanImutTable extends LaporanImutResource
                 RestoreBulkAction::make(),
                 ForceDeleteBulkAction::make(),
             ]),
+
             DeleteBulkAction::make(),
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Row Actions
+    |--------------------------------------------------------------------------
+    */
+
     public static function actions(): array
     {
         return [
-            Action::make('isi_penilaian')
+            Action::make('isi_data_imut')
                 ->button()
-                ->label(fn($record): string => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'Periode Belum Dibuka',
-                    'complete' => 'Lihat Data IMUT',
-                    default => 'Isi Data IMUT',
-                })
-                ->icon(fn($record): string => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'heroicon-o-clock',
-                    'complete' => 'heroicon-o-eye',
-                    default => 'heroicon-o-clipboard-document-list',
-                })
-                ->color(fn($record): string => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'gray',
-                    'complete' => 'success',
-                    default => 'primary',
-                })
-                ->tooltip(fn($record): string => match (self::resolveStatus($record)) {
-                    'coming_soon' => 'Periode pengisian data indikator mutu belum dimulai.',
-                    'complete' => 'Lihat hasil pengisian data indikator mutu.',
-                    default => 'Input data indikator mutu untuk periode laporan ini.',
-                })
-                ->disabled(
-                    fn($record): bool =>
-                    self::resolveStatus($record) === 'coming_soon'
-                )
-                ->visible(
-                    fn($record): bool =>
-                    method_exists($record, 'trashed')
-                    && !$record->trashed()
-                    && self::userHasAccessToLaporan($record)
-                )
-                ->url(function ($record): ?string {
-                    $url = self::getIsiPenilaianUrl($record);
-
-                    if (!$url) {
-                        return null;
-                    }
-
-                    return self::resolveStatus($record) === 'complete'
-                        ? $url . '&readonly=1'
-                        : $url;
-                }),
+                ->label(fn($record): string => self::dataImutActionLabel($record))
+                ->icon(fn($record): string => self::dataImutActionIcon($record))
+                ->color(fn($record): string => self::dataImutActionColor($record))
+                ->tooltip(fn($record): string => self::dataImutActionTooltip($record))
+                ->disabled(fn($record): bool => self::resolveStatus($record) === 'coming_soon')
+                ->visible(fn($record): bool => self::canAccessDataImutAction($record))
+                ->url(fn($record): ?string => self::getIsiPenilaianUrl($record)),
 
             ActionGroup::make([
                 Action::make('summary_unit_kerja')
-                    ->label('Summary Unit')
+                    ->label('Ringkasan per Unit Kerja')
                     ->icon('heroicon-o-building-office')
                     ->color('info')
-                    ->visible(
-                        fn($record) => method_exists($record, 'trashed') &&
-                        !$record->trashed() &&
-                        Auth::user()->can('view_unit_kerja_report_laporan::imut')
-                    )
-                    ->url(fn($record) => UnitKerjaReport::getUrl(['laporan_id' => $record->id])),
+                    ->visible(fn($record): bool => self::canViewUnitKerjaSummary($record))
+                    ->url(fn($record): string => UnitKerjaReport::getUrl([
+                        'laporan_id' => $record->id,
+                    ])),
 
                 Action::make('summary_imut_data')
-                    ->label('Summary IMUT')
+                    ->label('Ringkasan per Indikator')
                     ->icon('heroicon-o-document-chart-bar')
                     ->color('info')
-                    ->visible(
-                        fn($record) => method_exists($record, 'trashed') &&
-                        !$record->trashed() &&
-                        Auth::user()->can('view_imut_data_report_laporan::imut')
-                    )
-                    ->url(fn($record) => ImutDataReport::getUrl(['laporan_id' => $record->id])),
+                    ->visible(fn($record): bool => self::canViewImutDataSummary($record))
+                    ->url(fn($record): string => ImutDataReport::getUrl([
+                        'laporan_id' => $record->id,
+                    ])),
             ])
-                ->tooltip('Lihat Laporan Ringkasan')
-                ->icon('heroicon-o-chart-bar')
-                ->label('Laporan Ringkasan')
+                ->label('Aksi Cepat')
+                ->button()
+                ->tooltip('Buka ringkasan laporan berdasarkan unit kerja atau indikator')
+                ->icon('heroicon-o-bolt')
                 ->color('secondary'),
 
             ActionGroup::make([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('Edit Laporan'),
+
+                DeleteAction::make()
+                    ->label('Hapus Laporan'),
+
                 RestoreAction::make()
-                    ->visible(
-                        fn($record) =>
-                        Gate::allows('restore', $record) &&
-                        method_exists($record, 'trashed') &&
-                        $record->trashed()
-                    ),
+                    ->label('Pulihkan Laporan')
+                    ->visible(fn($record): bool => self::canRestoreRecord($record)),
+
                 ForceDeleteAction::make()
-                    ->visible(
-                        fn($record) =>
-                        Gate::allows('forceDelete', $record) &&
-                        method_exists($record, 'trashed') &&
-                        $record->trashed()
-                    ),
+                    ->label('Hapus Permanen')
+                    ->visible(fn($record): bool => self::canForceDeleteRecord($record)),
             ])
-                ->tooltip('Kelola Laporan')
-                ->icon('heroicon-o-ellipsis-horizontal')
                 ->label('Aksi')
+                ->button()
+                ->tooltip('Edit, hapus, pulihkan, atau hapus permanen laporan')
+                ->icon('heroicon-o-ellipsis-vertical')
                 ->color('gray'),
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status Helpers
+    |--------------------------------------------------------------------------
+    */
 
     protected static function resolveStatus($record): string
     {
@@ -227,9 +204,111 @@ class LaporanImutTable extends LaporanImutResource
         };
     }
 
+    protected static function formatStatusLabel(string $state): string
+    {
+        return match ($state) {
+            'coming_soon' => 'Belum Dibuka',
+            'process' => 'Berjalan',
+            'complete' => 'Selesai',
+            default => 'Tidak Diketahui',
+        };
+    }
+
+    protected static function statusColor(string $state): string
+    {
+        return match ($state) {
+            'coming_soon' => 'gray',
+            'process' => 'primary',
+            'complete' => 'success',
+            default => 'secondary',
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Action State Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    protected static function dataImutActionLabel($record): string
+    {
+        return match (self::resolveStatus($record)) {
+            'coming_soon' => 'Periode Belum Dibuka',
+            'complete' => 'Lihat Data IMUT',
+            default => 'Isi Data IMUT',
+        };
+    }
+
+    protected static function dataImutActionIcon($record): string
+    {
+        return match (self::resolveStatus($record)) {
+            'coming_soon' => 'heroicon-o-lock-closed',
+            'complete' => 'heroicon-o-eye',
+            default => 'heroicon-o-pencil-square',
+        };
+    }
+
+    protected static function dataImutActionColor($record): string
+    {
+        return match (self::resolveStatus($record)) {
+            'coming_soon' => 'gray',
+            'complete' => 'success',
+            default => 'primary',
+        };
+    }
+
+    protected static function dataImutActionTooltip($record): string
+    {
+        return match (self::resolveStatus($record)) {
+            'coming_soon' => 'Periode laporan belum dibuka untuk pengisian data IMUT.',
+            'complete' => 'Lihat data IMUT yang sudah selesai diisi.',
+            default => 'Isi data indikator mutu untuk periode laporan ini.',
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Permission Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    protected static function canAccessDataImutAction($record): bool
+    {
+        return self::isActiveRecord($record)
+            && self::userHasAccessToLaporan($record);
+    }
+
+    protected static function canViewUnitKerjaSummary($record): bool
+    {
+        return self::isActiveRecord($record)
+            && Auth::user()?->can('view_unit_kerja_report_laporan::imut');
+    }
+
+    protected static function canViewImutDataSummary($record): bool
+    {
+        return self::isActiveRecord($record)
+            && Auth::user()?->can('view_imut_data_report_laporan::imut');
+    }
+
+    protected static function canRestoreRecord($record): bool
+    {
+        return Gate::allows('restore', $record)
+            && self::isTrashedRecord($record);
+    }
+
+    protected static function canForceDeleteRecord($record): bool
+    {
+        return Gate::allows('forceDelete', $record)
+            && self::isTrashedRecord($record);
+    }
+
     protected static function userHasAccessToLaporan($record): bool
     {
         $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
 
         $userUnitKerjaIds = $user->unitKerjas->pluck('id')->toArray();
         $laporanUnitKerjaIds = $record->unitKerjas->pluck('id')->toArray();
@@ -237,26 +316,112 @@ class LaporanImutTable extends LaporanImutResource
         return !empty(array_intersect($userUnitKerjaIds, $laporanUnitKerjaIds));
     }
 
+    protected static function isActiveRecord($record): bool
+    {
+        return method_exists($record, 'trashed')
+            && !$record->trashed();
+    }
+
+    protected static function isTrashedRecord($record): bool
+    {
+        return method_exists($record, 'trashed')
+            && $record->trashed();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | URL Helpers
+    |--------------------------------------------------------------------------
+    */
+
     protected static function getIsiPenilaianUrl($record): ?string
     {
         $user = Auth::user();
 
-        // Prefer using already-loaded collections to avoid extra DB calls per row.
-        $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
-        $laporanUnitIds = $record->unitKerjas->pluck('id')->toArray();
-
-        $common = array_values(array_intersect($userUnitIds, $laporanUnitIds));
-
-        if (empty($common)) {
+        if (!$user) {
             return null;
         }
 
-        $matchingId = $common[0];
+        $userUnitIds = static::getAuthUserUnitKerjaIds();
+        $laporanUnitIds = $record->unitKerjas->pluck('id')->toArray();
 
-        return UnitKerjaImutDataReport::getUrl([
+        $commonUnitIds = array_values(array_intersect($userUnitIds, $laporanUnitIds));
+
+        if (empty($commonUnitIds)) {
+            return null;
+        }
+
+        $url = UnitKerjaImutDataReport::getUrl([
             'laporan_id' => $record->id,
-            'unit_kerja_id' => $matchingId,
+            'unit_kerja_id' => $commonUnitIds[0],
         ]);
+
+        return self::resolveStatus($record) === 'complete'
+            ? $url . '&readonly=1'
+            : $url;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Formatters
+    |--------------------------------------------------------------------------
+    */
+
+    protected static function formatCompletionSummary($record): string
+    {
+        $canCreateImutData = static::canCreateImutData();
+
+        if ($canCreateImutData) {
+            $completedUnitKerja = static::getCompletedUnitKerjaCount($record);
+            $totalUnitKerja = number_format($record->unit_kerjas_count ?? 0);
+            $completionPercentage = (int) ($record->unit_kerjas_count ?? 0) > 0
+                ? round(($completedUnitKerja / (int) $record->unit_kerjas_count) * 100, 1)
+                : 0;
+
+            return sprintf(
+                'Analisis %s/%s unit kerja sudah lengkap (%s%%).',
+                number_format($completedUnitKerja),
+                $totalUnitKerja,
+                number_format($completionPercentage, 1),
+            );
+        }
+
+        return sprintf(
+            'Analisis & Rekomendasi: %s/%s Terisi',
+            number_format($record->completed_penilaians_count ?? 0),
+            number_format($record->imut_penilaians_count ?? 0),
+        );
+    }
+
+    protected static function getCompletedUnitKerjaCount($record): int
+    {
+        $unitKerjaStats = $record->laporanUnitKerjas()
+            ->select([
+                'laporan_unit_kerjas.unit_kerja_id',
+                \Illuminate\Support\Facades\DB::raw('COUNT(imut_penilaians.id) as total_indicators'),
+                \Illuminate\Support\Facades\DB::raw('SUM(
+                    CASE
+                        WHEN imut_penilaians.numerator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value IS NOT NULL
+                        AND imut_penilaians.denominator_value != 0
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as filled_indicators'),
+            ])
+            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
+            ->groupBy('laporan_unit_kerjas.unit_kerja_id', 'laporan_unit_kerjas.id')
+            ->get();
+
+        return $unitKerjaStats
+            ->groupBy('unit_kerja_id')
+            ->filter(function ($stats): bool {
+                $totalIndicators = $stats->sum('total_indicators');
+                $totalFilled = $stats->sum('filled_indicators');
+
+                return $totalIndicators > 0 && $totalFilled == $totalIndicators;
+            })
+            ->count();
     }
 
     protected static function formatAssessmentPeriod($record): string
@@ -264,6 +429,29 @@ class LaporanImutTable extends LaporanImutResource
         $start = Carbon::parse($record->assessment_period_start)->translatedFormat('d M');
         $end = Carbon::parse($record->assessment_period_end)->translatedFormat('d M Y');
 
-        return "$start → $end";
+        return "{$start} → {$end}";
+    }
+
+    protected static function formatAnalysisPeriod($record): string
+    {
+        $end = Carbon::parse($record->assessment_period_end);
+
+        $duration = $record->recommendation_analysis_duration
+            ?? LaporanImutAutoGenerationSetting::getInstance()->recommendation_analysis_duration;
+
+        return sprintf(
+            'Analisis: %s → %s',
+            $end->translatedFormat('d M Y'),
+            $end->copy()->addDays($duration)->translatedFormat('d M Y'),
+        );
+    }
+
+    protected static function formatImutDataSummary($record): string
+    {
+        return sprintf(
+            'Harian: %s • Bulanan: %s',
+            number_format($record->daily_imut_data_count ?? 0),
+            number_format($record->monthly_imut_data_count ?? 0),
+        );
     }
 }
