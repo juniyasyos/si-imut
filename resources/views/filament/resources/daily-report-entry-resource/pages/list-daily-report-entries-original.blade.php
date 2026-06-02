@@ -48,6 +48,29 @@
                 this.slideOverRequest = null;
                 $wire.closeSlideOver();
             },
+
+            async loadMatrixDataAsync() {
+                this.isDateLoading = true;
+
+                try {
+                    const snapshot = await $wire.getMatrixSnapshot();
+
+                    if (snapshot) {
+                        this.selectedMonth = snapshot.selectedMonth || this.selectedMonth;
+                        this.selectedDate = snapshot.selectedDate || this.selectedDate;
+                        this.indicators = snapshot.indicators || [];
+                        this.matrixData = snapshot.matrixData || {};
+                        this.daysInMonth = snapshot.daysInMonth || [];
+                        this.categoryColors = snapshot.categoryColors || {};
+                        this.monitoringMonth = this.selectedMonth;
+                        this.currentDate = new Date(`${this.selectedMonth}-01`);
+                    }
+                } catch (error) {
+                    console.error('📊 [Alpine] Failed to sync matrix snapshot:', error);
+                } finally {
+                    this.isDateLoading = false;
+                }
+            },
             
             init() {
                 console.log('📊 [Alpine init] Starting init');

@@ -166,6 +166,23 @@ abstract class BaseDailyReportMonitoring extends Page
     }
 
     /**
+     * Return the current matrix snapshot for client-side sync after navigation.
+     */
+    public function getMatrixSnapshot(): array
+    {
+        return [
+            'selectedMonth' => $this->selectedMonth,
+            'selectedDate' => $this->selectedDate,
+            'indicators' => $this->indicators,
+            'matrixData' => $this->matrixData,
+            'daysInMonth' => $this->daysInMonth,
+            'daysWithData' => $this->daysWithData,
+            'categoryColors' => $this->categoryColors,
+            'monitoringTemplates' => $this->monitoringTemplates,
+        ];
+    }
+
+    /**
      * Use MatrixDataService for loading (legacy - now use loadMatrixFromServiceOptimized)
      */
     protected function loadMatrixFromService(): void

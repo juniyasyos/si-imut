@@ -96,6 +96,8 @@ trait NavigationTrait
         // Emit date selected event for other components
         $this->dispatch('dateSelected', date: $date);
 
+        $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());
+
         // Update browser URL to reflect selected date (for bookmarking/filtering)
         try {
             $params = http_build_query(['selectedMonth' => $this->selectedMonth, 'selectedDate' => $date]);
@@ -127,6 +129,7 @@ trait NavigationTrait
         }
         
         $this->loadMatrixData();
+        $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());
         // Update URL to include month/date
         try {
             $params = http_build_query(['selectedMonth' => $this->selectedMonth, 'selectedDate' => $this->selectedDate]);
@@ -162,6 +165,7 @@ trait NavigationTrait
         }
         
         $this->loadMatrixData();
+        $this->dispatch('matrixSnapshotUpdated', snapshot: $this->getMatrixSnapshot());
         // Update URL to include month/date
         try {
             $params = http_build_query(['selectedMonth' => $this->selectedMonth, 'selectedDate' => $this->selectedDate]);

@@ -115,6 +115,50 @@
     // Listen for URL update events from Livewire and update browser URL
     // Also sync Alpine state and reload matrix data if needed
     document.addEventListener('livewire:init', () => {
+        Livewire.on('matrixSnapshotUpdated', (payload) => {
+            console.log('📦 [matrixSnapshotUpdated] Event received');
+
+            try {
+                const snapshot = payload?.snapshot ?? payload;
+
+                if (!snapshot || typeof snapshot !== 'object') {
+                    console.warn('📦 [matrixSnapshotUpdated] Invalid snapshot payload:', snapshot);
+                    return;
+                }
+
+                const mainEl = document.querySelector('[x-data*="selectedDate"]');
+                console.log('📦 [matrixSnapshotUpdated] Found mainEl:', !!mainEl);
+
+                if (!mainEl || !mainEl.__x) {
+                    console.warn('📦 [matrixSnapshotUpdated] Could not find Alpine root');
+                    return;
+                }
+
+                const data = mainEl.__x.$data;
+
+                if (snapshot.selectedMonth) data.selectedMonth = snapshot.selectedMonth;
+                if (snapshot.selectedDate) data.selectedDate = snapshot.selectedDate;
+                if (snapshot.indicators) data.indicators = snapshot.indicators;
+                if (snapshot.matrixData) data.matrixData = snapshot.matrixData;
+                if (snapshot.daysInMonth) data.daysInMonth = snapshot.daysInMonth;
+                if (snapshot.daysWithData) data.daysWithData = snapshot.daysWithData;
+                if (snapshot.categoryColors) data.categoryColors = snapshot.categoryColors;
+                if (snapshot.monitoringTemplates) data.monitoringData = snapshot.monitoringTemplates;
+
+                data.monitoringMonth = data.selectedMonth;
+                data.currentDate = new Date(`${data.selectedMonth}-01`);
+
+                console.log('📦 [matrixSnapshotUpdated] Alpine state synced:', {
+                    selectedMonth: data.selectedMonth,
+                    selectedDate: data.selectedDate,
+                    indicatorsCount: data.indicators?.length ?? 0,
+                    daysInMonthCount: data.daysInMonth?.length ?? 0,
+                });
+            } catch (error) {
+                console.error('📦 [matrixSnapshotUpdated] Error syncing snapshot:', error);
+            }
+        });
+
         Livewire.on('updateUrl', (urlPayload) => {
             console.log('🔗 [updateUrl event] Event received');
             console.log('🔗 [updateUrl event] URL to set:', urlPayload);
@@ -191,14 +235,8 @@
                             selectedDate: mainEl.__x.$data.selectedDate,
                         });
                         
-                        // If month changed, reload matrix data
                         if (newMonth && oldMonth !== newMonth) {
-                            console.log('🔗 [updateUrl] Month changed, will reload matrix data');
-                            setTimeout(() => {
-                                if (mainEl.__x.$data.loadMatrixDataAsync) {
-                                    mainEl.__x.$data.loadMatrixDataAsync();
-                                }
-                            }, 100);
+                            console.log('🔗 [updateUrl] Month changed, snapshot should arrive from Livewire');
                         }
                     } else {
                         console.warn('🔗 [updateUrl] Could not find mainEl or __x data');

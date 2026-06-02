@@ -45,6 +45,8 @@ class LaporanImutTable extends LaporanImutResource
             TextColumn::make('assessment_period')
                 ->label('Periode')
                 ->icon('heroicon-m-calendar')
+                ->badge()
+                ->color(fn($record) => $record->status === 'complete' ? 'success' : 'warning')
                 ->getStateUsing(fn($record): string => self::formatAssessmentPeriod($record))
                 ->description(fn($record): string => self::formatAnalysisPeriod($record)),
 
@@ -56,12 +58,12 @@ class LaporanImutTable extends LaporanImutResource
                 ->color('gray'),
 
             TextColumn::make('status')
-                ->label('Status')
+                ->label('Pengisian Analisis & Rekomendasi')
                 ->badge()
                 ->alignCenter()
-                ->getStateUsing(fn($record): string => self::resolveStatus($record))
-                ->formatStateUsing(fn(string $state): string => self::formatStatusLabel($state))
-                ->color(fn(string $state): string => self::statusColor($state)),
+                ->getStateUsing(fn($record): string => self::analysisSubmissionState($record))
+                ->formatStateUsing(fn(string $state): string => self::formatAnalysisSubmissionLabel($state))
+                ->color(fn(string $state): string => self::analysisSubmissionColor($state)),
 
             TextColumn::make('created_at')
                 ->label('Dibuat')
@@ -204,22 +206,39 @@ class LaporanImutTable extends LaporanImutResource
         };
     }
 
-    protected static function formatStatusLabel(string $state): string
+    protected static function analysisSubmissionState($record): string
+    {
+        $today = Carbon::today();
+        $analysisStart = Carbon::parse($record->assessment_period_end)->startOfDay();
+
+        $duration = $record->recommendation_analysis_duration
+            ?? LaporanImutAutoGenerationSetting::getInstance()->recommendation_analysis_duration;
+
+        $analysisEnd = $analysisStart->copy()->addDays($duration)->endOfDay();
+
+        return match (true) {
+            $today->lt($analysisStart) => 'not_open',
+            $today->gt($analysisEnd) => 'closed',
+            default => 'open',
+        };
+    }
+
+    protected static function formatAnalysisSubmissionLabel(string $state): string
     {
         return match ($state) {
-            'coming_soon' => 'Belum Dibuka',
-            'process' => 'Berjalan',
-            'complete' => 'Selesai',
+            'not_open' => 'Belum Dibuka',
+            'open' => 'Masih Dibuka',
+            'closed' => 'Sudah Ditutup',
             default => 'Tidak Diketahui',
         };
     }
 
-    protected static function statusColor(string $state): string
+    protected static function analysisSubmissionColor(string $state): string
     {
         return match ($state) {
-            'coming_soon' => 'gray',
-            'process' => 'primary',
-            'complete' => 'success',
+            'not_open' => 'warning',
+            'open' => 'success',
+            'closed' => 'gray',
             default => 'secondary',
         };
     }

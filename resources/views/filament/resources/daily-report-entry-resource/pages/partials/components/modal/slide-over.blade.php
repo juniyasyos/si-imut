@@ -33,9 +33,9 @@ $isLocked = ($this->selectedDate)
     @keydown.escape.window="closeSlideOverFast()">
 
     <!-- Optimized Backdrop -->
-    <div class="!absolute !inset-0"
+    <div class="!absolute !inset-0 bg-slate-950/20 backdrop-blur-md"
         x-show="slideOverClientOpen"
-        style="position: absolute !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important;"
+        style="position: absolute !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; background: rgba(15, 23, 42, 0.18); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);"
         x-transition:enter="ease-out duration-150"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
@@ -43,7 +43,7 @@ $isLocked = ($this->selectedDate)
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @click="closeSlideOverFast()"
-        style="background: rgba(0, 0, 0, 0.8);"></div>
+        ></div>
 
     <!-- Slide Over Panel -->
     <div class="!fixed !inset-y-0 !right-0 !left-auto flex max-w-full pl-0 sm:pl-10 md:pl-16 pointer-events-none"
