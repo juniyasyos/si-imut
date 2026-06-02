@@ -67,8 +67,8 @@ class GenerateMonthlyLaporanImut extends Command
         $this->info('✅ Auto-generation is ENABLED');
         $this->newLine();
 
-        // Determine month and year
-        $month = $this->option('month') ?? Carbon::now()->subMonth()->month;
+        // Determine month and year for the current reporting period
+        $month = $this->option('month') ?? Carbon::now()->month;
         $year = $this->option('year') ?? Carbon::now()->year;
 
         // Validate month

@@ -15,8 +15,7 @@ Artisan::command('inspire', function () {
 // Daily notification H-2 and H-1 before deadline
 Schedule::command(NotifikasiDeadlineLaporan::class)->dailyAt('08:00');
 
-// Monthly report generation schedule is configurable from Filament action settings.
-$monthlyGenerationDay = 1;
+// Daily report generation schedule is configurable from Filament action settings.
 $monthlyGenerationTime = '01:00';
 
 try {
@@ -24,7 +23,6 @@ try {
         $settings = LaporanImutAutoGenerationSetting::query()->first();
 
         if ($settings) {
-            $monthlyGenerationDay = max(1, min(28, (int) ($settings->schedule_day_of_month ?? 1)));
             $monthlyGenerationTime = preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', (string) ($settings->schedule_run_time ?? '01:00'))
                 ? (string) $settings->schedule_run_time
                 : '01:00';
@@ -34,9 +32,9 @@ try {
     // Keep fallback schedule values when DB/schema is not ready.
 }
 
-// Automatically calculates N/D from previous month's daily reports
+// Automatically checks current month daily and skips if the report already exists
 Schedule::command(GenerateMonthlyLaporanImut::class, ['--auto-calculate'])
-    ->monthlyOn($monthlyGenerationDay, $monthlyGenerationTime)
+    ->dailyAt($monthlyGenerationTime)
     ->description('Auto-generate monthly IMUT report with daily report calculation');
 
 // Periodic sync of local/public files to S3 fallback
