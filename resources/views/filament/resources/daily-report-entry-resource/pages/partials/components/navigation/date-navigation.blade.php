@@ -2,48 +2,33 @@
 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4"
     x-data="{}">
 
-    @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.month-navigation')
 
-    <!-- Date Legend -->
-    <div class="mb-4 p-3 mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            @svg("heroicon-m-calendar", "w-4 h-4")
-            <span>{{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth ?: now()->format('Y-m'))->locale('id')->translatedFormat('F Y') }}</span>
-        </h3>
-        <div class="space-y-1.5 text-xs">
-            <div class="flex items-center gap-2">
-                <span class="flex-shrink-0 w-3 h-3 rounded-full bg-green-500 shadow-sm"></span>
-                <span class="font-medium text-green-700 dark:text-green-400">Sudah diisi</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="flex-shrink-0 w-3 h-3 rounded-full border-2 border-orange-400"></span>
-                <span class="font-medium text-orange-600 dark:text-orange-400">Belum diisi</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="flex-shrink-0 w-3 h-3 rounded border border-red-400 bg-red-50 dark:bg-red-900/20"></span>
-                <span class="font-medium text-red-600 dark:text-red-400">Terkunci</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="flex-shrink-0 w-3 h-3 rounded border border-gray-400 opacity-50"></span>
-                <span class="font-medium text-gray-500 dark:text-gray-400">Masa depan</span>
-            </div>
-            <div class="flex items-center gap-2 mt-1 pt-1.5 border-t border-slate-200 dark:border-slate-700">
-                <span
-                    class="flex-shrink-0 w-3 h-3 rounded-full bg-primary-500 ring-2 ring-primary-300 dark:ring-primary-700"></span>
-                <span class="font-medium text-primary-600 dark:text-primary-400">Hari ini</span>
-            </div>
-        </div>
-    </div>
+    @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.month-navigation')
+    
+    @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.legend')
 
     <!-- Date List -->
     <!-- Skeleton Loading -->
-    <div wire:loading class="space-y-1 animate-pulse">
-        @for($i = 0; $i < 6; $i++)
-            <div class="min-w-[150px] sm:min-w-[150px] lg:min-w-0 lg:w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-700/50">
-                <div class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></div>
-                <div class="flex-1 min-w-0 space-y-2">
-                    <div class="h-4 w-24 rounded bg-slate-300 dark:bg-slate-600"></div>
-                    <div class="h-3 w-20 rounded bg-slate-300 dark:bg-slate-600"></div>
+    <div wire:loading class="w-full space-y-2">
+        @for ($i = 0; $i < 6; $i++)
+            <div
+                class="w-full animate-pulse rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                <div class="flex w-full items-start gap-3">
+                    <div class="h-10 w-10 shrink-0 rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+
+                    <div class="min-w-0 flex-1 space-y-3">
+                        <div class="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+
+                        <div class="space-y-2">
+                            <div class="h-3 w-full rounded bg-slate-200 dark:bg-slate-700"></div>
+                            <div class="h-3 w-4/5 rounded bg-slate-200 dark:bg-slate-700"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            <div class="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700"></div>
+                            <div class="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         @endfor
@@ -51,18 +36,7 @@
 
     <!-- Actual Date List -->
     <div wire:loading.remove
-        class="flex
-    flex-row lg:flex-col
-    flex-nowrap
-
-    overflow-x-auto lg:overflow-x-hidden
-    overflow-y-hidden lg:overflow-y-auto
-
-    space-x-2 lg:space-x-0
-    lg:space-y-1
-
-    max-h-none lg:max-h-[500px]
-    ">
+        class="flex flex-row lg:flex-col flex-nowrap overflow-x-auto lg:overflow-x-hidden overflow-y-hidden lg:overflow-y-auto space-x-2 lg:space-x-0 lg:space-y-1 max-h-none lg:max-h-[500px]">
         @foreach($daysInMonth as $day)
             @php
                 $date = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth ?: now()->format('Y-m'))->day($day);
@@ -87,72 +61,75 @@
                 $isLocked = !$date->isFuture() && !$hasAnyData && $date->lt(now()->startOfDay()->subDays($backDays));
             @endphp
 
-            <button wire:click="selectDate('{{ $dateString }}')" class="min-w-[150px] sm:min-w-[150px] lg:min-w-0 lg:w-full flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 text-left group hover:scale-[1.02] transform
-                           {{ $isSelected
-            ? 'bg-primary-100 dark:bg-primary-600/30 border-primary-200 dark:border-primary-800 text-primary-900 dark:text-primary-100 shadow-md shadow-primary-100 dark:shadow-primary-900/30'
-            : 'hover:bg-slate-50 dark:hover:bg-slate-600 border-transparent hover:shadow-sm' }}
-                           {{ $isWeekend ? 'bg-red-50/50 dark:bg-red-900/10' : '' }}
-                           {{ $date->isFuture() ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}"
-                @if($date->isFuture()) disabled @endif>
-
+            <button wire:click="selectDate('{{ $dateString }}')" @if($date->isFuture()) disabled @endif
+                class="group flex min-w-[150px] items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-200 sm:min-w-[150px] lg:w-full lg:min-w-0
+                                        {{ $isSelected
+            ? 'border-primary-300 bg-primary-50 text-primary-950 shadow-sm shadow-primary-100 dark:border-primary-700 dark:bg-primary-950/40 dark:text-primary-100 dark:shadow-primary-950/20'
+            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
+                                        }}
+                                        {{ $isWeekend ? 'border-red-200 bg-red-50/60 dark:border-red-900/40 dark:bg-red-950/20' : '' }}
+                                        {{ $date->isFuture() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:-translate-y-0.5' }}">
                 <!-- Status Indicator -->
-                <div class="flex-shrink-0 transition-all duration-200 group-hover:scale-110">
+                <div class="flex shrink-0 items-center justify-center">
                     @if($date->isFuture())
-                        <div class="w-3 h-3 rounded border border-gray-400 opacity-50"></div>
-                    @elseif($hasAnyData && $isToday)
-                        <div class="w-3 h-3 rounded-full bg-green-500 shadow-sm ring-2 ring-primary-300 dark:ring-primary-700">
+                        <div
+                            class="h-3 w-3 rounded-full border border-slate-400 bg-slate-100 dark:border-slate-600 dark:bg-slate-800">
                         </div>
+                    @elseif($hasAnyData && $isToday)
+                        <div class="h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-emerald-100 dark:ring-emerald-900/40"></div>
                     @elseif($hasAnyData)
                         <div
-                            class="w-3 h-3 rounded-full bg-green-500 shadow-sm group-hover:shadow-green-200 ring-0 group-hover:ring-2 ring-green-200">
+                            class="h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-transparent transition-all group-hover:ring-emerald-100 dark:group-hover:ring-emerald-900/40">
                         </div>
                     @elseif($isToday)
-                        <div class="w-3 h-3 rounded-full bg-primary-500 ring-2 ring-primary-300 dark:ring-primary-700"></div>
+                        <div class="h-3 w-3 rounded-full bg-primary-500 ring-4 ring-primary-100 dark:ring-primary-900/40"></div>
                     @elseif($isLocked)
-                        <div class="w-3 h-3 rounded border border-red-400 bg-red-50 dark:bg-red-900/20"></div>
+                        <div class="h-3 w-3 rounded-full border border-red-400 bg-red-100 dark:bg-red-950/50"></div>
                     @else
                         <div
-                            class="w-3 h-3 rounded-full border-2 border-orange-400 group-hover:shadow-orange-200 ring-0 group-hover:ring-2 ring-orange-100">
+                            class="h-3 w-3 rounded-full border-2 border-amber-400 bg-amber-50 ring-2 ring-transparent transition-all group-hover:ring-amber-100 dark:bg-amber-950/30 dark:group-hover:ring-amber-900/40">
                         </div>
                     @endif
                 </div>
 
                 <!-- Date Info -->
-                <div class="flex-1 min-w-0">
+                <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                        @if($isToday)
-                            <span class="text-sm font-bold flex items-center gap-1 group-hover:scale-105 transition-transform">
-                                <span class="text-primary-600 animate-pulse">▶</span>
-                                {{ $day }} {{ $date->format('M') }}
-                            </span>
-                        @else
-                            <span
-                                class="text-sm transition-all duration-200 {{ $date->isFuture() ? 'text-gray-400' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white' }} group-hover:font-medium">
-                                {{ $day }} {{ $date->format('M') }}
-                            </span>
-                        @endif
-                    </div>
-                    <div
-                        class="text-xs text-gray-500 dark:text-gray-400 truncate transition-colors duration-200 group-hover:text-gray-600 dark:group-hover:text-gray-300">
-                        {{ $dayName }}
-                    </div>
+                        <span class="truncate text-sm font-semibold transition-colors
+                                            {{ $date->isFuture()
+            ? 'text-slate-400 dark:text-slate-500'
+            : ($isToday
+                ? 'text-primary-700 dark:text-primary-300'
+                : 'text-slate-800 group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white')
+                                            }}">
+                            {{ $day }} {{ $date->format('M') }}
+                        </span>
 
-                    <div>
-                        <!-- Status badges -->
                         @if($isToday)
                             <span
-                                class="text-xs px-1.5 py-0.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full font-medium shadow-sm animate-pulse">Today</span>
+                                class="rounded-full bg-primary-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                                Today
+                            </span>
                         @endif
+
                         @if($isSelected && !$isToday)
                             <span
-                                class="text-xs px-1.5 py-0.5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full font-medium shadow-sm">Selected</span>
+                                class="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                                Selected
+                            </span>
                         @endif
+                    </div>
+
+                    <div
+                        class="mt-0.5 truncate text-xs text-slate-500 transition-colors group-hover:text-slate-600 dark:text-slate-400 dark:group-hover:text-slate-300">
+                        {{ $dayName }}
                     </div>
                 </div>
 
-                <!-- Hover indicator -->
-                <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <svg class="w-3 h-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Hover Indicator -->
+                <div
+                    class="shrink-0 text-slate-400 opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100 dark:text-slate-500">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>

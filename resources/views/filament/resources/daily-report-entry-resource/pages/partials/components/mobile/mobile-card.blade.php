@@ -44,7 +44,7 @@ $d = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth ?: now()->format('Y-
 
     <!-- Action Button -->
     <button
-        wire:click="openSlideOver({{ $indicator['id'] }}, '{{ $dateStr }}')"
+        @click="openSlideOverFast({{ $indicator['id'] }}, '{{ $dateStr }}')"
         class="w-full text-xs py-2.5 rounded-lg bg-primary-600 text-white font-medium transition active:scale-95 disabled:opacity-60">
         Input / Lihat
     </button>

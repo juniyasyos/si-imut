@@ -169,13 +169,11 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
         // Log::info('OpenSlideOver called', ['indicator_id' => $indicatorId, 'date' => $validatedDate]);
 
-        // Update URL without page refresh
+        // Update URL immediately - avoid setTimeout that disrupts Livewire reactivity
         $this->js("
-            setTimeout(() => {
-                const newUrl = window.location.pathname + '?indicator_id={$indicatorId}&date={$validatedDate}';
-                console.log('Updating URL to:', newUrl);
-                window.history.replaceState({}, '', newUrl);
-            }, 100);
+            const newUrl = window.location.pathname + '?indicator_id={$indicatorId}&date={$validatedDate}';
+            console.log('🔗 Updating URL to:', newUrl);
+            window.history.replaceState({}, '', newUrl);
         ");
     }
 
@@ -186,10 +184,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     {
         parent::closeSlideOver();
 
-        // Clean URL parameters
+        // Clean URL parameters immediately
         $this->js("
             const cleanUrl = window.location.pathname;
-            console.log('Cleaning URL to:', cleanUrl);
+            console.log('🔗 Cleaning URL to:', cleanUrl);
             window.history.replaceState({}, '', cleanUrl);
         ");
     }
@@ -391,7 +389,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             }
 
             // Close slide-over if open
-            $this->slideOverOpen = true;
+            $this->slideOverOpen = false;
 
             // Show success notification
             Notification::make()

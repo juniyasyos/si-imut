@@ -158,7 +158,7 @@
 
                 // Add click handler
                 const clickHandler = state !== 'disabled' ?
-                    `wire:click="openSlideOver(${indicatorId}, '${cellData.date}')"` :
+                    `@click="openSlideOverFast(${indicatorId}, '${cellData.date}')"` :
                     '';
 
                 return `<div class="${classes}" ${clickHandler}>${content}</div>`;
@@ -199,7 +199,7 @@
                 }
 
                 const clickHandler = state !== 'disabled' ?
-                    `wire:click="openSlideOver(${indicator.id}, '${cellData?.date || ''}')"` :
+                    `@click="openSlideOverFast(${indicator.id}, '${cellData?.date || ''}')"` :
                     '';
 
                 return `

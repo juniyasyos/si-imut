@@ -6,7 +6,7 @@
     @if($state === 'done')
     <div x-data="{ showPopover: false }" class="relative">
         <button
-            wire:click="openSlideOver({{ $indicatorId }}, '{{ $dateStr }}')"
+            @click="openSlideOverFast({{ $indicatorId }}, '{{ $dateStr }}')"
             @mouseenter="showPopover = true"
             @mouseleave="showPopover = false"
             class="w-full group">
@@ -73,7 +73,7 @@
     {{-- State: PENDING (Belum diisi - dapat input) --}}
     @elseif($state === 'pending')
     <button
-        wire:click="openSlideOver({{ $indicatorId }}, '{{ $dateStr }}')"
+        @click="openSlideOverFast({{ $indicatorId }}, '{{ $dateStr }}')"
         class="w-full group">
         <div class="flex flex-col items-center justify-center px-2 py-3 rounded-lg transition-all duration-200 {{ $isToday ? 'ring-2 ring-primary-300 dark:ring-primary-700' : '' }}"
             style="background-color: #fff7ed;">

@@ -8,35 +8,48 @@ $isLocked = ($this->selectedDate)
 
 <!-- Slide Over -->
 <div class="!fixed !inset-0 !z-[9999] overflow-hidden"
-    x-data="{ show: @entangle('slideOverOpen').live }"
-    x-show="show"
+    x-data="{
+        isOpen: @entangle('slideOverOpen').live,
+        init() {
+            slideOverClientOpen = this.isOpen;
+
+            this.$watch('isOpen', (newVal, oldVal) => {
+                if (newVal) {
+                    slideOverClientOpen = true;
+                    slideOverLoading = false;
+                }
+            });
+        }
+    }"
+    x-show="slideOverClientOpen"
     x-cloak
-    style="display: none; position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; z-index: 9999 !important;"
+    style="position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; z-index: 9999 !important;"
     x-transition:enter="transition-opacity ease-out duration-150"
     x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
     x-transition:leave="transition-opacity ease-in duration-100"
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
-    @keydown.escape.window="$wire.closeSlideOver()">>
+    @keydown.escape.window="closeSlideOverFast()">
 
     <!-- Optimized Backdrop -->
     <div class="!absolute !inset-0"
-        style="background: rgba(0, 0, 0, 0.8);"
-        x-show="show"
+        x-show="slideOverClientOpen"
+        style="position: absolute !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important;"
         x-transition:enter="ease-out duration-150"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
         x-transition:leave="ease-in duration-100"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        wire:click="closeSlideOver"></div>
+        @click="closeSlideOverFast()"
+        style="background: rgba(0, 0, 0, 0.8);"></div>
 
     <!-- Slide Over Panel -->
     <div class="!fixed !inset-y-0 !right-0 !left-auto flex max-w-full pl-0 sm:pl-10 md:pl-16 pointer-events-none"
         style="position: fixed !important; top: 0 !important; right: 0 !important; bottom: 0 !important; left: auto !important; z-index: 10000 !important;">
         <div class="w-screen max-w-full md:max-w-5xl pointer-events-auto"
-            x-show="show"
+            x-show="slideOverClientOpen"
             x-transition:enter="transform transition ease-out duration-200"
             x-transition:enter-start="translate-x-full opacity-0"
             x-transition:enter-end="translate-x-0 opacity-100"
@@ -44,7 +57,46 @@ $isLocked = ($this->selectedDate)
             x-transition:leave-start="translate-x-0 opacity-100"
             x-transition:leave-end="translate-x-full opacity-0">
 
-            <div class="flex h-full flex-col shadow-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+            <div class="relative flex h-full flex-col shadow-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
+                <div x-show="slideOverLoading" class="absolute inset-0 z-20 flex flex-col bg-white dark:bg-slate-900">
+                    <div class="relative px-6 py-6 bg-blue-600 text-white">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1 min-w-0 space-y-3">
+                                <div class="h-6 w-3/4 rounded bg-white/20 animate-pulse"></div>
+                                <div class="h-4 w-40 rounded bg-white/20 animate-pulse"></div>
+                                <div class="h-5 w-32 rounded-full bg-white/20 animate-pulse"></div>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-white/20 animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto px-6 py-6 bg-gray-50 dark:bg-slate-800 space-y-4">
+                        <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-3 animate-pulse">
+                            <div class="h-4 w-40 rounded bg-gray-200 dark:bg-slate-700"></div>
+                            <div class="h-3 w-full rounded bg-gray-200 dark:bg-slate-700"></div>
+                            <div class="h-3 w-5/6 rounded bg-gray-200 dark:bg-slate-700"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4 animate-pulse">
+                                <div class="h-5 w-48 rounded bg-gray-200 dark:bg-slate-700"></div>
+                                <div class="h-4 w-32 rounded bg-gray-200 dark:bg-slate-700"></div>
+                                <div class="h-24 rounded-lg bg-gray-200 dark:bg-slate-700"></div>
+                                <div class="flex gap-2">
+                                    <div class="h-10 flex-1 rounded-lg bg-gray-200 dark:bg-slate-700"></div>
+                                    <div class="h-10 flex-1 rounded-lg bg-gray-200 dark:bg-slate-700"></div>
+                                    <div class="h-10 flex-1 rounded-lg bg-gray-200 dark:bg-slate-700"></div>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4 animate-pulse">
+                                <div class="h-5 w-44 rounded bg-gray-200 dark:bg-slate-700"></div>
+                                <div class="h-4 w-28 rounded bg-gray-200 dark:bg-slate-700"></div>
+                                <div class="h-24 rounded-lg bg-gray-200 dark:bg-slate-700"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Simplified Header -->
                 <div class="relative px-6 py-6 bg-blue-600 text-white">
 
@@ -69,7 +121,8 @@ $isLocked = ($this->selectedDate)
                             </div>
                             @endif
                         </div>
-                        <button wire:click="closeSlideOver"
+                        <button
+                            @click="closeSlideOverFast()"
                             type="button"
                             class="ml-4 flex-shrink-0 rounded-full p-2 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 text-white">
                             @svg("heroicon-o-x-mark", "h-6 w-6")

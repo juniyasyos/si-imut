@@ -315,6 +315,8 @@ abstract class BaseDailyReportMonitoring extends Page
      */
     public function openSlideOver(int $indicatorId, ?string $date = null): void
     {
+        \Illuminate\Support\Facades\Log::info("openSlideOver reached", ["indicator_id" => $indicatorId, "date" => $date]);
+        $this->loadingSlideOver = true;
         $validatedDate = $this->slideOverService->validateDate($date);
 
         $this->selectedIndicatorId = $indicatorId;
@@ -325,7 +327,20 @@ abstract class BaseDailyReportMonitoring extends Page
 
         // Load daily reports for this indicator and date
         $this->loadDailyReports();
+        
+        \Illuminate\Support\Facades\Log::info("Setting slideOverOpen to true", [
+            "slideOverOpen_before" => $this->slideOverOpen,
+        ]);
+        
         $this->slideOverOpen = true;
+        
+        \Illuminate\Support\Facades\Log::info("After setting slideOverOpen", [
+            "slideOverOpen_after" => $this->slideOverOpen,
+            "selectedIndicatorId" => $this->selectedIndicatorId,
+            "selectedDate" => $this->selectedDate,
+        ]);
+
+        $this->loadingSlideOver = false;
     }
 
     /**
@@ -334,6 +349,7 @@ abstract class BaseDailyReportMonitoring extends Page
     public function closeSlideOver(): void
     {
         $this->slideOverOpen = false;
+        $this->loadingSlideOver = false;
         $this->selectedIndicatorId = null;
         $this->selectedIndicatorData = [];
         $this->dailyReports = [];

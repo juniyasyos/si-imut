@@ -15,6 +15,39 @@
             monitoringMonth: '{{ $selectedMonth ?: now()->format("Y-m") }}',
             isDateLoading: false,
             isLoadingMonth: false,
+            slideOverClientOpen: false,
+            slideOverLoading: false,
+            slideOverRequest: null,
+
+            async openSlideOverFast(indicatorId, date) {
+                const resolvedDate = date || '{{ now()->format("Y-m-d") }}';
+
+                this.slideOverRequest = {
+                    indicatorId: Number(indicatorId),
+                    date: resolvedDate,
+                };
+                this.slideOverClientOpen = true;
+                this.slideOverLoading = true;
+
+                console.log('🎪 [Fast Open] Opening slide-over immediately:', this.slideOverRequest);
+
+                try {
+                    await $wire.openSlideOver(indicatorId, resolvedDate);
+                } catch (error) {
+                    console.error('🎪 [Fast Open] Failed to open slide-over:', error);
+                    this.slideOverClientOpen = false;
+                    this.slideOverRequest = null;
+                } finally {
+                    this.slideOverLoading = false;
+                }
+            },
+
+            closeSlideOverFast() {
+                this.slideOverClientOpen = false;
+                this.slideOverLoading = false;
+                this.slideOverRequest = null;
+                $wire.closeSlideOver();
+            },
             
             init() {
                 console.log('📊 [Alpine init] Starting init');
@@ -220,7 +253,9 @@
         }" x-cloak>
 
         <!-- Full Screen Loading Overlay -->
-        <div x-show="isDateLoading" x-transition.opacity.duration.500ms class="fixed inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md z-[9999]" style="display: none;"></div>
+        <div x-show="isDateLoading" x-transition.opacity.duration.500ms
+            class="fixed inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md z-[9999]" style="display: none;">
+        </div>
 
         <div class="space-y-6 relative">
 
@@ -234,8 +269,7 @@
                 </div>
 
                 <!-- Main Content: Indicators for Selected Date (Alpine.js Isolated) -->
-                <div class="lg:col-span-9"
-                    x-data="{ 
+                <div class="lg:col-span-9" x-data="{ 
                          contentSelectedDate: @entangle('selectedDate'),
                          
                          init() {
@@ -260,7 +294,55 @@
                              }
                          }
                      }">
-                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+
+                    <div wire:loading
+                        class="bg-white w-full dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+
+                        <div
+                            class="flex animate-pulse pb-2 mb-2 border-b border-slate-200 dark:border-slate-700 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div class="w-full space-y-3">
+                                <!-- Title -->
+                                <div class="flex items-center gap-2">
+                                    <div class="h-5 w-5 rounded-md bg-slate-200 dark:bg-slate-700"></div>
+                                    <div class="h-5 w-48 rounded bg-slate-200 dark:bg-slate-700"></div>
+                                </div>
+
+                                <!-- Unit Kerja -->
+                                <div class="h-4 w-72 max-w-full rounded bg-slate-200 dark:bg-slate-700"></div>
+
+                                <!-- Info -->
+                                <div class="flex items-center gap-1">
+                                    <div class="h-4 w-4 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                                    <div class="h-3 w-28 rounded bg-slate-200 dark:bg-slate-700"></div>
+                                </div>
+                            </div>
+                        </div>
+                        @for ($i = 0; $i < 6; $i++)
+                            <div
+                                class="w-full animate-pulse rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                                <div class="flex w-full items-start gap-3">
+                                    <div class="h-10 w-10 shrink-0 rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+
+                                    <div class="min-w-0 flex-1 space-y-3">
+                                        <div class="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-700"></div>
+
+                                        <div class="space-y-2">
+                                            <div class="h-3 w-full rounded bg-slate-200 dark:bg-slate-700"></div>
+                                            <div class="h-3 w-4/5 rounded bg-slate-200 dark:bg-slate-700"></div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between pt-1">
+                                            <div class="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700"></div>
+                                            <div class="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+
+                    <div wire:loading.remove
+                        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
 
                         <!-- Indicators List -->
@@ -287,10 +369,10 @@
 
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.monitoring.monitoring-view')
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.monitoring.legend')
-
-            {{-- Slide-over rendered inside the container --}}
-            @include('filament.resources.daily-report-entry-resource.pages.partials.components.modal.slide-over')
         </div>
+
+        {{-- Slide-over MOVED OUTSIDE conditional views to prevent display: none from parent --}}
+        @include('filament.resources.daily-report-entry-resource.pages.partials.components.modal.slide-over')
 
         {{-- Scripts and styles --}}
         @include('filament.resources.daily-report-entry-resource.pages.partials.components.scripts.scripts-styles')
