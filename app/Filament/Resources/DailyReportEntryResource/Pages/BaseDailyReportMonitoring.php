@@ -123,7 +123,7 @@ abstract class BaseDailyReportMonitoring extends Page
         $this->daysWithData = $metadata['daysWithData'];
 
         // Load full matrix data (cached)
-        $fullData = $this->matrixService->loadFullMatrixData($this->selectedMonth);
+        $fullData = $this->matrixService->loadFullMatrixData($this->selectedMonth, $this->indicators, $this->daysInMonth);
         $this->matrixData = $fullData['matrixData'];
 
         // ensure color map includes any categories returned by the service
@@ -162,7 +162,7 @@ abstract class BaseDailyReportMonitoring extends Page
      */
     public function getMatrixData(): array
     {
-        $result = $this->matrixService->loadFullMatrixData($this->selectedMonth);
+        $result = $this->matrixService->loadFullMatrixData($this->selectedMonth, $this->indicators, $this->daysInMonth);
         return $result['matrixData'] ?? [];
     }
 

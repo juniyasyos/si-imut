@@ -1,5 +1,5 @@
 <!-- Date Navigation Sidebar -->
-<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4"
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 h-full"
     x-data="{}">
 
 
@@ -36,7 +36,7 @@
 
     <!-- Actual Date List -->
     <div wire:loading.remove
-        class="flex flex-row lg:flex-col flex-nowrap overflow-x-auto lg:overflow-x-hidden overflow-y-hidden lg:overflow-y-auto space-x-2 lg:space-x-0 lg:space-y-1 max-h-none lg:max-h-[500px]">
+        class="flex flex-row lg:flex-col flex-nowrap overflow-x-auto lg:overflow-x-hidden overflow-y-hidden lg:overflow-y-auto space-x-2 lg:space-x-0 lg:space-y-1 max-h-none lg:max-h-[600px]">
         @foreach($daysInMonth as $day)
             @php
                 $date = \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth ?: now()->format('Y-m'))->day($day);

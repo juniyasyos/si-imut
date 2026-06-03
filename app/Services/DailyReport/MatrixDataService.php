@@ -49,8 +49,8 @@ class MatrixDataService
         }
 
         $cacheKey = "matrix_metadata_{$user->id}_{$selectedMonth}";
-        
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use ($selectedMonth, $user) {
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($selectedMonth, $user) {
             $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
 
             if (empty($unitKerjaIds)) {
@@ -64,23 +64,15 @@ class MatrixDataService
             $date = Carbon::parse($selectedMonth . '-01');
             $daysInMonth = range(1, $date->daysInMonth);
 
-            // Get compliance summaries (for hasAnyData check only)
-            $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
+            // Distinct report dates are enough to build the availability map.
+            $datesWithData = array_flip($this->getDistinctReportDates($unitKerjaIds, $date));
 
-            // Build daysWithData map (fast, no heavy computation)
             $daysWithData = [];
+
             foreach ($daysInMonth as $day) {
-                $dateStr = $date->copy()->day($day)->format('Y-m-d');
-                $hasData = false;
-                
-                // Check if ANY indicator has data for this day
-                foreach ($indicators as $indicator) {
-                    if ($complianceSummaries->get($indicator['id'])?->get($dateStr)) {
-                        $hasData = true;
-                        break;
-                    }
-                }
-                $daysWithData[$day] = $hasData;
+                $dateStr = $date->copy()->day($day)->toDateString();
+
+                $daysWithData[$day] = isset($datesWithData[$dateStr]);
             }
 
             return [
@@ -95,7 +87,7 @@ class MatrixDataService
      * Load full matrix data for selected month
      * Heavy computation - cached, callable via Livewire
      */
-    public function loadFullMatrixData(string $selectedMonth): array
+    public function loadFullMatrixData(string $selectedMonth, ?array $indicators = null, ?array $daysInMonth = null): array
     {
         $user = Auth::user();
         if (!$user) {
@@ -103,29 +95,28 @@ class MatrixDataService
         }
 
         $cacheKey = "matrix_full_{$user->id}_{$selectedMonth}";
-        
-        return Cache::remember($cacheKey, self::CACHE_TTL, function() use ($selectedMonth, $user) {
-            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
 
-            if (empty($unitKerjaIds)) {
-                return ['matrixData' => []];
-            }
+        // return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($selectedMonth, $user) {
+        $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
 
-            $backDays = CachedSettingsService::getBackDataEntryDays();
+        if (empty($unitKerjaIds)) {
+            return ['matrixData' => []];
+        }
 
-            // Get indicators & days
-            $indicators = $this->getIndicators($unitKerjaIds);
-            $date = Carbon::parse($selectedMonth . '-01');
-            $daysInMonth = range(1, $date->daysInMonth);
+        $backDays = CachedSettingsService::getBackDataEntryDays();
 
-            // Get compliance summaries
-            $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
+        // Get indicators & days
+        $indicators = $indicators ?? $this->getIndicators($unitKerjaIds);
+        $date = Carbon::parse($selectedMonth . '-01');
 
-            // Build matrix data
-            $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
+        // Get compliance summaries
+        $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
 
-            return ['matrixData' => $matrixData];
-        });
+        // Build matrix data
+        $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
+
+        return ['matrixData' => $matrixData];
+        // });
     }
 
     /**
@@ -231,10 +222,10 @@ class MatrixDataService
             ->whereHas('formTemplate.imutProfile', function ($q) use ($now) {
                 // Validate profile is currently valid
                 $q->where('valid_from', '<=', $now)
-                  ->where(function ($subQ) use ($now) {
-                      $subQ->whereNull('valid_until')
-                           ->orWhere('valid_until', '>=', $now);
-                  });
+                    ->where(function ($subQ) use ($now) {
+                    $subQ->whereNull('valid_until')
+                        ->orWhere('valid_until', '>=', $now);
+                });
             })
             ->whereIn('daily_report_responses.unit_kerja_id', $unitKerjaIds)
             ->whereBetween('daily_report_responses.report_date', [$startDate, $endDate])
@@ -252,73 +243,149 @@ class MatrixDataService
     }
 
     /**
+     * Get distinct report dates for the selected month.
+     */
+    private function getDistinctReportDates(array $unitKerjaIds, Carbon $date): array
+    {
+        $startDate = $date->copy()->startOfMonth()->startOfDay();
+        $endDate = $date->copy()->endOfMonth()->endOfDay();
+
+        return DB::table('daily_report_responses')
+            ->selectRaw('DATE(report_date) as report_date')
+            ->whereIn('unit_kerja_id', $unitKerjaIds)
+            ->whereBetween('report_date', [$startDate, $endDate])
+            ->distinct()
+            ->pluck('report_date')
+            ->all();
+    }
+
+    /**
      * Build matrix data array
      */
-    private function buildMatrixData(array $indicators, array $daysInMonth, Carbon $date, $complianceSummaries, int $backDays = 6): array
-    {
+    private function buildMatrixData(
+        array $indicators,
+        array $daysInMonth,
+        Carbon $date,
+        $complianceSummaries,
+        int $backDays = 6
+    ): array {
         $matrixData = [];
-        
+
         $today = now()->startOfDay();
-        $sixDaysAgo = $today->copy()->subDays($backDays)->startOfDay();
+        $startAllowedDate = $today->copy()->subDays($backDays)->startOfDay();
+
+        /*
+         * Precompute metadata tanggal sekali saja.
+         * Ini menghindari Carbon copy/day/format/isToday/lte/gte dipanggil
+         * berulang-ulang di dalam loop indikator.
+         */
+        $dayMeta = [];
+
+        /*
+         * Template kosong untuk 1 baris matrix.
+         * Karena mayoritas cell biasanya kosong, kita buat struktur default sekali saja.
+         * Nanti setiap indikator cukup memakai template ini, lalu overwrite hanya cell yang punya data.
+         */
+        $emptyRowTemplate = [];
+
+        /*
+         * Mapping date string ke day.
+         * Ini dipakai agar saat overwrite summary, kita tidak perlu mencari day manual.
+         */
+        $dateToDayMap = [];
+
+        foreach ($daysInMonth as $day) {
+            $cellDate = $date->copy()->day($day)->startOfDay();
+            $dateStr = $cellDate->toDateString();
+
+            $isPastOrToday = $cellDate->lte($today);
+            $isWithinWindow = $cellDate->gte($startAllowedDate) && $isPastOrToday;
+
+            $emptyState = !$isPastOrToday
+                ? 'disabled'
+                : ($isWithinWindow ? 'pending' : 'overdue');
+
+            $dayMeta[$day] = [
+                'date' => $dateStr,
+                'is_today' => $cellDate->isSameDay($today),
+                'is_past_or_today' => $isPastOrToday,
+                'is_within_window' => $isWithinWindow,
+                'empty_state' => $emptyState,
+            ];
+
+            $emptyRowTemplate[$day] = [
+                'date' => $dateStr,
+                'has_data' => false,
+                'count' => 0,
+                'compliance_percentage' => 0,
+                'compliance_count' => 0,
+                'total_count' => 0,
+                'cell_state' => $emptyState,
+                // 'summary' => null,
+                'is_today' => $dayMeta[$day]['is_today'],
+            ];
+
+            $dateToDayMap[$dateStr] = $day;
+        }
 
         foreach ($indicators as $indicator) {
-            foreach ($daysInMonth as $day) {
-                $dateStr = $date->copy()->day($day)->format('Y-m-d');
-                $summary = $complianceSummaries->get($indicator['id'])?->get($dateStr);
+            $indicatorId = $indicator['id'];
 
-                $totalCount = $summary ? $summary->total_count : 0;
-                $compliantCount = $summary ? $summary->compliant_count : 0;
-                $compliancePercentage = $totalCount > 0 ? round(($compliantCount / $totalCount) * 100, 1) : 0;
+            /*
+             * Isi default row kosong dulu.
+             * Setelah itu hanya tanggal yang punya data saja yang dioverwrite.
+             */
+            $matrixData[$indicatorId] = $emptyRowTemplate;
 
-                $cellDate = $date->copy()->day($day)->startOfDay();
+            /*
+             * Ambil summary indikator sekali.
+             * Jadi tidak perlu get($indicatorId) terus di setiap hari.
+             */
+            $indicatorSummaries = $complianceSummaries->get($indicatorId);
 
-                // debugging: log summary for today to confirm counts
-                // if ($today->isSameDay($cellDate)) {
-                //     dd('buildMatrixData today', [
-                //         'dateStr' => $dateStr,
-                //         'indicatorId' => $indicator['id'],
-                //         'indicatorTitle' => $indicator['title'],
-                //         'summary' => $summary,
-                //         'totalCount' => $totalCount,
-                //         'compliantCount' => $compliantCount,
-                //         'compliancePercentage' => $compliancePercentage,
-                //         'complianceSummaries' => $complianceSummaries->get($indicator['id']),
-                //     ]);
-                // }
+            if (!$indicatorSummaries || $indicatorSummaries->isEmpty()) {
+                continue;
+            }
 
-                $cellState = 'disabled';
-                if ($cellDate->lte($today)) {
-                    $isWithinWindow = $cellDate->gte($sixDaysAgo);
-                    if ($totalCount > 0) {
-                        // Has data: distinguishes between editable (within window) and locked (outside window)
-                        $cellState = $isWithinWindow ? 'done' : 'done_locked';
-                    } elseif ($isWithinWindow) {
-                        $cellState = 'pending';
-                    } else {
-                        $cellState = 'overdue';
-                    }
+            /*
+             * Loop berdasarkan data summary, bukan semua hari.
+             * Jadi cell kosong tidak dihitung ulang satu-satu.
+             */
+            foreach ($indicatorSummaries as $dateStr => $summary) {
+                $day = $dateToDayMap[$dateStr] ?? null;
+
+                if (!$day) {
+                    continue;
                 }
 
-                $summaryData = null;
-                if ($totalCount > 0) {
-                    $summaryData = [
-                        'count' => $totalCount,
-                        'numerator' => $compliantCount,
-                        'denominator' => $totalCount,
-                        'percentage' => $compliancePercentage,
-                    ];
+                $totalCount = (int) ($summary?->total_count ?? 0);
+                $compliantCount = (int) ($summary?->compliant_count ?? 0);
+
+                if ($totalCount <= 0) {
+                    continue;
                 }
 
-                $matrixData[$indicator['id']][$day] = [
+                $compliancePercentage = round(($compliantCount / $totalCount) * 100, 1);
+
+                $cellState = $dayMeta[$day]['is_within_window']
+                    ? 'done'
+                    : 'done_locked';
+
+                $matrixData[$indicatorId][$day] = [
                     'date' => $dateStr,
-                    'has_data' => $totalCount > 0,
+                    'has_data' => true,
                     'count' => $totalCount,
                     'compliance_percentage' => $compliancePercentage,
                     'compliance_count' => $compliantCount,
                     'total_count' => $totalCount,
                     'cell_state' => $cellState,
-                    'summary' => $summaryData,
-                    'is_today' => $cellDate->isToday(),
+                    // 'summary' => [
+                    //     'count' => $totalCount,
+                    //     'numerator' => $compliantCount,
+                    //     'denominator' => $totalCount,
+                    //     'percentage' => $compliancePercentage,
+                    // ],
+                    'is_today' => $dayMeta[$day]['is_today'],
                 ];
             }
         }
@@ -358,7 +425,7 @@ class MatrixDataService
         $count = $reports->count();
         $cellDate = Carbon::parse($date)->startOfDay();
         $today = now()->startOfDay();
-        
+
         // Get cached setting instead of querying repeatedly
         $backDays = CachedSettingsService::getBackDataEntryDays();
         $sixDaysAgo = $today->copy()->subDays($backDays)->startOfDay();

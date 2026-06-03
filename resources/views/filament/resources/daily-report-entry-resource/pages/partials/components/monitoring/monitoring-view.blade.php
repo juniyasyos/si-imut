@@ -235,8 +235,9 @@
 
                             <div class="ml-auto flex shrink-0 flex-col items-end gap-1">
                                 <span x-show="item.category"
-                                    class="inline-flex shrink-0 items-center rounded-md px-2 py-1 text-xs font-semibold"
+                                    class="inline-flex shrink-0 items-center rounded-md gap-1 px-2 py-1 text-xs font-semibold"
                                     :class="getCategoryColor(item.category)">
+                                    @svg("heroicon-m-tag", "w-3 h-3")
                                     <span x-text="item.category"></span>
                                 </span>
                                 <!-- Actions -->

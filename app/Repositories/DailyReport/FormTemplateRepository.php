@@ -48,12 +48,20 @@ class FormTemplateRepository
                 ->activeOnly()
                 ->buildMonitoringQuery()
                 ->with(['imutProfile.imutData.categories'])
-                ->withCount(['dailyReportResponses as response_count' => function ($query) use ($periodStart, $periodEnd, $unitKerjaIds) {
-                    $query->whereBetween('report_date', [$periodStart, $periodEnd]);
-                    if (!empty($unitKerjaIds)) {
-                        $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                ->with([
+                    'imutProfile:id,imut_data_id,version',
+                    'imutProfile.imutData:id,title,imut_kategori_id',
+                    'imutProfile.imutData.categories:id,category_name',
+                ])
+
+                ->withCount([
+                    'dailyReportResponses as response_count' => function ($query) use ($periodStart, $periodEnd, $unitKerjaIds) {
+                        $query->whereBetween('report_date', [$periodStart, $periodEnd]);
+                        if (!empty($unitKerjaIds)) {
+                            $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                        }
                     }
-                }])
+                ])
                 ->get();
         });
     }
@@ -178,11 +186,11 @@ class FormTemplateRepository
         sort($unitKerjaIds);
         $unitKerjaHash = md5(implode(',', $unitKerjaIds));
         $key = "{$prefix}:{$unitKerjaHash}";
-        
+
         if ($suffix) {
             $key .= ":{$suffix}";
         }
-        
+
         return $key;
     }
 }

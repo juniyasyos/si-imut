@@ -383,7 +383,6 @@
             </div>
 
             @include('filament.resources.daily-report-entry-resource.pages.partials.components.monitoring.monitoring-view')
-            @include('filament.resources.daily-report-entry-resource.pages.partials.components.monitoring.legend')
         </div>
 
         {{-- Slide-over MOVED OUTSIDE conditional views to prevent display: none from parent --}}
