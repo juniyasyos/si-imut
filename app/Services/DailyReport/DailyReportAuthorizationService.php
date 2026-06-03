@@ -11,6 +11,8 @@ use App\Services\DailyReport\UnifiedComplianceService;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Services\UserContextService;
+use App\Services\FormTemplateLoadingService;
 
 /**
  * Service for Daily Report Entry creation
@@ -28,7 +30,7 @@ class DailyReportAuthorizationService
         }
 
         // Fetch template with relations for unit check
-        $template = FormTemplate::with('imutProfile.imutData.unitKerja')->find($indicatorId);
+        $template = FormTemplateLoadingService::getTemplate($indicatorId);
 
         if (!$template || !$template->imutProfile) {
             return false;
@@ -44,7 +46,7 @@ class DailyReportAuthorizationService
             return false;
         }
 
-        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        $userUnitIds = UserContextService::getUserUnitKerjaIds();
         $hasUnitAccess = $template->imutProfile->imutData
             ->unitKerja()
             ->whereIn('unit_kerja_id', $userUnitIds)
@@ -98,7 +100,8 @@ class DailyReportAuthorizationService
             }
 
             // Get user's unit kerja
-            $unitKerjaId = $user->unitKerjas()->first()?->id;
+            $unitKerjaIds = UserContextService::getUserUnitKerjaIds();
+            $unitKerjaId = reset($unitKerjaIds);
 
             if (!$unitKerjaId) {
                 throw new \Exception('User tidak terdaftar di unit kerja mana pun');
@@ -379,7 +382,7 @@ class DailyReportAuthorizationService
     public function validateTemplateAccess(int $templateId, User $user): ?FormTemplate
     {
         try {
-            $template = FormTemplate::with('imutProfile.imutData.unitKerja')->find($templateId);
+            $template = FormTemplateLoadingService::getTemplate($templateId);
 
             if (!$template || !$template->imutProfile) {
                 return null;

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\UserContextService;
 
 /**
  * Facade/Coordinator Service for Daily Report Monitoring operations
@@ -29,13 +30,6 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class DailyReportMonitoringService
 {
-    /**
-     * In-memory cache to avoid repeated unit kerja lookups in one request.
-     *
-     * @var array<int, array<int, int>>
-     */
-    private array $userUnitKerjaIdsCache = [];
-
     public function __construct(
         private readonly DailyReportResponseRepositoryInterface $dailyReportRepository,
         private readonly MonitoringTemplateService $monitoringTemplateService,
@@ -89,7 +83,7 @@ class DailyReportMonitoringService
                 return 0;
             }
 
-            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+            $unitKerjaIds = UserContextService::getUserUnitKerjaIds();
 
             return $this->dailyReportRepository->countReportsForIndicatorDate(
                 $indicatorId,
@@ -116,7 +110,7 @@ class DailyReportMonitoringService
             $startDate = $date->copy()->startOfMonth()->startOfDay();
             $endDate = $date->copy()->endOfMonth()->endOfDay();
 
-            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+            $unitKerjaIds = UserContextService::getUserUnitKerjaIds();
 
             $template = FormTemplate::with([
                 'imutProfile.imutData',
@@ -147,34 +141,6 @@ class DailyReportMonitoringService
             ]);
             throw $e;
         }
-    }
-
-    /**
-     * Get user's unit kerja IDs with caching
-     */
-    public function getUserUnitKerjaIds(int $userId): array
-    {
-        if (isset($this->userUnitKerjaIdsCache[$userId])) {
-            return $this->userUnitKerjaIdsCache[$userId];
-        }
-
-        $ids = Cache::remember(
-            CacheKey::userHasUnitKerjaIds($userId),
-            3600,
-            fn() => $this->fetchUserUnitKerjaIds($userId)
-        );
-
-        return $this->userUnitKerjaIdsCache[$userId] = $ids;
-    }
-
-    /**
-     * Fetch unit kerja IDs from database
-     */
-    private function fetchUserUnitKerjaIds(int $userId): array
-    {
-        $user = User::query()->with('unitKerjas:id')->find($userId);
-
-        return $user?->unitKerjas?->pluck('id')->all() ?? [];
     }
 
     /**

@@ -66,13 +66,26 @@ class DailyReportBuildService
                 'auto_calculated' => true,
             ]);
 
-            // 2. Build dan store field responses
+            // 2. Calculate compliance FIRST (single pass scoring)
+            // This calculates all field scores once and returns them in breakdown
+            $compliance = $this->complianceService->calculate($template, $formData);
+
+            // 3. Build field responses using PRE-CALCULATED scores (eliminates double iteration)
+            $fieldScores = [];
+            foreach ($compliance['calculation_details']['field_breakdown'] as $fieldBreakdown) {
+                $fieldScores[$fieldBreakdown['field_key']] = $fieldBreakdown['score'];
+            }
+
             $responses = [];
             foreach ($template->formFields->sortBy('order_index') as $field) {
-                $fieldResponse = $this->fieldResponseBuilder->build(
+                // Use pre-calculated score from compliance calculation
+                $preCalculatedScore = $fieldScores[$field->field_key] ?? 0;
+
+                $fieldResponse = $this->fieldResponseBuilder->buildWithScore(
                     $dailyReport,
                     $field,
-                    $formData
+                    $formData,
+                    $preCalculatedScore
                 );
 
                 $responses[$field->field_key] = $fieldResponse;
@@ -80,9 +93,6 @@ class DailyReportBuildService
                 // Update history suggestions untuk text fields
                 $this->updateHistorySuggestions($field, $formData);
             }
-
-            // 3. Calculate compliance ONCE (unified logic)
-            $compliance = $this->complianceService->calculate($template, $formData);
 
             // 4. Update DailyReportResponse with compliance data via repository
             $repo->updateById($dailyReport->id, [

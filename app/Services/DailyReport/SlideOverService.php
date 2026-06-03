@@ -5,6 +5,7 @@ namespace App\Services\DailyReport;
 use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Services\UserContextService;
 
 class SlideOverService
 {
@@ -23,7 +24,7 @@ class SlideOverService
             return [];
         }
 
-        $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+        $userUnitIds = UserContextService::getUserUnitKerjaIds();
         if (empty($userUnitIds)) {
             return [];
         }

@@ -22,6 +22,31 @@ class FieldResponseBuilderService
 
     /**
      * Build dan create FieldResponse untuk field tertentu
+     * 
+     * Overloaded method - accepts pre-calculated compliance score
+     * Used for single-pass scoring optimization in DailyReportBuildService
+     */
+    public function buildWithScore(
+        DailyReportResponse $dailyReport,
+        EnhancedFormField $field,
+        array $formData,
+        float $preCalculatedScore
+    ): FieldResponse {
+        $fieldValue = $formData[$field->field_key] ?? null;
+        $normalizedValue = $this->normalizeFieldValue($field, $fieldValue, $formData);
+
+        return FieldResponse::create([
+            'daily_report_response_id' => $dailyReport->id,
+            'form_field_id' => $field->id,
+            'field_value' => $normalizedValue,
+            'compliance_score' => $preCalculatedScore,
+        ]);
+    }
+
+    /**
+     * Build dan create FieldResponse untuk field tertentu (Legacy - calculates score)
+     * 
+     * This method is deprecated for new code - use buildWithScore() for single-pass scoring
      */
     public function build(
         DailyReportResponse $dailyReport,

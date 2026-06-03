@@ -10,18 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Services\DailyReport\CachedSettingsService;
+use App\Services\UserContextService;
+use App\Services\FormTemplateLoadingService;
 
 class MatrixDataService
 {
     // Cache TTL: 5 minutes for matrix data
     const CACHE_TTL = 300;
-
-    /**
-     * In-memory cache to avoid repeated unit kerja lookups in one request.
-     *
-     * @var array<int, array<int, int>>
-     */
-    private array $userUnitKerjaIdsCache = [];
 
     /**
      * In-memory cache for matrix indicators per request.
@@ -38,123 +33,91 @@ class MatrixDataService
     private array $complianceSummariesCache = [];
 
     /**
-     * Load matrix metadata only (indicators + daysWithData map)
-     * Fast, lightweight - used for sidebar & initial render
+     * Load complete matrix data (UNIFIED) - metadata + full matrix in one pass
+     * Optimized single load with proper caching - reduces database queries significantly
+     * Returns: indicators, matrixData, daysInMonth, daysWithData
      */
-    public function loadMatrixMetadata(string $selectedMonth): array
+    public function loadMatrixCompletely(string $selectedMonth): array
     {
         $user = Auth::user();
         if (!$user) {
-            return ['indicators' => [], 'daysWithData' => [], 'daysInMonth' => []];
+            return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => [], 'daysWithData' => []];
         }
 
-        $cacheKey = "matrix_metadata_{$user->id}_{$selectedMonth}";
+        $cacheKey = "matrix_complete_{$user->id}_{$selectedMonth}";
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($selectedMonth, $user) {
-            $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+            $unitKerjaIds = UserContextService::getUserUnitKerjaIdsForUserId($user->id);
 
             if (empty($unitKerjaIds)) {
-                return ['indicators' => [], 'daysWithData' => [], 'daysInMonth' => []];
+                return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => [], 'daysWithData' => []];
             }
 
-            // Get indicators
-            $indicators = $this->getIndicators($unitKerjaIds);
-
-            // Calculate days in selected month
+            $backDays = CachedSettingsService::getBackDataEntryDays();
             $date = Carbon::parse($selectedMonth . '-01');
             $daysInMonth = range(1, $date->daysInMonth);
 
-            // Distinct report dates are enough to build the availability map.
-            $datesWithData = array_flip($this->getDistinctReportDates($unitKerjaIds, $date));
+            // SINGLE PASS: Fetch all data once
+            $indicators = $this->getIndicators($unitKerjaIds);
+            $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
+            $distinctDates = $this->getDistinctReportDates($unitKerjaIds, $date);
 
+            // Build matrix data
+            $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
+
+            // Build daysWithData map
+            $datesWithData = array_flip($distinctDates);
             $daysWithData = [];
 
             foreach ($daysInMonth as $day) {
                 $dateStr = $date->copy()->day($day)->toDateString();
-
                 $daysWithData[$day] = isset($datesWithData[$dateStr]);
             }
 
             return [
                 'indicators' => $indicators,
-                'daysWithData' => $daysWithData,
-                'daysInMonth' => $daysInMonth
+                'matrixData' => $matrixData,
+                'daysInMonth' => $daysInMonth,
+                'daysWithData' => $daysWithData
             ];
         });
     }
 
     /**
+     * Load matrix metadata only (indicators + daysWithData map)
+     * Fast, lightweight - used for sidebar & initial render
+     * NOTE: Now uses unified load internally (single database query)
+     */
+    public function loadMatrixMetadata(string $selectedMonth): array
+    {
+        $complete = $this->loadMatrixCompletely($selectedMonth);
+
+        return [
+            'indicators' => $complete['indicators'],
+            'daysWithData' => $complete['daysWithData'],
+            'daysInMonth' => $complete['daysInMonth']
+        ];
+    }
+
+    /**
      * Load full matrix data for selected month
      * Heavy computation - cached, callable via Livewire
+     * NOTE: Now uses unified load internally (single database query)
      */
     public function loadFullMatrixData(string $selectedMonth, ?array $indicators = null, ?array $daysInMonth = null): array
     {
-        $user = Auth::user();
-        if (!$user) {
-            return ['matrixData' => []];
-        }
+        $complete = $this->loadMatrixCompletely($selectedMonth);
 
-        $cacheKey = "matrix_full_{$user->id}_{$selectedMonth}";
-
-        // return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($selectedMonth, $user) {
-        $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
-
-        if (empty($unitKerjaIds)) {
-            return ['matrixData' => []];
-        }
-
-        $backDays = CachedSettingsService::getBackDataEntryDays();
-
-        // Get indicators & days
-        $indicators = $indicators ?? $this->getIndicators($unitKerjaIds);
-        $date = Carbon::parse($selectedMonth . '-01');
-
-        // Get compliance summaries
-        $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
-
-        // Build matrix data
-        $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
-
-        return ['matrixData' => $matrixData];
-        // });
+        return ['matrixData' => $complete['matrixData']];
     }
 
     /**
      * Load full matrix data (legacy method for backward compatibility)
+     * NOTE: Now uses unified load internally (single database query)
      */
     public function loadMatrixData(string $selectedMonth): array
     {
-        $user = Auth::user();
-        if (!$user) {
-            return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
-        }
-
-        $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
-
-        if (empty($unitKerjaIds)) {
-            return ['indicators' => [], 'matrixData' => [], 'daysInMonth' => []];
-        }
-
-        $backDays = CachedSettingsService::getBackDataEntryDays();
-
-        // Get indicators
-        $indicators = $this->getIndicators($unitKerjaIds);
-
-        // Calculate days in selected month
-        $date = Carbon::parse($selectedMonth . '-01');
-        $daysInMonth = range(1, $date->daysInMonth);
-
-        // Get compliance summaries
-        $complianceSummaries = $this->getComplianceSummaries($unitKerjaIds, $date);
-
-        // Build matrix data
-        $matrixData = $this->buildMatrixData($indicators, $daysInMonth, $date, $complianceSummaries, $backDays);
-
-        return [
-            'indicators' => $indicators,
-            'matrixData' => $matrixData,
-            'daysInMonth' => $daysInMonth
-        ];
+        return $this->loadMatrixCompletely($selectedMonth);
     }
 
     /**
@@ -404,7 +367,7 @@ class MatrixDataService
             return ['error' => 'User not authenticated', 'status' => 'error', 'count' => 0];
         }
 
-        $unitKerjaIds = $this->getUserUnitKerjaIds($user->id);
+        $unitKerjaIds = UserContextService::getUserUnitKerjaIdsForUserId($user->id);
         if (empty($unitKerjaIds)) {
             return ['error' => 'No unit kerja found', 'status' => 'error', 'count' => 0];
         }
@@ -446,30 +409,6 @@ class MatrixDataService
             'reports' => $reports->toArray(),
             'date' => $date
         ];
-    }
-
-    /**
-     * Get user's unit kerja IDs with caching
-     * Cache for 1 hour or until invalidated
-     * Uses CacheKey::userHasUnitKerjaIds for consistent cache key
-     */
-    private function getUserUnitKerjaIds(int $userId): array
-    {
-        if (isset($this->userUnitKerjaIdsCache[$userId])) {
-            return $this->userUnitKerjaIdsCache[$userId];
-        }
-
-        $ids = Cache::remember(
-            CacheKey::userHasUnitKerjaIds($userId),
-            3600,
-            function () use ($userId) {
-                $user = User::query()->with('unitKerjas:id')->find($userId);
-
-                return $user?->unitKerjas?->pluck('id')->all() ?? [];
-            }
-        );
-
-        return $this->userUnitKerjaIdsCache[$userId] = $ids;
     }
 
     /**
