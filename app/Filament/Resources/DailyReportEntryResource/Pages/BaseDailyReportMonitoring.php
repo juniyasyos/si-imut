@@ -145,7 +145,7 @@ abstract class BaseDailyReportMonitoring extends Page
         $this->indicators = $result['indicators'];
         $this->daysInMonth = $result['daysInMonth'];
         $this->daysWithData = $result['daysWithData'];
-        
+
         // ensure color map includes any categories returned by the service
         foreach ($this->indicators as $indicator) {
             if (!empty($indicator['category']) && !isset($this->categoryColors[$indicator['category']])) {
@@ -345,13 +345,13 @@ abstract class BaseDailyReportMonitoring extends Page
 
         // Load daily reports for this indicator and date
         $this->loadDailyReports();
-        
+
         \Illuminate\Support\Facades\Log::info("Setting slideOverOpen to true", [
             "slideOverOpen_before" => $this->slideOverOpen,
         ]);
-        
+
         $this->slideOverOpen = true;
-        
+
         \Illuminate\Support\Facades\Log::info("After setting slideOverOpen", [
             "slideOverOpen_after" => $this->slideOverOpen,
             "selectedIndicatorId" => $this->selectedIndicatorId,

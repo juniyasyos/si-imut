@@ -182,7 +182,7 @@ class MatrixDataService
             ->monthlyIndicators()
             ->activeForCurrentDate()
             ->with([
-                'imutProfile' => fn($q) => $q->select('id', 'version'),
+                'imutProfile' => fn($q) => $q->select('id', 'version', 'imut_data_id'),
                 'imutProfile.imutData' => fn($q) => $q->select('id', 'title', 'imut_kategori_id'),
                 'imutProfile.imutData.categories' => fn($q) => $q->select('id', 'category_name'),
             ])
@@ -197,10 +197,10 @@ class MatrixDataService
         return $this->indicatorsCache[$cacheKey] = $formTemplates->map(function ($formTemplate) {
             return [
                 'id' => $formTemplate->id,
-                'title' => $formTemplate->imutProfile?->imutData?->title ?? $formTemplate->title,
-                'category' => $formTemplate->imutProfile?->imutData?->categories?->category_name ?? null,
-                'category_id' => $formTemplate->imutProfile?->imutData?->imut_kategori_id,
-                'imut_profile_version' => $formTemplate->imutProfile?->version,
+                'title' => $formTemplate->imutProfile->imutData->title,
+                'category' => $formTemplate->imutProfile->imutData->categories->category_name,
+                'category_id' => $formTemplate->imutProfile->imutData->imut_kategori_id,
+                'imut_profile_version' => $formTemplate->imutProfile->version,
             ];
         })->toArray();
     }
