@@ -29,6 +29,12 @@ class UserContextService
     private static array $unitKerjaCache = [];
 
     /**
+     * Debug info for cache hits/misses
+     * @var array<string, array<string, int>>
+     */
+    private static array $cacheStats = [];
+
+    /**
      * Get cached unit_kerja IDs for authenticated user.
      * Queries database only on first call, then caches for entire request.
      * 
@@ -42,6 +48,22 @@ class UserContextService
         }
 
         return self::getUserUnitKerjaIdsForUser($user);
+    }
+
+    /**
+     * Get cache statistics
+     */
+    public static function getCacheStats(): array
+    {
+        return self::$cacheStats;
+    }
+
+    /**
+     * Clear cache (for testing)
+     */
+    public static function clearCache(): void
+    {
+        self::$unitKerjaCache = [];
     }
 
     /**
@@ -74,6 +96,7 @@ class UserContextService
 
         // Return cached value if exists
         if (isset(self::$unitKerjaCache[$cacheKey])) {
+            self::$cacheStats[$cacheKey]['hits'] = (self::$cacheStats[$cacheKey]['hits'] ?? 0) + 1;
             return self::$unitKerjaCache[$cacheKey];
         }
 
@@ -82,17 +105,10 @@ class UserContextService
             ->pluck('unit_kerja.id')
             ->toArray();
 
+        self::$cacheStats[$cacheKey]['misses'] = (self::$cacheStats[$cacheKey]['misses'] ?? 0) + 1;
         self::$unitKerjaCache[$cacheKey] = $unitKerjaIds;
 
         return $unitKerjaIds;
-    }
-
-    /**
-     * Clear cache (useful for testing or manual invalidation)
-     */
-    public static function clearCache(): void
-    {
-        self::$unitKerjaCache = [];
     }
 
     /**

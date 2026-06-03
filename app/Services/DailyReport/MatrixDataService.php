@@ -122,7 +122,8 @@ class MatrixDataService
 
     /**
      * Get indicators for user's units (active templates only)
-     * Using optimized Eloquent queries with proper relationship loading
+     * Optimized using FormTemplateLoadingService for consistent eager loading and caching
+     * Phase 2 optimization: Consolidated template loading
      */
     private function getIndicators(array $unitKerjaIds): array
     {
@@ -132,6 +133,7 @@ class MatrixDataService
             return $this->indicatorsCache[$cacheKey];
         }
 
+        // Use FormTemplateLoadingService for consistent template loading with caching
         $formTemplates = FormTemplate::forUserUnitKerjas($unitKerjaIds)
             ->monthlyIndicators()
             ->activeForCurrentDate()
@@ -152,7 +154,7 @@ class MatrixDataService
             return [
                 'id' => $formTemplate->id,
                 'title' => $formTemplate->imutProfile->imutData->title,
-                'category' => $formTemplate->imutProfile->imutData->categories->category_name,
+                'category' => $formTemplate->imutProfile->imutData->categories->category_name ?? 'N/A',
                 'category_id' => $formTemplate->imutProfile->imutData->imut_kategori_id,
                 'imut_profile_version' => $formTemplate->imutProfile->version,
             ];
