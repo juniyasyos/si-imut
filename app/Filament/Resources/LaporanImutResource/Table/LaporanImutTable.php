@@ -157,14 +157,7 @@ class LaporanImutTable extends LaporanImutResource
                     ->url(fn($record): string => ImutDataReport::getUrl([
                         'laporan_id' => $record->id,
                     ])),
-            ])
-                ->label('Aksi Cepat')
-                ->button()
-                ->tooltip('Buka ringkasan laporan berdasarkan unit kerja atau indikator')
-                ->icon('heroicon-o-bolt')
-                ->color('secondary'),
 
-            ActionGroup::make([
                 EditAction::make()
                     ->label('Edit Laporan'),
 
@@ -251,27 +244,27 @@ class LaporanImutTable extends LaporanImutResource
 
     protected static function dataImutActionLabel($record): string
     {
-        return match (self::resolveStatus($record)) {
-            'coming_soon' => 'Periode Belum Dibuka',
-            'complete' => 'Lihat Data IMUT',
+        return match (self::analysisSubmissionState($record)) {
+            'not_open' => 'Periode Belum Dibuka',
+            'closed' => 'Lihat Data IMUT',
             default => 'Isi Data IMUT',
         };
     }
 
     protected static function dataImutActionIcon($record): string
     {
-        return match (self::resolveStatus($record)) {
-            'coming_soon' => 'heroicon-o-lock-closed',
-            'complete' => 'heroicon-o-eye',
+        return match (self::analysisSubmissionState($record)) {
+            'not_open' => 'heroicon-o-lock-closed',
+            'closed' => 'heroicon-o-eye',
             default => 'heroicon-o-pencil-square',
         };
     }
 
     protected static function dataImutActionColor($record): string
     {
-        return match (self::resolveStatus($record)) {
-            'coming_soon' => 'gray',
-            'complete' => 'success',
+        return match (self::analysisSubmissionState($record)) {
+            'not_open' => 'gray',
+            'closed' => 'success',
             default => 'primary',
         };
     }

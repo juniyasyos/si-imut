@@ -73,7 +73,7 @@ class LaporanImutResource extends Resource implements HasShieldPermissions
         static::$authUserUnitKerjaIds = $user
             ? $user->unitKerjas->pluck('id')->toArray()
             : [];
-        static::$authCanCreateImutData = $user?->can('create_imut::data') ?? false;
+        static::$authCanCreateImutData = $user?->can('create_laporan::imut') ?? false;
     }
 
     protected static function getAuthUserUnitKerjaIds(): array
