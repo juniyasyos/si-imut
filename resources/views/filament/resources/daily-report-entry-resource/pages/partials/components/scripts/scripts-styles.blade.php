@@ -115,7 +115,22 @@
     // Listen for URL update events from Livewire and update browser URL
     // Also sync Alpine state and reload matrix data if needed
     document.addEventListener('livewire:init', () => {
+        // Use Alpine.store for cleaner state management
+        if (window.Alpine && !Alpine.store('matrixSnapshot')) {
+            Alpine.store('matrixSnapshot', {
+                snapshot: null,
+                synced: false
+            });
+        }
+
         Livewire.on('matrixSnapshotUpdated', (payload) => {
+            if (monthTimings.navigationStartTime) {
+                monthTimings.recordEvent('matrixSnapshotUpdated', {
+                    indicatorsCount: payload?.snapshot?.indicators?.length ?? 0,
+                    hasMatrixData: !!payload?.snapshot?.matrixData
+                });
+            }
+
             console.log('📦 [matrixSnapshotUpdated] Event received');
 
             try {
@@ -126,40 +141,70 @@
                     return;
                 }
 
-                const mainEl = document.querySelector('[x-data*="selectedDate"]');
-                console.log('📦 [matrixSnapshotUpdated] Found mainEl:', !!mainEl);
-
-                if (!mainEl || !mainEl.__x) {
-                    console.warn('📦 [matrixSnapshotUpdated] Could not find Alpine root');
-                    return;
+                // Store snapshot untuk saat Alpine ready
+                if (window.Alpine && Alpine.store('matrixSnapshot')) {
+                    Alpine.store('matrixSnapshot').snapshot = snapshot;
+                    Alpine.store('matrixSnapshot').synced = false;
                 }
 
-                const data = mainEl.__x.$data;
+                // Wait for Alpine to be ready after Livewire finishes rendering
+                const attemptSync = (attempts = 0) => {
+                    if (attempts > 20) {
+                        console.warn('📦 [matrixSnapshotUpdated] Timeout waiting for Alpine');
+                        return;
+                    }
 
-                if (snapshot.selectedMonth) data.selectedMonth = snapshot.selectedMonth;
-                if (snapshot.selectedDate) data.selectedDate = snapshot.selectedDate;
-                if (snapshot.indicators) data.indicators = snapshot.indicators;
-                if (snapshot.matrixData) data.matrixData = snapshot.matrixData;
-                if (snapshot.daysInMonth) data.daysInMonth = snapshot.daysInMonth;
-                if (snapshot.daysWithData) data.daysWithData = snapshot.daysWithData;
-                if (snapshot.categoryColors) data.categoryColors = snapshot.categoryColors;
-                if (snapshot.monitoringTemplates) data.monitoringData = snapshot.monitoringTemplates;
+                    // Find element lebih specific dan reliable
+                    const currentEl = document.querySelector('[x-data*="dailyReportData"]');
+                    
+                    if (!currentEl || !currentEl.__x) {
+                        if (attempts < 5) {
+                            console.log('📦 [matrixSnapshotUpdated] Alpine not ready yet, retrying...', attempts);
+                        }
+                        setTimeout(() => attemptSync(attempts + 1), 100);
+                        return;
+                    }
 
-                data.monitoringMonth = data.selectedMonth;
-                data.currentDate = new Date(`${data.selectedMonth}-01`);
+                    const data = currentEl.__x.$data;
+                    console.log('📦 [matrixSnapshotUpdated] Alpine ready on attempt', attempts, ', syncing data');
 
-                console.log('📦 [matrixSnapshotUpdated] Alpine state synced:', {
-                    selectedMonth: data.selectedMonth,
-                    selectedDate: data.selectedDate,
-                    indicatorsCount: data.indicators?.length ?? 0,
-                    daysInMonthCount: data.daysInMonth?.length ?? 0,
-                });
+                    // Sync snapshot data to Alpine
+                    if (snapshot.selectedMonth) data.selectedMonth = snapshot.selectedMonth;
+                    if (snapshot.selectedDate) data.selectedDate = snapshot.selectedDate;
+                    if (snapshot.indicators) data.indicators = snapshot.indicators;
+                    if (snapshot.matrixData) data.matrixData = snapshot.matrixData;
+                    if (snapshot.daysInMonth) data.daysInMonth = snapshot.daysInMonth;
+                    if (snapshot.daysWithData) data.daysWithData = snapshot.daysWithData;
+                    if (snapshot.categoryColors) data.categoryColors = snapshot.categoryColors;
+                    if (snapshot.monitoringTemplates) data.monitoringData = snapshot.monitoringTemplates;
+
+                    data.monitoringMonth = data.selectedMonth;
+                    data.currentDate = new Date(`${data.selectedMonth}-01`);
+
+                    // Mark as synced
+                    if (window.Alpine && Alpine.store('matrixSnapshot')) {
+                        Alpine.store('matrixSnapshot').synced = true;
+                    }
+
+                    console.log('📦 [matrixSnapshotUpdated] Data synced:', {
+                        selectedMonth: data.selectedMonth,
+                        selectedDate: data.selectedDate,
+                        indicatorsCount: data.indicators?.length ?? 0,
+                    });
+                };
+                attemptSync();
             } catch (error) {
                 console.error('📦 [matrixSnapshotUpdated] Error syncing snapshot:', error);
             }
         });
 
         Livewire.on('updateUrl', (urlPayload) => {
+            if (monthTimings.navigationStartTime) {
+                monthTimings.recordEvent('updateUrlEvent', {
+                    hasUrl: !!urlPayload
+                });
+            }
+
             console.log('🔗 [updateUrl event] Event received');
             console.log('🔗 [updateUrl event] URL to set:', urlPayload);
             
@@ -178,15 +223,13 @@
 
                     console.log('🔗 [updateUrl] Updating browser URL to:', urlString);
                     
-                    // Extract query params from the URL (could be from /livewire/update endpoint)
+                    // Extract query params from the URL
                     let urlParams = new URLSearchParams();
                     
-                    // Try to parse as full URL, otherwise as query string
                     try {
                         const parsedUrl = new URL(urlString);
                         urlParams = new URLSearchParams(parsedUrl.search);
                     } catch (e) {
-                        // If it fails, try treating it as a query string
                         if (urlString.includes('?')) {
                             urlParams = new URLSearchParams(urlString.split('?')[1]);
                         } else {
@@ -211,36 +254,10 @@
                     window.history.replaceState({}, '', pageUrl);
                     console.log('🔗 [updateUrl] History state updated');
                     
-                    const mainEl = document.querySelector('[x-data*="selectedDate"]');
-                    console.log('🔗 [updateUrl] Found mainEl:', !!mainEl);
+                    // Alpine will naturally update from Blade's re-rendered x-data
+                    // No manual sync needed anymore - Blade has the new $selectedMonth value
+                    console.log('🔗 [updateUrl] Alpine will update automatically from Blade re-render');
                     
-                    if (mainEl && mainEl.__x) {
-                        const oldMonth = mainEl.__x.$data.selectedMonth;
-                        const oldDate = mainEl.__x.$data.selectedDate;
-                        
-                        console.log('🔗 [updateUrl] Old Alpine state:', { oldMonth, oldDate });
-                        
-                        // Update Alpine state from URL
-                        if (newMonth && mainEl.__x.$data.selectedMonth !== newMonth) {
-                            mainEl.__x.$data.selectedMonth = newMonth;
-                            console.log('🔗 [updateUrl] Updated selectedMonth to:', newMonth);
-                        }
-                        if (newDate && mainEl.__x.$data.selectedDate !== newDate) {
-                            mainEl.__x.$data.selectedDate = newDate;
-                            console.log('🔗 [updateUrl] Updated selectedDate to:', newDate);
-                        }
-                        
-                        console.log('🔗 [updateUrl] New Alpine state:', {
-                            selectedMonth: mainEl.__x.$data.selectedMonth,
-                            selectedDate: mainEl.__x.$data.selectedDate,
-                        });
-                        
-                        if (newMonth && oldMonth !== newMonth) {
-                            console.log('🔗 [updateUrl] Month changed, snapshot should arrive from Livewire');
-                        }
-                    } else {
-                        console.warn('🔗 [updateUrl] Could not find mainEl or __x data');
-                    }
                 } catch (error) {
                     console.error('🔗 [updateUrl] Error processing URL:', error);
                 }
@@ -250,6 +267,143 @@
         });
         console.log('🔗 [init] Livewire updateUrl listener registered');
     });
+
+    // Wait for Livewire to finish updating, then trigger Alpine sync if needed
+    document.addEventListener('livewire:updated', () => {
+        console.log('✅ [livewire:updated] Livewire finished updating, Alpine should be ready now');
+        if (monthTimings.navigationStartTime) {
+            monthTimings.recordEvent('livewireUpdated');
+        }
+    });
+
+    // ⏱️ Month Navigation Timing Tracker - GLOBAL
+    const monthTimings = {
+        navigationStartTime: null,
+        navigationId: null,
+        timings: {},
+
+        start(direction) {
+            const id = `nav-${direction}-${Date.now()}`;
+            this.navigationStartTime = performance.now();
+            this.navigationId = id;
+            this.timings = {
+                    id,
+                    direction,
+                    startTime: new Date().toISOString(),
+                    timestamps: {
+                        navigationStart: 0,
+                    }
+                };
+                console.log(`⏱️ [MONTH NAVIGATION START] ${direction.toUpperCase()}`);
+                console.log(`⏱️ [ID] ${id}`);
+            },
+
+            recordEvent(eventName, details = {}) {
+                if (!this.navigationStartTime) return;
+                
+                const elapsed = performance.now() - this.navigationStartTime;
+                this.timings.timestamps[eventName] = elapsed;
+                
+                console.log(`⏱️ [${eventName}] +${elapsed.toFixed(2)}ms (elapsed: ${this.formatTime(elapsed)})`);
+                if (details && Object.keys(details).length > 0) {
+                    console.log(`   └─ Details:`, details);
+                }
+            },
+
+            formatTime(ms) {
+                if (ms < 1000) return `${ms.toFixed(0)}ms`;
+                return `${(ms / 1000).toFixed(2)}s`;
+            },
+
+            end(renderComplete = false) {
+                if (!this.navigationStartTime) return;
+                
+                const totalTime = performance.now() - this.navigationStartTime;
+                
+                console.log(`⏱️ [MONTH NAVIGATION COMPLETE]`);
+                console.log(`⏱️ [TOTAL DURATION] ${this.formatTime(totalTime)}`);
+                console.log(`⏱️ [BREAKDOWN]`);
+                
+                const events = Object.entries(this.timings.timestamps);
+                for (let i = 0; i < events.length; i++) {
+                    const [eventName, time] = events[i];
+                    const nextTime = events[i + 1]?.[1] ?? totalTime;
+                    const duration = nextTime - time;
+                    console.log(`   ├─ ${eventName}: ${this.formatTime(time)} (${this.formatTime(duration)} duration)`);
+                }
+                
+                console.log(`⏱️ [FULL METRICS]`, {
+                    id: this.navigationId,
+                    direction: this.timings.direction,
+                    startTime: this.timings.startTime,
+                    totalDurationMs: totalTime,
+                    totalDurationFormatted: this.formatTime(totalTime),
+                    timestamps: this.timings.timestamps,
+                });
+                
+                this.navigationStartTime = null;
+                this.navigationId = null;
+            }
+        };
+
+    // Track month navigation start
+    document.addEventListener('livewire:call', ({ detail }) => {
+        if (detail.method === 'previousMonth' || detail.method === 'nextMonth') {
+            const direction = detail.method === 'previousMonth' ? 'prev' : 'next';
+            monthTimings.start(direction);
+            monthTimings.recordEvent('navigationStart', { method: detail.method });
+        }
+    });
+
+    // Track Livewire request sending
+    document.addEventListener('livewire:requesting', ({ detail }) => {
+        if (monthTimings.navigationStartTime) {
+            monthTimings.recordEvent('livewireRequesting', {
+                method: detail.method || detail.action || 'unknown'
+            });
+        }
+    });
+
+    // Track Livewire response received
+    document.addEventListener('livewire:response', ({ detail }) => {
+        if (monthTimings.navigationStartTime) {
+            monthTimings.recordEvent('livewireResponseReceived', {
+                responseTime: `${detail.duration || '?'}ms`,
+                success: !detail.error
+            });
+        }
+    });
+
+    // Track Livewire finished
+    document.addEventListener('livewire:finished', () => {
+        if (monthTimings.navigationStartTime) {
+            monthTimings.recordEvent('livewireFinished');
+        }
+    });
+
+    // Track Alpine DOM rendering completion
+    document.addEventListener('alpine:init', () => {
+        if (monthTimings.navigationStartTime) {
+            monthTimings.recordEvent('alpineInit');
+        }
+    });
+
+    // Listen for when Livewire indicates loading is complete
+    const observer = new MutationObserver(() => {
+        if (monthTimings.navigationStartTime) {
+            const loadingEl = document.querySelector('[wire\\:loading]');
+            if (loadingEl && !loadingEl.offsetParent) { // Hidden = loading complete
+                monthTimings.recordEvent('wireLoadingComplete');
+                monthTimings.end(true);
+                observer.disconnect();
+                observer.observe(document.body, { subtree: true, attributes: true });
+            }
+        }
+    });
+    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+    // Global helper for testing
+    window.monthTimings = monthTimings;
 </script>
 
 <style>

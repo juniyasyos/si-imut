@@ -95,7 +95,8 @@
     91 => 'App\\Providers\\Filament\\AdminPanelProvider',
     92 => 'App\\Providers\\LaporanImutServiceProvider',
     93 => 'App\\Providers\\UnitKerjaProvider',
-    94 => 'SocialiteProviders\\Manager\\ServiceProvider',
+    94 => 'App\\Providers\\PermissionCacheProvider',
+    95 => 'SocialiteProviders\\Manager\\ServiceProvider',
   ),
   'eager' => 
   array (
@@ -174,6 +175,7 @@
     72 => 'App\\Providers\\Filament\\AdminPanelProvider',
     73 => 'App\\Providers\\LaporanImutServiceProvider',
     74 => 'App\\Providers\\UnitKerjaProvider',
+    75 => 'App\\Providers\\PermissionCacheProvider',
   ),
   'deferred' => 
   array (

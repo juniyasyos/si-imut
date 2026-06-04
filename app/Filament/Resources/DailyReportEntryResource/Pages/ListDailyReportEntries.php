@@ -35,19 +35,19 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         parent::boot();
     }
 
-    public function mount(): void   
+    public function mount(): void
     {
         $this->bootBase();
         // If URL contains `selectedDate` and/or `selectedMonth` query parameters, initialize page state from them
         $reqDate = request()->query('selectedDate');
         $reqMonth = request()->query('selectedMonth');
-        
+
         \Illuminate\Support\Facades\Log::info('ListDailyReportEntries mount', [
             'reqDate' => $reqDate,
             'reqMonth' => $reqMonth,
             'url' => request()->url(),
         ]);
-        
+
         if ($reqMonth) {
             try {
                 $validMonth = Carbon::createFromFormat('Y-m', $reqMonth)->format('Y-m');
@@ -58,7 +58,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 \Illuminate\Support\Facades\Log::warning('Mount: invalid month format', ['reqMonth' => $reqMonth]);
             }
         }
-        
+
         if ($reqDate) {
             try {
                 $validDate = Carbon::createFromFormat('Y-m-d', $reqDate)->format('Y-m-d');
@@ -70,14 +70,14 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 \Illuminate\Support\Facades\Log::warning('Mount: invalid date format', ['reqDate' => $reqDate]);
             }
         }
-        
+
         // Ensure selectedDate always has a value (default: today)
         if (!$this->selectedDate) {
             $this->selectedDate = now()->format('Y-m-d');
             $this->selectedMonth = now()->format('Y-m');
             \Illuminate\Support\Facades\Log::info('Mount: set defaults', ['selectedDate' => $this->selectedDate, 'selectedMonth' => $this->selectedMonth]);
         }
-        
+
         \Illuminate\Support\Facades\Log::info('Mount final state', [
             'selectedDate' => $this->selectedDate,
             'selectedMonth' => $this->selectedMonth,
@@ -88,7 +88,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         if (in_array($requestedView, ['input', 'monitoring'])) {
             $this->currentView = $requestedView;
         }
-        
+
         \Illuminate\Support\Facades\Log::info('📋 [Page Init] View and period loaded', [
             'view' => $this->currentView,
             'month' => $this->selectedMonth,
@@ -287,7 +287,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $this->selectedMonth
         );
         $this->monitoringTemplatesLoadedForMonth = $this->selectedMonth;
-        
+
         \Log::info('📊 [Monitoring] Templates loaded', [
             'month' => $this->selectedMonth,
             'count' => count($this->monitoringTemplates),
@@ -342,7 +342,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $date = Carbon::createFromFormat('Y-m', $month);
             $oldMonth = $this->selectedMonth;
             $this->selectedMonth = $month;
-            
+
             \Log::info('📅 [Monitoring] Month changed', [
                 'from' => $oldMonth,
                 'to' => $month,
@@ -356,7 +356,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 'view' => $this->currentView,
                 'loadMonitoring' => $this->currentView === 'monitoring',
             ]);
-            
+
             if ($this->currentView === 'monitoring') {
                 // Reload monitoring templates only when the monitoring tab is visible
                 $this->loadMonitoringTemplates();
@@ -446,13 +446,13 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $repo = app(\App\Repositories\Interfaces\DailyReportResponseRepositoryInterface::class);
             $record = $repo->findById($recordId);
 
-            if (! $record) {
+            if (!$record) {
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
             }
 
             // Delete the record via repository
             $deleted = $repo->deleteById($recordId);
-            if (! $deleted) {
+            if (!$deleted) {
                 throw new \Exception('Gagal menghapus laporan');
             }
 
@@ -496,4 +496,3 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     }
 
 }
-    

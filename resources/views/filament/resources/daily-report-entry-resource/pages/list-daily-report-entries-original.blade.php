@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     <div x-data="{
-            selectedDate: '{{ request()->query('selectedDate') ? request()->query('selectedDate') : now()->format('Y-m-d') }}',
-            selectedMonth: '{{ request()->query('selectedMonth') ? request()->query('selectedMonth') : now()->format('Y-m') }}',
+            selectedDate: '{{ $selectedDate ?: now()->format('Y-m-d') }}',
+            selectedMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
             currentDate: new Date('{{ ($selectedMonth ?: now()->format('Y-m')) }}-01'),
             isMobile: false,
             searchQuery: '',
@@ -356,27 +356,185 @@
                         @endfor
                     </div>
 
-                    <div wire:loading.remove
+                    <div wire:loading.remove 
                         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
 
-                        <!-- Indicators List -->
-                        <div class="space-y-4 max-h-[600px] overflow-y-auto">
-                            <!-- Desktop View -->
-                            <div class="hidden lg:block">
-                                <template x-for="indicator in filteredIndicators" :key="indicator.id">
-                                    @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.desktop-indicator-card')
-                                </template>
-                            </div>
+                        <!-- Indicators List - Lazy Loading Optimization -->
+                        <div class="space-y-4 max-h-[600px] overflow-y-auto" x-data="{
+                                 reportCounts: {},
+                                 reportCountsLoading: {},
+                                 refreshing: {},
+                                 reportCountDate: {},
+                                 batchSize: 5,
+                                 loadingTriggered: false,
 
-                            <!-- Mobile View -->
-                            <div class="block lg:hidden space-y-4">
-                                <template x-for="indicator in filteredIndicators" :key="indicator.id">
-                                    @include('filament.resources.daily-report-entry-resource.pages.partials.components.mobile.mobile-indicator-card')
-                                </template>
-                            </div>
+                                 async refreshStatus(indicatorId) {
+                                     if (this.refreshing[indicatorId]) return;
+                                     this.refreshing[indicatorId] = true;
+                                     try {
+                                         await $wire.call('refreshMatrixData');
+                                         await this.loadReportCount(indicatorId);
+                                         setTimeout(() => this.refreshing[indicatorId] = false, 300);
+                                     } catch (error) {
+                                         console.error('Error refreshing status:', error);
+                                         this.refreshing[indicatorId] = false;
+                                     }
+                                 },
+
+                                 async loadReportCount(indicatorId) {
+                                     if (!indicatorId || !selectedDate) {
+                                         this.reportCounts[indicatorId] = 0;
+                                         this.reportCountDate[indicatorId] = null;
+                                         return;
+                                     }
+
+                                     const currentDate = selectedDate;
+                                     this.reportCountsLoading[indicatorId] = true;
+
+                                     try {
+                                         const count = await $wire.call('getReportCountForIndicatorDate', indicatorId, currentDate);
+                                         this.reportCounts[indicatorId] = Number(count || 0);
+                                         this.reportCountDate[indicatorId] = currentDate;
+                                     } catch (error) {
+                                         console.error('Error loading report count:', error);
+                                         this.reportCounts[indicatorId] = 0;
+                                     } finally {
+                                         this.reportCountsLoading[indicatorId] = false;
+                                     }
+                                 },
+
+                                 async loadReportCountsBatch(indicatorIds) {
+                                     if (!indicatorIds || indicatorIds.length === 0) return;
+                                     
+                                     // Load in batches of 5 to avoid browser throttling
+                                     for (let i = 0; i < indicatorIds.length; i += this.batchSize) {
+                                         const batch = indicatorIds.slice(i, i + this.batchSize);
+                                         
+                                         // Load batch in parallel
+                                         await Promise.all(
+                                             batch.map(id => this.loadReportCount(id))
+                                         );
+                                         
+                                         // Small delay before next batch (prevents UI freeze)
+                                         if (i + this.batchSize < indicatorIds.length) {
+                                             await new Promise(resolve => setTimeout(resolve, 50));
+                                         }
+                                     }
+                                 },
+
+                                 getCategoryColor(category) {
+                                     return categoryColors[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                                 },
+
+                                 formatImutVersion(version) {
+                                     if (!version) return '';
+                                     return version.replace('/version-', 'v');
+                                 }
+                             }" @load-indicators.window="
+                                 if (filteredIndicators.length > 0 && !loadingTriggered) {
+                                     loadingTriggered = true;
+                                     const ids = filteredIndicators.map(ind => ind.id);
+                                     loadReportCountsBatch(ids);
+                                 }
+                             ">
+
+                            <template x-for="(indicator, index) in filteredIndicators" :key="indicator.id">
+                                <div
+                                    class="indicator-card mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                                >
+                                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                        {{-- Indicator Info --}}
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div class="min-w-0 flex-1">
+                                                    <div>
+                                                        <h3
+                                                            class="text-sm font-semibold leading-snug text-slate-900 dark:text-white"
+                                                            x-text="indicator.title"
+                                                        ></h3>
+
+                                                        <div class="flex items-center gap-2 mt-1">
+                                                                <span
+                                                                    class="text-xs italic text-gray-500 dark:text-gray-400">profile
+                                                                    version:</span>
+                                                                <span
+                                                                    class="inline-flex items-center gap-1 text-xs italic text-gray-500 dark:text-gray-400">
+                                                                    @svg("heroicon-m-document-text", "w-3 h-3")
+                                                                    <span
+                                                                        x-text="formatImutVersion(indicator.imut_profile_version)"></span>
+                                                                </span>
+                                                            </div>
+                                                    </div>
+
+                                                    {{-- Meta --}}
+                                                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                                                        {{-- Category --}}
+                                                        <span
+                                                            x-show="indicator.category"
+                                                            class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                                                            :class="getCategoryColor(indicator.category)"
+                                                        >
+                                                            @svg("heroicon-m-tag", "h-3 w-3 hidden sm:block")
+                                                            <span x-text="indicator.category"></span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Report Count --}}
+                                            <div class="mt-2">
+                                                {{-- Skeleton Loading --}}
+                                                <span
+                                                    x-show="!reportCounts[indicator.id] && reportCountsLoading[indicator.id]"
+                                                    class="inline-flex animate-pulse items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-300"
+                                                >
+                                                    @svg("heroicon-m-document-text", "h-3 w-3 hidden sm:block")
+                                                    <span>Memuat...</span>
+                                                </span>
+
+                                                {{-- Empty State --}}
+                                                <span
+                                                    x-show="!reportCounts[indicator.id] && !reportCountsLoading[indicator.id]"
+                                                    class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-300"
+                                                >
+                                                    @svg("heroicon-m-document-text", "h-3 w-3 hidden sm:block")
+                                                    <span>0 laporan</span>
+                                                </span>
+
+                                                {{-- Actual Count --}}
+                                                <span
+                                                    x-show="reportCounts[indicator.id]"
+                                                    :class="reportCounts[indicator.id] > 0
+                                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                                        : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'"
+                                                    class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium"
+                                                >
+                                                    @svg("heroicon-m-document-text", "h-3 w-3 hidden sm:block")
+                                                    <span x-text="reportCounts[indicator.id] + ' laporan'"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {{-- Action Button --}}
+                                        <div class="flex shrink-0 gap-2 lg:justify-end">
+                                            @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.action-buttons')
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
 
                             @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.indicators-empty-state')
+
+                            <!-- Trigger batch loading after DOM settles -->
+                            <script>
+                                setTimeout(() => {
+                                    const container = document.querySelector('[x-data*="reportCounts"]');
+                                    if (container && container.__x) {
+                                        container.__x.$dispatch('load-indicators');
+                                    }
+                                }, 200);
+                            </script>
                         </div>
                     </div>
                 </div>

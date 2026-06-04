@@ -1,10 +1,10 @@
-# Daily Report Services Optimization: Complete Guide (Phases 1-4)
+# Daily Report Services Optimization: Complete Guide (Phases 1-6)
 
 ## Quick Reference
 
 ### Executive Summary
 
-Four-phase optimization addressing redundancy at all levels of Daily Report services:
+Five-phase optimization addressing redundancy and performance bottlenecks at all levels:
 
 | Phase | Focus | Problem | Solution | Improvement |
 |-------|-------|---------|----------|------------|
@@ -12,42 +12,39 @@ Four-phase optimization addressing redundancy at all levels of Daily Report serv
 | **2** | Template Loading | Inconsistent template eager loading | FormTemplateLoadingService + standardization | -60% template queries |
 | **3** | Scoring | Double-iteration of scoreField() | Single-pass scoring with pre-calculated values | -50% operations |
 | **4** | Service Orchestration | Redundant template loads between services | Unified DailyReportService | -50% template loads |
+| **5** | Large Datasets | Expensive Cache::remember() serialization | Request-scoped static array caching | -98% for 700+ records |
+| **6** | Permission Cache | 6+ second page load on cache clear | Permission cache warming | -99.5% boot time |
 
 ### Total Results
 
 ```
-Baseline          Phase 1       Phase 2       Phase 3       Phase 4
-─────────────────────────────────────────────────────────────────
-11 queries        6 queries     3 queries     3 queries     3 queries
-                  (-45%)        (-73%)        (-73%)        (-73%)
+Baseline          Phase 1       Phase 2       Phase 3       Phase 4       Phase 5 (Large)
+────────────────────────────────────────────────────────────────────────────────────────
+11 queries        6 queries     3 queries     3 queries     3 queries     3 queries
+                  (-45%)        (-73%)        (-73%)        (-73%)        (-73%)
 
-26.46ms           17.50ms       11.10ms       ~11ms         ~10ms
-                  (-34%)        (-58%)        (-58%)        (-62%)
+26.46ms           17.50ms       11.10ms       ~11ms         ~10ms         51ms (single)
+                  (-34%)        (-58%)        (-58%)        (-62%)        (~6sec → 105ms total)
 
-60 scoreField()   60 calls      60 calls      30 calls      30 calls
-calls/30 fields                                (-50%)        (-50%)
+60 scoreField()   60 calls      60 calls      30 calls      30 calls      30 calls
+calls/30 fields                                (-50%)        (-50%)        (-50%)
 
-2 service calls                                              1 call
-                                                            (-50%)
+2 service calls                                              1 call        1 call
+                                                            (-50%)        (-50%)
 ```
+
+**Phase 5 Performance**: User with 51 indicators + 761 reports/month:
+- Single month: 158.67ms → 51.04ms (-68%)
+- 3 months: ~6000ms → ~105ms (-98%, **57x faster**) 🚀
 
 ---
 
-## Phase 1: User Context Service
+## Files Modified
 
-### 🎯 Problem
-- `getUserUnitKerjaIds()` implemented **4 times** with inconsistent caching
-- 7 redundant unit_kerja queries per request cycle
+- `app/Services/DailyReport/MatrixDataService.php` - Added request-scoped caching
+- `docs/ai-agents/PHASE_5_LARGE_DATASET_CACHING.md` - Phase 5 documentation
 
-### ✅ Solution
-**Service:** `app/Services/UserContextService.php`
-
-Central request-scoped caching for user unit_kerja IDs:
-
-```php
-// Single source of truth
-UserContextService::getUserUnitKerjaIds()      // Auth user's unit_kerja IDs
-UserContextService::getUserUnitKerjaIdsForUserId(int $userId)  // Specific user
+---
 ```
 
 ### 📊 Results
