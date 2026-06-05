@@ -2,73 +2,72 @@
 
 namespace App\Observers;
 
-use App\Jobs\CalculateLaporanFromDailyReports;
 use App\Models\FieldResponse;
-use App\Models\LaporanImut;
+use App\Services\Reporting\DailyReportAggregationService;
 use Illuminate\Support\Facades\Log;
 
 class FieldResponseObserver
 {
+    public function __construct(
+        protected DailyReportAggregationService $aggregationService
+    ) {}
+
     /**
      * Handle the FieldResponse "created" event.
+     * 
+     * ✨ OPTIMIZED: Direct sync calculation instead of async job dispatch
+     * 
+     * With direct FieldResponse.imut_penilaian_id FK relationship:
+     * 1. Access ImutPenilaian directly from FieldResponse
+     * 2. Calculate numerator/denominator for that ImutPenilaian immediately
+     * 3. Update ImutPenilaian sync (no queue delay)
+     * 
+     * Benefits:
+     * - Faster: sync instead of queue delay
+     * - Efficient: only recalc affected ImutPenilaian (not whole LaporanImut)
+     * - Simpler: direct DB update instead of job dispatch
      */
     public function created(FieldResponse $fieldResponse): void
     {
-        // Ensure related daily report is loaded
-        $fieldResponse->loadMissing('dailyReportResponse');
-
-        $report = $fieldResponse->dailyReportResponse;
-
-        if (! $report) {
-            Log::debug("FieldResponse created but no DailyReportResponse found (field_response_id={$fieldResponse->id})");
+        // Load the related ImutPenilaian with its relationships
+        $fieldResponse->loadMissing(['imutPenilaian', 'imutPenilaian.laporanUnitKerja.laporanImut']);
+        
+        $imutPenilaian = $fieldResponse->imutPenilaian;
+        
+        if (!$imutPenilaian) {
+            Log::debug("FieldResponse created but no ImutPenilaian found (field_response_id={$fieldResponse->id})");
             return;
         }
 
-        $reportDate = $report->report_date;
-        $unitKerjaId = $report->unit_kerja_id;
-        $formTemplateId = $report->form_template_id;
-
-        // Cari LaporanImut yang rentang perubahannya mencakup tanggal laporan
-        // dan memiliki unit kerja + profil/form template yang relevan.
-        // Hanya proses laporan yang masih aktif (STATUS_PROCESS) untuk menghindari
-        // perhitungan otomatis menimpa data lama saat migrasi database.
-        $laporans = LaporanImut::query()
-            ->where('status', LaporanImut::STATUS_PROCESS)
-            ->where('assessment_period_start', '<=', $reportDate)
-            ->where('assessment_period_end', '>=', $reportDate)
-            ->whereHas('laporanUnitKerjas', function ($q) use ($unitKerjaId, $formTemplateId) {
-                $q->where('unit_kerja_id', $unitKerjaId)
-                    ->whereHas('imutPenilaians', function ($q2) use ($formTemplateId) {
-                        $q2->whereHas('profile', function ($q3) use ($formTemplateId) {
-                            $q3->whereHas('formTemplates', function ($q4) use ($formTemplateId) {
-                                $q4->where('id', $formTemplateId);
-                            });
-                        });
-                    });
-            })
-            ->get();
-
-        // Fallback: jika tidak ditemukan berdasarkan formTemplate, berarti
-        // perhitungan mungkin masih relevan untuk laporan yang mencakup unit + tanggal.
-        // Tetap filter hanya laporan aktif (STATUS_PROCESS) agar data lama tidak tertimpa.
-        if ($laporans->isEmpty()) {
-            $laporans = LaporanImut::query()
-                ->where('status', LaporanImut::STATUS_PROCESS)
-                ->where('assessment_period_start', '<=', $reportDate)
-                ->where('assessment_period_end', '>=', $reportDate)
-                ->whereHas('laporanUnitKerjas', fn($q) => $q->where('unit_kerja_id', $unitKerjaId))
-                ->get();
-        }
-
-        if ($laporans->isEmpty()) {
-            Log::debug("No LaporanImut found to recalculate for DailyReportResponse {$report->id} (date={$reportDate}, unit={$unitKerjaId})");
+        $laporanImut = $imutPenilaian->laporanUnitKerja?->laporanImut;
+        
+        if (!$laporanImut) {
+            Log::debug("FieldResponse has ImutPenilaian but no LaporanImut found (imut_penilaian_id={$imutPenilaian->id})");
             return;
         }
 
-        foreach ($laporans as $laporan) {
-            // Dispatch job yang sudah menggunakan queue (ShouldQueue)
-            CalculateLaporanFromDailyReports::dispatch($laporan->id);
-            Log::info("Dispatched CalculateLaporanFromDailyReports for laporan_id={$laporan->id} due to FieldResponse {$fieldResponse->id}");
+        try {
+            // Direct calculation for this ImutPenilaian (sync, not async)
+            $calculation = $this->aggregationService->calculateForPenilaian($imutPenilaian);
+            
+            // Update ImutPenilaian with new values immediately
+            $imutPenilaian->update([
+                'numerator_value' => $calculation['numerator'],
+                'denominator_value' => $calculation['denominator'],
+                'calculation_details' => $calculation['calculation_metadata'],
+            ]);
+            
+            Log::info("Updated ImutPenilaian {$imutPenilaian->id} directly from FieldResponse {$fieldResponse->id}", [
+                'numerator' => $calculation['numerator'],
+                'denominator' => $calculation['denominator'],
+                'percentage' => $calculation['percentage'],
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to recalculate ImutPenilaian {$imutPenilaian->id} on FieldResponse creation", [
+                'error' => $e->getMessage(),
+                'field_response_id' => $fieldResponse->id,
+            ]);
         }
     }
 }
+

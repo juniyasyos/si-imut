@@ -14,7 +14,7 @@
                 Belum ada indikator mutu yang dikonfigurasi untuk unit kerja Anda.
             </p>
             <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm" x-show="searchQuery || statusFilter !== 'all'">
-                Coba ubah filter atau kata kunci pencarian.
+                Coba hubungi admin untuk memastikan indikator yang Anda cari sudah dikonfigurasi, atau periksa kembali kata kunci dan filter yang digunakan.
             </p>
         </div>
     </div>

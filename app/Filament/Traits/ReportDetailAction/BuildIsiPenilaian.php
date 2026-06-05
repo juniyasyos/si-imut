@@ -123,16 +123,18 @@ trait BuildIsiPenilaian
             return [
                 TextInput::make('numerator_value')
                     ->label('Numerator')
-                    ->numeric()
-                    ->placeholder('0.00')
+                    ->integer()
+                    ->inputMode('numeric')
+                    ->placeholder('0')
                     ->nullable()
                     ->debounce(1000)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
 
                 TextInput::make('denominator_value')
                     ->label('Denominator')
-                    ->numeric()
-                    ->placeholder('0.00')
+                    ->integer()
+                    ->inputMode('numeric')
+                    ->placeholder('0')
                     ->nullable()
                     ->debounce(1000)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $this->updateResultForAction($set, $get)),
@@ -367,10 +369,10 @@ trait BuildIsiPenilaian
         $recommendations = $record->recommendations ?? '';
 
         $fill = [
-            'numerator_value'   => $numerator,
+            'numerator_value' => $numerator,
             'denominator_value' => $denominator,
-            'analysis'          => $analysis,
-            'recommendations'   => $recommendations,
+            'analysis' => $analysis,
+            'recommendations' => $recommendations,
         ];
 
         if ($includeMedia && $penilaian) {
@@ -388,17 +390,17 @@ trait BuildIsiPenilaian
     {
         $penilaian = ImutPenilaian::find($record->id);
 
-        if (! $penilaian) {
+        if (!$penilaian) {
             return;
         }
 
         $selected_collection = $this->getOrCreateLaporanImutFolder($penilaian);
 
         $update = [
-            'numerator_value'   => $data['numerator_value'] ?? null,
+            'numerator_value' => $data['numerator_value'] ?? null,
             'denominator_value' => $data['denominator_value'] ?? null,
-            'analysis'          => $data['analysis'] ?? null,
-            'recommendations'   => $data['recommendations'] ?? null,
+            'analysis' => $data['analysis'] ?? null,
+            'recommendations' => $data['recommendations'] ?? null,
             'selected_collection' => $selected_collection,
         ];
         if ($record->profile->imutData->is_monthly) {
@@ -409,10 +411,10 @@ trait BuildIsiPenilaian
             ];
         } else {
             $update = [
-                'numerator_value'   => $data['numerator_value'] ?? null,
+                'numerator_value' => $data['numerator_value'] ?? null,
                 'denominator_value' => $data['denominator_value'] ?? null,
-                'analysis'          => $data['analysis'] ?? null,
-                'recommendations'   => $data['recommendations'] ?? null,
+                'analysis' => $data['analysis'] ?? null,
+                'recommendations' => $data['recommendations'] ?? null,
                 'selected_collection' => $selected_collection,
             ];
         }

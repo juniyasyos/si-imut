@@ -156,4 +156,9 @@ class ImutPenilaian extends Model implements HasMedia
     {
         return $this->hasOne(ImutProfile::class)->where('id', $profileId);
     }
+
+    public function fieldResponses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(FieldResponse::class, 'imut_penilaian_id');
+    }
 }

@@ -15,7 +15,7 @@ abstract class BaseDailyReportMonitoring extends Page
     use NavigationTrait;
     use ReportManagementTrait;
 
-    protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries-original';
+    protected static string $view = 'filament.resources.daily-report-entry-resource.pages.list-daily-report-entries';
 
     protected MatrixDataService $matrixService;
     protected SlideOverService $slideOverService;
@@ -42,6 +42,10 @@ abstract class BaseDailyReportMonitoring extends Page
     // Category info pulled from database – used by the frontend to render
     public array $imutCategories = [];
     public array $categoryColors = [];
+
+    // Filter properties for indicators list
+    public string $searchQuery = '';
+    public string $statusFilter = 'all';
 
     // Loading states
     public bool $loadingMatrix = false;

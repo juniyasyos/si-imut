@@ -5,6 +5,7 @@ namespace App\Services\DailyReport;
 use App\Models\DailyReportResponse;
 use App\Models\FieldResponse;
 use App\Models\EnhancedFormField;
+use App\Models\ImutPenilaian;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
 
 /**
@@ -35,9 +36,12 @@ class FieldResponseBuilderService
         $fieldValue = $formData[$field->field_key] ?? null;
         $normalizedValue = $this->normalizeFieldValue($field, $fieldValue, $formData);
 
+        $imutPenilaian = $this->findImutPenilaian($dailyReport);
+
         return FieldResponse::create([
             'daily_report_response_id' => $dailyReport->id,
             'form_field_id' => $field->id,
+            'imut_penilaian_id' => $imutPenilaian?->id,
             'field_value' => $normalizedValue,
             'compliance_score' => $preCalculatedScore,
         ]);
@@ -58,12 +62,43 @@ class FieldResponseBuilderService
 
         $normalizedValue = $this->normalizeFieldValue($field, $fieldValue, $formData);
 
+        $imutPenilaian = $this->findImutPenilaian($dailyReport);
+
         return FieldResponse::create([
             'daily_report_response_id' => $dailyReport->id,
             'form_field_id' => $field->id,
+            'imut_penilaian_id' => $imutPenilaian?->id,
             'field_value' => $normalizedValue,
             'compliance_score' => $complianceScore,
         ]);
+    }
+
+    /**
+     * Find ImutPenilaian for a given DailyReportResponse
+     * Traces: FormTemplate → ImutProfil → ImutPenilaian (matching unit & period)
+     */
+    private function findImutPenilaian(DailyReportResponse $dailyReport): ?ImutPenilaian
+    {
+        // Get FormTemplate to find ImutProfile relationship
+        $formTemplate = $dailyReport->formTemplate;
+        if (!$formTemplate || !$formTemplate->imut_profile_id) {
+            return null;
+        }
+
+        // Find ImutPenilaian matching:
+        // - imut_profil_id from FormTemplate
+        // - unit_kerja_id from LaporanUnitKerja matches DailyReportResponse
+        // - report_date within assessment period of LaporanImut
+        return ImutPenilaian::query()
+            ->where('imut_profil_id', $formTemplate->imut_profile_id)
+            ->whereHas('laporanUnitKerja', function ($q) use ($dailyReport) {
+                $q->where('unit_kerja_id', $dailyReport->unit_kerja_id);
+            })
+            ->whereHas('laporanUnitKerja.laporanImut', function ($q) use ($dailyReport) {
+                $q->where('assessment_period_start', '<=', $dailyReport->report_date)
+                  ->where('assessment_period_end', '>=', $dailyReport->report_date);
+            })
+            ->first();
     }
 
     /**

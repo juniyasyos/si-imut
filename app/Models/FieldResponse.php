@@ -13,6 +13,7 @@ class FieldResponse extends Model
     protected $fillable = [
         'daily_report_response_id',
         'form_field_id',
+        'imut_penilaian_id',
         'field_value',
         'compliance_score',
         'is_valid',
@@ -32,5 +33,10 @@ class FieldResponse extends Model
     public function formField(): BelongsTo
     {
         return $this->belongsTo(EnhancedFormField::class, 'form_field_id');
+    }
+
+    public function imutPenilaian(): BelongsTo
+    {
+        return $this->belongsTo(ImutPenilaian::class);
     }
 }

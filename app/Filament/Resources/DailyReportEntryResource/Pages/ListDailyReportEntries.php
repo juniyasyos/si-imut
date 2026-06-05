@@ -25,6 +25,12 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
     private DailyReportMonitoringService $monitoringService;
 
+    // ========================================
+    // PUBLIC PROPERTIES: Report Counts & Filtering
+    // ========================================
+    public array $reportCounts = [];
+    public array $filteredIndicators = [];
+
     public function __construct()
     {
         $this->monitoringService = app(DailyReportMonitoringService::class);
@@ -106,6 +112,11 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         ]);
 
         $this->loadMatrixData();
+
+        $this->loadAllReportCounts();
+
+        // Compute filtered indicators for display
+        $this->computeFilteredIndicators();
 
         \Log::info('📦 [DailyReport] Matrix data loaded', [
             'source' => 'mount',
@@ -438,6 +449,89 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     public function getReportCountForIndicatorDate(int $indicatorId, string $date): int
     {
         return $this->monitoringService->getReportCountForIndicatorDate($indicatorId, $date);
+    }
+
+    /**
+     * Get filtered indicators based on search query and status filter
+     * Server-side filtering to improve performance
+     * Updated whenever searchQuery or statusFilter changes
+     */
+    public function computeFilteredIndicators(): void
+    {
+        $filtered = collect($this->indicators);
+
+        // Filter by search query (title or category)
+        if ($this->searchQuery) {
+            $query = strtolower($this->searchQuery);
+            $filtered = $filtered->filter(function ($indicator) use ($query) {
+                $titleMatch = str_contains(strtolower($indicator['title']), $query);
+                $categoryMatch = isset($indicator['category']) && str_contains(strtolower($indicator['category']), $query);
+                return $titleMatch || $categoryMatch;
+            });
+        }
+
+        // Filter by status
+        if ($this->statusFilter && $this->statusFilter !== 'all') {
+            $date = new \DateTime($this->selectedDate);
+            $day = (int) $date->format('d');
+
+            $filtered = $filtered->filter(function ($indicator) use ($day) {
+                $cellData = $this->matrixData[$indicator['id']][$day] ?? null;
+                $state = $cellData ? $cellData['cell_state'] : 'disabled';
+                return $state === $this->statusFilter;
+            });
+        }
+
+        $this->filteredIndicators = $filtered->toArray();
+    }
+
+    /**
+     * Update filtered indicators when search query changes
+     * Livewire automatically calls this when searchQuery property updates
+     */
+    public function updatedSearchQuery(): void
+    {
+        $this->computeFilteredIndicators();
+    }
+
+    /**
+     * Update filtered indicators when status filter changes
+     * Livewire automatically calls this when statusFilter property updates
+     */
+    public function updatedStatusFilter(): void
+    {
+        $this->computeFilteredIndicators();
+    }
+
+    /**
+     * Load report counts for all indicators on the selected date
+     * Server-side batch operation to eliminate client-side flickering
+     * Called automatically when selectedDate changes
+     */
+    public function loadAllReportCounts(): void
+    {
+        if (!$this->selectedDate || !$this->indicators) {
+            $this->reportCounts = [];
+            return;
+        }
+
+        $this->reportCounts = [];
+
+        foreach ($this->indicators as $indicator) {
+            $this->reportCounts[$indicator['id']] = $this->monitoringService->getReportCountForIndicatorDate(
+                $indicator['id'],
+                $this->selectedDate
+            );
+        }
+
+        if (config('app.debug')) {
+            \Log::info('📊 [reportCounts] Loaded for date', [
+                'date' => $this->selectedDate,
+                'indicators_count' => count($this->indicators),
+                'counts_loaded' => count($this->reportCounts),
+                'timestamp' => now()->format('Y-m-d H:i:s')
+            ]);
+        }
     }
 
     public function deleteReport($recordId): void

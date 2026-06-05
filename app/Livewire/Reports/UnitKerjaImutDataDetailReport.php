@@ -121,7 +121,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
             }
 
             // If server-side mount did not run, dispatch client-side fallback
-            if (! $mounted) {
+            if (!$mounted) {
                 $this->dispatchBrowserEvent('open-table-action', ['action' => $action, 'recordId' => (int) $recordId]);
 
                 // keep URL intact so user/dev can retry — do not remove query params here
@@ -166,6 +166,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
     public function table(Table $table): Table
     {
         return $table
+            ->poll('10s')
             ->query($this->getTableQuery())
             ->columns($this->getTableColumnsArray())
             ->filters($this->getTableFiltersArray())
@@ -178,7 +179,7 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
     protected function getTableQuery()
     {
         $reportService = app(ImutReportService::class);
-            return fn() => $reportService->getUnitKerjaDetailData($this->laporanId, $this->unitKerjaId);
+        return fn() => $reportService->getUnitKerjaDetailData($this->laporanId, $this->unitKerjaId);
     }
 
     /**
@@ -221,8 +222,8 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->tooltip(
                     fn($record) =>
                     $record->is_monthly
-                        ? 'Pengisian dilakukan 1 kali setiap bulan'
-                        : 'Pengisian dilakukan setiap hari'
+                    ? 'Pengisian dilakukan 1 kali setiap bulan'
+                    : 'Pengisian dilakukan setiap hari'
                 )
                 ->alignCenter()
                 ->sortable(),
@@ -231,22 +232,22 @@ class UnitKerjaImutDataDetailReport extends Component implements HasForms, HasTa
                 ->label('N')
                 ->alignCenter()
                 ->toggleable()
-                ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                ->formatStateUsing(fn($state) => (int) $state)
                 ->summarize(
                     Summarizer::make()
                         ->label('Total N')
-                        ->using(fn(Builder $query) => number_format($query->sum('numerator_value'), 2))
+                        ->using(fn(Builder $query) => (int) $query->sum('numerator_value'))
                 ),
 
             TextColumn::make('denominator_value')
                 ->label('D')
                 ->alignCenter()
                 ->toggleable()
-                ->formatStateUsing(fn($state) => Number::format($state, 2, locale: app()->getLocale()))
+                ->formatStateUsing(fn($state) => (int) $state)
                 ->summarize(
                     Summarizer::make()
                         ->label('Total D')
-                        ->using(fn(Builder $query) => number_format($query->sum('denominator_value'), 2))
+                        ->using(fn(Builder $query) => (int) $query->sum('denominator_value'))
                 ),
 
             TextColumn::make('percentage')
