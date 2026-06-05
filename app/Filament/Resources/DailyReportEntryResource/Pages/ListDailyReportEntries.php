@@ -478,7 +478,15 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $filtered = $filtered->filter(function ($indicator) use ($day) {
                 $cellData = $this->matrixData[$indicator['id']][$day] ?? null;
                 $state = $cellData ? $cellData['cell_state'] : 'disabled';
-                return $state === $this->statusFilter;
+                
+                // 'pending' = belum diisi (no entry yet)
+                // 'done' = sudah diisi (has report - any non-pending state)
+                if ($this->statusFilter === 'pending') {
+                    return $state === 'pending';
+                } elseif ($this->statusFilter === 'done') {
+                    return $state !== 'pending' && $state !== 'disabled';
+                }
+                return true;
             });
         }
 

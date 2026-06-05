@@ -18,12 +18,6 @@
         <!-- Quick Filters -->
         <div class="flex flex-wrap gap-2">
             <button
-                wire:click="$set('statusFilter', 'all')"
-                :class="$wire.statusFilter === 'all' ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
-                class="px-3 py-1.5 text-xs font-medium rounded-full transition">
-                Semua
-            </button>
-            <button
                 wire:click="$set('statusFilter', 'pending')"
                 :class="$wire.statusFilter === 'pending' ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
@@ -33,13 +27,7 @@
                 wire:click="$set('statusFilter', 'done')"
                 :class="$wire.statusFilter === 'done' ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
                 class="px-3 py-1.5 text-xs font-medium rounded-full transition">
-                Selesai
-            </button>
-            <button
-                wire:click="$set('statusFilter', 'overdue')"
-                :class="$wire.statusFilter === 'overdue' ? 'bg-red-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'"
-                class="px-3 py-1.5 text-xs font-medium rounded-full transition">
-                Terlambat
+                Sudah Diisi
             </button>
         </div>
     </div>
