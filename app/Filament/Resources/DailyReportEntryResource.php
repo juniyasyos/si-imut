@@ -84,7 +84,6 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             ->defaultSort('report_date', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100])
-            ->poll('30s')
             ->deferLoading()
             ->persistFiltersInSession()
             ->persistSortInSession()

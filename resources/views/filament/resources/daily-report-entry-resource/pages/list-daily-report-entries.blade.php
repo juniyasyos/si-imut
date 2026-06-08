@@ -26,10 +26,6 @@
     monitoringData: @js($monitoringTemplates),
     categoryColors: @js($categoryColors),
 
-    reportCountsPollingInterval: null,
-    pollingEnabled: true,
-    pollingIntervalMs: 10000,
-
     init() {
         this.initResize();
         this.selectToday();
@@ -41,53 +37,6 @@
                 $wire.call('loadAllReportCounts');
             }
         });
-
-        this.startReportCountsPolling();
-
-        this.$watch(() => this.$el, () => {}, {
-            destroy: () => this.stopReportCountsPolling()
-        });
-    },
-
-    startReportCountsPolling() {
-        if (this.reportCountsPollingInterval) {
-            return;
-        }
-
-        $wire.call('loadAllReportCounts');
-
-        this.reportCountsPollingInterval = setInterval(() => {
-            if (!this.pollingEnabled) {
-                return;
-            }
-
-            $wire.call('loadAllReportCounts').catch(error => {
-                console.error('[Polling] Gagal memperbarui jumlah laporan:', error);
-            });
-        }, this.pollingIntervalMs);
-    },
-
-    stopReportCountsPolling() {
-        if (this.reportCountsPollingInterval) {
-            clearInterval(this.reportCountsPollingInterval);
-            this.reportCountsPollingInterval = null;
-        }
-    },
-
-    pauseReportCountsPolling() {
-        this.pollingEnabled = false;
-    },
-
-    resumeReportCountsPolling() {
-        this.pollingEnabled = true;
-    },
-
-    setPollingInterval(ms) {
-        if (ms <= 0) return;
-
-        this.pollingIntervalMs = ms;
-        this.stopReportCountsPolling();
-        this.startReportCountsPolling();
     },
 
     initResize() {
