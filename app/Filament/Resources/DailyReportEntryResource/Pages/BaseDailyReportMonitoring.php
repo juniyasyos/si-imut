@@ -45,7 +45,7 @@ abstract class BaseDailyReportMonitoring extends Page
 
     // Filter properties for indicators list
     public string $searchQuery = '';
-    public string $statusFilter = 'pending';
+    public string $statusFilter = 'all';
 
     // Loading states
     public bool $loadingMatrix = false;

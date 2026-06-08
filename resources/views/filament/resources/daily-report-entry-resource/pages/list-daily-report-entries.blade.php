@@ -1,311 +1,309 @@
 <x-filament-panels::page>
-    {{-- 
-        Daily Report Entry Dashboard - Optimized Version
-        ========================================
-        Single-file Alpine.js dashboard dengan organized sections.
-        Semua logic tetap inline (Alpine requirement) tapi organized dengan comments.
+    {{--
+    Daily Report Entry Dashboard - Optimized Version
+    ========================================
+    Single-file Alpine.js dashboard dengan organized sections.
+    Semua logic tetap inline (Alpine requirement) tapi organized dengan comments.
     --}}
 
     <div x-data="{
-        // ========================================
-        // STATE: Date & Navigation
-        // ========================================
-        selectedDate: '{{ $selectedDate ?: now()->format('Y-m-d') }}',
-        selectedMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
-        currentDate: new Date('{{ ($selectedMonth ?: now()->format('Y-m')) }}-01'),
+    selectedDate: '{{ $selectedDate ?: now()->format('Y-m-d') }}',
+    selectedMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
+    currentDate: new Date('{{ ($selectedMonth ?: now()->format('Y-m')) }}-01'),
 
-        // ========================================
-        // STATE: UI & Loading
-        // ========================================
-        isMobile: false,
-        isDateLoading: false,
-        isLoadingMonth: false,
-        slideOverClientOpen: false,
-        slideOverLoading: false,
-        slideOverRequest: null,
+    isMobile: false,
+    isDateLoading: false,
+    isLoadingMonth: false,
+    slideOverClientOpen: false,
+    slideOverLoading: false,
+    slideOverRequest: null,
 
-        // ========================================
-        // STATE: Filters & Search
-        // ========================================
-        // searchQuery & statusFilter moved to Livewire (server-side computed)
-        monitoringSearchQuery: '',
-        monitoringMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
+    monitoringSearchQuery: '',
+    monitoringMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
 
-        // ========================================
-        // STATE: Data
-        // ========================================
-        indicators: @js($indicators),
-        matrixData: @js($matrixData),
-        monitoringData: @js($monitoringTemplates),
-        categoryColors: @js($categoryColors),
+    indicators: @js($indicators),
+    matrixData: @js($matrixData),
+    monitoringData: @js($monitoringTemplates),
+    categoryColors: @js($categoryColors),
 
-        // ========================================
-        // LIFECYCLE: Init
-        // ========================================
-        init() {
-            @if(config('app.debug'))
-            console.log('📊 [Alpine init] Starting init');
-            console.log('📊 [Alpine init] Initial state:', {
-                selectedDate: this.selectedDate,
-                selectedMonth: this.selectedMonth,
-            });
-            @endif
-            this.initResize();
-            this.selectToday();
-            this.ensureValidSelectedDate();
-            this.monitoringMonth = this.selectedMonth;
-            
-            // Watch for date changes and trigger server-side report count loading
-            this.$watch('selectedDate', (newDate) => {
-                if (newDate) {
-                    $wire.call('loadAllReportCounts');
-                }
-            });
+    reportCountsPollingInterval: null,
+    pollingEnabled: true,
+    pollingIntervalMs: 10000,
 
-            @if(config('app.debug'))
-            console.log('📊 [Alpine init] After init:', {
-                selectedDate: this.selectedDate,
-                selectedMonth: this.selectedMonth,
-            });
-            @endif
-        },
+    init() {
+        this.initResize();
+        this.selectToday();
+        this.ensureValidSelectedDate();
+        this.monitoringMonth = this.selectedMonth;
 
-        // ========================================
-        // UI: Responsive & Resize
-        // ========================================
-        initResize() {
-            this.isMobile = window.innerWidth < 1024;
-            window.addEventListener('resize', () => { 
-                this.isMobile = window.innerWidth < 1024; 
-            });
-        },
-
-        // ========================================
-        // DATE: Validation & Selection
-        // ========================================
-        ensureValidSelectedDate() {
-            if (!this.selectedDate || this.selectedDate === 'null' || this.selectedDate === '') {
-                this.selectedDate = '{{ now()->format('Y-m-d') }}';
-                @if(config('app.debug'))
-                console.log('📊 [ensureValidSelectedDate] Set to:', this.selectedDate);
-                @endif
+        this.$watch('selectedDate', (newDate) => {
+            if (newDate) {
+                $wire.call('loadAllReportCounts');
             }
-            @if(config('app.debug'))
-            console.log('📊 [ensureValidSelectedDate] Final:', this.selectedDate);
-            @endif
-        },
+        });
 
-        selectToday() {
-            const today = new Date();
-            const month = today.toISOString().slice(0, 7);
-            
-            if (month === this.selectedMonth) {
-                this.selectedDate = today.toISOString().slice(0, 10);
-                @if(config('app.debug'))
-                console.log('📊 [selectToday] Updated to:', this.selectedDate);
-                @endif
-            } else {
-                this.ensureValidSelectedDate();
-            }
-        },
+        this.startReportCountsPolling();
 
-        selectDate(date) {
-            const oldDate = this.selectedDate;
-            this.selectedDate = date || '{{ now()->format('Y-m-d') }}';
-            @if(config('app.debug'))
-            console.log('📊 [selectDate] Changed from', oldDate, 'to:', this.selectedDate);
-            @endif
-        },
+        this.$watch(() => this.$el, () => {}, {
+            destroy: () => this.stopReportCountsPolling()
+        });
+    },
 
-        // ========================================
-        // SLIDE-OVER: Modal Management
-        // ========================================
-        async openSlideOverFast(indicatorId, date) {
-            const resolvedDate = date || '{{ now()->format('Y-m-d') }}';
-            
-            this.slideOverRequest = {
-                indicatorId: Number(indicatorId),
-                date: resolvedDate,
-            };
-            this.slideOverClientOpen = true;
-            this.slideOverLoading = true;
+    startReportCountsPolling() {
+        if (this.reportCountsPollingInterval) {
+            return;
+        }
 
-            @if(config('app.debug'))
-            console.log('🎪 [Fast Open] Opening slide-over immediately:', this.slideOverRequest);
-            @endif
+        $wire.call('loadAllReportCounts');
 
-            try {
-                await $wire.openSlideOver(indicatorId, resolvedDate);
-            } catch (error) {
-                console.error('🎪 [Fast Open] Failed to open slide-over:', error);
-                this.slideOverClientOpen = false;
-                this.slideOverRequest = null;
-            } finally {
-                this.slideOverLoading = false;
-            }
-        },
-
-        closeSlideOverFast() {
-            this.slideOverClientOpen = false;
-            this.slideOverLoading = false;
-            this.slideOverRequest = null;
-            $wire.closeSlideOver();
-        },
-
-        // ========================================
-        // MATRIX: Data Sync & Loading
-        // ========================================
-        async loadMatrixDataAsync() {
-            this.isDateLoading = true;
-
-            try {
-                const snapshot = await $wire.getMatrixSnapshot();
-
-                if (snapshot) {
-                    this.selectedMonth = snapshot.selectedMonth || this.selectedMonth;
-                    this.selectedDate = snapshot.selectedDate || this.selectedDate;
-                    this.indicators = snapshot.indicators || [];
-                    this.matrixData = snapshot.matrixData || {};
-                    this.daysInMonth = snapshot.daysInMonth || [];
-                    this.categoryColors = snapshot.categoryColors || {};
-                    this.monitoringMonth = this.selectedMonth;
-                    this.currentDate = new Date(`${this.selectedMonth}-01`);
-                }
-            } catch (error) {
-                console.error('📊 [Alpine] Failed to sync matrix snapshot:', error);
-            } finally {
-                this.isDateLoading = false;
-            }
-        },
-
-        // ========================================
-        // FILTERING: Search & Status Filter
-        // ========================================
-        // filteredIndicators moved to Livewire #[Computed] property
-        // Filtering now done server-side for better performance
-
-        get filteredMonitoringData() {
-            let filtered = this.monitoringData;
-
-            if (this.monitoringSearchQuery.trim()) {
-                const query = this.monitoringSearchQuery.toLowerCase();
-                filtered = filtered.filter(item => 
-                    item.title.toLowerCase().includes(query) ||
-                    (item.category && item.category.toLowerCase().includes(query)) ||
-                    (item.profile_name && item.profile_name.toLowerCase().includes(query))
-                );
-            }
-
-            return filtered;
-        },
-
-        // ========================================
-        // HELPERS: Status & Data Lookup
-        // ========================================
-        getStatusForDate(indicatorId, selectedDate) {
-            const date = new Date(selectedDate);
-            const day = date.getDate();
-            const cellData = this.matrixData[indicatorId] && this.matrixData[indicatorId][day];
-            return cellData || null;
-        },
-
-        getActionButton(indicatorId, selectedDate) {
-            const date = new Date(selectedDate);
-            const day = date.getDate();
-            const cellData = this.matrixData[indicatorId] && this.matrixData[indicatorId][day];
-            const state = cellData ? cellData.cell_state : 'disabled';
-            
-            return {
-                state: state,
-                cellData: cellData
-            };
-        },
-
-        // ========================================
-        // FORMATTING: Display & Locale
-        // ========================================
-        formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        },
-
-        getMonthName() {
-            const date = new Date(this.selectedMonth + '-01');
-            return date.toLocaleDateString('id-ID', { 
-                month: 'long', 
-                year: 'numeric' 
-            });
-        },
-
-        formatNumber(num) {
-            return new Intl.NumberFormat('id-ID').format(num || 0);
-        },
-
-        formatImutVersion(version) {
-            if (!version) return '';
-            return version.replace('/version-', 'v');
-        },
-
-        getCategoryColor(category) {
-            return this.categoryColors[category] ||
-                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-        },
-
-        isToday(dateString) {
-            const today = new Date().toDateString();
-            const checkDate = new Date(dateString).toDateString();
-            return today === checkDate;
-        },
-
-        isFutureDate(dateString) {
-            const today = new Date();
-            today.setHours(23, 59, 59, 999);
-            const checkDate = new Date(dateString);
-            return checkDate > today;
-        },
-
-        // ========================================
-        // MONITORING: Period & Navigation
-        // ========================================
-        getMonitoringPeriodText() {
-            const date = new Date(this.monitoringMonth + '-01');
-            const monthName = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-            return `Periode: Monitoring ${monthName}`;
-        },
-
-        changeMonitoringPeriod(direction) {
-            const date = new Date(this.monitoringMonth + '-01');
-            
-            if (direction === 'prev') {
-                date.setMonth(date.getMonth() - 1);
-            } else if (direction === 'next') {
-                date.setMonth(date.getMonth() + 1);
-            } else if (direction === 'current') {
-                this.monitoringMonth = '{{ now()->format('Y-m') }}';
-                this.loadMonitoringData();
+        this.reportCountsPollingInterval = setInterval(() => {
+            if (!this.pollingEnabled) {
                 return;
             }
-            
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            this.monitoringMonth = `${year}-${month}`;
-            
-            this.loadMonitoringData();
-        },
 
-        loadMonitoringData() {
-            this.isDateLoading = true;
-            $wire.call('loadMonitoringForPeriod', this.monitoringMonth).then(data => {
+            $wire.call('loadAllReportCounts').catch(error => {
+                console.error('[Polling] Gagal memperbarui jumlah laporan:', error);
+            });
+        }, this.pollingIntervalMs);
+    },
+
+    stopReportCountsPolling() {
+        if (this.reportCountsPollingInterval) {
+            clearInterval(this.reportCountsPollingInterval);
+            this.reportCountsPollingInterval = null;
+        }
+    },
+
+    pauseReportCountsPolling() {
+        this.pollingEnabled = false;
+    },
+
+    resumeReportCountsPolling() {
+        this.pollingEnabled = true;
+    },
+
+    setPollingInterval(ms) {
+        if (ms <= 0) return;
+
+        this.pollingIntervalMs = ms;
+        this.stopReportCountsPolling();
+        this.startReportCountsPolling();
+    },
+
+    initResize() {
+        this.isMobile = window.innerWidth < 1024;
+
+        window.addEventListener('resize', () => {
+            this.isMobile = window.innerWidth < 1024;
+        });
+    },
+
+    ensureValidSelectedDate() {
+        if (!this.selectedDate || this.selectedDate === 'null' || this.selectedDate === '') {
+            this.selectedDate = '{{ now()->format('Y-m-d') }}';
+        }
+    },
+
+    selectToday() {
+        const today = new Date();
+        const month = today.toISOString().slice(0, 7);
+
+        if (month === this.selectedMonth) {
+            this.selectedDate = today.toISOString().slice(0, 10);
+        } else {
+            this.ensureValidSelectedDate();
+        }
+    },
+
+    selectDate(date) {
+        this.selectedDate = date || '{{ now()->format('Y-m-d') }}';
+    },
+
+    async openSlideOverFast(indicatorId, date) {
+        const resolvedDate = date || '{{ now()->format('Y-m-d') }}';
+
+        this.slideOverRequest = {
+            indicatorId: Number(indicatorId),
+            date: resolvedDate,
+        };
+
+        this.slideOverClientOpen = true;
+        this.slideOverLoading = true;
+
+        try {
+            await $wire.openSlideOver(indicatorId, resolvedDate);
+        } catch (error) {
+            console.error('[Slide Over] Gagal membuka data indikator:', error);
+
+            this.slideOverClientOpen = false;
+            this.slideOverRequest = null;
+        } finally {
+            this.slideOverLoading = false;
+        }
+    },
+
+    closeSlideOverFast() {
+        this.slideOverClientOpen = false;
+        this.slideOverLoading = false;
+        this.slideOverRequest = null;
+
+        $wire.closeSlideOver();
+    },
+
+    async loadMatrixDataAsync() {
+        this.isDateLoading = true;
+
+        try {
+            const snapshot = await $wire.getMatrixSnapshot();
+
+            if (snapshot) {
+                this.selectedMonth = snapshot.selectedMonth || this.selectedMonth;
+                this.selectedDate = snapshot.selectedDate || this.selectedDate;
+                this.indicators = snapshot.indicators || [];
+                this.matrixData = snapshot.matrixData || {};
+                this.daysInMonth = snapshot.daysInMonth || [];
+                this.categoryColors = snapshot.categoryColors || {};
+                this.monitoringMonth = this.selectedMonth;
+                this.currentDate = new Date(`${this.selectedMonth}-01`);
+            }
+        } catch (error) {
+            console.error('[Matrix] Gagal sinkronisasi data:', error);
+        } finally {
+            this.isDateLoading = false;
+        }
+    },
+
+    get filteredMonitoringData() {
+        let filtered = this.monitoringData;
+
+        if (this.monitoringSearchQuery.trim()) {
+            const query = this.monitoringSearchQuery.toLowerCase();
+
+            filtered = filtered.filter(item =>
+                item.title.toLowerCase().includes(query) ||
+                (item.category && item.category.toLowerCase().includes(query)) ||
+                (item.profile_name && item.profile_name.toLowerCase().includes(query))
+            );
+        }
+
+        return filtered;
+    },
+
+    getStatusForDate(indicatorId, selectedDate) {
+        const date = new Date(selectedDate);
+        const day = date.getDate();
+
+        return this.matrixData[indicatorId]?.[day] || null;
+    },
+
+    getActionButton(indicatorId, selectedDate) {
+        const date = new Date(selectedDate);
+        const day = date.getDate();
+        const cellData = this.matrixData[indicatorId]?.[day] || null;
+
+        return {
+            state: cellData ? cellData.cell_state : 'disabled',
+            cellData: cellData,
+        };
+    },
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+
+        return date.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    },
+
+    getMonthName() {
+        const date = new Date(this.selectedMonth + '-01');
+
+        return date.toLocaleDateString('id-ID', {
+            month: 'long',
+            year: 'numeric',
+        });
+    },
+
+    formatNumber(num) {
+        return new Intl.NumberFormat('id-ID').format(num || 0);
+    },
+
+    formatImutVersion(version) {
+        if (!version) return '';
+
+        return version.replace('/version-', 'v');
+    },
+
+    getCategoryColor(category) {
+        return this.categoryColors[category] ||
+            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    },
+
+    isToday(dateString) {
+        const today = new Date().toDateString();
+        const checkDate = new Date(dateString).toDateString();
+
+        return today === checkDate;
+    },
+
+    isFutureDate(dateString) {
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+
+        const checkDate = new Date(dateString);
+
+        return checkDate > today;
+    },
+
+    getMonitoringPeriodText() {
+        const date = new Date(this.monitoringMonth + '-01');
+
+        const monthName = date.toLocaleDateString('id-ID', {
+            month: 'long',
+            year: 'numeric',
+        });
+
+        return `Periode: Monitoring ${monthName}`;
+    },
+
+    changeMonitoringPeriod(direction) {
+        const date = new Date(this.monitoringMonth + '-01');
+
+        if (direction === 'prev') {
+            date.setMonth(date.getMonth() - 1);
+        } else if (direction === 'next') {
+            date.setMonth(date.getMonth() + 1);
+        } else if (direction === 'current') {
+            this.monitoringMonth = '{{ now()->format('Y-m') }}';
+            this.loadMonitoringData();
+            return;
+        }
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+
+        this.monitoringMonth = `${year}-${month}`;
+        this.loadMonitoringData();
+    },
+
+    loadMonitoringData() {
+        this.isDateLoading = true;
+
+        $wire.call('loadMonitoringForPeriod', this.monitoringMonth)
+            .then(data => {
                 this.monitoringData = data;
+            })
+            .catch(error => {
+                console.error('[Monitoring] Gagal memuat data monitoring:', error);
+            })
+            .finally(() => {
                 this.isDateLoading = false;
             });
-        }
-    }" x-cloak>
+    }
+}" x-cloak>
 
         {{-- Full Screen Loading Overlay --}}
         <div x-show="isDateLoading" x-transition.opacity.duration.500ms
@@ -346,8 +344,10 @@
                     }
                 }">
 
-                    <div wire:loading class="bg-white w-full dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                        <div class="flex animate-pulse pb-2 mb-2 border-b border-slate-200 dark:border-slate-700 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div wire:loading
+                        class="bg-white w-full dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                        <div
+                            class="flex animate-pulse pb-2 mb-2 border-b border-slate-200 dark:border-slate-700 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div class="w-full space-y-3">
                                 <div class="flex items-center gap-2">
                                     <div class="h-5 w-5 rounded-md bg-slate-200 dark:bg-slate-700"></div>
@@ -361,7 +361,8 @@
                             </div>
                         </div>
                         @for ($i = 0; $i < 6; $i++)
-                            <div class="w-full animate-pulse rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                            <div
+                                class="w-full animate-pulse rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
                                 <div class="flex w-full items-start gap-3">
                                     <div class="h-10 w-10 shrink-0 rounded-lg bg-slate-200 dark:bg-slate-700"></div>
                                     <div class="min-w-0 flex-1 space-y-3">
@@ -380,14 +381,16 @@
                         @endfor
                     </div>
 
-                    <div wire:loading.remove class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <div wire:loading.remove
+                        class="w-full h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
 
                         {{-- Indicators List with Server-Side Filtering --}}
                         <div class="space-y-4 max-h-[600px] overflow-y-auto">
 
                             <template x-for="(indicator, index) in $wire.filteredIndicators" :key="indicator.id">
-                                <div class="indicator-card mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+                                <div
+                                    class="indicator-card mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-start justify-between gap-3">
@@ -397,10 +400,14 @@
                                                             x-text="indicator.title"></h3>
 
                                                         <div class="flex items-center gap-2 mt-1">
-                                                            <span class="text-xs italic text-gray-500 dark:text-gray-400">profile version:</span>
-                                                            <span class="inline-flex items-center gap-1 text-xs italic text-gray-500 dark:text-gray-400">
+                                                            <span
+                                                                class="text-xs italic text-gray-500 dark:text-gray-400">profile
+                                                                version:</span>
+                                                            <span
+                                                                class="inline-flex items-center gap-1 text-xs italic text-gray-500 dark:text-gray-400">
                                                                 @svg("heroicon-m-document-text", "w-3 h-3")
-                                                                <span x-text="formatImutVersion(indicator.imut_profile_version)"></span>
+                                                                <span
+                                                                    x-text="formatImutVersion(indicator.imut_profile_version)"></span>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -417,12 +424,14 @@
                                             </div>
 
                                             <div class="mt-2">
-                                                <span :class="($wire.reportCounts[indicator.id] ?? 0) > 0
+                                                <span
+                                                    :class="($wire.reportCounts[indicator.id] ?? 0) > 0
                                                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                                                     : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'"
                                                     class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium">
                                                     @svg("heroicon-m-document-text", "h-3 w-3 hidden sm:block")
-                                                    <span x-text="($wire.reportCounts[indicator.id] ?? 0) + ' laporan'"></span>
+                                                    <span
+                                                        x-text="($wire.reportCounts[indicator.id] ?? 0) + ' laporan'"></span>
                                                 </span>
                                             </div>
                                         </div>
@@ -434,7 +443,10 @@
                                 </div>
                             </template>
 
-                            @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.indicators-empty-state')
+
+                            <div x-show="!$wire.filteredIndicators || $wire.filteredIndicators.length === 0">
+                                @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.indicators-empty-state')
+                            </div>
                         </div>
                     </div>
                 </div>

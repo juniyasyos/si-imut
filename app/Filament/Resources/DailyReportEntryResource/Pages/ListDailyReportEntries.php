@@ -48,7 +48,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         $reqDate = request()->query('selectedDate');
         $reqMonth = request()->query('selectedMonth');
 
-        \Illuminate\Support\Facades\Log::info('ListDailyReportEntries mount', [
+        Log::info('ListDailyReportEntries mount', [
             'reqDate' => $reqDate,
             'reqMonth' => $reqMonth,
             'url' => request()->url(),
@@ -58,10 +58,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             try {
                 $validMonth = Carbon::createFromFormat('Y-m', $reqMonth)->format('Y-m');
                 $this->selectedMonth = $validMonth;
-                \Illuminate\Support\Facades\Log::info('Mount: selectedMonth set', ['selectedMonth' => $validMonth]);
+                Log::info('Mount: selectedMonth set', ['selectedMonth' => $validMonth]);
             } catch (\Exception $e) {
                 // ignore invalid month formats
-                \Illuminate\Support\Facades\Log::warning('Mount: invalid month format', ['reqMonth' => $reqMonth]);
+                Log::warning('Mount: invalid month format', ['reqMonth' => $reqMonth]);
             }
         }
 
@@ -70,10 +70,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 $validDate = Carbon::createFromFormat('Y-m-d', $reqDate)->format('Y-m-d');
                 $this->selectedDate = $validDate;
                 $this->selectedMonth = Carbon::createFromFormat('Y-m-d', $validDate)->format('Y-m');
-                \Illuminate\Support\Facades\Log::info('Mount: selectedDate set', ['selectedDate' => $validDate, 'selectedMonth' => $this->selectedMonth]);
+                Log::info('Mount: selectedDate set', ['selectedDate' => $validDate, 'selectedMonth' => $this->selectedMonth]);
             } catch (\Exception $e) {
                 // ignore invalid date formats
-                \Illuminate\Support\Facades\Log::warning('Mount: invalid date format', ['reqDate' => $reqDate]);
+                Log::warning('Mount: invalid date format', ['reqDate' => $reqDate]);
             }
         }
 
@@ -81,10 +81,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         if (!$this->selectedDate) {
             $this->selectedDate = now()->format('Y-m-d');
             $this->selectedMonth = now()->format('Y-m');
-            \Illuminate\Support\Facades\Log::info('Mount: set defaults', ['selectedDate' => $this->selectedDate, 'selectedMonth' => $this->selectedMonth]);
+            Log::info('Mount: set defaults', ['selectedDate' => $this->selectedDate, 'selectedMonth' => $this->selectedMonth]);
         }
 
-        \Illuminate\Support\Facades\Log::info('Mount final state', [
+        Log::info('Mount final state', [
             'selectedDate' => $this->selectedDate,
             'selectedMonth' => $this->selectedMonth,
         ]);
@@ -95,14 +95,14 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
             $this->currentView = $requestedView;
         }
 
-        \Illuminate\Support\Facades\Log::info('📋 [Page Init] View and period loaded', [
+        Log::info('📋 [Page Init] View and period loaded', [
             'view' => $this->currentView,
             'month' => $this->selectedMonth,
             'date' => $this->selectedDate,
             'url' => request()->fullUrl(),
         ]);
 
-        \Log::info('📦 [DailyReport] Data load plan', [
+        Log::info('📦 [DailyReport] Data load plan', [
             'source' => 'mount',
             'selectedMonth' => $this->selectedMonth,
             'selectedDate' => $this->selectedDate,

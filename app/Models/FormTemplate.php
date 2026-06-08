@@ -120,10 +120,10 @@ class FormTemplate extends Model
         return $query->where('is_active', true)
             ->whereHas('imutProfile', function ($q) use ($now) {
                 $q->where('valid_from', '<=', $now)
-                  ->where(function ($subQ) use ($now) {
-                      $subQ->whereNull('valid_until')
-                           ->orWhere('valid_until', '>=', $now);
-                  });
+                    ->where(function ($subQ) use ($now) {
+                        $subQ->whereNull('valid_until')
+                            ->orWhere('valid_until', '>=', $now);
+                    });
             });
     }
 
@@ -135,7 +135,7 @@ class FormTemplate extends Model
     {
         return $query->whereHas('imutProfile.imutData', function ($q) {
             $q->where('status', true)
-              ->where('is_monthly', true);
+                ->where('is_monthly', true);
         });
     }
 
@@ -203,7 +203,7 @@ class FormTemplate extends Model
         if ($existingActive) {
             throw new \Exception(
                 'Only one form template can be active per profile at a time. ' .
-                    'Please deactivate the current active template first.'
+                'Please deactivate the current active template first.'
             );
         }
     }
