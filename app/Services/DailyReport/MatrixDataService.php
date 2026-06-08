@@ -160,7 +160,7 @@ class MatrixDataService
         // Use FormTemplateLoadingService for consistent template loading with caching
         $formTemplates = FormTemplate::forUserUnitKerjas($unitKerjaIds)
             ->monthlyIndicators()
-            // ->activeForCurrentDate()
+            ->activeForCurrentDate()
             ->with([
                 'imutProfile' => fn($q) => $q->select('id', 'version', 'imut_data_id'),
                 'imutProfile.imutData' => fn($q) => $q->select('id', 'title', 'imut_kategori_id'),
