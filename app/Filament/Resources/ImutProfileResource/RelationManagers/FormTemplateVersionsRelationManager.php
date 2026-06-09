@@ -48,27 +48,10 @@ class FormTemplateVersionsRelationManager extends RelationManager
                 TextColumn::make('is_active')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Active' : 'Inactive')
-                    ->colors([
-                        'success' => 'Active',
-                        'gray' => 'Inactive',
-                    ]),
-
-                // TextColumn::make('compliance_method')
-                //     ->label('Compliance Method')
-                //     ->badge()
-                //     ->formatStateUsing(fn(string $state): string => match ($state) {
-                //         'auto_calculate' => 'Auto Calculate',
-                //         'manual' => 'Manual',
-                //         'weighted' => 'Weighted',
-                //         default => $state,
-                //     })
-                //     ->color(fn(string $state): string => match ($state) {
-                //         'auto_calculate' => 'info',
-                //         'manual' => 'warning',
-                //         'weighted' => 'success',
-                //         default => 'gray',
-                //     }),
+                    ->alignCenter()
+                    ->formatStateUsing(fn(bool $state) => $state ? 'Aktif' : 'Draft')
+                    ->color(fn(bool $state) => $state ? 'success' : 'gray')
+                    ->icon(fn(bool $state) => $state ? 'heroicon-m-check-circle' : 'heroicon-m-pencil-square'),
 
                 TextColumn::make('valid_period')
                     ->label('Valid Period')
@@ -154,42 +137,6 @@ class FormTemplateVersionsRelationManager extends RelationManager
                     ->modalSubmitActionLabel('Create Version'),
             ])
             ->actions([
-                Action::make('activate')
-                    ->label('Activate')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn(FormTemplate $record): bool => !$record->is_active)
-                    ->action(function (FormTemplate $record) {
-                        $versionService = new FormTemplateVersionService();
-                        $versionService->activateVersion($record);
-
-                        Notification::make()
-                            ->title('Template activated')
-                            ->success()
-                            ->body("Version {$record->version} is now active")
-                            ->send();
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Activate Template Version')
-                    ->modalDescription('This will deactivate all other versions and make this version active. Are you sure?'),
-
-                Action::make('deactivate')
-                    ->label('Deactivate')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('warning')
-                    ->visible(fn(FormTemplate $record): bool => $record->is_active)
-                    ->action(function (FormTemplate $record) {
-                        $versionService = new FormTemplateVersionService();
-                        $versionService->deactivateVersion($record);
-
-                        Notification::make()
-                            ->title('Template deactivated')
-                            ->success()
-                            ->body("Version {$record->version} has been deactivated")
-                            ->send();
-                    })
-                    ->requiresConfirmation(),
-
                 DeleteAction::make()
                     ->visible(function (FormTemplate $record) {
                         return !$record->is_active &&
@@ -213,6 +160,42 @@ class FormTemplateVersionsRelationManager extends RelationManager
                             'record' => $livewire->ownerRecord->slug,
                             'templateId' => $record->id,
                         ])),
+
+                    Action::make('activate')
+                        ->label('Activate')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->visible(fn(FormTemplate $record): bool => !$record->is_active)
+                        ->action(function (FormTemplate $record) {
+                            $versionService = new FormTemplateVersionService();
+                            $versionService->activateVersion($record);
+
+                            Notification::make()
+                                ->title('Template activated')
+                                ->success()
+                                ->body("Version {$record->version} is now active")
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Activate Template Version')
+                        ->modalDescription('This will deactivate all other versions and make this version active. Are you sure?'),
+
+                    Action::make('deactivate')
+                        ->label('Deactivate')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->visible(fn(FormTemplate $record): bool => $record->is_active)
+                        ->action(function (FormTemplate $record) {
+                            $versionService = new FormTemplateVersionService();
+                            $versionService->deactivateVersion($record);
+
+                            Notification::make()
+                                ->title('Template deactivated')
+                                ->success()
+                                ->body("Version {$record->version} has been deactivated")
+                                ->send();
+                        })
+                        ->requiresConfirmation(),
 
                     Action::make('duplicate')
                         ->label('Create New Version')
