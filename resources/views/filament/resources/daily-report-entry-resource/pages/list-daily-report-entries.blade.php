@@ -21,6 +21,10 @@
     monitoringSearchQuery: '',
     monitoringMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
 
+    // Client-side search/filter state (no server round-trip needed)
+    searchQuery: '',
+    statusFilter: 'all',
+
     indicators: @js($indicators),
     matrixData: @js($matrixData),
     monitoringData: @js($monitoringTemplates),
@@ -120,6 +124,37 @@
         } finally {
             this.isDateLoading = false;
         }
+    },
+
+    get filteredIndicators() {
+        let filtered = this.indicators;
+
+        if (this.searchQuery.trim()) {
+            const query = this.searchQuery.toLowerCase();
+            filtered = filtered.filter(indicator =>
+                indicator.title.toLowerCase().includes(query) ||
+                (indicator.category && indicator.category.toLowerCase().includes(query))
+            );
+        }
+
+        if (this.statusFilter && this.statusFilter !== 'all') {
+            const date = new Date(this.selectedDate);
+            const day = date.getDate();
+
+            filtered = filtered.filter(indicator => {
+                const cellData = this.matrixData[indicator.id]?.[day];
+                const state = cellData ? cellData.cell_state : 'disabled';
+
+                if (this.statusFilter === 'pending') {
+                    return state === 'pending';
+                } else if (this.statusFilter === 'done') {
+                    return state !== 'pending' && state !== 'disabled';
+                }
+                return true;
+            });
+        }
+
+        return filtered;
     },
 
     get filteredMonitoringData() {
@@ -337,7 +372,7 @@
                         {{-- Indicators List with Server-Side Filtering --}}
                         <div class="space-y-4 max-h-[600px] overflow-y-auto">
 
-                            <template x-for="(indicator, index) in $wire.filteredIndicators" :key="indicator.id">
+                            <template x-for="(indicator, index) in filteredIndicators" :key="indicator.id">
                                 <div
                                     class="indicator-card mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -393,7 +428,7 @@
                             </template>
 
 
-                            <div x-show="!$wire.filteredIndicators || $wire.filteredIndicators.length === 0">
+                            <div x-show="!filteredIndicators || filteredIndicators.length === 0">
                                 @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.indicators-empty-state')
                             </div>
                         </div>
