@@ -138,9 +138,6 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
         $this->loadAllReportCounts();
 
-        // Compute filtered indicators for display
-        $this->computeFilteredIndicators();
-
         \Log::info('📦 [DailyReport] Matrix data loaded', [
             'source' => 'mount',
             'selectedMonth' => $this->selectedMonth,
@@ -634,6 +631,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 'timestamp' => now()->format('Y-m-d H:i:s')
             ]);
         }
+
+        // Reset pagination and re-compute filtered indicators when date changes
+        $this->indicatorPage = 1;
+        $this->computeFilteredIndicators();
     }
 
     public function deleteReport($recordId): void
