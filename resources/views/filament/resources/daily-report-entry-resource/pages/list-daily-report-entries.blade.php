@@ -328,7 +328,7 @@
                     }
                 }">
 
-                    <div wire:loading
+                    <div wire:loading wire:target="previousMonth, nextMonth, selectMonth, selectDate, loadAllReportCounts, indicatorSearch, statusFilter, goToIndicatorPage"
                         class="bg-white w-full dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         <div
                             class="flex animate-pulse pb-2 mb-2 border-b border-slate-200 dark:border-slate-700 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -365,7 +365,7 @@
                         @endfor
                     </div>
 
-                    <div wire:loading.remove
+                    <div wire:loading.remove wire:target="previousMonth, nextMonth, selectMonth, selectDate, loadAllReportCounts, indicatorSearch, statusFilter, goToIndicatorPage"
                         class="w-full h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
 
