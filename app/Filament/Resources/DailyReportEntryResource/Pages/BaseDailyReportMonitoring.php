@@ -126,9 +126,9 @@ abstract class BaseDailyReportMonitoring extends Page
         $this->daysInMonth = $metadata['daysInMonth'];
         $this->daysWithData = $metadata['daysWithData'];
 
-        // Load full matrix data (cached)
-        $fullData = $this->matrixService->loadFullMatrixData($this->selectedMonth, $this->indicators, $this->daysInMonth);
-        $this->matrixData = $fullData['matrixData'];
+        // WE SKIP LOADING FULL MATRIX DATA TO AVOID 500KB JSON PAYLOAD
+        // The frontend only needs $indicators and $daysWithData now.
+        $this->matrixData = [];
 
         // ensure color map includes any categories returned by the service
         foreach ($this->indicators as $indicator) {
@@ -263,9 +263,8 @@ abstract class BaseDailyReportMonitoring extends Page
                 ];
             }
 
-            $this->matrixData = $matrix;
-
-            // Generate days in month
+        // WE SKIP LOADING FULL MATRIX DATA
+        $this->matrixData = [];
             $date = Carbon::parse($this->selectedMonth . '-01');
             $this->daysInMonth = range(1, $date->daysInMonth);
 

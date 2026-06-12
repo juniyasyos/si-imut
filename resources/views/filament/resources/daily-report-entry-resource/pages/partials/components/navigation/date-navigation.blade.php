@@ -47,14 +47,7 @@
                 $isSelected = $selectedDate === $dateString;
 
                 // Check if any indicator has data for this date
-                $hasAnyData = false;
-                foreach ($indicators as $indicator) {
-                    $cellData = $matrixData[$indicator['id']][$day] ?? null;
-                    if ($cellData && ($cellData['has_data'] ?? false)) {
-                        $hasAnyData = true;
-                        break;
-                    }
-                }
+                $hasAnyData = $daysWithData[$day] ?? false;
 
                 // Locked = past date beyond the allowed input window
                 $backDays = \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays();

@@ -499,17 +499,25 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
         // Filter by status
         if ($this->statusFilter && $this->statusFilter !== 'all') {
-            $date = new \DateTime($this->selectedDate);
-            $day  = (int) $date->format('d');
+            $today = now()->startOfDay();
+            $cellDate = \Carbon\Carbon::parse($this->selectedDate)->startOfDay();
+            $backDays = \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays();
+            $startAllowedDate = $today->copy()->subDays($backDays)->startOfDay();
+            
+            $isPastOrToday = $cellDate->lte($today);
+            $isWithinWindow = $cellDate->gte($startAllowedDate) && $isPastOrToday;
+            
+            $emptyState = !$isPastOrToday ? 'disabled' : ($isWithinWindow ? 'pending' : 'overdue');
 
-            $filtered = $filtered->filter(function ($indicator) use ($day) {
-                $cellData = $this->matrixData[$indicator['id']][$day] ?? null;
-                $state    = $cellData ? $cellData['cell_state'] : 'disabled';
+            $filtered = $filtered->filter(function ($indicator) use ($emptyState) {
+                // If report count > 0, it has data, so it's 'done'
+                $count = $this->reportCounts[$indicator['id']] ?? 0;
+                $state = $count > 0 ? 'done' : $emptyState;
 
                 if ($this->statusFilter === 'pending') {
                     return $state === 'pending';
                 } elseif ($this->statusFilter === 'done') {
-                    return $state !== 'pending' && $state !== 'disabled';
+                    return $state === 'done';
                 }
                 return true;
             });
