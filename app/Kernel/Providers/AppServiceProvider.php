@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Providers;
+namespace App\Kernel\Providers;
 
 use App\Models\ImutBenchmarking;
 use App\Models\ImutData;
@@ -165,6 +165,20 @@ class AppServiceProvider extends ServiceProvider
         // if (config('app.env') === 'production') {
         //     URL::forceScheme('https');
         // }
+
+        // Register custom factory resolver for modular monolith models
+        \Illuminate\Database\Eloquent\Factories\Factory::guessFactoryNamesUsing(function (string $modelName) {
+            if (preg_match('/^App\\\\Modules\\\\([^\\\\]+)\\\\Models\\\\(.+)$/', $modelName, $matches)) {
+                return 'Database\\Factories\\' . $matches[2] . 'Factory';
+            }
+            
+            $appNamespace = 'App\\';
+            $name = \Illuminate\Support\Str::startsWith($modelName, $appNamespace.'Models\\')
+                ? \Illuminate\Support\Str::after($modelName, $appNamespace.'Models\\')
+                : \Illuminate\Support\Str::after($modelName, $appNamespace);
+
+            return 'Database\\Factories\\'.$name.'Factory';
+        });
     }
 
     /**

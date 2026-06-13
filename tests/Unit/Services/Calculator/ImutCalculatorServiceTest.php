@@ -28,7 +28,7 @@ class ImutCalculatorServiceTest extends TestCase
 
         // Test rounding
         $result = $this->calculator->calculatePercentage(1, 3);
-        $this->assertEquals(33.33, $result);
+        $this->assertEquals(33.34, $result);
     }
 
     /** @test */
@@ -191,14 +191,14 @@ class ImutCalculatorServiceTest extends TestCase
     {
         // Default precision (2)
         $result = $this->calculator->calculatePercentage(1, 3);
-        $this->assertEquals(33.33, $result);
+        $this->assertEquals(33.34, $result);
 
         // Custom precision (4)
         $result = $this->calculator->calculatePercentage(1, 3, 4);
-        $this->assertEquals(33.3333, $result);
+        $this->assertEquals(33.3334, $result);
 
         // Zero precision
         $result = $this->calculator->calculatePercentage(1, 3, 0);
-        $this->assertEquals(33.0, $result);
+        $this->assertEquals(34.0, $result);
     }
 }

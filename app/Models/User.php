@@ -261,4 +261,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             'email' => ['nullable', 'email', $this->uniqueRule('email', $ignoreId)],
         ];
     }
+
+    /**
+     * Assign a UnitKerja to the user.
+     */
+    public function assignUnitKerja(UnitKerja $unitKerja): void
+    {
+        $this->unitKerjas()->syncWithoutDetaching([$unitKerja->id]);
+    }
 }

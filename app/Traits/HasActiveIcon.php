@@ -2,14 +2,6 @@
 
 namespace App\Traits;
 
-trait HasActiveIcon
-{
-    public static function getActiveNavigationIcon(): ?string
-    {
-        $icon = parent::getNavigationIcon() ?? '';
-
-        return str($icon)
-            ->replace('heroicon-o-', 'heroicon-s-')
-            ->toString();
-    }
+if (!trait_exists(\App\Traits\HasActiveIcon::class, false)) {
+    class_alias(\App\Kernel\Traits\HasActiveIcon::class, \App\Traits\HasActiveIcon::class);
 }

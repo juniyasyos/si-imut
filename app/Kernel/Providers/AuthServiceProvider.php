@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Providers;
+namespace App\Kernel\Providers;
 
 use App\Models\DailyReportResponse;
 use App\Policies\ActivityPolicy;
@@ -14,8 +14,6 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Activity::class => ActivityPolicy::class,
         DailyReportResponse::class => DailyReportResponsePolicy::class,
-        // \Juniyasyos\FilamentMediaManager\Models\Folder::class => FolderCustomPolicy::class,
-        // \Juniyasyos\FilamentMediaManager\Models\Media::class => MediaCustomPolicy::class,
     ];
 
     public function boot(): void
@@ -27,7 +25,11 @@ class AuthServiceProvider extends ServiceProvider
         $mediaModel = config('media-manager.model.media');
 
         // Daftarkan policy custom ke model dari config
-        Gate::policy($folderModel, FolderCustomPolicy::class);
-        Gate::policy($mediaModel, MediaCustomPolicy::class);
+        if (class_exists(\App\Providers\FolderCustomPolicy::class)) {
+            Gate::policy($folderModel, \App\Providers\FolderCustomPolicy::class);
+        }
+        if (class_exists(\App\Providers\MediaCustomPolicy::class)) {
+            Gate::policy($mediaModel, \App\Providers\MediaCustomPolicy::class);
+        }
     }
 }
