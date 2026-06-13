@@ -1,0 +1,3635 @@
+[
+  {
+    "id": "chunk-0001",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "Change Summary (Sejak 2026-01-01)",
+    "chunk_index": 1,
+    "content": "# Change Summary (Sejak 2026-01-01)\n\nDokumen ini merangkum perubahan produk skala besar dan fitur penting yang diimplementasikan sejak awal tahun 2026."
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "1. Pengembangan Fitur Daily Report & Kepatuhan",
+    "chunk_index": 2,
+    "content": "## 1. Pengembangan Fitur Daily Report & Kepatuhan\n- **Deskripsi**: Penambahan dan perbaikan ekstensif pada fitur Daily Report (Laporan Harian), mencakup entry laporan, pengoptimalan pemuatan data matriks, server-side pagination, dan simulasi data (contoh: Kepatuhan Kebersihan Tangan).\n- **Commit Contoh**: `8dece0a` (Server-side pagination & search), `24e3b1a` (Fix 30-second bottleneck), `12c8eec` (Back data entry duration)"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "2. Peningkatan Form Engine & Templating",
+    "chunk_index": 3,
+    "content": "## 2. Peningkatan Form Engine & Templating\n- **Deskripsi**: Implementasi generasi form dinamis yang lebih canggih, FormSchemaBuilder, pembuatan versi template (versioning), serta penentuan batas waktu validitas form template. Ini memungkinkan fleksibilitas yang sangat tinggi dalam pengumpulan data.\n- **Commit Contoh**: `4bb5bd7` (SyncFormTemplateDates command & versioning), `1efd151` (Dynamic form field generation), `f879acb` (Form template versioning system)"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "3. Sistem Pelaporan (Reporting) & Monitoring Lanjutan",
+    "chunk_index": 4,
+    "content": "## 3. Sistem Pelaporan (Reporting) & Monitoring Lanjutan\n- **Deskripsi**: Penambahan laporan tabel dinamis, laporan berbasis kategori, laporan unit kerja, integrasi reporting berbasis JSON, serta integrasi toggle indikator benchmarking. Mendukung juga ekspor ke format PDF.\n- **Commit Contoh**: `5aa68cb` (Unit Kerja Laporan), `6f86712` (Category-based indicator report), `3a5d5e9` (Monthly monitoring feature)"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "4. Otorisasi, Integrasi IAM, & Keamanan (SSO)",
+    "chunk_index": 5,
+    "content": "## 4. Otorisasi, Integrasi IAM, & Keamanan (SSO)\n- **Deskripsi**: Integrasi dan pembaruan sistem SSO (Single Sign-On), penyesuaian pengaturan JWT, transisi penggunaan dependency dari `auth-bridge-client` ke `nexaid-client`, serta pembuatan perintah-perintah audit untuk otorisasi dan penghapusan duplikasi pengguna.\n- **Commit Contoh**: `1062390` (Replace auth-bridge-client with nexaid-client), `f295801` (SSO login redirection), `1fc0e1f` (RolePermissionManager command)"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "5. UI/UX & Pembaruan Filament ke Versi 4",
+    "chunk_index": 6,
+    "content": "## 5. UI/UX & Pembaruan Filament ke Versi 4\n- **Deskripsi**: Peningkatan visual antarmuka pengguna yang sangat signifikan dengan upgrade Filament dari versi 3 ke versi 4. Termasuk refactor topbar, optimasi desain komponen, penerapan custom scrollbar, hingga asset tema CSS baru.\n- **Commit Contoh**: `84565d6` (Upgrade Filament from v3 to v4), `0091805` (Theme styles & topbar functionality), `ed6c57d` (Custom scrollbar styles)"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "CHANGE_SUMMARY.md",
+    "heading": "6. Kinerja & Refactor Arsitektur",
+    "chunk_index": 7,
+    "content": "## 6. Kinerja & Refactor Arsitektur\n- **Deskripsi**: Pembersihan dan pengoptimalan kode secara mendalam (refactor) dengan mengadopsi Repository Pattern untuk Daily Report Services, penggunaan `CalculationService` yang menggantikan fungsi raw SQL, hingga peningkatan sistem pengujian dengan dukungan pipeline CI (MySQL/SQLite).\n- **Commit Contoh**: `ee586a5` (Repository Pattern untuk Daily Report), `1be0c3f` (Replace SqlExpressionBuilder), `8a34fd1` (Livewire payload serialization fix)"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "COMMANDS.md",
+    "heading": "Commands — Daftar Perintah Penting",
+    "chunk_index": 1,
+    "content": "# Commands — Daftar Perintah Penting\n\nDaftar lengkap command yang tersedia di project SIIMUT, dikelompokkan per kategori.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "COMMANDS.md",
+    "heading": "🐘 Artisan Commands",
+    "chunk_index": 2,
+    "content": "## 🐘 Artisan Commands"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "COMMANDS.md",
+    "heading": "Informasi & Utility",
+    "chunk_index": 3,
+    "content": "### Informasi & Utility\n\n| Command | Fungsi |\n|---|---|\n| `php artisan about` | Informasi aplikasi (env, driver, versi) |\n| `php artisan list` | Daftar semua Artisan commands |\n| `php artisan help <command>` | Help detail untuk command tertentu |\n| `php artisan optimize:clear` | Clear semua cache |"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "COMMANDS.md",
+    "heading": "Database",
+    "chunk_index": 4,
+    "content": "### Database\n\n| Command | Fungsi |\n|---|---|\n| `php artisan migrate` | Jalankan migrasi database |\n| `php artisan migrate:fresh` | Rollback + migrasi ulang semua tabel |\n| `php artisan migrate:status` | Cek status migrasi |\n| `php artisan db:seed` | Jalankan database seeder |\n| `php artisan db:show` | Lihat status database (tabel, ukuran) |\n| `php artisan db:monitor` | Monitor koneksi database |\n| `php artisan make:migration` | Buat file migration baru |"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "COMMANDS.md",
+    "heading": "Shield (Permission)",
+    "chunk_index": 5,
+    "content": "### Shield (Permission)\n\n| Command | Fungsi |\n|---|---|\n| `php artisan shield:generate --all` | Generate semua permissions |\n| `php artisan shield:generate --all --panel=admin` | Generate permissions untuk admin panel |\n| `php artisan shield:super-admin --user=1` | Set user ID 1 sebagai super admin |\n| `php artisan permission:show` | Lihat daftar permissions |"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "COMMANDS.md",
+    "heading": "Queue",
+    "chunk_index": 6,
+    "content": "### Queue\n\n| Command | Fungsi |\n|---|---|\n| `php artisan queue:listen` | Jalankan queue worker (foreground) |\n| `php artisan queue:listen --tries=1` | Worker dengan 1 retry |\n| `php artisan queue:work` | Jalankan queue worker (production) |\n| `php artisan queue:monitor` | Monitor antrian queue |\n| `php artisan queue:restart` | Restart semua worker |\n| `php artisan queue:failed` | Lihat failed jobs |\n| `php artisan queue:retry all` | Retry semua failed jobs |\n| `php artisan queue:flush` | Hapus semua failed jobs |"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "COMMANDS.md",
+    "heading": "Storage & Cache",
+    "chunk_index": 7,
+    "content": "### Storage & Cache\n\n| Command | Fungsi |\n|---|---|\n| `php artisan storage:link` | Buat symlink public/storage → storage/app/public |\n| `php artisan cache:clear` | Clear aplikasi cache |\n| `php artisan config:clear` | Clear config cache |\n| `php artisan config:cache` | Cache config untuk production |\n| `php artisan view:clear` | Clear compiled Blade views |\n| `php artisan view:cache` | Pre-compile Blade views |\n| `php artisan route:clear` | Clear route cache |\n| `php artisan route:cache` | Cache routes untuk production |\n| `php artisan route:list` | Lihat daftar routes |"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "COMMANDS.md",
+    "heading": "Development",
+    "chunk_index": 8,
+    "content": "### Development\n\n| Command | Fungsi |\n|---|---|\n| `php artisan serve` | Jalankan development server (port 8000) |\n| `php artisan pail` | Log viewer real-time (Laravel Pail) |\n| `php artisan schedule:work` | Jalankan scheduler (foreground) |\n| `php artisan schedule:run` | Jalankan scheduled tasks sekali |\n| `php artisan tinker` | Interactive PHP REPL |\n| `php artisan make:model` | Buat model baru |\n| `php artisan make:controller` | Buat controller baru |\n| `php artisan make:livewire` | Buat Livewire component |\n| `php artisan key:generate` | Generate APP_KEY |"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "COMMANDS.md",
+    "heading": "Module (nwidart/laravel-modules)",
+    "chunk_index": 9,
+    "content": "### Module (nwidart/laravel-modules)\n\n| Command | Fungsi |\n|---|---|\n| `php artisan module:list` | Daftar modul & statusnya |\n| `php artisan module:make <Nama>` | Buat modul baru |\n| `php artisan module:enable <Nama>` | Aktifkan modul |\n| `php artisan module:disable <Nama>` | Nonaktifkan modul |\n| `php artisan module:migrate` | Jalankan migrasi semua modul |\n| `php artisan module:seed` | Seed semua modul |"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "COMMANDS.md",
+    "heading": "IAM / SSO (nexaid-client)",
+    "chunk_index": 10,
+    "content": "### IAM / SSO (nexaid-client)\n\n| Command | Fungsi |\n|---|---|\n| `php artisan iam:login` | Login via IAM SSO |\n| `php artisan iam:logout` | Logout dari session IAM |\n| `php artisan iam:status` | Status koneksi IAM |"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "COMMANDS.md",
+    "heading": "Backup (filament-backup)",
+    "chunk_index": 11,
+    "content": "### Backup (filament-backup)\n\n| Command | Fungsi |\n|---|---|\n| `php artisan backup:run` | Jalankan backup manual |\n| `php artisan backup:list` | Lihat daftar backup |\n| `php artisan backup:clean` | Hapus backup lama sesuai konfigurasi |\n| `php artisan backup:monitor` | Monitor status backup |"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "COMMANDS.md",
+    "heading": "Kustom (Project-specific)",
+    "chunk_index": 12,
+    "content": "### Kustom (Project-specific)\n\n| Command | Fungsi |\n|---|---|\n| `php artisan sync:form-template-dates` | Sinkronisasi tanggal form template |\n| `php artisan test:ttd-url-resolver` | Test TTD URL resolver |\n| `php artisan ide-helper:generate` | Generate IDE helper |\n| `php artisan ide-helper:models --nowrite` | Generate model helper tanpa overwrite |\n\n---"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "COMMANDS.md",
+    "heading": "📦 Composer Commands",
+    "chunk_index": 13,
+    "content": "## 📦 Composer Commands"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "COMMANDS.md",
+    "heading": "Development Server",
+    "chunk_index": 14,
+    "content": "### Development Server\n\n| Command | Fungsi |\n|---|---|\n| `composer run dev` | Full stack: serve + queue + schedule + logs + Vite |\n| `composer run dev-lara` | Laravel only: serve + queue + schedule + logs |\n| `composer run iam` | IAM mode: serve (port 8088) + queue + logs |"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "COMMANDS.md",
+    "heading": "Utility",
+    "chunk_index": 15,
+    "content": "### Utility\n\n| Command | Fungsi |\n|---|---|\n| `composer install` | Install PHP dependencies |\n| `composer update` | Update PHP dependencies |\n| `composer dump-autoload` | Regenerate autoload files |\n| `composer pint` | Jalankan Laravel Pint (code style fixer) |\n| `composer test` | Jalankan semua tests (Pest) |\n| `composer licenses` | Lihat lisensi dependencies |\n\n---"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "COMMANDS.md",
+    "heading": "🐳 Docker / Makefile Commands",
+    "chunk_index": 16,
+    "content": "## 🐳 Docker / Makefile Commands\n\n| Command | Fungsi |\n|---|---|\n| `make up` | Start Docker containers (background) |\n| `make down` | Stop dan hapus containers |\n| `make restart` | Restart containers |\n| `make build` | Build atau rebuild Docker images |\n| `make logs` | Tail logs dari semua containers |\n| `make shell:app` | SSH / bash ke container PHP |\n| `make shell:db` | SSH ke container MySQL |\n| `make shell:nginx` | SSH ke container Nginx |\n| `make ps` | Status containers |\n| `make test` | Jalankan tests di container |\n| `make fresh` | Reset database di container |\n| `make fresh:seed` | Reset + seed database di container |\n\n---"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "COMMANDS.md",
+    "heading": "📦 NPM Commands",
+    "chunk_index": 17,
+    "content": "## 📦 NPM Commands\n\n| Command | Fungsi |\n|---|---|\n| `npm install` | Install Node.js dependencies |\n| `npm run build` | Build frontend assets (production) |\n| `npm run dev` | Vite dev server dengan HMR |\n| `npm run lint` | Lint frontend code |\n\n---"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "COMMANDS.md",
+    "heading": "🐍 Python / RAG Commands",
+    "chunk_index": 18,
+    "content": "## 🐍 Python / RAG Commands"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "COMMANDS.md",
+    "heading": "Setup",
+    "chunk_index": 19,
+    "content": "### Setup\n\n```bash\ncd rag\npython3 -m venv venv\nsource venv/bin/activate\npip install -r requirements.txt"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "COMMANDS.md",
+    "heading": "(Optional) Setup LLM",
+    "chunk_index": 20,
+    "content": "# (Optional) Setup LLM\ncp .env.example .env"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "COMMANDS.md",
+    "heading": "Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL",
+    "chunk_index": 21,
+    "content": "# Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL\n```"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "COMMANDS.md",
+    "heading": "Sync, Ingest, Query",
+    "chunk_index": 22,
+    "content": "### Sync, Ingest, Query\n\n| Command | Fungsi |\n|---|---|\n| `python3 rag/scripts/sync_docs.py` | Sync dokumentasi dari docs/ ke rag/input/ |\n| `python3 rag/scripts/ingest.py` | Chunking markdown + graph extraction |\n| `python3 rag/scripts/query.py \"<pertanyaan>\"` | Query knowledge base |"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "COMMANDS.md",
+    "heading": "Contoh Query",
+    "chunk_index": 23,
+    "content": "### Contoh Query\n\n```bash"
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "COMMANDS.md",
+    "heading": "Retrieval-only",
+    "chunk_index": 24,
+    "content": "# Retrieval-only\npython3 rag/scripts/query.py \"jelaskan service SIIMUT\"\npython3 rag/scripts/query.py \"apa itu modular monolith?\"\npython3 rag/scripts/query.py \"command apa untuk setup development?\"\npython3 rag/scripts/query.py \"apa isi dari docs/?\""
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "COMMANDS.md",
+    "heading": "Dengan LLM (copy .env dulu)",
+    "chunk_index": 25,
+    "content": "# Dengan LLM (copy .env dulu)\npython3 rag/scripts/query.py \"jelaskan modul daily report\"\npython3 rag/scripts/query.py \"apa known issue terkait performa?\"\n```"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "COMMANDS.md",
+    "heading": "Rebuild",
+    "chunk_index": 26,
+    "content": "### Rebuild\n\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```\n\n---"
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "COMMANDS.md",
+    "heading": "🔧 Utility Scripts",
+    "chunk_index": 27,
+    "content": "## 🔧 Utility Scripts\n\n| Script | Fungsi |\n|---|---|\n| `setup.sh` | Setup environment (git clean + install + build) |\n| `generate-cache-pwa.sh` | Generate PWA cache manifest |\n| `scripts/` | Utility scripts (lihat folder scripts/) |\n\n---"
+  },
+  {
+    "id": "chunk-0028",
+    "source_file": "COMMANDS.md",
+    "heading": "📋 Ringkasan Command Terpopuler",
+    "chunk_index": 28,
+    "content": "## 📋 Ringkasan Command Terpopuler\n\n| Yang Ingin Dilakukan | Command |\n|---|---|\n| Jalankan app (full stack) | `composer run dev` |\n| Jalankan migrasi | `php artisan migrate` |\n| Generate permission | `php artisan shield:generate --all --panel=admin` |\n| Seed database | `php artisan db:seed` |\n| Cek routes | `php artisan route:list` |\n| Jalankan queue worker | `php artisan queue:listen` |\n| Jalankan scheduler | `php artisan schedule:work` |\n| Backup database | `php artisan backup:run` |\n| Cek log real-time | `php artisan pail` |\n| Docker up | `make up` |\n| Test app | `composer test` |\n| Query knowledge base | `python3 rag/scripts/query.py \"<tanya>\"` |\n\n---"
+  },
+  {
+    "id": "chunk-0029",
+    "source_file": "COMMANDS.md",
+    "heading": "RAG Metadata",
+    "chunk_index": 29,
+    "content": "## RAG Metadata"
+  },
+  {
+    "id": "chunk-0030",
+    "source_file": "COMMANDS.md",
+    "heading": "CMD-001 - sync:form-template-dates",
+    "chunk_index": 30,
+    "content": "## CMD-001 - sync:form-template-dates\n\nType: Command\nStatus: Active\nArea: Form Template\nRelated Modules:\n- MOD-002\nRelated Services:\n- Needs Verification\nSource:\n- commit: 4bb5bd7\n\nSummary:\nSinkronisasi tanggal form template."
+  },
+  {
+    "id": "chunk-0031",
+    "source_file": "COMMANDS.md",
+    "heading": "CMD-002 - test:ttd-url-resolver",
+    "chunk_index": 31,
+    "content": "## CMD-002 - test:ttd-url-resolver\n\nType: Command\nStatus: Active\nArea: Reporting\nRelated Modules:\n- MOD-003\nSource:\n- commit: 2fa6f26\n\nSummary:\nTest TTD URL resolver."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Konfigurasi",
+    "chunk_index": 1,
+    "content": "# Konfigurasi\n\nDokumentasi konfigurasi lingkungan dan file penting project SIIMUT.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Environment Variables",
+    "chunk_index": 2,
+    "content": "## Environment Variables\n\nFile `.env` adalah sumber utama konfigurasi aplikasi. Salin dari `.env.example`:\n\n```bash\ncp .env.example .env\n```"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Variabel Penting",
+    "chunk_index": 3,
+    "content": "### Variabel Penting\n\n| Variable | Contoh Default | Fungsi | Wajib |\n|---|---|---|---|\n| `APP_NAME` | `SI-IMUT` | Nama aplikasi | Ya |\n| `APP_ENV` | `production` | Environment (`local`, `production`) | Ya |\n| `APP_KEY` | `base64:...` | Key enkripsi aplikasi | Ya |\n| `APP_DEBUG` | `false` | Mode debug (true saat development) | Ya |\n| `APP_URL` | `http://127.0.0.1:8000` | URL aplikasi | Ya |\n| `APP_TIMEZONE` | `Asia/Jakarta` | Timezone aplikasi | Ya |\n| `APP_VERSION` | `1.0.0` | Versi aplikasi | Ya |\n| `DB_CONNECTION` | `mysql` | Driver database | Ya |\n| `DB_HOST` | `127.0.0.1` | Host database | Ya |\n| `DB_PORT` | `3306` | Port database | Ya |\n| `DB_DATABASE` | `siimut` | Nama database | Ya |\n| `DB_USERNAME` | `root` | User database | Ya |\n| `DB_PASSWORD` | - | Password database | Ya |\n| `SESSION_DRIVER` | `database` | Driver session (`database` wajib untuk IAM) | Ya |\n| `SESSION_LIFETIME` | `120` | Lifetime session (menit) | Ya |\n| `FILESYSTEM_DISK` | `s3` | Default filesystem disk | Ya |\n| `QUEUE_CONNECTION` | `database` | Driver queue | Ya |\n| `CACHE_STORE` | `database` | Driver cache | Ya |\n| `MAIL_MAILER` | `smtp` | Mail driver | Opsional |\n| `MAIL_HOST` | `smtp.mailtrap.io` | Mail host | Opsional |\n| `REDIS_HOST` | `127.0.0.1` | Host Redis | Opsional |"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "CONFIGURATION.md",
+    "heading": "MinIO / S3 Storage",
+    "chunk_index": 4,
+    "content": "### MinIO / S3 Storage\n\n```ini\nFILESYSTEM_DISK=s3\nAWS_ACCESS_KEY_ID=\nAWS_SECRET_ACCESS_KEY=\nAWS_DEFAULT_REGION=us-east-1\nAWS_BUCKET=siimut\nAWS_ENDPOINT=http://127.0.0.1:9000  # MinIO endpoint\nAWS_USE_PATH_STYLE_ENDPOINT=true\n```"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "CONFIGURATION.md",
+    "heading": "IAM / SSO",
+    "chunk_index": 5,
+    "content": "### IAM / SSO\n\n```ini"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "CONFIGURATION.md",
+    "heading": "IAM Client",
+    "chunk_index": 6,
+    "content": "# IAM Client\nIAM_BASE_URL=\nIAM_CLIENT_ID=\nIAM_CLIENT_SECRET=\nIAM_MODE_DISABLE=false"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Socialite",
+    "chunk_index": 7,
+    "content": "# Socialite\nGOOGLE_CLIENT_ID=\nGOOGLE_CLIENT_SECRET=\n```"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Queue",
+    "chunk_index": 8,
+    "content": "### Queue\n\n```ini\nQUEUE_CONNECTION=database"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "CONFIGURATION.md",
+    "heading": "atau",
+    "chunk_index": 9,
+    "content": "# atau\nQUEUE_CONNECTION=redis\n```\n\n---"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "CONFIGURATION.md",
+    "heading": "File Konfigurasi Penting",
+    "chunk_index": 10,
+    "content": "## File Konfigurasi Penting"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/app.php`",
+    "chunk_index": 11,
+    "content": "### `config/app.php`\n\nKonfigurasi dasar Laravel: timezone, locale, service providers, aliases.\n\n```php\n'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),\n'locale' => env('APP_LOCALE', 'id'),\n```"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/database.php`",
+    "chunk_index": 12,
+    "content": "### `config/database.php`\n\nKoneksi database default. Saat ini menggunakan MySQL via env."
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/filament.php`",
+    "chunk_index": 13,
+    "content": "### `config/filament.php`\n\nKonfigurasi panel admin Filament:\n- Path: `/admin`\n- Brand name\n- Theme: `dash-stack-theme-juniyasyos`\n- Middleware: auth, permission check"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/permission.php`",
+    "chunk_index": 14,
+    "content": "### `config/permission.php`\n\nKonfigurasi Spatie Laravel Permission:\n- Models\n- Cache settings\n- Column names"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/filesystems.php`",
+    "chunk_index": 15,
+    "content": "### `config/filesystems.php`\n\nFilesystem disks:\n- `local` — storage lokal\n- `s3` — S3/MinIO untuk production\n- Media library disk"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/media-library.php`",
+    "chunk_index": 16,
+    "content": "### `config/media-library.php`\n\nKonfigurasi Spatie Media Library:\n- Disk driver\n- Image conversions\n- Path generator (custom: `FolderPathGenerator`)"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/iam.php`",
+    "chunk_index": 17,
+    "content": "### `config/iam.php`\n\nKonfigurasi IAM/SSO integration."
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "CONFIGURATION.md",
+    "heading": "`config/filament-shield.php`",
+    "chunk_index": 18,
+    "content": "### `config/filament-shield.php`\n\nKonfigurasi Filament Shield untuk RBAC:\n- Panel assignment\n- Resource permissions\n- Role configuration\n\n---"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Perbedaan Environment",
+    "chunk_index": 19,
+    "content": "## Perbedaan Environment\n\n| Aspek | Local (.env) | Docker (.env.example.docker) | Production |\n|---|---|---|---|\n| `APP_ENV` | `local` | `local` / `production` | `production` |\n| `APP_DEBUG` | `true` | `false` | `false` |\n| `DB_HOST` | `127.0.0.1` | `db` (service name) | Host production |\n| `SESSION_DRIVER` | `database` | `database` | `database` |\n| `FILESYSTEM_DISK` | `local` (atau `s3` via MinIO) | `s3` | `s3` |\n| `QUEUE_CONNECTION` | `database` | `database` | `database` (atau `redis`) |\n| `CACHE_STORE` | `database` | `database` | `database` / `redis` |\n\n---"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Konfigurasi Khusus",
+    "chunk_index": 20,
+    "content": "## Konfigurasi Khusus"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Session",
+    "chunk_index": 21,
+    "content": "### Session\n\nSession menggunakan **database driver** untuk kompatibilitas dengan IAM client:\n\n```ini\nSESSION_DRIVER=database\nSESSION_LIFETIME=120\nSESSION_ENCRYPT=false\n```"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Queue",
+    "chunk_index": 22,
+    "content": "### Queue\n\nQueue menggunakan **database driver** sebagai default:\n\n```ini\nQUEUE_CONNECTION=database\n```\n\nAda script shell yang tersedia untuk beralih auth mode:\n\n```bash\n./switch-auth-mode.sh\n```\n\n---"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Keamanan",
+    "chunk_index": 23,
+    "content": "## Keamanan"
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Jangan commit secret ke repository",
+    "chunk_index": 24,
+    "content": "### Jangan commit secret ke repository\n\n- **File `.env` sudah di `.gitignore`** — jangan dipaksa commit.\n- **Jangan tulis password/token asli** di dokumentasi atau file publik.\n- **Regenerate APP_KEY** jika terlanjur terekspos: `php artisan key:generate`."
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "CONFIGURATION.md",
+    "heading": "File yang Dilindungi .gitignore",
+    "chunk_index": 25,
+    "content": "### File yang Dilindungi .gitignore\n\n```txt\n.env\n.storage\nnode_modules/\nvendor/\npublic/hot\npublic/build\n*.log\n```"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "CONFIGURATION.md",
+    "heading": "Best Practice",
+    "chunk_index": 26,
+    "content": "### Best Practice\n\n1. Gunakan `.env.example` sebagai template — isi dengan nilai dummy.\n2. Jangan pernah menyimpan secret di file konfigurasi yang di-commit.\n3. Rotasi key secara berkala.\n4. Untuk production, gunakan environment variables langsung (bukan file .env).\n\n---"
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "CONFIGURATION.md",
+    "heading": "TODO",
+    "chunk_index": 27,
+    "content": "## TODO\n\n- [ ] Dokumentasi konfigurasi Filament theme (`dash-stack-theme-juniyasyos`)\n- [ ] Dokumentasi konfigurasi Filament PWA\n- [ ] Dokumentasi konfigurasi Socialite provider\n- [ ] Dokumentasi konfigurasi backup (`laravel-backup`)"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "DECISIONS.md",
+    "heading": "Keputusan Teknis (Decisions)",
+    "chunk_index": 1,
+    "content": "# Keputusan Teknis (Decisions)\n\nDaftar keputusan teknis penting yang pernah diambil dalam pengembangan project SIIMUT,\nlengkap dengan konteks, alasan, dan dampak.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-001: Migrasi ke Modular Monolith Architecture",
+    "chunk_index": 2,
+    "content": "## DEC-001: Migrasi ke Modular Monolith Architecture\n\n- **ID**: DEC-001\n- **Tanggal**: 2026-06-09\n- **Status**: Implemented (v1.4.0)\n- **Context**: Project SIIMUT awalnya adalah Laravel monolith dengan technical\n  slicing — semua model di `App\\Models`, semua service di `App\\Services`, tanpa\n  bounded context. Cross-module dependency tanpa batas, tidak ada interface contract,\n  komunikasi antar fitur via method call langsung.\n- **Decision**: Migrasi ke Modular Monolith architecture menggunakan package\n  `nwidart/laravel-modules`. Aplikasi dipecah menjadi 7 modul independen:\n  Authorization, Benchmarking, DailyReport, FormEngine, ImutMaster, Laporan,\n  Reporting.\n- **Reason**:\n  - **Bounded Context** — setiap modul punya ruang lingkup jelas\n  - **Encapsulation** — internal implementation disembunyikan; hanya interface publik\n  - **Explicit Contracts** — komunikasi antar modul lewat interface/events\n  - **Independent Deployability** — satu modul bisa diubah tanpa efek samping ke modul lain\n  - **Tanpa overhead microservices** — masih satu deployment, satu database\n- **Impact**:\n  - ✅ Struktur kode lebih terorganisir per domain bisnis\n  - ✅ Mudah bagi developer baru untuk memahami scope modul\n  - ✅ Interface contracts memudahkan testing dan mocking\n  - ⚠️ Migration effort signifikan (629 commits sejak v1.3.4)\n  - ⚠️ Perlu disiplin tim untuk tidak melanggar batas modul\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-002: Ganti `whereHas` dengan JOIN untuk Query Aggregasi",
+    "chunk_index": 3,
+    "content": "## DEC-002: Ganti `whereHas` dengan JOIN untuk Query Aggregasi\n\n- **ID**: DEC-002\n- **Tanggal**: 2026-06-10\n- **Status**: Implemented (v1.4.0)\n- **Context**: Dashboard Daily Report loading 30 detik. Profiling menemukan\n  `whereHas()` di dalam query aggregasi `getComplianceSummaries()` menghasilkan\n  correlated subquery — MySQL eksekusi query tambahan untuk setiap baris.\n- **Decision**: Ganti `whereHas()` dengan `LEFT JOIN` langsung.\n- **Reason**: `whereHas()` di Laravel menggunakan correlated subquery yang sangat\n  lambat untuk dataset besar. JOIN langsung memberikan MySQL fleksibilitas optimizer\n  dan menghilangkan N+1 di level database.\n- **Impact**:\n  - ✅ Query time turun drastis (15.000ms → ~500ms)\n  - ✅ Dashboard bisa dipakai navigasi real-time\n  - ⚠️ Perlu memastikan JOIN kondisi sesuai dengan logic subquery\n  - ⚠️ Perlu composite index pendukung (lihat DEC-003)\n\n---"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-003: Composite Index pada `(form_template_id, report_date)`",
+    "chunk_index": 4,
+    "content": "## DEC-003: Composite Index pada `(form_template_id, report_date)`\n\n- **ID**: DEC-003\n- **Tanggal**: 2026-06-10\n- **Status**: Implemented (v1.4.0)\n- **Context**: Setelah fix `whereHas` → JOIN, query masih lambat karena MySQL\n  melakukan full table scan. Tidak ada index untuk kombinasi `form_template_id`\n  + `report_date` yang digunakan di GROUP BY dan WHERE.\n- **Decision**: Tambah composite index pada kolom `(form_template_id, report_date)`\n  di tabel `daily_report_responses`.\n- **Reason**: Composite index memungkinkan MySQL mengoptimasi WHERE + GROUP BY\n  dalam satu index scan. Tanpa index, MySQL harus scan semua baris.\n- **Impact**:\n  - ✅ Query time turun dari ~5.000ms menjadi < 50ms\n  - ✅ Dashboard loading total < 2 detik (dengan DEC-002 + DEC-004)\n  - ⚠️ Sedikit overhead write (index maintenance), tidak signifikan untuk workload harian\n\n---"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-004: Hapus Serialisasi Payload Matrix Data",
+    "chunk_index": 5,
+    "content": "## DEC-004: Hapus Serialisasi Payload Matrix Data\n\n- **ID**: DEC-004\n- **Tanggal**: 2026-06-10\n- **Status**: Implemented (v1.4.0)\n- **Context**: Setelah fix query dan index, masih ada bottleneck — payload\n  response dari endpoint matrix data sangat besar karena serialisasi data yang\n  tidak perlu.\n- **Decision**: Hapus serialisasi matrixData payload. Data dikirim dalam format\n  mentah yang lebih ringan, serialisasi dilakukan di frontend.\n- **Reason**: Data matrix sudah dalam bentuk array — serialisasi double tidak\n  diperlukan dan membuang bandwidth. Frontend bisa handle format mentah lebih cepat.\n- **Impact**:\n  - ✅ Response size turun drastis\n  - ✅ Frontend render lebih cepat\n  - ✅ Loading dashboard dari 30 detik → < 2 detik (dengan DEC-002 + DEC-003)\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-005: Gunakan `database` sebagai Session Driver",
+    "chunk_index": 6,
+    "content": "## DEC-005: Gunakan `database` sebagai Session Driver\n\n- **ID**: DEC-005\n- **Tanggal**: 2026-06-01\n- **Status**: Active\n- **Context**: IAM/SSO client (`juniyasyos/nexaid-client`) membutuhkan session\n  persistence untuk menyimpan state SSO. Driver session `file` atau `cookie`\n  tidak mendukung fitur yang dibutuhkan client.\n- **Decision**: Gunakan `SESSION_DRIVER=database` sebagai default.\n  Redis sebagai alternatif untuk production skala besar (masih kompatibel).\n- **Reason**: IAM client membutuhkan akses ke session data yang hanya bisa\n  dijamin dengan database atau Redis. File session tidak reliable untuk SSO.\n- **Impact**:\n  - ✅ SSO login/logout berfungsi dengan baik\n  - ✅ Session persistence untuk aplikasi multi-server (dengan database shared)\n  - ⚠️ Performa sedikit lebih rendah dibanding file/cookie (tapi diabaikan untuk skala saat ini)\n  - ⚠️ Jangan diganti ke `file` atau `cookie` selama IAM aktif\n\n---"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-006: Integrasi IAM/SSO dengan nexaid-client",
+    "chunk_index": 7,
+    "content": "## DEC-006: Integrasi IAM/SSO dengan nexaid-client\n\n- **ID**: DEC-006\n- **Tanggal**: 2026-06-10\n- **Status**: Implemented (v1.4.0)\n- **Context**: Project membutuhkan Single Sign-On (SSO) untuk integrasi dengan\n  sistem IAM rumah sakit. Sebelumnya menggunakan `auth-bridge-client` yang sudah\n  tidak di-maintain.\n- **Decision**: Migrasi dari `auth-bridge-client` ke `juniyasyos/nexaid-client`\n  untuk integrasi IAM/SSO.\n- **Reason**: `auth-bridge-client` deprecated dan tidak mendapat update keamanan.\n  `nexaid-client` lebih aktif di-maintain, mendukung fitur SSO yang lebih lengkap\n  (logout SSO, application switcher, session handling).\n- **Impact**:\n  - ✅ SSO lebih stabil dengan session expiration handling\n  - ✅ Application Switcher Component untuk navigasi antar aplikasi\n  - ✅ LogoutController menangani SSO dan local logout\n  - ⚠️ Breaking change — semua komponen harus migrasi ke nexaid-client\n  - ⚠️ Update `.env` dengan konfigurasi baru (IAM_BASE_URL, IAM_CLIENT_ID, IAM_CLIENT_SECRET)\n\n---"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-007: Auto-generation Laporan dari Monthly ke Daily",
+    "chunk_index": 8,
+    "content": "## DEC-007: Auto-generation Laporan dari Monthly ke Daily\n\n- **ID**: DEC-007\n- **Tanggal**: 2026-06-10\n- **Status**: Implemented (v1.4.0)\n- **Context**: Laporan di-generate bulanan — data yang ditampilkan bisa basi\n  (stale) karena user harus menunggu akhir bulan untuk melihat akumulasi.\n- **Decision**: Ubah auto-generation schedule dari monthly ke daily.\n- **Reason**: Kebutuhan user untuk melihat data harian yang up-to-date.\n  Monthly generation terlalu lambat untuk monitoring mutu real-time.\n- **Impact**:\n  - ✅ Data lebih real-time — laporan selalu up-to-date\n  - ⚠️ Beban server meningkat (perlu optimasi query — lihat DEC-002, DEC-003)\n\n---"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-008: Format Dokumentasi Bilingual",
+    "chunk_index": 9,
+    "content": "## DEC-008: Format Dokumentasi Bilingual\n\n- **ID**: DEC-008\n- **Tanggal**: 2026-06-13\n- **Status**: Active\n- **Context**: Dokumentasi project perlu ditulis dalam bahasa yang mudah\n  dipahami oleh tim mutu rumah sakit (Indonesia) dan developer (bisa campuran).\n- **Decision**: Dokumentasi teknis ditulis dalam Bahasa Indonesia. Kata teknis\n  (service, database, deployment) boleh Inggris. File tertentu tetap Inggris\n  (SBOM, LICENSE, technical audit docs).\n- **Reason**: Mayoritas pengguna dan developer adalah penutur Bahasa Indonesia.\n  Konsistensi bahasa dalam satu file lebih penting daripada memaksakan satu bahasa\n  untuk semua file.\n- **Impact**:\n  - ✅ Dokumentasi lebih mudah dipahami tim non-teknis\n  - ✅ Developer tetap bisa menggunakan istilah teknis standar\n  - ⚠️ Perlu konsistensi — jangan campur ID/EN dalam paragraf yang sama\n\n---"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-009: GraphRAG Ringan Berbasis Python",
+    "chunk_index": 10,
+    "content": "## DEC-009: GraphRAG Ringan Berbasis Python\n\n- **ID**: DEC-009\n- **Tanggal**: 2026-06-13\n- **Status**: Implemented (v0.3.0)\n- **Context**: Butuh sistem knowledge base untuk query cepat dari dokumentasi\n  tanpa harus membaca puluhan file manual. Target: developer dan AI agents.\n- **Decision**: Bangun POC GraphRAG ringan berbasis Python dengan dependency\n  minimal (rich, python-dotenv, anthropic). Pattern-based graph extraction,\n  keyword scoring, LLM opsional.\n- **Reason**:\n  - **Ringan** — 3 dependencies Python, tanpa Docker/Neo4j\n  - **File-based** — output JSON, mudah dibaca tools lain\n  - **LLM opsional** — tetap jalan tanpa API key\n  - **Fokus docs** — tidak scan source code, aman untuk POC\n- **Impact**:\n  - ✅ Query dokumentasi jadi cepat — cukup `python3 rag/scripts/query.py`\n  - ✅ Bisa diintegrasikan dengan AI agents untuk context retrieval\n  - ⚠️ Pattern-based extraction — terbatas pada kata kunci eksplisit\n  - ⚠️ Source code tidak diindeks (belum)\n\n---"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "DECISIONS.md",
+    "heading": "RAG Metadata",
+    "chunk_index": 11,
+    "content": "## RAG Metadata"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "DECISIONS.md",
+    "heading": "DEC-001 - Migrasi ke Modular Monolith Architecture",
+    "chunk_index": 12,
+    "content": "## DEC-001 - Migrasi ke Modular Monolith Architecture\n\nType: Decision\nStatus: Implemented\nArea: Arsitektur\nRelated Modules:\n- MOD-001\n- MOD-002\n- MOD-003\n- MOD-004\n- MOD-005\nRelated Services:\n- Needs Verification\nRelated Issues:\n- Needs Verification\nSource:\n- commit: 57291cf\n\nSummary:\nKeputusan arsitektur besar untuk bermigrasi dari Laravel Monolith konvensional menuju Modular Monolith dengan memecah fitur menjadi modul terpisah seperti Authorization, DailyReport, Laporan, FormEngine, dll."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Panduan Deployment",
+    "chunk_index": 1,
+    "content": "# Panduan Deployment\n\nPanduan untuk mendeploy SIIMUT ke lingkungan production.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Prasyarat",
+    "chunk_index": 2,
+    "content": "## Prasyarat"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Server Requirements",
+    "chunk_index": 3,
+    "content": "### Server Requirements\n\n| Komponen | Spesifikasi Minimal |\n|---|---|\n| CPU | 2 core |\n| RAM | 4 GB |\n| Storage | 20 GB + storage media |\n| OS | Ubuntu 22.04+ / Debian 12+ |"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Software",
+    "chunk_index": 4,
+    "content": "### Software\n\n- PHP 8.3+ dengan ekstensi yang diperlukan\n- Composer 2.x\n- MySQL 8.0+ atau MariaDB 10.6+\n- Nginx atau Apache\n- Redis (opsional, untuk cache/queue)\n- Supervisor (untuk queue worker)\n- Node.js 22.x (untuk build frontend)\n\n---"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Alur Deployment",
+    "chunk_index": 5,
+    "content": "## Alur Deployment"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "1. Build Frontend",
+    "chunk_index": 6,
+    "content": "### 1. Build Frontend\n\n```bash\nnpm install\nnpm run build\n```\n\nIni menghasilkan file di `public/build/`."
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "2. Setup Environment Production",
+    "chunk_index": 7,
+    "content": "### 2. Setup Environment Production\n\n```bash\ncp .env.example .env"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Edit .env:",
+    "chunk_index": 8,
+    "content": "# Edit .env:"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "APP_ENV=production",
+    "chunk_index": 9,
+    "content": "#   APP_ENV=production"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "APP_DEBUG=false",
+    "chunk_index": 10,
+    "content": "#   APP_DEBUG=false"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "APP_URL=https://your-domain.com",
+    "chunk_index": 11,
+    "content": "#   APP_URL=https://your-domain.com"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "DB_HOST, DB_USERNAME, DB_PASSWORD sesuaikan",
+    "chunk_index": 12,
+    "content": "#   DB_HOST, DB_USERNAME, DB_PASSWORD sesuaikan"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "FILESYSTEM_DISK=s3",
+    "chunk_index": 13,
+    "content": "#   FILESYSTEM_DISK=s3"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "QUEUE_CONNECTION=database (atau redis)",
+    "chunk_index": 14,
+    "content": "#   QUEUE_CONNECTION=database (atau redis)\nphp artisan key:generate\n```"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "3. Migration & Seed",
+    "chunk_index": 15,
+    "content": "### 3. Migration & Seed\n\n```bash\nphp artisan migrate --force\nphp artisan db:seed --force\n```"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "4. Generate Permission",
+    "chunk_index": 16,
+    "content": "### 4. Generate Permission\n\n```bash\nphp artisan shield:generate --all --panel=admin\nphp artisan shield:super-admin --user=1\n```"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "5. Optimize Laravel",
+    "chunk_index": 17,
+    "content": "### 5. Optimize Laravel\n\n```bash\nphp artisan optimize\nphp artisan config:cache\nphp artisan route:cache\nphp artisan view:cache\nphp artisan event:cache\n```"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "6. Storage",
+    "chunk_index": 18,
+    "content": "### 6. Storage\n\n```bash\nphp artisan storage:link\n```"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "7. Setup Queue Worker (Supervisor)",
+    "chunk_index": 19,
+    "content": "### 7. Setup Queue Worker (Supervisor)\n\nBuat file `/etc/supervisor/conf.d/siimut-worker.conf`:\n\n```ini\n[program:siimut-queue]\nprocess_name=%(program_name)s_%(process_num)02d\ncommand=php /path/to/siimut/artisan queue:work --sleep=3 --tries=3 --max-time=3600\nautostart=true\nautorestart=true\nstopasgroup=true\nkillasgroup=true\nuser=www-data\nnumprocs=2\nredirect_stderr=true\nstdout_logfile=/path/to/siimut/storage/logs/queue-worker.log\nstopwaitsecs=3600\n```\n\n```bash\nsudo supervisorctl reread\nsudo supervisorctl update\nsudo supervisorctl start siimut-queue:*\n```"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "8. Setup Scheduler (Cron)",
+    "chunk_index": 20,
+    "content": "### 8. Setup Scheduler (Cron)\n\nTambahkan ke crontab:\n\n```bash\n* * * * * cd /path/to/siimut && php artisan schedule:run >> /dev/null 2>&1\n```"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "9. Setup Nginx",
+    "chunk_index": 21,
+    "content": "### 9. Setup Nginx\n\n```nginx\nserver {\n    listen 80;\n    server_name your-domain.com;\n    root /path/to/siimut/public;\n\n    add_header X-Frame-Options \"SAMEORIGIN\";\n    add_header X-Content-Type-Options \"nosniff\";\n\n    index index.php;\n\n    charset utf-8;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n\n    location = /favicon.ico { access_log off; log_not_found off; }\n    location = /robots.txt  { access_log off; log_not_found off; }\n\n    error_page 404 /index.php;\n\n    location ~ \\.php$ {\n        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;\n        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;\n        include fastcgi_params;\n    }\n\n    location ~ /\\.(?!well-known).* {\n        deny all;\n    }\n}\n```\n\n---"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Deployment via Script",
+    "chunk_index": 22,
+    "content": "## Deployment via Script\n\nProject menyediakan script deployment:"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Production Setup",
+    "chunk_index": 23,
+    "content": "### Production Setup\n\n```bash\ncomposer run prod-setup\n```\n\n> ⚠️ Script ini melakukan `db:wipe` (menghapus semua data) — **jangan jalankan di server production yang sudah aktif**."
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Production Update",
+    "chunk_index": 24,
+    "content": "### Production Update\n\n```bash\ncomposer run prod-only\n```\n\nScript ini menjalankan:\n1. Hapus debugbar cache.\n2. Migrasi database.\n3. Seed database.\n4. Generate permission.\n5. Set super admin.\n6. Git clean.\n\n---"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Service yang Perlu Berjalan",
+    "chunk_index": 25,
+    "content": "## Service yang Perlu Berjalan\n\n| Service | Fungsi | Cara Jalankan |\n|---|---|---|\n| Web Server | Serve aplikasi | Nginx / Apache |\n| PHP-FPM | Process PHP | `php-fpm` |\n| MySQL | Database | `mysqld` (Docker/manual) |\n| Queue Worker | Proses job | Supervisor / `php artisan queue:work` |\n| Scheduler | Task terjadwal | Cron (`* * * * *`) |\n| Redis (opsional) | Cache/queue | `redis-server` |\n\n---"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Validasi Setelah Deployment",
+    "chunk_index": 26,
+    "content": "## Validasi Setelah Deployment\n\n```bash"
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Cek halaman utama (harus 200)",
+    "chunk_index": 27,
+    "content": "# Cek halaman utama (harus 200)\ncurl -I https://your-domain.com"
+  },
+  {
+    "id": "chunk-0028",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Cek health check",
+    "chunk_index": 28,
+    "content": "# Cek health check\nphp artisan about"
+  },
+  {
+    "id": "chunk-0029",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Cek koneksi database",
+    "chunk_index": 29,
+    "content": "# Cek koneksi database\nphp artisan db:show"
+  },
+  {
+    "id": "chunk-0030",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Cek queue worker",
+    "chunk_index": 30,
+    "content": "# Cek queue worker\nphp artisan queue:monitor"
+  },
+  {
+    "id": "chunk-0031",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Cek cache",
+    "chunk_index": 31,
+    "content": "# Cek cache\nphp artisan cache:table\n```\n\n---"
+  },
+  {
+    "id": "chunk-0032",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Rollback",
+    "chunk_index": 32,
+    "content": "## Rollback"
+  },
+  {
+    "id": "chunk-0033",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Rollback Database",
+    "chunk_index": 33,
+    "content": "### Rollback Database\n\n```bash"
+  },
+  {
+    "id": "chunk-0034",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Rollback 1 step",
+    "chunk_index": 34,
+    "content": "# Rollback 1 step\nphp artisan migrate:rollback --step=1 --force"
+  },
+  {
+    "id": "chunk-0035",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Rollback semua",
+    "chunk_index": 35,
+    "content": "# Rollback semua\nphp artisan migrate:reset --force\n```"
+  },
+  {
+    "id": "chunk-0036",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Rollback Code",
+    "chunk_index": 36,
+    "content": "### Rollback Code\n\n```bash\ngit revert HEAD"
+  },
+  {
+    "id": "chunk-0037",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "atau",
+    "chunk_index": 37,
+    "content": "# atau\ngit reset --hard <previous-tag>\n```"
+  },
+  {
+    "id": "chunk-0038",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Rollback Frontend",
+    "chunk_index": 38,
+    "content": "### Rollback Frontend\n\n```bash"
+  },
+  {
+    "id": "chunk-0039",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Kembalikan build sebelumnya",
+    "chunk_index": 39,
+    "content": "# Kembalikan build sebelumnya"
+  },
+  {
+    "id": "chunk-0040",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "(simpan backup public/build/ sebelum deploy)",
+    "chunk_index": 40,
+    "content": "# (simpan backup public/build/ sebelum deploy)\nmv public/build public/build-new\nmv public/build-backup public/build\n```\n\n---"
+  },
+  {
+    "id": "chunk-0041",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "Checklist Sebelum Deployment",
+    "chunk_index": 41,
+    "content": "## Checklist Sebelum Deployment\n\n- [ ] Semua test lulus: `php artisan test`\n- [ ] Build frontend berhasil: `npm run build`\n- [ ] `.env` production sudah benar (APP_DEBUG=false)\n- [ ] APP_KEY sudah di-generate\n- [ ] Storage link sudah dibuat\n- [ ] Queue worker berjalan\n- [ ] Scheduler aktif (cron)\n- [ ] Permission storage sudah benar (775)\n- [ ] SSL/TLS terkonfigurasi\n- [ ] Backup database sudah dibuat\n- [ ] Debugbar non-aktif di production\n- [ ] Changelog sudah update\n\n---"
+  },
+  {
+    "id": "chunk-0042",
+    "source_file": "DEPLOYMENT.md",
+    "heading": "TODO",
+    "chunk_index": 42,
+    "content": "## TODO\n\n- [ ] Deployment via Docker Swarm / Kubernetes\n- [ ] Backup otomatis database\n- [ ] Monitoring (Laravel Pulse / Sentry)\n- [ ] CI/CD pipeline (GitHub Actions)\n- [ ] Blue-green deployment strategy"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Panduan Development",
+    "chunk_index": 1,
+    "content": "# Panduan Development\n\nPanduan untuk developer yang berkontribusi pada project SIIMUT.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Setup Development",
+    "chunk_index": 2,
+    "content": "## Setup Development"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Prasyarat",
+    "chunk_index": 3,
+    "content": "### Prasyarat\n\nLihat [INSTALLATION.md](INSTALLATION.md) untuk panduan instalasi lengkap."
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Tools yang Direkomendasikan",
+    "chunk_index": 4,
+    "content": "### Tools yang Direkomendasikan\n\n| Tools | Fungsi |\n|---|---|\n| **VS Code** | Editor utama |\n| **Laravel IDE Helper** | Auto-completion untuk Facades, Models |\n| **Laravel Pint** | Code style fixer (otomatis) |\n| **Pest** | Testing framework |\n| **Laravel Debugbar** | Debugging toolbar |\n| **Laravel Pail** | Log viewer real-time |\n| **TablePlus / Sequel Ace** | Database GUI |"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Setup IDE Helper",
+    "chunk_index": 5,
+    "content": "### Setup IDE Helper\n\n```bash\nphp artisan ide-helper:generate\nphp artisan ide-helper:models --nowrite\n```\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Menjalankan Project",
+    "chunk_index": 6,
+    "content": "## Menjalankan Project"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Mode Development (dengan Hot Reload)",
+    "chunk_index": 7,
+    "content": "### Mode Development (dengan Hot Reload)\n\n```bash\ncomposer run dev\n```\n\nIni menjalankan 5 proses sekaligus:\n- **Server**: `php artisan serve` (port 8000)\n- **Queue**: Worker background job\n- **Schedule**: Task scheduler\n- **Logs**: Laravel Pail (real-time log)\n- **Vite**: HMR untuk frontend"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Mode Development (Laravel only)",
+    "chunk_index": 8,
+    "content": "### Mode Development (Laravel only)\n\n```bash\ncomposer run dev-lara\n```\n\nTanpa Vite — cocok jika frontend sudah di-build.\n\n---"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Coding Convention",
+    "chunk_index": 9,
+    "content": "## Coding Convention"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "PHP (Laravel + Filament)",
+    "chunk_index": 10,
+    "content": "### PHP (Laravel + Filament)\n\n- **PHP**: Ikuti standar PSR-12 (dijaga otomatis oleh Laravel Pint).\n- **Model naming**: Singular (`User`, `ImutData`, `DailyReportEntry`).\n- **Table naming**: Plural snake_case (`imut_data`, `daily_report_entries`).\n- **Controller naming**: Singular (`UserController`).\n- **Service naming**: Deskriptif (`ImutDataPermissionService`).\n- **Route naming**: snake_case (`imut-data.index`)."
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Database",
+    "chunk_index": 11,
+    "content": "### Database\n\n- Migration: `YYYY_MM_DD_HHMMSS_create_xxx_table.php`.\n- Gunakan `foreignId()` untuk relasi.\n- SoftDeletes untuk data penting.\n- Timestamps wajib (created_at, updated_at, created_by, updated_by)."
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Frontend (Blade + Livewire + Alpine.js)",
+    "chunk_index": 12,
+    "content": "### Frontend (Blade + Livewire + Alpine.js)\n\n- Blade: lowercase dengan dot notation (`filament.resources.index`).\n- Livewire: PascalCase component, kebab-case view.\n- Alpine.js: Gunakan store untuk state kompleks (`x-data` untuk lokal).\n- CSS: Tailwind utility classes."
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Javascript",
+    "chunk_index": 13,
+    "content": "### Javascript\n\n- Format: Prettier / standard.\n- Module: ES modules.\n- Hindari jQuery — gunakan Alpine.js atau vanilla JS.\n\n---"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Branching & Versioning",
+    "chunk_index": 14,
+    "content": "## Branching & Versioning"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Branch Strategy",
+    "chunk_index": 15,
+    "content": "### Branch Strategy\n\n```txt\nmain              → Stabil, production-ready\n├── develop       → Integration branch (modular-monolist)\n│   ├── feature/* → Fitur baru\n│   ├── fix/*     → Bug fix\n│   └── docs/*    → Perubahan dokumentasi\n```\n\nAturan:\n- `main` hanya menerima merge dari `develop`.\n- Fitur baru di branch `feature/nama-fitur`.\n- Bug fix di branch `fix/deskripsi-bug`.\n- Dokumentasi di branch `docs/deskripsi`."
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Versioning",
+    "chunk_index": 16,
+    "content": "### Versioning\n\nLihat [VERSIONING.md](VERSIONING.md) untuk aturan lengkap.\n\n---"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Cara Menambah Fitur Baru",
+    "chunk_index": 17,
+    "content": "## Cara Menambah Fitur Baru"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "1. Buat Branch",
+    "chunk_index": 18,
+    "content": "### 1. Buat Branch\n\n```bash\ngit checkout modular-monolist\ngit pull\ngit checkout -b feature/nama-fitur\n```"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "2. Identifikasi Modul",
+    "chunk_index": 19,
+    "content": "### 2. Identifikasi Modul\n\nTentukan modul yang tepat di `app/Modules/`:\n\n| Modul | Cocok untuk |\n|---|---|\n| `Authorization` | Manajemen user, role, permission, SSO |\n| `DailyReport` | Laporan harian dan entri data |\n| `FormEngine` | Form builder, template, schema |\n| `ImutMaster` | Master data indikator mutu |\n| `Laporan` | Laporan periodik |\n| `Reporting` | Report/export service |\n| `Benchmarking` | Benchmarking indikator |\n\nAtau buat service di `app/Services/` jika logic lintas modul."
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "3. Buat Migration",
+    "chunk_index": 20,
+    "content": "### 3. Buat Migration\n\n```bash"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Migration global",
+    "chunk_index": 21,
+    "content": "# Migration global\nphp artisan make:migration create_xxx_table"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Migration modul",
+    "chunk_index": 22,
+    "content": "# Migration modul"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Buat manual di app/Modules/{Module}/Database/Migrations/",
+    "chunk_index": 23,
+    "content": "# Buat manual di app/Modules/{Module}/Database/Migrations/\n```"
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "4. Buat Model",
+    "chunk_index": 24,
+    "content": "### 4. Buat Model\n\n```php\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass YourModel extends Model\n{\n    protected $fillable = [];\n    // Relasi, casts, boot()\n}\n```"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "5. Buat Filament Resource",
+    "chunk_index": 25,
+    "content": "### 5. Buat Filament Resource\n\n```bash\nphp artisan make:filament-resource YourModel\n```"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "6. Tambahkan Service / Logic",
+    "chunk_index": 26,
+    "content": "### 6. Tambahkan Service / Logic\n\n- Service class di `app/Services/` atau `app/Modules/{Module}/Services/`.\n- Policy di `app/Policies/`.\n- Query Builder di `app/QueryBuilders/`."
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "7. Testing",
+    "chunk_index": 27,
+    "content": "### 7. Testing\n\n```bash\nphp artisan make:test YourFeatureTest --pest"
+  },
+  {
+    "id": "chunk-0028",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "atau",
+    "chunk_index": 28,
+    "content": "# atau\nphp artisan make:test --unit YourUnitTest --pest\n```"
+  },
+  {
+    "id": "chunk-0029",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "8. Update Dokumentasi",
+    "chunk_index": 29,
+    "content": "### 8. Update Dokumentasi\n\nJika fitur mengubah:\n- Command / cara penggunaan → update `docs/USAGE.md`.\n- Konfigurasi → update `docs/CONFIGURATION.md`.\n- Struktur folder → update `docs/PROJECT_STRUCTURE.md`.\n- Catatan changelog di `CHANGELOG.md`."
+  },
+  {
+    "id": "chunk-0030",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "9. Commit & Push",
+    "chunk_index": 30,
+    "content": "### 9. Commit & Push\n\n```bash\ngit add .\ngit commit -m \"feat: menambahkan fitur xxx\"\ngit push origin feature/nama-fitur\n```\n\nBuat Pull Request ke branch `modular-monolist`.\n\n---"
+  },
+  {
+    "id": "chunk-0031",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Menambah Dokumentasi",
+    "chunk_index": 31,
+    "content": "## Menambah Dokumentasi\n\nSaat fitur berubah, periksa checklist berikut:\n\n- [ ] Apakah ada command/perintah baru? → Update `docs/USAGE.md`\n- [ ] Apakah ada konfigurasi baru? → Update `docs/CONFIGURATION.md`\n- [ ] Apakah struktur folder berubah? → Update `docs/PROJECT_STRUCTURE.md`\n- [ ] Apakah cara install berubah? → Update `docs/INSTALLATION.md`\n- [ ] Apakah ada masalah potensial? → Update `docs/TROUBLESHOOTING.md`\n- [ ] Catat di `CHANGELOG.md`\n\n---"
+  },
+  {
+    "id": "chunk-0032",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Checklist Sebelum Commit",
+    "chunk_index": 32,
+    "content": "## Checklist Sebelum Commit\n\n- [ ] Kode sudah dites secara lokal.\n- [ ] Tidak ada secret yang ikut ter-commit (cek `.env` tidak ikut).\n- [ ] Dokumentasi diperbarui jika ada perubahan fitur.\n- [ ] CHANGELOG diperbarui jika ada perubahan penting.\n- [ ] Tidak ada `dd()`, `dump()`, `ray()` yang tertinggal.\n- [ ] Migration sudah dicek bisa rollback.\n- [ ] Factory/Seeder sudah update jika model berubah.\n\n---"
+  },
+  {
+    "id": "chunk-0033",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Perintah Testing",
+    "chunk_index": 33,
+    "content": "## Perintah Testing\n\n```bash"
+  },
+  {
+    "id": "chunk-0034",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Jalankan semua test",
+    "chunk_index": 34,
+    "content": "# Jalankan semua test\nphp artisan test"
+  },
+  {
+    "id": "chunk-0035",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Jalankan dengan Pest",
+    "chunk_index": 35,
+    "content": "# Jalankan dengan Pest\n./vendor/bin/pest"
+  },
+  {
+    "id": "chunk-0036",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Test spesifik",
+    "chunk_index": 36,
+    "content": "# Test spesifik\n./vendor/bin/pest tests/Feature/YourTest.php"
+  },
+  {
+    "id": "chunk-0037",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Coverage",
+    "chunk_index": 37,
+    "content": "# Coverage\nphp artisan test --coverage"
+  },
+  {
+    "id": "chunk-0038",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Dengan parallel",
+    "chunk_index": 38,
+    "content": "# Dengan parallel\nphp artisan test --parallel\n```\n\n---"
+  },
+  {
+    "id": "chunk-0039",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Debugging Tools",
+    "chunk_index": 39,
+    "content": "## Debugging Tools"
+  },
+  {
+    "id": "chunk-0040",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Laravel Debugbar",
+    "chunk_index": 40,
+    "content": "### Laravel Debugbar\n\nAktif di `config/debugbar.php`:\n\n```env\nAPP_DEBUG=true  # Debugbar aktif otomatis\n```"
+  },
+  {
+    "id": "chunk-0041",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Laravel Pail",
+    "chunk_index": 41,
+    "content": "### Laravel Pail\n\n```bash\nphp artisan pail\n```"
+  },
+  {
+    "id": "chunk-0042",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Log Viewer",
+    "chunk_index": 42,
+    "content": "### Log Viewer\n\n```bash\ntail -f storage/logs/laravel.log\n```"
+  },
+  {
+    "id": "chunk-0043",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Queue Monitoring",
+    "chunk_index": 43,
+    "content": "### Queue Monitoring\n\n```bash\nphp artisan queue:monitor\nphp artisan queue:table  # Cek tabel jobs\n```\n\n---"
+  },
+  {
+    "id": "chunk-0044",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Lint & Code Style",
+    "chunk_index": 44,
+    "content": "## Lint & Code Style\n\n```bash"
+  },
+  {
+    "id": "chunk-0045",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Laravel Pint (PSR-12)",
+    "chunk_index": 45,
+    "content": "# Laravel Pint (PSR-12)\n./vendor/bin/pint"
+  },
+  {
+    "id": "chunk-0046",
+    "source_file": "DEVELOPMENT.md",
+    "heading": "Dry run",
+    "chunk_index": 46,
+    "content": "# Dry run\n./vendor/bin/pint --test\n```"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "Aturan Update Dokumentasi",
+    "chunk_index": 1,
+    "content": "# Aturan Update Dokumentasi\n\nPanduan untuk menulis dan memperbarui dokumentasi project SIIMUT.\nBerlaku untuk semua kontributor (manusia dan AI agents).\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "📋 Aturan Dasar",
+    "chunk_index": 2,
+    "content": "## 📋 Aturan Dasar"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "1. Lokasi File",
+    "chunk_index": 3,
+    "content": "### 1. Lokasi File\n\n| File | Lokasi | Fungsi |\n|---|---|---|\n| Dokumentasi utama | `docs/*.md` | Panduan, referensi, arsitektur |\n| Release notes | `docs/releases/vX.Y.Z.md` | Catatan rilis per versi |\n| Panduan upgrade | `docs/upgrade/*.md` | Panduan migrasi teknis |\n| AI agents | `docs/ai-agents/*.md` | Konfigurasi agen AI |\n| Gambar | `docs/images/` | Screenshot, diagram, ilustrasi |\n| Root docs | `AGENTS.md`, `CHANGELOG.md` | Root-level dokumentasi |\n| RAG system | `rag/*` | Knowledge base query |\n| Template release | `docs/releases/template.md` | Template — **jangan di-copy ke rag/input/** |"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "2. Format Markdown",
+    "chunk_index": 4,
+    "content": "### 2. Format Markdown\n\n```markdown"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "Judul H1 — Nama Dokumen",
+    "chunk_index": 5,
+    "content": "# Judul H1 — Nama Dokumen"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "Ringkasan",
+    "chunk_index": 6,
+    "content": "## Ringkasan\n\nParagraf pengantar singkat.\n\n---"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "Heading H2 — Section Utama",
+    "chunk_index": 7,
+    "content": "## Heading H2 — Section Utama"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "Heading H3 — Sub-section",
+    "chunk_index": 8,
+    "content": "### Heading H3 — Sub-section\n\nTeks biasa dengan **bold** untuk penekanan.\n\n| Table | Header |\n|---|---|\n| Data 1 | Data 2 |\n\n`kode inline` untuk variabel, command, file path.\n\n```bash"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "code block untuk command",
+    "chunk_index": 9,
+    "content": "# code block untuk command\nphp artisan migrate\n`` `\n```"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "3. Bahasa",
+    "chunk_index": 10,
+    "content": "### 3. Bahasa\n\n- **Dokumentasi teknis**: Bahasa Indonesia (konsisten)\n- **Kata teknis**: Boleh Inggris (service, database, deployment)\n- **File tertentu**: Inggris jika kontennya spesifik (SBOM.md, LICENSE)\n- **Konsisten dalam satu file** — jangan campur ID/EN dalam paragraf yang sama"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "4. Frontmatter / Metadata",
+    "chunk_index": 11,
+    "content": "### 4. Frontmatter / Metadata\n\nSetiap issue di KNOWN_ISSUES.md wajib punya:\n\n```\n- **ID**: KI-001\n- **Status**: Open / Resolved / Needs Verification\n- **Severity**: Critical / High / Medium / Low\n- **Area**: Arsitektur / Konfigurasi / Dependency / Performance / Security / UI\n```\n\nSetiap decision di DECISIONS.md wajib punya:\n\n```\n- **ID**: DEC-001\n- **Tanggal**: YYYY-MM-DD\n- **Status**: Active / Implemented / Deprecated\n- **Context**: ...\n- **Decision**: ...\n- **Reason**: ...\n- **Impact**: ...\n```"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "5. Template Release Notes",
+    "chunk_index": 12,
+    "content": "### 5. Template Release Notes\n\nGunakan `docs/releases/template.md` untuk membuat release note baru.\nTemplate ini TIDAK di-copy ke rag/input/ oleh sync_docs.py.\n\n---"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "🚫 Larangan",
+    "chunk_index": 13,
+    "content": "## 🚫 Larangan\n\n| Larangan | Alasan |\n|---|---|\n| Jangan scan `vendor/`, `node_modules/`, `storage/`, `logs/`, `build/` | Performa, file raksasa, binary |\n| Jangan hardcode API key atau secret | Keamanan |\n| Jangan ubah source code utama tanpa approval | Stabilitas aplikasi |\n| Jangan hapus dokumentasi lama tanpa migrasi | Traceability |\n| Jangan buat relasi graph yang tidak yakin | Akurasi knowledge base |\n\n---"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "✅ Checklist Update Docs",
+    "chunk_index": 14,
+    "content": "## ✅ Checklist Update Docs\n\n- [ ] File baru dibuat / diedit\n- [ ] Format markdown konsisten\n- [ ] Link internal valid\n- [ ] ID issue/decision terisi lengkap\n- [ ] CHANGELOG.md diupdate (jika perubahan signifikan)\n- [ ] RAG di-rebuild (sync_docs + ingest)\n- [ ] Tidak ada secret/hardcode yang ter-expose\n\n---"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "DOCS_UPDATE_RULES.md",
+    "heading": "🔄 Workflow Update",
+    "chunk_index": 15,
+    "content": "## 🔄 Workflow Update\n\n```mermaid\nflowchart LR\n    A[Edit docs] --> B[Update CHANGELOG]\n    B --> C[sync_docs.py]\n    C --> D[ingest.py]\n    D --> E[Test query]\n    E --> F{OK?}\n    F -- Ya --> G[Commit]\n    F -- Tidak --> A\n```"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "INSTALLATION.md",
+    "heading": "Panduan Instalasi",
+    "chunk_index": 1,
+    "content": "# Panduan Instalasi\n\nPanduan ini mencakup instalasi SIIMUT di lingkungan **local development** dan **Docker**.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "INSTALLATION.md",
+    "heading": "Prasyarat",
+    "chunk_index": 2,
+    "content": "## Prasyarat\n\n| Tools | Versi Minimal | Catatan |\n|---|---|---|\n| PHP | 8.3+ | 8.4 direkomendasikan (lihat `.docker/php/Dockerfile`) |\n| Composer | 2.x | Dependency manager PHP |\n| Node.js | 22.x | Build frontend assets |\n| NPM | 10+ | Atau Yarn |\n| MySQL | 8.0+ | Atau MariaDB 10.6+ |\n| Git | 2.x | Version control |\n| Redis | Opsional | Untuk cache/queue alternatif |\n| Docker | Opsional | Untuk lingkungan kontainer |"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "INSTALLATION.md",
+    "heading": "Ekstensi PHP yang Dibutuhkan",
+    "chunk_index": 3,
+    "content": "### Ekstensi PHP yang Dibutuhkan\n\n- `pdo_mysql`, `pdo_pgsql`\n- `zip`, `gd`, `intl`\n- `pcntl` (untuk queue worker)\n- `redis` (opsional)\n- `pcov` (untuk code coverage)\n\n> Lihat [`.docker/php/Dockerfile`](../.docker/php/Dockerfile) untuk referensi lengkap paket yang dibutuhkan.\n\n---"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "INSTALLATION.md",
+    "heading": "Instalasi Manual (Local)",
+    "chunk_index": 4,
+    "content": "## Instalasi Manual (Local)"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "INSTALLATION.md",
+    "heading": "1. Clone Repository",
+    "chunk_index": 5,
+    "content": "### 1. Clone Repository\n\n```bash\ngit clone https://github.com/juniyasyos/si-imut.git SIIMUT\ncd SIIMUT\n```"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "INSTALLATION.md",
+    "heading": "2. Install PHP Dependencies",
+    "chunk_index": 6,
+    "content": "### 2. Install PHP Dependencies\n\n```bash\ncomposer install\n```"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "INSTALLATION.md",
+    "heading": "3. Install Frontend Dependencies",
+    "chunk_index": 7,
+    "content": "### 3. Install Frontend Dependencies\n\n```bash\nnpm install\n```"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "INSTALLATION.md",
+    "heading": "4. Setup Environment",
+    "chunk_index": 8,
+    "content": "### 4. Setup Environment\n\n```bash"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "INSTALLATION.md",
+    "heading": "Copy environment file",
+    "chunk_index": 9,
+    "content": "# Copy environment file\ncp .env.example .env"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "INSTALLATION.md",
+    "heading": "Generate app key",
+    "chunk_index": 10,
+    "content": "# Generate app key\nphp artisan key:generate"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "INSTALLATION.md",
+    "heading": "(Opsional) Sesuaikan .env untuk kebutuhan lokal",
+    "chunk_index": 11,
+    "content": "# (Opsional) Sesuaikan .env untuk kebutuhan lokal\n```"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "INSTALLATION.md",
+    "heading": "5. Konfigurasi Database",
+    "chunk_index": 12,
+    "content": "### 5. Konfigurasi Database\n\nBuat database MySQL:\n\n```sql\nCREATE DATABASE siimut CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\n```\n\nSesuaikan `.env`:\n\n```ini\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=siimut\nDB_USERNAME=root\nDB_PASSWORD=\n```"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "INSTALLATION.md",
+    "heading": "6. Migrasi Database",
+    "chunk_index": 13,
+    "content": "### 6. Migrasi Database\n\n```bash\nphp artisan migrate --seed\n```"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "INSTALLATION.md",
+    "heading": "7. Generate Permission",
+    "chunk_index": 14,
+    "content": "### 7. Generate Permission\n\n```bash\nphp artisan shield:generate --all --panel=admin\nphp artisan shield:super-admin --user=1\n```"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "INSTALLATION.md",
+    "heading": "8. Storage Link",
+    "chunk_index": 15,
+    "content": "### 8. Storage Link\n\n```bash\nphp artisan storage:link\n```"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "INSTALLATION.md",
+    "heading": "9. Jalankan Aplikasi",
+    "chunk_index": 16,
+    "content": "### 9. Jalankan Aplikasi\n\n```bash\ncomposer run dev\n```\n\nAkses di `http://127.0.0.1:8000`.\n\n---"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "INSTALLATION.md",
+    "heading": "Instalasi Docker",
+    "chunk_index": 17,
+    "content": "## Instalasi Docker"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "INSTALLATION.md",
+    "heading": "1. Clone & Setup",
+    "chunk_index": 18,
+    "content": "### 1. Clone & Setup\n\n```bash\ngit clone https://github.com/juniyasyos/si-imut.git SIIMUT\ncd SIIMUT"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "INSTALLATION.md",
+    "heading": "Copy Docker environment",
+    "chunk_index": 19,
+    "content": "# Copy Docker environment\ncp .env.example.docker .env\n```"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "INSTALLATION.md",
+    "heading": "2. Build & Jalankan Container",
+    "chunk_index": 20,
+    "content": "### 2. Build & Jalankan Container\n\n```bash\nmake up\n```\n\nAtau langsung:\n\n```bash\ndocker compose --env-file ./.env --profile app --profile administration -f docker-compose.yml up -d --remove-orphans\n```"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "INSTALLATION.md",
+    "heading": "3. Install Dependencies (dalam container)",
+    "chunk_index": 21,
+    "content": "### 3. Install Dependencies (dalam container)\n\n```bash\nmake shell:app"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "INSTALLATION.md",
+    "heading": "Di dalam container:",
+    "chunk_index": 22,
+    "content": "# Di dalam container:\ncomposer install\nnpm install\nphp artisan key:generate\n```"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "INSTALLATION.md",
+    "heading": "4. Migrasi Database",
+    "chunk_index": 23,
+    "content": "### 4. Migrasi Database\n\n```bash\nmake command:app \"php artisan migrate --seed\"\nmake command:app \"php artisan shield:generate --all --panel=admin\"\nmake command:app \"php artisan shield:super-admin --user=1\"\n```"
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "INSTALLATION.md",
+    "heading": "5. Akses Aplikasi",
+    "chunk_index": 24,
+    "content": "### 5. Akses Aplikasi\n\n- **Aplikasi**: `http://localhost:80`\n- **phpMyAdmin**: `http://localhost:8080`\n\n---"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "INSTALLATION.md",
+    "heading": "Setup Cepat (Script)",
+    "chunk_index": 25,
+    "content": "## Setup Cepat (Script)\n\nUntuk development cepat, project menyediakan script `setup.sh`:\n\n```bash\nchmod +x setup.sh\n./setup.sh\n```\n\n> ⚠️ Baca script terlebih dahulu sebelum menjalankan — script ini melakukan operasi git clean dan reset.\n\n---"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "INSTALLATION.md",
+    "heading": "Verifikasi Instalasi",
+    "chunk_index": 26,
+    "content": "## Verifikasi Instalasi\n\nSetelah instalasi, pastikan:\n\n```bash"
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "INSTALLATION.md",
+    "heading": "Cek versi PHP",
+    "chunk_index": 27,
+    "content": "# Cek versi PHP\nphp -v"
+  },
+  {
+    "id": "chunk-0028",
+    "source_file": "INSTALLATION.md",
+    "heading": "Cek konfigurasi Laravel",
+    "chunk_index": 28,
+    "content": "# Cek konfigurasi Laravel\nphp artisan about"
+  },
+  {
+    "id": "chunk-0029",
+    "source_file": "INSTALLATION.md",
+    "heading": "Cek koneksi database",
+    "chunk_index": 29,
+    "content": "# Cek koneksi database\nphp artisan db:show"
+  },
+  {
+    "id": "chunk-0030",
+    "source_file": "INSTALLATION.md",
+    "heading": "Cek queue",
+    "chunk_index": 30,
+    "content": "# Cek queue\nphp artisan queue:monitor"
+  },
+  {
+    "id": "chunk-0031",
+    "source_file": "INSTALLATION.md",
+    "heading": "Cek storage link",
+    "chunk_index": 31,
+    "content": "# Cek storage link\nphp artisan storage:link\n```\n\nAkses halaman dashboard di browser. Jika halaman login Filament muncul, instalasi berhasil.\n\n---"
+  },
+  {
+    "id": "chunk-0032",
+    "source_file": "INSTALLATION.md",
+    "heading": "Troubleshooting Instalasi",
+    "chunk_index": 32,
+    "content": "## Troubleshooting Instalasi\n\n| Masalah | Solusi |\n|---|---|\n| `Class \"...\" not found` | Jalankan `composer dump-autoload` |\n| `No application key` | Jalankan `php artisan key:generate` |\n| `Connection refused (MySQL)` | Pastikan MySQL berjalan, cek kredensial di `.env` |\n| `Vite manifest not found` | Jalankan `npm run build` |\n| `Permission denied storage/` | `chmod -R 775 storage bootstrap/cache` |\n\n> Untuk masalah lain, lihat [TROUBLESHOOTING.md](TROUBLESHOOTING.md).\n\n---"
+  },
+  {
+    "id": "chunk-0033",
+    "source_file": "INSTALLATION.md",
+    "heading": "TODO",
+    "chunk_index": 33,
+    "content": "## TODO\n\n- [ ] Panduan instalasi untuk production (server bare-metal)\n- [ ] Panduan setup MinIO / S3 storage\n- [ ] Panduan setup SSO / IAM"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "Known Issues",
+    "chunk_index": 1,
+    "content": "# Known Issues\n\nDaftar masalah yang diketahui dan pernah terjadi di project SIIMUT, lengkap\ndengan analisis, dampak, dan solusi atau workaround.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-001: Loading Dashboard 30 Detik",
+    "chunk_index": 2,
+    "content": "## KI-001: Loading Dashboard 30 Detik\n\n- **Status**: Resolved (v1.4.0)\n- **Severity**: Critical\n- **Area**: Performance\n- **Gejala**: Navigasi bulan di halaman Daily Report membutuhkan waktu 25-30 detik\n  untuk merender.\n- **Penyebab**: Penggunaan `whereHas()` di dalam query aggregasi menghasilkan\n  correlated subquery — MySQL menjalankan query tambahan untuk setiap baris hasil\n  query utama (N+1 query di level database).\n- **Dampak**: Dashboard hampir tidak bisa dipakai untuk navigasi harian/bulanan.\n  Pengguna menunggu 30 detik setiap kali ganti bulan.\n- **Solusi**: Ganti `whereHas()` dengan `JOIN` langsung + composite index.\n  - Fix #1: [N+1 Query Fix](upgrade/fix-n1-query-wherehas-vs-join.md) — `whereHas` → `JOIN`\n  - Fix #2: [Composite Index](upgrade/fix-database-index-composite.md) — tambah index `(form_template_id, report_date)`\n  - Fix #3: [Payload Serialization](upgrade/fix-payload-matrix-cells.md) — hapus serialisasi data matrix\n  - **Hasil**: 30 detik → < 2 detik\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-002: Duplikasi Kode di `app/Kernel/`",
+    "chunk_index": 3,
+    "content": "## KI-002: Duplikasi Kode di `app/Kernel/`\n\n- **ID**: KI-002\n- **Status**: Needs Review\n- **Severity**: Medium\n- **Area**: Arsitektur\n- **Gejala**: Folder `app/Kernel/` berisi trait/support yang isinya mirip dengan\n  `app/Traits/` dan `app/Support/`.\n- **Penyebab**: Kemungkinan duplikasi yang tidak disengaja saat refactoring.\n  Belum diverifikasi apakah file-file di `app/Kernel/` masih dipakai atau sudah\n  bisa dialihkan.\n- **Dampak**: Kebingungan developer — file mana yang seharusnya dipakai?\n  Potensi bug jika satu file diubah tapi duplikasinya tidak.\n- **Solusi / Workaround**:\n  - Verifikasi apakah setiap file di `app/Kernel/Support/`, `app/Kernel/Traits/`,\n    dan `app/Kernel/Providers/` masih memiliki `use` statement dari file lain.\n  - Jika tidak dipakai, pindahkan atau hapus.\n  - Jika dipakai, aliaskan ke `app/Traits/` dan `app/Support/` yang sudah ada.\n\n---"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-003: `app/Domain/` Underutilized",
+    "chunk_index": 4,
+    "content": "## KI-003: `app/Domain/` Underutilized\n\n- **ID**: KI-003\n- **Status**: Needs Review\n- **Severity**: Low\n- **Area**: Arsitektur\n- **Gejala**: Folder `app/Domain/` hanya berisi satu file:\n  `DailyReport/TableViewDomain.php`. Folder ini terlihat tidak selesai\n  implementasinya.\n- **Penyebab**: Domain layer dicanangkan tapi tidak dilanjutkan. Mungkin karena\n  perubahan arah ke modular monolith.\n- **Dampak**: Minor — satu file di folder yang tidak konsisten.\n- **Solusi / Workaround**:\n  - Jika tidak ada rencana Domain layer, pindahkan file ke lokasi yang lebih\n    sesuai (misal `app/Modules/DailyReport/Domain/`).\n  - Atau hapus jika file tersebut sudah tidak dipakai.\n\n---"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-004: Routes `test.php` Mungkin Aktif di Production",
+    "chunk_index": 5,
+    "content": "## KI-004: Routes `test.php` Mungkin Aktif di Production\n\n- **ID**: KI-004\n- **Status**: Needs Verification\n- **Severity**: High\n- **Area**: Security\n- **Gejala**: File `routes/test.php` berisi route khusus testing.\n  Belum ada pengecekan environment — route ini bisa diakses di production.\n- **Penyebab**: Route testing diletakkan di `routes/test.php` tanpa conditional\n  `if (app()->environment('local'))`.\n- **Dampak**: Route testing bisa diakses publik di production. Jika route tersebut\n  mengekspos data sensitif atau menjalankan operasi berbahaya, ini risiko keamanan.\n- **Solusi / Workaround**:\n  - Tambahkan pengecekan environment: `if (app()->environment('local'))`\n  - Atau pindahkan route ke file yang hanya di-load di environment local.\n  - Verifikasi isi `routes/test.php` — pastikan tidak ada operasi destruktif.\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-005: Session Driver Wajib Database untuk IAM",
+    "chunk_index": 6,
+    "content": "## KI-005: Session Driver Wajib Database untuk IAM\n\n- **ID**: KI-005\n- **Status**: Resolved (documented)\n- **Severity**: High\n- **Area**: Konfigurasi\n- **Gejala**: Jika `SESSION_DRIVER` diubah dari `database` ke `file` atau `cookie`,\n  IAM client plugin tidak berfungsi — SSO gagal, user tidak bisa login.\n- **Penyebab**: IAM client (`juniyasyos/nexaid-client`) bergantung pada session\n  database untuk menyimpan state SSO.\n- **Dampak**: SSO/login IAM tidak berfungsi.\n- **Solusi / Workaround**:\n  - Pastikan `SESSION_DRIVER=database` di `.env`.\n  - Jangan diganti ke `file` atau `cookie` selama IAM client aktif.\n  - Jika butuh session performa tinggi, gunakan Redis via `SESSION_DRIVER=redis`\n    (bukan file/cookie).\n\n---"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-006: Nested Alpine x-data ReferenceError",
+    "chunk_index": 7,
+    "content": "## KI-006: Nested Alpine x-data ReferenceError\n\n- **ID**: KI-006\n- **Status**: Resolved (v1.4.0)\n- **Severity**: Medium\n- **Area**: UI / Livewire\n- **Gejala**: Error `Uncaught ReferenceError` di konsol browser saat membuka\n  halaman Daily Report dengan komponen nested Livewire + Alpine.\n- **Penyebab**: Alpine x-data bersarang (nested) menyebabkan konflik scope\n  JavaScript. Komponen Livewire di dalam komponen Livewire lain memicu error.\n- **Dampak**: Beberapa fitur interaktif di Daily Report tidak berjalan,\n  terutama date navigation dan filter.\n- **Solusi**: Restruktur komponen Livewire agar tidak nested. Pisahkan state\n  loading date navigation dan main content.\n\n---"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-007: Package Filament Kustom dari Private Repository",
+    "chunk_index": 8,
+    "content": "## KI-007: Package Filament Kustom dari Private Repository\n\n- **ID**: KI-007\n- **Status**: Needs Verification\n- **Severity**: Medium\n- **Area**: Dependency\n- **Gejala**: Beberapa package Filament kustom milik `juniyasyos` mungkin belum\n  dipublikasikan ke Packagist — sourced dari local atau private repository.\n  Developer baru mungkin tidak bisa `composer install` tanpa akses.\n- **Penyebab**: Package kustom yang belum publish ke Packagist.\n- **Dampak**: Developer baru tidak bisa menjalankan `composer install` tanpa\n  akses ke repository private.\n- **Solusi / Workaround**:\n  - Minta akses ke repository private yang relevan.\n  - Atau konfigurasi `repositories` di `composer.json` untuk path local / VCS.\n  - Dokumentasi lebih lanjut: lihat [NOTES.md](NOTES.md) untuk daftar package.\n\n---"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-008: Auto-generation Schedule Berubah dari Monthly ke Daily",
+    "chunk_index": 9,
+    "content": "## KI-008: Auto-generation Schedule Berubah dari Monthly ke Daily\n\n- **ID**: KI-008\n- **Status**: Resolved (v1.4.0)\n- **Severity**: Low\n- **Area**: Performance\n- **Gejala**: Setelah perubahan auto-generation schedule dari monthly ke daily,\n  beban server meningkat.\n- **Penyebab**: Perubahan frekuensi tanpa optimasi query yang sesuai.\n- **Dampak**: Peningkatan beban server di jam sibuk, terutama saat banyak unit\n  kerja submit laporan bersamaan.\n- **Solusi**: Implementasi composite index + query optimization (lihat KI-001).\n  Monitoring berkala untuk beban scheduler.\n\n---"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "RAG Metadata",
+    "chunk_index": 10,
+    "content": "## RAG Metadata"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "KNOWN_ISSUES.md",
+    "heading": "KI-001 - Loading Dashboard 30 Detik",
+    "chunk_index": 11,
+    "content": "## KI-001 - Loading Dashboard 30 Detik\n\nType: KnownIssue\nStatus: Resolved\nArea: Performance\nRelated Modules:\n- MOD-001\nRelated Services:\n- Needs Verification\nRelated Commands:\n- Needs Verification\nRelated Decisions:\n- DEC-002\n- DEC-003\n- DEC-004\nSource:\n- commit: 8dece0a\n\nSummary:\nMasalah performa loading navigasi bulan di halaman Daily Report yang mencapai 30 detik. Disebabkan oleh correlated subquery dari penggunaan whereHas(). Diperbaiki dengan transisi ke direct JOIN dan pembuatan composite index."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "MODULES.md",
+    "heading": "Daftar Module",
+    "chunk_index": 1,
+    "content": "# Daftar Module\n\nDokumen ini mendeskripsikan domain atau modul bisnis utama pada project SI-IMUT. Informasi ini diproses oleh sistem RAG."
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "MODULES.md",
+    "heading": "MOD-001 - Daily Report",
+    "chunk_index": 2,
+    "content": "## MOD-001 - Daily Report\n\nType: Module\nStatus: Active\nArea: Daily Report\nRelated Services:\n- SVC-001\n- Needs Verification\nRelated Commands:\n- CMD-001\nRelated Issues:\n- KI-001\nRelated Decisions:\n- DEC-001\nSource:\n- app/Modules/DailyReport\n- commit: 24e3b1a\n\nSummary:\nModul ini bertanggung jawab untuk pencatatan entri laporan harian, pemuatan matriks, validasi tenggat waktu (back data entry duration), serta paginasi server-side.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "MODULES.md",
+    "heading": "MOD-002 - Form Engine",
+    "chunk_index": 3,
+    "content": "## MOD-002 - Form Engine\n\nType: Module\nStatus: Active\nArea: Form Template\nRelated Services:\n- Needs Verification\nRelated Commands:\n- Needs Verification\nRelated Issues:\n- Needs Verification\nRelated Decisions:\n- Needs Verification\nSource:\n- app/Modules/FormEngine\n- commit: 4bb5bd7\n\nSummary:\nModul inti untuk pembuatan form yang dinamis (FormSchemaBuilder), mencakup pengelolaan versi template (template versioning) dan penentuan jangka waktu (validity window) berlakunya template tersebut.\n\n---"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "MODULES.md",
+    "heading": "MOD-003 - Reporting & Analytics",
+    "chunk_index": 4,
+    "content": "## MOD-003 - Reporting & Analytics\n\nType: Module\nStatus: Active\nArea: Reporting\nRelated Services:\n- Needs Verification\nRelated Commands:\n- Needs Verification\nRelated Issues:\n- KI-002\nRelated Decisions:\n- Needs Verification\nSource:\n- app/Modules/Reporting\n- commit: 6f86712\n\nSummary:\nSistem pelaporan agregat (Laporan Unit Kerja, Laporan Kategori/Indikator) yang menyertakan fungsionalitas ekspor PDF, filter bulan aktif, kalkulasi skor kepatuhan, dan integrasi benchmarking.\n\n---"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "MODULES.md",
+    "heading": "MOD-004 - Authorization & IAM",
+    "chunk_index": 5,
+    "content": "## MOD-004 - Authorization & IAM\n\nType: Module\nStatus: Active\nArea: Authentication\nRelated Services:\n- Needs Verification\nRelated Commands:\n- Needs Verification\nRelated Issues:\n- Needs Verification\nRelated Decisions:\n- Needs Verification\nSource:\n- app/Modules/Auth\n- commit: 1062390\n\nSummary:\nModul manajemen pengguna yang menaungi fungsionalitas Single Sign-On (SSO), RolePermissionManager, sinkronisasi unit kerja (Unit Kerja Sync), serta peralihan klien (nexaid-client).\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "MODULES.md",
+    "heading": "MOD-005 - Core & UI Framework",
+    "chunk_index": 6,
+    "content": "## MOD-005 - Core & UI Framework\n\nType: Module\nStatus: Active\nArea: Core Application\nRelated Services:\n- Needs Verification\nRelated Commands:\n- Needs Verification\nRelated Issues:\n- Needs Verification\nRelated Decisions:\n- Needs Verification\nSource:\n- app/Providers\n- commit: 84565d6\n\nSummary:\nFondasi antarmuka dan penyedia aplikasi yang melayani pengelolaan tema Filament, custom widget dasbor (Filament v4), manajemen caching aset, hingga layanan integrasi pihak ketiga."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "NOTES.md",
+    "heading": "Catatan Teknis (NOTES)",
+    "chunk_index": 1,
+    "content": "# Catatan Teknis (NOTES)\n\nCatatan bebas untuk hal-hal yang belum final, keputusan sementara, dan hal yang perlu dicek ulang.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "NOTES.md",
+    "heading": "Catatan Arsitektur",
+    "chunk_index": 2,
+    "content": "## Catatan Arsitektur"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "NOTES.md",
+    "heading": "Duplikasi Kode di `app/Kernel/`",
+    "chunk_index": 3,
+    "content": "### Duplikasi Kode di `app/Kernel/`\n\nFolder `app/Kernel/` berisi trait/support yang isinya mirip dengan `app/Traits/` dan `app/Support/`.\n\n- **Lokasi**: `app/Kernel/Support/`, `app/Kernel/Traits/`, `app/Kernel/Providers/`\n- **Status**: `Needs Review`\n- **Kemungkinan**: Duplikasi yang tidak disengaja saat refactoring.\n- **Saran**: Verifikasi apakah file-file di `app/Kernel/` masih dipakai atau bisa dialihkan ke `app/Traits/` dan `app/Support/`."
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "NOTES.md",
+    "heading": "`app/Domain/` Underutilized",
+    "chunk_index": 4,
+    "content": "### `app/Domain/` Underutilized\n\nFolder `app/Domain/` hanya berisi satu file: `DailyReport/TableViewDomain.php`.\n\n- **Status**: `Needs Review`\n- **Saran**: Jika tidak ada rencana pengembangan Domain layer lebih lanjut, pertimbangkan untuk memindahkan file tersebut ke lokasi yang lebih sesuai."
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "NOTES.md",
+    "heading": "Routes `test.php`",
+    "chunk_index": 5,
+    "content": "### Routes `test.php`\n\nFile `routes/test.php` berisi route khusus testing.\n\n- **Status**: `Needs Verification`\n- **Saran**: Pastikan route ini tidak aktif di environment production. Tambahkan pengecekan `if (app()->environment('local'))` jika perlu.\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "NOTES.md",
+    "heading": "Catatan Konfigurasi",
+    "chunk_index": 6,
+    "content": "## Catatan Konfigurasi"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "NOTES.md",
+    "heading": "Session Driver Harus Database",
+    "chunk_index": 7,
+    "content": "### Session Driver Harus Database\n\nUntuk kompatibilitas dengan IAM client plugin, session driver **harus** menggunakan `database`.\n\n- File: `.env` → `SESSION_DRIVER=database`\n- Jangan diganti ke `file` atau `cookie` selama IAM client digunakan."
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "NOTES.md",
+    "heading": "Queue Connection Default Database",
+    "chunk_index": 8,
+    "content": "### Queue Connection Default Database\n\nQueue menggunakan database driver (bukan Redis) sebagai default.\n\n- File: `.env` → `QUEUE_CONNECTION=database`\n- Redis tersedia sebagai alternatif untuk production skala besar.\n\n---"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "NOTES.md",
+    "heading": "Catatan Dependency",
+    "chunk_index": 9,
+    "content": "## Catatan Dependency"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "NOTES.md",
+    "heading": "Package Filament Kustom",
+    "chunk_index": 10,
+    "content": "### Package Filament Kustom\n\nProject menggunakan beberapa package Filament kustom milik `juniyasyos`:\n\n| Package | Versi | Catatan |\n|---|---|---|\n| `juniyasyos/dash-stack-theme-juniyasyos` | ^1.3 | Theme Filament kustom |\n| `juniyasyos/filament-backup` | v3.0.1 | Backup management |\n| `juniyasyos/filament-media-manager` | 3.0 | Media manager |\n| `juniyasyos/filament-pwa-kaido` | ^2.1 | PWA support |\n| `juniyasyos/filament-settings-hub-kaido` | ^4.0 | Settings hub |\n| `juniyasyos/nexaid-client` | v1.2.11 | IAM/SSO client |\n| `juniyasyos/table-repeater` | v1.0.1 | Table repeater field |\n\nBeberapa package mungkin belum dipublikasikan ke Packagist — sourced dari local atau private repository.\n\n---"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "NOTES.md",
+    "heading": "Catatan Testing",
+    "chunk_index": 11,
+    "content": "## Catatan Testing"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "NOTES.md",
+    "heading": "Benchmarking Tests",
+    "chunk_index": 12,
+    "content": "### Benchmarking Tests\n\n- 59 tests, 153 assertions\n- Semua passing (100%)\n- Dokumentasi: `docs/benchmarking-*`"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "NOTES.md",
+    "heading": "PWA Test",
+    "chunk_index": 13,
+    "content": "### PWA Test\n\n- Script: `generate-cache-pwa.sh`\n- Workflow: `PWA-PRODUCTION-TESTING.md`\n\n---"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "NOTES.md",
+    "heading": "TODOs Global",
+    "chunk_index": 14,
+    "content": "## TODOs Global\n\n- [ ] Verifikasi duplikasi `app/Kernel/` vs `app/Traits/` dan `app/Support/`.\n- [ ] Verifikasi `routes/test.php` aman di production.\n- [ ] Dokumentasikan konfigurasi Socialite provider.\n- [ ] Dokumentasikan konfigurasi Filament PWA.\n- [ ] Setup CI/CD pipeline.\n- [ ] Dokumentasi API dengan Scramble.\n- [ ] Panduan instalasi untuk server bare-metal production.\n- [ ] Backup & restore procedure documentation."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Project Structure",
+    "chunk_index": 1,
+    "content": "# Project Structure"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Ringkasan",
+    "chunk_index": 2,
+    "content": "## Ringkasan\n\nProject SIIMUT adalah aplikasi **Laravel 12** dengan arsitektur **modular monolith** yang menggunakan **Filament 3.2** sebagai admin panel. Struktur project mengikuti konvensi Laravel standar dengan tambahan direktori modular di `app/Modules/`.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Tree Singkat",
+    "chunk_index": 3,
+    "content": "## Tree Singkat"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Tree Singkat",
+    "chunk_index": 4,
+    "content": "```txt\n.\n├── app/                           # Source code utama aplikasi\n│   ├── Console/                   # Artisan commands\n│   ├── Domain/                    # Domain layer (DailyReport)\n│   ├── Facades/                   # Service facades\n│   ├── Filament/                  # Filament resources, pages, widgets\n│   │   ├── Exports/               # Export configuration\n│   │   ├── Imports/               # Import configuration\n│   │   ├── Pages/                 # Custom Filament pages\n│   │   ├── Plugins/               # Filament plugins\n│   │   ├── Resources/             # CRUD resources (8 resources)\n│   │   ├── Responses/             # Auth responses\n│   │   ├── Traits/                # Filament-specific traits\n│   │   └── Widgets/               # Dashboard widgets\n│   ├── Forms/                     # Form-related logic\n│   ├── Http/                      # Controllers, Middleware, Requests\n│   │   ├── Controllers/           # Web & API controllers\n│   │   ├── Middleware/             # Custom middleware\n│   │   └── Requests/              # Form requests\n│   ├── Jobs/                      # Queue jobs\n│   ├── Kernel/                    # Core kernel support (traits, providers)\n│   ├── Livewire/                  # Livewire components\n│   ├── Models/                    # Eloquent models\n│   ├── Modules/                   # Modular monolith (7 modules)\n│   │   ├── Authorization/         # Manajemen otorisasi & role\n│   │   ├── Benchmarking/          # Sistem benchmarking indikator\n│   │   ├── DailyReport/           # Laporan harian (modul terbesar)\n│   │   ├── FormEngine/            # Form builder engine\n│   │   ├── ImutMaster/            # Master data indikator mutu\n│   │   ├── Laporan/               # Laporan periodik\n│   │   └── Reporting/             # Reporting service\n│   ├── Notifications/             # Notification classes\n│   ├── Observers/                 # Eloquent observers\n│   ├── Policies/                  # Authorization policies\n│   ├── Providers/                 # Service providers\n│   ├── QueryBuilders/             # Custom query builders\n│   ├── Repositories/              # Repository pattern\n│   ├── Rules/                     # Custom validation rules\n│   ├── Services/                  # Service layer\n│   │   ├── Authorization/         # Permission services\n│   │   ├── Benchmarking/          # Benchmarking services\n│   │   ├── Chart/                 # Chart data processing\n│   │   ├── Core/                  # Core services\n│   │   ├── DailyReport/           # Daily report services\n│   │   ├── DynamicForm/           # Dynamic form services\n│   │   ├── Form/                  # Form-related services\n│   │   ├── FormBuilder/           # Form builder services\n│   │   ├── Laporan/               # Laporan services\n│   │   ├── Reporting/             # Reporting services\n│   │   └── Support/               # Support utilities\n│   ├── Settings/                  # Settings (Filament plugin)\n│   ├── Support/                   # Support classes & helpers\n│   ├── Tables/                    # Custom table columns\n│   ├── Traits/                    # Shared traits\n│   └── View/                      # View composers / components\n│\n├── bootstrap/                     # Laravel bootstrap files\n├── config/                        # Konfigurasi aplikasi (30+ file)\n├── database/                      # Database\n│   ├── factories/                 # Model factories\n│   ├── migrations/                # Migration files\n│   ├── schema/                    # Database schema dumps\n│   ├── seeders/                   # Database seeders\n│   └── settings/                  # Settings migrations\n├── docs/                          # Dokumentasi project\n│   ├── images/                    # Screenshot & gambar\n│   ├── releases/                  # Release notes per versi\n│   ├── upgrade/                   # Panduan upgrade\n│   └── ai-agents/                 # AI agent configurations\n├── lang/                          # File lokalization\n├── public/                        # Public assets (entry point)\n├── resources/                     # Frontend resources\n│   ├── css/                       # Stylesheets (Tailwind)\n│   ├── js/                        # JavaScript\n│   └── views/                     # Blade templates\n├── routes/                        # Route definitions\n│   ├── api.php                    # API routes\n│   ├── console.php                # Console routes\n│   ├── livewire-report.php        # Livewire report routes\n│   ├── test.php                   # Test routes\n│   └── web.php                    # Web routes\n├── scripts/                       # Utility scripts\n├── storage/                       # Laravel storage\n├── stubs/                         # Custom stubs\n├── tests/                         # Unit & feature tests\n├── vendor/                        # Composer dependencies\n│\n├── .docker/                       # Docker setup\n│   ├── db/                        # MySQL config\n│   ├── logs/                      # Docker logs mount\n│   ├── nginx/                     # Nginx config\n│   ├── php/                       # PHP Dockerfile & config\n│   ├── phpmyadmin/                # phpMyAdmin\n│   ├── redis/                     # Redis\n│   └── scripts/                   # Docker helper scripts\n│\n├── .env                           # Environment (local, gitignored)\n├── .env.example                   # Environment template\n├── .env.example.docker            # Docker environment template\n├── composer.json                  # PHP dependencies\n├── docker-compose.yml             # Docker compose config\n├── Makefile                       # Make commands\n├── package.json                   # Node.js dependencies\n├── vite.config.js                 # Vite bundler config\n└── tailwind.config.js             # Tailwind CSS config\n```"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Tree Singkat",
+    "chunk_index": 5,
+    "content": "---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Penjelasan Folder Utama",
+    "chunk_index": 6,
+    "content": "## Penjelasan Folder Utama"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "`app/` — Source Code",
+    "chunk_index": 7,
+    "content": "### `app/` — Source Code\n\n| Path | Fungsi | Catatan |\n|---|---|---|\n| `app/Filament/` | Semua resource Filament (CRUD admin panel) | **Inti aplikasi** |\n| `app/Http/` | Controller, middleware, form request | Standar Laravel |\n| `app/Livewire/` | Komponen Livewire interaktif | Untuk halaman real-time |\n| `app/Models/` | Eloquent ORM models | **Hati-hati** saat mengubah relasi |\n| `app/Modules/` | Modular monolith — 7 modul bisnis | **Inti bisnis logic** |\n| `app/Policies/` | Authorization policies (gate) | Jangan sembarangan diubah |\n| `app/Services/` | Service layer — logic bisnis | Referensi utama logic |\n| `app/Jobs/` | Queue job classes | Untuk task asynchronous |"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "`config/` — Konfigurasi",
+    "chunk_index": 8,
+    "content": "### `config/` — Konfigurasi\n\n30+ file konfigurasi Laravel dan package. File penting:\n\n| File | Fungsi |\n|---|---|\n| `app.php` | Konfigurasi aplikasi utama |\n| `database.php` | Koneksi database |\n| `filament.php` | Konfigurasi Filament panel |\n| `permission.php` | Konfigurasi Spatie Permission |\n| `iam.php` | Konfigurasi IAM/SSO |\n| `filesystems.php` | Filesystem disk (local, s3) |\n| `media-library.php` | Media library config |\n| `cache.php`, `session.php`, `queue.php` | Cache, session, queue |"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "`database/` — Database",
+    "chunk_index": 9,
+    "content": "### `database/` — Database\n\n| Path | Fungsi |\n|---|---|\n| `migrations/` | Semua migration (termasuk dari modul) |\n| `seeders/` | Database seeders |\n| `factories/` | Model factories untuk testing |\n| `schema/` | SQL dump untuk setup cepat |\n| `settings/` | Migration untuk settings plugin |"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "`Modules/` — Modular Monolith",
+    "chunk_index": 10,
+    "content": "### `Modules/` — Modular Monolith\n\nProject menggunakan package `nwidart/laravel-modules`. Setiap modul independen:\n\n| Modul | Fungsi |\n|---|---|\n| **Authorization** | Role, permission, user management, SSO |\n| **Benchmarking** | Benchmarking indikator antar unit/region |\n| **DailyReport** | Laporan harian — modul terbesar |\n| **FormEngine** | Form builder, template versioning, compliance scoring |\n| **ImutMaster** | Master data indikator mutu |\n| **Laporan** | Laporan periodik (triwulan, tahunan) |\n| **Reporting** | Reporting service & export |\n\nSetiap modul memiliki struktur internal yang konsisten:\n\n```\nModuleName/\n├── Contracts/        # Interface & DTO\n├── Database/\n│   └── Migrations/   # Migration spesifik modul\n├── Filament/         # Resources, Pages, Widgets\n├── Http/             # Controllers\n├── Livewire/         # Livewire components\n├── Models/           # Eloquent models modul\n├── Policies/         # Policies modul\n├── Services/         # Service classes\n└── Providers/        # Service provider\n```"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "`.docker/` — Infrastructure",
+    "chunk_index": 11,
+    "content": "### `.docker/` — Infrastructure\n\n| Path | Fungsi |\n|---|---|\n| `php/` | PHP 8.4 FPM Dockerfile + php.ini |\n| `nginx/` | Nginx config (default.conf) |\n| `db/` | MySQL 8.1 custom config |\n| `redis/` | Redis config |\n| `scripts/` | Helper scripts untuk Docker |"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "`resources/views/` — Blade Templates",
+    "chunk_index": 12,
+    "content": "### `resources/views/` — Blade Templates\n\nStruktur views cukup kompleks dengan partials untuk Filament resources, form components, dan vendor overrides:\n\n```\nresources/views/\n├── auth/                            # Halaman auth\n├── components/                      # Blade components global\n├── filament/                        # Filament-specific templates\n│   ├── forms/                       # Form components\n│   ├── modals/                      # Modal overrides\n│   ├── pages/                       # Custom page layouts\n│   ├── prints/                      # Print templates\n│   ├── resources/                   # Resource-specific views\n│   ├── table/                       # Table customizations\n│   └── widgets/                     # Widget templates\n├── forms/                           # Form builder views\n├── layouts/                         # Layout templates\n├── livewire/                        # Livewire component views\n├── reports/                         # Report templates\n├── tables/                          # Table views\n└── vendor/                          # Vendor override views\n```\n\n---"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "File Konfigurasi Penting di Root",
+    "chunk_index": 13,
+    "content": "## File Konfigurasi Penting di Root\n\n| File | Fungsi | Wajib Diedit? |\n|---|---|---|\n| `.env` | Environment settings | ✅ Ya (lokalisasi) |\n| `.env.example` | Template .env | ✅ Ya (jika ada variable baru) |\n| `composer.json` | PHP dependencies & scripts | Hati-hati |\n| `package.json` | Node.js dependencies | Hati-hati |\n| `docker-compose.yml` | Docker orchestration | Hati-hati |\n| `Makefile` | Make command shortcuts | ✅ Boleh |\n| `vite.config.js` | Vite bundler config | Hati-hati |\n| `tailwind.config.js` | Tailwind CSS config | ✅ Boleh |\n\n---"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Catatan Struktur Penting",
+    "chunk_index": 14,
+    "content": "## Catatan Struktur Penting"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "⚠️ Hati-hati saat mengubah:",
+    "chunk_index": 15,
+    "content": "### ⚠️ Hati-hati saat mengubah:\n\n- **`app/Models/`** — Relasi, casts, dan event bisa berdampak luas.\n- **`app/Policies/`** — Akses kontrol sensitif, jangan diubah tanpa test.\n- **`database/migrations/`** — Migration yang sudah dijalankan di production.\n- **`config/*`** — Beberapa file (permission.php, filament.php) dipakai banyak services.\n- **`vendor/`** — Jangan diedit langsung (composer-managed)."
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "✅ Aman diedit:",
+    "chunk_index": 16,
+    "content": "### ✅ Aman diedit:\n\n- **`docs/`** — Dokumentasi (ini dia).\n- **`app/Services/`** — Service baru boleh ditambah.\n- **`scripts/`** — Utility scripts.\n- **`tests/`** — Testing files."
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "🏷️ Legacy / Needs Review",
+    "chunk_index": 17,
+    "content": "### 🏷️ Legacy / Needs Review\n\nTidak ada folder yang secara eksplisit ditandai legacy. Namun, beberapa area perlu diperhatikan:\n\n- `app/Kernel/` — Berisi duplikat trait/support dari `app/Traits/` dan `app/Support/`. **Needs Review**: kemungkinan duplikasi kode.\n- `app/Domain/` — Hanya berisi `DailyReport/TableViewDomain.php`. Terlihat underutilized.\n- `routes/test.php` — Route khusus testing. Perlu dipastikan tidak aktif di production.\n\n---"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "PROJECT_STRUCTURE.md",
+    "heading": "Referensi",
+    "chunk_index": 18,
+    "content": "## Referensi\n\n- **Dokumentasi utama**: [README.md](../README.md)\n- **Laravel convention**: [laravel.com/docs/12.x/structure](https://laravel.com/docs/12.x/structure)"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "Project Timeline (Sejak 2026-01-01)",
+    "chunk_index": 1,
+    "content": "# Project Timeline (Sejak 2026-01-01)\n\nDokumen ini merangkum rentang waktu (timeline) dari iterasi pengembangan proyek SI-IMUT berdasarkan fase dan bulan pengerjaan sejak awal tahun 2026."
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "Juni 2026",
+    "chunk_index": 2,
+    "content": "## Juni 2026\n- **Fokus Utama**: Optimasi Kinerja, Pembaruan Dependensi & Audit Lisensi.\n- **Ringkasan**: \n  - Mengatasi masalah kinerja pada dasbor Daily Report (seperti bottleneck load matriks 30 detik).\n  - Implementasi server-side pagination & live search pada Livewire.\n  - Peralihan dependensi penting ke `nexaid-client`.\n  - Penambahan alur kerja CI untuk audit lisensi SBOM (Software Bill of Materials)."
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "Mei 2026",
+    "chunk_index": 3,
+    "content": "## Mei 2026\n- **Fokus Utama**: Peningkatan Framework UI (Filament v4), Form Templates, & Refactoring Arsitektur.\n- **Ringkasan**:\n  - Upgrade antarmuka secara besar-besaran dengan transisi Filament dari v3 ke v4.\n  - Penyelesaian fungsionalitas validity window untuk template form.\n  - Refactoring pola Repository pada pengelolaan Unit Kerja dan Layanan Pelaporan (Reporting).\n  - Integrasi opsi backup basis data yang lebih canggih (`filament-backup` terbaru)."
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "April 2026",
+    "chunk_index": 4,
+    "content": "## April 2026\n- **Fokus Utama**: Integrasi Sistem SSO, Sinkronisasi Unit Kerja, & Analisis Pelaporan.\n- **Ringkasan**:\n  - Pembaruan konfigurasi IAM dan optimalisasi pengalihan (redirect) login SSO.\n  - Penambahan widget analisis rekomendasi untuk memperkuat wawasan pada laporan evaluasi kinerja.\n  - Integrasi `manage-unit-kerja` versi mutakhir."
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "Maret 2026",
+    "chunk_index": 5,
+    "content": "## Maret 2026\n- **Fokus Utama**: Versioning Template Form, Manajemen Skema DB, & Fungsionalitas Ekspor.\n- **Ringkasan**:\n  - Peluncuran sistem versioning (pembuatan versi) untuk template form guna mendukung form yang dinamis.\n  - Menambahkan fitur auto-complete (history suggestions) untuk form masukan.\n  - Fitur sinkronisasi folder otomatis serta rilis skrip reset permission dan manajemen basis data (`wipe-db`)."
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "Februari 2026",
+    "chunk_index": 6,
+    "content": "## Februari 2026\n- **Fokus Utama**: Analisis Pelaporan, PDF Export, & Tanda Tangan Digital (TTD).\n- **Ringkasan**:\n  - Rilis laporan unit kerja, laporan berbasis indikator/kategori, dan kapabilitas ekspor ke format PDF via Browsershot.\n  - Implementasi komponen Footer Pelaporan yang memfasilitasi integrasi Tanda Tangan Digital (TTD) secara dinamis.\n  - Penambahan job untuk komputasi harian."
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "PROJECT_TIMELINE.md",
+    "heading": "Januari 2026",
+    "chunk_index": 7,
+    "content": "## Januari 2026\n- **Fokus Utama**: Inisialisasi Modul Laporan Harian (Daily Report) & Engine Form.\n- **Ringkasan**:\n  - Peluncuran versi awal halaman Daily Report Entry dan fitur validasi form secara dinamis.\n  - Pembangunan dataset seed (simulasi laporan kepatuhan kebersihan tangan) dan integrasi awal reporting berbasis JSON."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Panduan GraphRAG untuk Dokumentasi Project",
+    "chunk_index": 1,
+    "content": "# Panduan GraphRAG untuk Dokumentasi Project\n\nPanduan lengkap tentang sistem **GraphRAG** (Graph Retrieval-Augmented Generation)\nuntuk query knowledge base project SIIMUT.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "📋 Ringkasan",
+    "chunk_index": 2,
+    "content": "## 📋 Ringkasan\n\nGraphRAG adalah sistem knowledge base ringan yang:\n\n1. **Sync** — Menyalin dokumentasi dari `docs/` ke `rag/input/`\n2. **Ingest** — Memecah dokumen jadi chunk + mengekstrak grafik pengetahuan\n3. **Query** — Menjawab pertanyaan dengan keyword scoring + LLM opsional (Claude)\n\n**Tujuan**: Memudahkan developer (manusia dan AI) untuk mencari informasi\ntentang project tanpa harus membaca puluhan file dokumentasi manual.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "📁 Struktur",
+    "chunk_index": 3,
+    "content": "## 📁 Struktur\n\n```txt\nproject/\n├── docs/                          # Dokumentasi sumber (markdown)\n│   ├── *.md                       # Dokumentasi utama\n│   ├── releases/                  # Release notes\n│   └── upgrade/                   # Panduan upgrade/migrasi\n├── rag/                           # GraphRAG system\n│   ├── input/                     # Copy dari docs/ (sync_docs.py)\n│   ├── output/                    # Output hasil ingest\n│   │   ├── chunks.json            # Chunk dokumen\n│   │   └── graph.json             # Grafik pengetahuan\n│   ├── scripts/\n│   │   ├── sync_docs.py           # Sync markdown\n│   │   ├── ingest.py              # Chunking + graph extraction\n│   │   └── query.py               # Query CLI\n│   ├── .env.example               # Konfigurasi API key\n│   └── README.md                  # Dokumentasi teknis RAG\n├── AGENTS.md                      # Daftar AI agents & tooling\n└── CHANGELOG.md                   # Catatan perubahan\n```\n\n---"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "🚀 Quick Start",
+    "chunk_index": 4,
+    "content": "## 🚀 Quick Start"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "1. Setup Environment",
+    "chunk_index": 5,
+    "content": "### 1. Setup Environment\n\n```bash\ncd rag\npython3 -m venv venv\nsource venv/bin/activate\npip install -r requirements.txt\n```"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "2. Sync Dokumentasi",
+    "chunk_index": 6,
+    "content": "### 2. Sync Dokumentasi\n\n```bash\npython3 rag/scripts/sync_docs.py\n```\n\nPerintah ini membersihkan `rag/input/` dan menyalin semua file `.md` dari `docs/` dan\n`docs/releases/` (kecuali template) ke `rag/input/`."
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "3. Ingest",
+    "chunk_index": 7,
+    "content": "### 3. Ingest\n\n```bash\npython3 rag/scripts/ingest.py\n```\n\nMembaca semua markdown dari `rag/input/` dan menghasilkan:\n\n- **chunks.json** — 400+ chunk dokumen berbasis heading\n- **graph.json** — 30+ node entitas + 10+ edge relasi"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "4. Query",
+    "chunk_index": 8,
+    "content": "### 4. Query\n\n```bash"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Retrieval-only (tanpa LLM)",
+    "chunk_index": 9,
+    "content": "# Retrieval-only (tanpa LLM)\npython3 rag/scripts/query.py \"apa itu modular monolith?\""
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Dengan LLM (copy .env dulu)",
+    "chunk_index": 10,
+    "content": "# Dengan LLM (copy .env dulu)\ncp rag/.env.example rag/.env"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL",
+    "chunk_index": 11,
+    "content": "# Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL\npython3 rag/scripts/query.py \"command apa untuk setup development?\"\n```\n\n---"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "🔄 Rebuild",
+    "chunk_index": 12,
+    "content": "## 🔄 Rebuild\n\nJalankan setiap kali dokumentasi berubah:\n\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```\n\n---"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "📤 Output",
+    "chunk_index": 13,
+    "content": "## 📤 Output"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "chunks.json",
+    "chunk_index": 14,
+    "content": "### chunks.json\n\nArray chunk dengan format:\n\n```json\n{\n  \"id\": \"chunk-0001\",\n  \"source_file\": \"PROJECT_STRUCTURE.md\",\n  \"heading\": \"app/ — Source Code\",\n  \"chunk_index\": 1,\n  \"content\": \"| Path | Fungsi | Catatan |...\"\n}\n```"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "graph.json",
+    "chunk_index": 15,
+    "content": "### graph.json\n\nObject dengan nodes dan edges:\n\n```json\n{\n  \"nodes\": [\n    { \"id\": \"siimut\", \"type\": \"Project\", \"label\": \"SIIMUT\", \"source\": \"...\" }\n  ],\n  \"edges\": [\n    { \"from\": \"filament\", \"to\": \"nginx\", \"type\": \"exposed_by\", \"source\": \"...\" }\n  ]\n}\n```\n\n---"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "🧠 Cara Kerja",
+    "chunk_index": 16,
+    "content": "## 🧠 Cara Kerja"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Chunking",
+    "chunk_index": 17,
+    "content": "### Chunking\n1. Baca setiap file `.md`\n2. Pecah berdasarkan heading markdown (`#`, `##`, dst.)\n3. Jika > 2000 karakter, pecah per paragraf\n4. Setiap chunk punya ID unik (`chunk-0001`)"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Graph Extraction",
+    "chunk_index": 18,
+    "content": "### Graph Extraction\n1. Pattern matching dengan kata kunci untuk entity types\n2. Entity types: Project, App, Service, Module, Command, Port, Container, Env, KnownIssue, Decision, Release\n3. Relasi: uses, exposed_by, has_port, contains, defined_in, related_to, affects, includes\n4. Deduplikasi otomatis — node yang sama tidak dibuat dua kali"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "Query",
+    "chunk_index": 19,
+    "content": "### Query\n1. Tokenize pertanyaan\n2. Score chunk berdasar keyword overlap + heading boost + source boost\n3. Cari node/edge graph relevan\n4. (Opsional) Kirim konteks ke Claude untuk jawaban natural language\n\n---"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "⚠️ Keterbatasan",
+    "chunk_index": 20,
+    "content": "## ⚠️ Keterbatasan\n\n1. **Pattern-based graph** — hanya entitas eksplisit dengan kata kunci\n2. **Source code tidak diindeks** — hanya markdown di `docs/`\n3. **Keyword scoring** — tanpa semantic search / embedding\n4. **LLM opsional** — tanpa API key, hanya retrieval\n5. **No auto-rebuild** — perlu manual sync_docs + ingest\n6. **Bahasa campuran** — dokumentasi ID/EN, query keduanya\n\n---"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "RAG_GUIDE.md",
+    "heading": "🔮 Next Improvement",
+    "chunk_index": 21,
+    "content": "## 🔮 Next Improvement\n\n- [ ] Semantic chunk search dengan embedding (sentence-transformers)\n- [ ] Indeks AI agent docs (`docs/ai-agents/`)\n- [ ] Graph extraction dengan LLM untuk akurasi lebih tinggi\n- [ ] UI Streamlit untuk browsing knowledge base\n- [ ] Auto-rebuild via git hook\n- [ ] Caching query untuk pertanyaan berulang\n- [ ] Integrasi Laravel Artisan command"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "RAG_SCHEMA.md",
+    "heading": "RAG Schema",
+    "chunk_index": 1,
+    "content": "# RAG Schema\n\nDokumen ini menjelaskan tipe node dan edge yang digunakan oleh sistem RAG untuk melakukan ekstraksi dan penelusuran graf pengetahuan."
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "RAG_SCHEMA.md",
+    "heading": "Node Types",
+    "chunk_index": 2,
+    "content": "## Node Types\n\n- **Project**: Representasi dari keseluruhan project.\n- **Module**: Modul atau domain bisnis utama (misal: Daily Report, IAM).\n- **Service**: Komponen layanan atau logika bisnis (misal: ImutReportService).\n- **Command**: CLI command (misal: SyncFormTemplateDates).\n- **Port**: Interface atau kontrak antar modul.\n- **Container**: Dependency injection atau Docker container.\n- **Env**: Variabel environment (misal: SESSION_DOMAIN).\n- **KnownIssue**: Bug atau masalah yang sudah diketahui dan dicatat.\n- **Decision**: Keputusan arsitektur atau desain (ADR).\n- **Release**: Versi rilis aplikasi (misal: v1.4.0).\n- **File**: File fisik dalam repository.\n- **Feature**: Fungsionalitas aplikasi."
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "RAG_SCHEMA.md",
+    "heading": "Edge Types",
+    "chunk_index": 3,
+    "content": "## Edge Types\n\n- `uses`: Node A menggunakan fungsionalitas Node B (contoh: Service uses Port).\n- `exposes`: Node A menyediakan Node B untuk digunakan (contoh: Module exposes Port).\n- `has_command`: Node A menyediakan/memiliki Node B (Command).\n- `has_issue`: Node A memiliki/terkait dengan masalah Node B (KnownIssue).\n- `affected_by`: Node A terpengaruh oleh Node B.\n- `decided_by`: Node A adalah hasil dari keputusan Node B (Decision).\n- `introduced_in`: Node A pertama kali muncul pada rilis/commit Node B.\n- `fixed_in`: Issue Node A diperbaiki pada rilis/commit Node B.\n- `related_to`: Relasi umum antara Node A dan Node B.\n- `defined_in`: Node A didefinisikan secara fisik dalam Node B (File/Path)."
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "RAG_SCHEMA.md",
+    "heading": "Contoh Format Node dan Edge",
+    "chunk_index": 4,
+    "content": "## Contoh Format Node dan Edge\n\nSistem RAG mengekstrak informasi berdasarkan format key-value sederhana di bawah header.\n\n```markdown"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "RAG_SCHEMA.md",
+    "heading": "MOD-001 - Daily Report",
+    "chunk_index": 5,
+    "content": "## MOD-001 - Daily Report\n\nType: Module\nStatus: Active\nArea: Daily Report\nRelated Services:\n- SVC-001\nRelated Commands:\n- CMD-001\nRelated Issues:\n- KI-001\nRelated Decisions:\n- DEC-001\nSource:\n- app/Modules/DailyReport\n- commit: abc1234\n\nSummary:\nModul ini menangani laporan harian...\n```"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "README.md",
+    "heading": "📚 Dokumentasi SIIMUT",
+    "chunk_index": 1,
+    "content": "# 📚 Dokumentasi SIIMUT\n\nSelamat datang di folder dokumentasi **SIIMUT — Sistem Indikator Mutu untuk Rumah Sakit**.\n\nFolder ini berisi dokumentasi teknis, panduan penggunaan, dan catatan pengembangan project. Dokumen-dokumen di sini dirancang untuk membantu **developer baru**, **tim mutu**, dan **DevOps** memahami dan mengelola project.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "README.md",
+    "heading": "📋 Daftar Dokumen",
+    "chunk_index": 2,
+    "content": "## 📋 Daftar Dokumen\n\n| No | Dokumen | Fungsi | Untuk Siapa |\n|---|---|---|---|\n| 1 | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Struktur folder dan penjelasan setiap direktori | Semua developer |\n| 2 | [INSTALLATION.md](INSTALLATION.md) | Panduan instalasi dari awal | Developer, DevOps |\n| 3 | [CONFIGURATION.md](CONFIGURATION.md) | Konfigurasi environment & file penting | Developer, DevOps |\n| 4 | [USAGE.md](USAGE.md) | Cara menjalankan fitur utama | Semua pengguna |\n| 5 | [DEVELOPMENT.md](DEVELOPMENT.md) | Panduan development & coding convention | Developer |\n| 6 | [DEPLOYMENT.md](DEPLOYMENT.md) | Panduan deployment ke production | DevOps |\n| 7 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Masalah umum dan solusinya | Semua |\n| 8 | [VERSIONING.md](VERSIONING.md) | Aturan versioning | Developer |\n| 9 | [ROADMAP.md](ROADMAP.md) | Rencana pengembangan ke depan | Semua stakeholder |\n| 10 | [NOTES.md](NOTES.md) | Catatan teknis & keputusan sementara | Developer |"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "README.md",
+    "heading": "Catatan Rilis",
+    "chunk_index": 3,
+    "content": "### Catatan Rilis\n\n| Dokumen | Fungsi |\n|---|---|\n| [releases/template.md](releases/template.md) | Template untuk catatan rilis baru |\n| [releases/v0.1.0.md](releases/v0.1.0.md) | Catatan rilis versi 0.1.0 |"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "README.md",
+    "heading": "Dokumen Eksternal",
+    "chunk_index": 4,
+    "content": "### Dokumen Eksternal\n\nBerikut dokumen yang sudah ada sebelum inisialisasi docs:\n\n| Dokumen | Lokasi | Fungsi |\n|---|---|---|\n| `ARCHITECTURE_INDEX.md` | `/` | Index dokumentasi refactoring dashboard |\n| `BEFORE_AFTER_COMPARISON.md` | `/` | Perbandingan sebelum/sesudah refactoring |\n| `REFACTORING_SUMMARY.md` | `/` | Ringkasan refactoring |\n| `BOTTLENECK_ANALYSIS_30SEC.md` | `/` | Analisis bottleneck |\n| `docs/SBOM.md` | `docs/` | Software Bill of Materials |\n| `docs/THIRD_PARTY_LICENSES.md` | `docs/` | Lisensi pihak ketiga |\n\n---"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "README.md",
+    "heading": "📖 Rekomendasi Urutan Membaca",
+    "chunk_index": 5,
+    "content": "## 📖 Rekomendasi Urutan Membaca\n\nUntuk **developer baru** yang pertama kali mengenal project ini:\n\n1. **README.md** → Gambaran umum project\n2. **PROJECT_STRUCTURE.md** → Paham letak file dan folder\n3. **INSTALLATION.md** → Setup lingkungan development\n4. **CONFIGURATION.md** → Paham konfigurasi yang dipakai\n5. **USAGE.md** → Jalankan fitur utama\n6. **DEVELOPMENT.md** → Mulai berkontribusi\n7. **VERSIONING.md** → Aturan versi project\n8. **ROADMAP.md** → Arah pengembangan\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "README.md",
+    "heading": "🔗 Link Penting",
+    "chunk_index": 6,
+    "content": "## 🔗 Link Penting\n\n- **Repository**: [github.com/juniyasyos/si-imut](https://github.com/juniyasyos/si-imut)\n- **Changelog**: [CHANGELOG.md](../CHANGELOG.md)\n- **Lisensi**: [LICENSE](../LICENSE)\n\n---\n\n_Dokumentasi ini diperbarui secara berkala. Jika ada informasi yang tidak akurat, silakan buat issue atau pull request._"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "ROADMAP.md",
+    "heading": "Roadmap",
+    "chunk_index": 1,
+    "content": "# Roadmap\n\nRencana pengembangan project SIIMUT. Roadmap ini bersifat dinamis dan akan diperbarui secara berkala.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "ROADMAP.md",
+    "heading": "🎯 Fokus Saat Ini",
+    "chunk_index": 2,
+    "content": "## 🎯 Fokus Saat Ini\n\nFokus saat ini adalah **stabilisasi dokumentasi** dan **pematangan modular monolith architecture**.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "ROADMAP.md",
+    "heading": "📋 Status",
+    "chunk_index": 3,
+    "content": "## 📋 Status"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "ROADMAP.md",
+    "heading": "✅ Done",
+    "chunk_index": 4,
+    "content": "### ✅ Done\n\n| Item | Versi | Catatan |\n|---|---|---|\n| Dokumentasi project diinisialisasi | v0.1.0 | `docs/`, `CHANGELOG.md`, README |\n| Struktur modular monolith | - | 7 modul bisnis |\n| Daily Report dengan Livewire | - | Input real-time, form template versioning |\n| Benchmarking System v1.2.0 | v1.2.0 | Period validity, cache invalidation |\n| RBAC dengan Filament Shield | - | Role & permission lengkap |\n| PWA + Offline Support | - | Service worker, cache manifest |\n| Media Manager | - | Upload, folder sync, backup |\n| Form Builder Engine | - | Google Form-like, compliance scoring |"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "ROADMAP.md",
+    "heading": "🔄 In Progress",
+    "chunk_index": 5,
+    "content": "### 🔄 In Progress\n\n| Item | Target | Catatan |\n|---|---|---|\n| Dokumentasi project | v0.1.0 | Dokumentasi awal selesai, perlu penyempurnaan |\n| Stabilisasi modular monolith | - | Validasi arsitektur modul |"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "ROADMAP.md",
+    "heading": "📝 Planned",
+    "chunk_index": 6,
+    "content": "### 📝 Planned\n\n| Item | Prioritas | Catatan |\n|---|---|---|\n| Dokumentasi API (Scramble) | Medium | Auto-generated API docs |\n| Backup & Restore documentation | Medium | Prosedur backup terstruktur |\n| Performance optimization guide | Low | Query optimization, caching strategy |\n| Monitoring setup (Laravel Pulse) | Low | Metrics, queue monitoring |"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "ROADMAP.md",
+    "heading": "📦 Backlog",
+    "chunk_index": 7,
+    "content": "### 📦 Backlog\n\n| Item | Catatan |\n|---|---|\n| CI/CD pipeline (GitHub Actions) | Automated testing & deployment |\n| E2E testing (Laravel Dusk) | Browser testing |\n| Multi-language support | i18n untuk modul |\n| Docker Swarm / K8s deployment | Orchestration |\n| API rate limiting | Untuk public API |\n\n---"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "ROADMAP.md",
+    "heading": "🗺️ Timeline (Perkiraan)",
+    "chunk_index": 8,
+    "content": "## 🗺️ Timeline (Perkiraan)\n\n| Periode | Target |\n|---|---|\n| Q2 2026 | Dokumentasi selesai, API docs, CI/CD setup |\n| Q3 2026 | Performance optimization, monitoring |\n| Q4 2026 | E2E testing, deployment automation |\n\n---"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "ROADMAP.md",
+    "heading": "💡 Catatan",
+    "chunk_index": 9,
+    "content": "## 💡 Catatan\n\n- Timeline bersifat indikatif dan bisa berubah.\n- Prioritas bisa berubah sesuai kebutuhan pengguna.\n- Kontribusi dan feedback sangat membantu penyusunan roadmap.\n\n---\n\n*Terakhir diperbarui: 2026-06-13*"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "SBOM.md",
+    "heading": "human-readable list",
+    "chunk_index": 1,
+    "content": "# human-readable list\ncomposer licenses > docs/third_party_licenses.txt\n```\n\nOption B — CycloneDX (recommended for full SBOM):\n- Use a CycloneDX generator that supports Composer, for example `cyclonedx-php` or\n  the CycloneDX Composer plugin (install as a dev dependency) and run it to\n  produce `bom.xml` or `bom.json` in `docs/`.\n\nExample commands (install/usage depend on the chosen tool):\n```bash"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "SBOM.md",
+    "heading": "example (adjust per tool documentation):",
+    "chunk_index": 2,
+    "content": "# example (adjust per tool documentation):\ncomposer require --dev cyclonedx/cyclonedx-php"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "SBOM.md",
+    "heading": "then run the tool to create a BOM",
+    "chunk_index": 3,
+    "content": "# then run the tool to create a BOM\nvendor/bin/cyclonedx convert --output docs/bom.json\n```\n\nMinimal SBOM header (fill after generation):\n- Generated: 2026-06-01\n- Tool: <tool-name>\n- Format: CycloneDX/JSON\n- Entry point: composer.json\n- Notes: see `docs/THIRD_PARTY_LICENSES.md` for license summaries\n\nIf you want, I can generate a first SBOM here (needs Composer and/or the\nCycloneDX tool available on the server). Run the recommended commands or tell\nme to run them for you."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "SERVICES.md",
+    "heading": "Daftar Service",
+    "chunk_index": 1,
+    "content": "# Daftar Service\n\nDokumen ini berisi daftar service utama di SI-IMUT. Informasi ini diproses oleh sistem RAG."
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "SERVICES.md",
+    "heading": "SVC-001 - ImutCalculationService",
+    "chunk_index": 2,
+    "content": "## SVC-001 - ImutCalculationService\n\nType: Service\nStatus: Active\nArea: Reporting\nRelated Services:\n- Needs Verification\nRelated Commands:\n- Needs Verification\nRelated Issues:\n- Needs Verification\nRelated Decisions:\n- Needs Verification\nSource:\n- app/Services/ImutCalculationService.php\n- commit: 1be0c3f\n\nSummary:\nService untuk melakukan kalkulasi pada skor kepatuhan laporan.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "SERVICES.md",
+    "heading": "SVC-002 - DailyReportCalculationService",
+    "chunk_index": 3,
+    "content": "## SVC-002 - DailyReportCalculationService\n\nType: Service\nStatus: Active\nArea: Daily Report\nRelated Services:\n- SVC-001\nRelated Commands:\n- Needs Verification\nRelated Issues:\n- Needs Verification\nRelated Decisions:\n- Needs Verification\nSource:\n- app/Services/DailyReportCalculationService.php\n- commit: 601d0da\n\nSummary:\nService untuk menghitung data dan indikator pada modul Daily Report."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "THIRD_PARTY_LICENSES.md",
+    "heading": "Show license list (human readable)",
+    "chunk_index": 1,
+    "content": "# Show license list (human readable)\ncomposer licenses"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "THIRD_PARTY_LICENSES.md",
+    "heading": "Export license list as JSON (if your Composer version supports it)",
+    "chunk_index": 2,
+    "content": "# Export license list as JSON (if your Composer version supports it)\ncomposer licenses --format=json > docs/third_party_licenses.json\n```\n\nIf you don't have `composer licenses` available, run:\n\n```bash\ncomposer show -l > docs/third_party_licenses.txt\n```\n\nExample (partial) - populate this table after running the commands above:\n\n- laravel/framework — MIT\n- spatie/laravel-backup — MIT\n- spatie/db-dumper — MIT\n- league/flysystem-aws-s3-v3 — MIT\n- firebase/php-jwt — BSD-3-Clause\n\nNotes:\n- After generating a JSON/text export, you may copy relevant details into this\n  markdown file for easier review.\n- If you need a machine-readable SPDX or CycloneDX SBOM, see `SBOM.md`."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Troubleshooting",
+    "chunk_index": 1,
+    "content": "# Troubleshooting\n\nDaftar masalah umum dan solusinya.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Aplikasi tidak berjalan",
+    "chunk_index": 2,
+    "content": "## Masalah: Aplikasi tidak berjalan"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 3,
+    "content": "### Gejala\n- Halaman putih atau error 500.\n- `Whoops!` atau error page Laravel."
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Penyebab Kemungkinan",
+    "chunk_index": 4,
+    "content": "### Penyebab Kemungkinan\n- `.env` tidak dikonfigurasi dengan benar.\n- APP_KEY tidak di-generate.\n- Storage permission salah.\n- Extension PHP tidak terinstall."
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cara Cek",
+    "chunk_index": 5,
+    "content": "### Cara Cek\n```bash"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek error log",
+    "chunk_index": 6,
+    "content": "# Cek error log\ntail -f storage/logs/laravel.log"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek status aplikasi",
+    "chunk_index": 7,
+    "content": "# Cek status aplikasi\nphp artisan about\n```"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 8,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Generate key",
+    "chunk_index": 9,
+    "content": "# Generate key\nphp artisan key:generate"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Fix permission",
+    "chunk_index": 10,
+    "content": "# Fix permission\nchmod -R 775 storage bootstrap/cache"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek extension",
+    "chunk_index": 11,
+    "content": "# Cek extension\nphp -m | grep -E \"pdo|mysql|zip|gd|intl|pcntl\"\n```\n\n---"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Database connection refused",
+    "chunk_index": 12,
+    "content": "## Masalah: Database connection refused"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 13,
+    "content": "### Gejala\n```\nSQLSTATE[HY000] [2002] Connection refused\n```"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Penyebab Kemungkinan",
+    "chunk_index": 14,
+    "content": "### Penyebab Kemungkinan\n- MySQL/MariaDB tidak berjalan.\n- Kredensial database di `.env` salah.\n- Port database salah.\n- Host database salah (terutama di Docker)."
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cara Cek",
+    "chunk_index": 15,
+    "content": "### Cara Cek\n```bash"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek service MySQL",
+    "chunk_index": 16,
+    "content": "# Cek service MySQL\nsudo systemctl status mysql"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "atau",
+    "chunk_index": 17,
+    "content": "# atau\ndocker ps | grep mysql"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek koneksi",
+    "chunk_index": 18,
+    "content": "# Cek koneksi\nmysql -h 127.0.0.1 -u root -p -e \"SELECT 1\"\n```"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 19,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Start MySQL",
+    "chunk_index": 20,
+    "content": "# Start MySQL\nsudo systemctl start mysql"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Atau di Docker",
+    "chunk_index": 21,
+    "content": "# Atau di Docker\nmake up"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Verifikasi .env",
+    "chunk_index": 22,
+    "content": "# Verifikasi .env"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Pastikan DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD benar",
+    "chunk_index": 23,
+    "content": "# Pastikan DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD benar\n```\n\n---"
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Vite manifest not found",
+    "chunk_index": 24,
+    "content": "## Masalah: Vite manifest not found"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 25,
+    "content": "### Gejala\n```\nVite manifest not found at: public/build/manifest.json\n```"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Penyebab Kemungkinan",
+    "chunk_index": 26,
+    "content": "### Penyebab Kemungkinan\n- Frontend belum di-build.\n- `npm install` belum dijalankan."
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 27,
+    "content": "### Solusi\n```bash\nnpm install\nnpm run build\n```\n\n---"
+  },
+  {
+    "id": "chunk-0028",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Permission denied (storage)",
+    "chunk_index": 28,
+    "content": "## Masalah: Permission denied (storage)"
+  },
+  {
+    "id": "chunk-0029",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 29,
+    "content": "### Gejala\n```\nThe stream or file \"...\" could not be opened in append mode\n```"
+  },
+  {
+    "id": "chunk-0030",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Penyebab Kemungkinan",
+    "chunk_index": 30,
+    "content": "### Penyebab Kemungkinan\n- Permission direktori `storage/` salah.\n- Ownership file salah (apache/www-data vs user)."
+  },
+  {
+    "id": "chunk-0031",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 31,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0032",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Fix permission",
+    "chunk_index": 32,
+    "content": "# Fix permission\nchmod -R 775 storage bootstrap/cache"
+  },
+  {
+    "id": "chunk-0033",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Fix ownership (Ubuntu/Debian)",
+    "chunk_index": 33,
+    "content": "# Fix ownership (Ubuntu/Debian)\nsudo chown -R www-data:www-data storage bootstrap/cache"
+  },
+  {
+    "id": "chunk-0034",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Atau beri akses grup",
+    "chunk_index": 34,
+    "content": "# Atau beri akses grup\nsudo usermod -a -G www-data $USER\n```\n\n---"
+  },
+  {
+    "id": "chunk-0035",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Queue worker tidak berjalan",
+    "chunk_index": 35,
+    "content": "## Masalah: Queue worker tidak berjalan"
+  },
+  {
+    "id": "chunk-0036",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 36,
+    "content": "### Gejala\n- Job tidak diproses.\n- Export/download tidak selesai.\n- Laporan tidak ter-generate."
+  },
+  {
+    "id": "chunk-0037",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cara Cek",
+    "chunk_index": 37,
+    "content": "### Cara Cek\n```bash"
+  },
+  {
+    "id": "chunk-0038",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek tabel jobs",
+    "chunk_index": 38,
+    "content": "# Cek tabel jobs\nphp artisan queue:monitor"
+  },
+  {
+    "id": "chunk-0039",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek failed jobs",
+    "chunk_index": 39,
+    "content": "# Cek failed jobs\nphp artisan queue:failed"
+  },
+  {
+    "id": "chunk-0040",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek worker berjalan",
+    "chunk_index": 40,
+    "content": "# Cek worker berjalan\nps aux | grep queue:work\n```"
+  },
+  {
+    "id": "chunk-0041",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 41,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0042",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Jalankan worker manual",
+    "chunk_index": 42,
+    "content": "# Jalankan worker manual\nphp artisan queue:work --tries=3"
+  },
+  {
+    "id": "chunk-0043",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Atau via Supervisor",
+    "chunk_index": 43,
+    "content": "# Atau via Supervisor\nsudo supervisorctl status siimut-queue:*\nsudo supervisorctl restart siimut-queue:*\n```\n\n---"
+  },
+  {
+    "id": "chunk-0044",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Halaman login tidak muncul",
+    "chunk_index": 44,
+    "content": "## Masalah: Halaman login tidak muncul"
+  },
+  {
+    "id": "chunk-0045",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 45,
+    "content": "### Gejala\n- Redirect terus-menerus.\n- Error 419 (CSRF token mismatch)."
+  },
+  {
+    "id": "chunk-0046",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Penyebab Kemungkinan",
+    "chunk_index": 46,
+    "content": "### Penyebab Kemungkinan\n- Session driver tidak sesuai.\n- Cache session perlu dibersihkan.\n- `.env` SESSION_DRIVER salah."
+  },
+  {
+    "id": "chunk-0047",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 47,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0048",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Session driver harus database",
+    "chunk_index": 48,
+    "content": "# Session driver harus database"
+  },
+  {
+    "id": "chunk-0049",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "SESSION_DRIVER=database",
+    "chunk_index": 49,
+    "content": "# SESSION_DRIVER=database"
+  },
+  {
+    "id": "chunk-0050",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Bersihkan cache",
+    "chunk_index": 50,
+    "content": "# Bersihkan cache\nphp artisan cache:clear\nphp artisan config:clear\nphp artisan view:clear"
+  },
+  {
+    "id": "chunk-0051",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Pastikan session table ada",
+    "chunk_index": 51,
+    "content": "# Pastikan session table ada\nphp artisan session:table\nphp artisan migrate\n```\n\n---"
+  },
+  {
+    "id": "chunk-0052",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: File upload gagal",
+    "chunk_index": 52,
+    "content": "## Masalah: File upload gagal"
+  },
+  {
+    "id": "chunk-0053",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 53,
+    "content": "### Gejala\n- Error saat upload gambar/dokumen.\n- File tidak muncul di media manager."
+  },
+  {
+    "id": "chunk-0054",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Penyebab Kemungkinan",
+    "chunk_index": 54,
+    "content": "### Penyebab Kemungkinan\n- Storage disk tidak terkonfigurasi.\n- S3/MinIO credentials salah.\n- Folder tujuan tidak ada."
+  },
+  {
+    "id": "chunk-0055",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 55,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0056",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek storage link",
+    "chunk_index": 56,
+    "content": "# Cek storage link\nphp artisan storage:link"
+  },
+  {
+    "id": "chunk-0057",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek filesystem config",
+    "chunk_index": 57,
+    "content": "# Cek filesystem config\nphp artisan about | grep Filesystem"
+  },
+  {
+    "id": "chunk-0058",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek MinIO/S3",
+    "chunk_index": 58,
+    "content": "# Cek MinIO/S3"
+  },
+  {
+    "id": "chunk-0059",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Pastikan AWS_* di .env sudah benar",
+    "chunk_index": 59,
+    "content": "# Pastikan AWS_* di .env sudah benar\n```\n\n---"
+  },
+  {
+    "id": "chunk-0060",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Debugbar muncul di production",
+    "chunk_index": 60,
+    "content": "## Masalah: Debugbar muncul di production"
+  },
+  {
+    "id": "chunk-0061",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 61,
+    "content": "### Gejala\n- Toolbar debugbar terlihat di halaman production."
+  },
+  {
+    "id": "chunk-0062",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 62,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0063",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Pastikan di .env:",
+    "chunk_index": 63,
+    "content": "# Pastikan di .env:\nAPP_DEBUG=false"
+  },
+  {
+    "id": "chunk-0064",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Hapus cache config",
+    "chunk_index": 64,
+    "content": "# Hapus cache config\nphp artisan config:clear\nphp artisan config:cache\n```\n\n---"
+  },
+  {
+    "id": "chunk-0065",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Permission / RBAC error",
+    "chunk_index": 65,
+    "content": "## Masalah: Permission / RBAC error"
+  },
+  {
+    "id": "chunk-0066",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 66,
+    "content": "### Gejala\n- \"Unauthorized\" atau \"This action is unauthorized.\"\n- User tidak bisa mengakses resource."
+  },
+  {
+    "id": "chunk-0067",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 67,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0068",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Generate ulang permission",
+    "chunk_index": 68,
+    "content": "# Generate ulang permission\nphp artisan shield:generate --all --panel=admin"
+  },
+  {
+    "id": "chunk-0069",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Assign ulang role ke user",
+    "chunk_index": 69,
+    "content": "# Assign ulang role ke user\nphp artisan shield:super-admin --user=1\n```\n\n---"
+  },
+  {
+    "id": "chunk-0070",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Class not found",
+    "chunk_index": 70,
+    "content": "## Masalah: Class not found"
+  },
+  {
+    "id": "chunk-0071",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 71,
+    "content": "### Gejala\n```\nClass \"App\\Modules\\XXX\" not found\n```"
+  },
+  {
+    "id": "chunk-0072",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 72,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0073",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Dump autoload",
+    "chunk_index": 73,
+    "content": "# Dump autoload\ncomposer dump-autoload"
+  },
+  {
+    "id": "chunk-0074",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Clear cache",
+    "chunk_index": 74,
+    "content": "# Clear cache\nphp artisan optimize:clear"
+  },
+  {
+    "id": "chunk-0075",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Cek apakah modul terdaftar",
+    "chunk_index": 75,
+    "content": "# Cek apakah modul terdaftar\nphp artisan module:list\n```\n\n---"
+  },
+  {
+    "id": "chunk-0076",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: Laravel Pail (log viewer) tidak berfungsi",
+    "chunk_index": 76,
+    "content": "## Masalah: Laravel Pail (log viewer) tidak berfungsi"
+  },
+  {
+    "id": "chunk-0077",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 77,
+    "content": "### Gejala\n```\npail: No content yet\n```"
+  },
+  {
+    "id": "chunk-0078",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 78,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0079",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Pastikan ada log",
+    "chunk_index": 79,
+    "content": "# Pastikan ada log\ntail -f storage/logs/laravel.log"
+  },
+  {
+    "id": "chunk-0080",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Jalankan pail dengan timeout",
+    "chunk_index": 80,
+    "content": "# Jalankan pail dengan timeout\nphp artisan pail --timeout=0\n```\n\n---"
+  },
+  {
+    "id": "chunk-0081",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Masalah: PWA / Service Worker",
+    "chunk_index": 81,
+    "content": "## Masalah: PWA / Service Worker"
+  },
+  {
+    "id": "chunk-0082",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Gejala",
+    "chunk_index": 82,
+    "content": "### Gejala\n- Aplikasi tidak bisa diakses offline.\n- Cache tidak ter-update."
+  },
+  {
+    "id": "chunk-0083",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Solusi",
+    "chunk_index": 83,
+    "content": "### Solusi\n```bash"
+  },
+  {
+    "id": "chunk-0084",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Regenerate cache PWA",
+    "chunk_index": 84,
+    "content": "# Regenerate cache PWA\nbash generate-cache-pwa.sh"
+  },
+  {
+    "id": "chunk-0085",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Clear service worker di browser",
+    "chunk_index": 85,
+    "content": "# Clear service worker di browser"
+  },
+  {
+    "id": "chunk-0086",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Buka DevTools → Application → Service Workers → Unregister",
+    "chunk_index": 86,
+    "content": "# Buka DevTools → Application → Service Workers → Unregister\n```\n\n---"
+  },
+  {
+    "id": "chunk-0087",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "Mendapatkan Bantuan",
+    "chunk_index": 87,
+    "content": "## Mendapatkan Bantuan\n\nJika masalah tidak terselesaikan:\n\n1. Cek log: `storage/logs/laravel.log`\n2. Cek failed jobs: `php artisan queue:failed`\n3. Cek debugbar toolbar (jika aktif)\n4. Buka issue di [GitHub](https://github.com/juniyasyos/si-imut/issues)\n\n---"
+  },
+  {
+    "id": "chunk-0088",
+    "source_file": "TROUBLESHOOTING.md",
+    "heading": "TODO",
+    "chunk_index": 88,
+    "content": "## TODO\n\n- [ ] Troubleshooting untuk MinIO/S3 connection\n- [ ] Troubleshooting untuk SSO login\n- [ ] Troubleshooting untuk performance issue"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "USAGE.md",
+    "heading": "Panduan Penggunaan",
+    "chunk_index": 1,
+    "content": "# Panduan Penggunaan\n\nPanduan ini mencakup cara menjalankan dan menggunakan fitur utama SIIMUT.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "USAGE.md",
+    "heading": "Menjalankan Aplikasi",
+    "chunk_index": 2,
+    "content": "## Menjalankan Aplikasi"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "USAGE.md",
+    "heading": "Mode Development (Full Stack)",
+    "chunk_index": 3,
+    "content": "### Mode Development (Full Stack)\n\n```bash"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "USAGE.md",
+    "heading": "Server + Queue + Schedule + Logs + Vite",
+    "chunk_index": 4,
+    "content": "# Server + Queue + Schedule + Logs + Vite\ncomposer run dev\n```\n\nPerintah ini menjalankan 5 proses bersamaan:\n- `php artisan serve` — HTTP server (port 8000)\n- `php artisan queue:listen` — Queue worker\n- `php artisan schedule:work` — Scheduler\n- `php artisan pail` — Log viewer\n- `npm run dev` — Vite dev server (HMR)"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "USAGE.md",
+    "heading": "Mode Development (Laravel Only)",
+    "chunk_index": 5,
+    "content": "### Mode Development (Laravel Only)\n\n```bash\ncomposer run dev-lara\n```"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "USAGE.md",
+    "heading": "Mode IAM / SSO",
+    "chunk_index": 6,
+    "content": "### Mode IAM / SSO\n\n```bash\ncomposer run iam\n```\nMenjalankan server di port **8088** bersama queue dan log."
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "USAGE.md",
+    "heading": "Mode Production",
+    "chunk_index": 7,
+    "content": "### Mode Production\n\n```bash\nphp artisan serve"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "USAGE.md",
+    "heading": "atau via Nginx (lihat .docker/nginx/)",
+    "chunk_index": 8,
+    "content": "# atau via Nginx (lihat .docker/nginx/)\n```\n\n---"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "USAGE.md",
+    "heading": "Perintah Penting",
+    "chunk_index": 9,
+    "content": "## Perintah Penting"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "USAGE.md",
+    "heading": "Artisan Commands",
+    "chunk_index": 10,
+    "content": "### Artisan Commands\n\n```bash"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "USAGE.md",
+    "heading": "Informasi aplikasi",
+    "chunk_index": 11,
+    "content": "# Informasi aplikasi\nphp artisan about"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "USAGE.md",
+    "heading": "Database",
+    "chunk_index": 12,
+    "content": "# Database\nphp artisan migrate                    # Jalankan migrasi\nphp artisan migrate:fresh              # Reset + migrasi ulang\nphp artisan db:seed                    # Seeder\nphp artisan db:show                    # Lihat status database"
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "USAGE.md",
+    "heading": "Shield (Permission)",
+    "chunk_index": 13,
+    "content": "# Shield (Permission)\nphp artisan shield:generate --all      # Generate permissions\nphp artisan shield:super-admin --user=1"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "USAGE.md",
+    "heading": "Queue",
+    "chunk_index": 14,
+    "content": "# Queue\nphp artisan queue:listen --tries=1     # Jalankan queue worker\nphp artisan queue:monitor              # Monitor antrian"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "USAGE.md",
+    "heading": "Storage",
+    "chunk_index": 15,
+    "content": "# Storage\nphp artisan storage:link               # Symlink storage"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "USAGE.md",
+    "heading": "Cache",
+    "chunk_index": 16,
+    "content": "# Cache\nphp artisan cache:clear\nphp artisan config:clear\nphp artisan view:clear"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "USAGE.md",
+    "heading": "Debug",
+    "chunk_index": 17,
+    "content": "# Debug\nphp artisan pail                       # Log viewer (Laravel Pail)\n```"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "USAGE.md",
+    "heading": "Makefile Commands",
+    "chunk_index": 18,
+    "content": "### Makefile Commands\n\n```bash\nmake up            # Start Docker containers\nmake down          # Stop containers\nmake logs          # Tail container logs\nmake shell:app     # SSH ke container PHP\nmake build         # Build images\nmake ps            # Status container\nmake restart       # Restart containers\n```\n\n---"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "USAGE.md",
+    "heading": "Fitur Utama",
+    "chunk_index": 19,
+    "content": "## Fitur Utama"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "USAGE.md",
+    "heading": "1. Dashboard",
+    "chunk_index": 20,
+    "content": "### 1. Dashboard\n\nDashboard utama menampilkan visualisasi indikator mutu secara real-time:\n\n- Grafik tren indikator per periode\n- Ringkasan unit kerja\n- Status capaian mutu\n- Notifikasi dan peringatan"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "USAGE.md",
+    "heading": "2. Daily Report",
+    "chunk_index": 21,
+    "content": "### 2. Daily Report\n\nInput laporan harian dengan mekanisme live update:\n\n1. Buka menu **Daily Report** di sidebar Filament.\n2. Pilih unit kerja dan tanggal.\n3. Isi form indikator (numerator/denominator).\n4. Submit — data langsung tampil di dashboard.\n5. Sistem otomatis menghitung persentase dan menandai tren.\n\n**Form Template Versioning**:\n- Admin bisa membuat/mengelola template form.\n- Pilih versi template untuk setiap periode.\n- Field types: text, number, radio, checkbox, select, date, time, long text."
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "USAGE.md",
+    "heading": "3. Manajemen Indikator Mutu",
+    "chunk_index": 22,
+    "content": "### 3. Manajemen Indikator Mutu\n\nKelola data master indikator:\n\n- **Imut Profile**: Profil indikator mutu.\n- **Imut Category**: Kategori indikator.\n- **Imut Data**: Data indikator utama.\n- **Imut Penilaian**: Penilaian indikator.\n- **Imut Data Notes**: Catatan analisis per data indikator."
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "USAGE.md",
+    "heading": "4. Benchmarking",
+    "chunk_index": 23,
+    "content": "### 4. Benchmarking\n\nBandingkan performa indikator antar unit kerja:\n\n- Validasi periode (start date / end date).\n- Filter region dan level.\n- Cache management untuk performa.\n- Lihat di menu **Benchmarking** di sidebar."
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "USAGE.md",
+    "heading": "5. Laporan & Export",
+    "chunk_index": 24,
+    "content": "### 5. Laporan & Export\n\nHasilkan laporan dalam berbagai format:\n\n```bash"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "USAGE.md",
+    "heading": "Via browser, akses:",
+    "chunk_index": 25,
+    "content": "# Via browser, akses:\n/reports/category            # Laporan kategori\n/reports/category/{id}/pdf   # Export PDF\n/reports/print               # Print-ready report"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "USAGE.md",
+    "heading": "Via Livewire report:",
+    "chunk_index": 26,
+    "content": "# Via Livewire report:\n/livewire-report             # Filtering interaktif\n```\n\nFormat export: **PDF**, **Excel**."
+  },
+  {
+    "id": "chunk-0027",
+    "source_file": "USAGE.md",
+    "heading": "6. Media Manager",
+    "chunk_index": 27,
+    "content": "### 6. Media Manager\n\nUpload dan kelola file media per unit kerja:\n\n- Upload gambar/dokumen.\n- Folder sync otomatis.\n- Backup/export media."
+  },
+  {
+    "id": "chunk-0028",
+    "source_file": "USAGE.md",
+    "heading": "7. Logs & Audit",
+    "chunk_index": 28,
+    "content": "### 7. Logs & Audit\n\n- **Activity Log**: Lihat histori perubahan data.\n- **Audit Trail**: Setiap operasi CRUD tercatat (created_by, updated_by).\n\n---"
+  },
+  {
+    "id": "chunk-0029",
+    "source_file": "USAGE.md",
+    "heading": "Manajemen Pengguna & Role",
+    "chunk_index": 29,
+    "content": "## Manajemen Pengguna & Role"
+  },
+  {
+    "id": "chunk-0030",
+    "source_file": "USAGE.md",
+    "heading": "Role & Permission",
+    "chunk_index": 30,
+    "content": "### Role & Permission\n\nSIIMUT menggunakan **Spatie Laravel Permission** + **Filament Shield**:\n\n```bash"
+  },
+  {
+    "id": "chunk-0031",
+    "source_file": "USAGE.md",
+    "heading": "Generate permissions (setelah migrasi)",
+    "chunk_index": 31,
+    "content": "# Generate permissions (setelah migrasi)\nphp artisan shield:generate --all --panel=admin"
+  },
+  {
+    "id": "chunk-0032",
+    "source_file": "USAGE.md",
+    "heading": "Set super admin",
+    "chunk_index": 32,
+    "content": "# Set super admin\nphp artisan shield:super-admin --user=1\n```\n\nRole yang tersedia (default):\n\n| Role | Deskripsi |\n|---|---|\n| Super Admin | Akses penuh ke semua fitur |\n| Admin | Manajemen data dan pengguna |\n| PIC Unit Kerja | Input data unit kerja |\n| Viewer | Lihat laporan dan dashboard |"
+  },
+  {
+    "id": "chunk-0033",
+    "source_file": "USAGE.md",
+    "heading": "User Management",
+    "chunk_index": 33,
+    "content": "### User Management\n\n1. Buka menu **Users** di sidebar.\n2. Tambah/edit user.\n3. Assign role dan unit kerja.\n4. User bisa login via email/password atau SSO.\n\n---"
+  },
+  {
+    "id": "chunk-0034",
+    "source_file": "USAGE.md",
+    "heading": "Cron / Scheduled Tasks",
+    "chunk_index": 34,
+    "content": "## Cron / Scheduled Tasks\n\nProject memiliki scheduler untuk task otomatis:\n\n```bash"
+  },
+  {
+    "id": "chunk-0035",
+    "source_file": "USAGE.md",
+    "heading": "Jalankan scheduler (di background)",
+    "chunk_index": 35,
+    "content": "# Jalankan scheduler (di background)\nphp artisan schedule:work\n```\n\nTask yang dijadwalkan:\n- **TODO**: Generate laporan periodik otomatis.\n- **TODO**: Backup data.\n- **TODO**: Cache warming.\n\n---"
+  },
+  {
+    "id": "chunk-0036",
+    "source_file": "USAGE.md",
+    "heading": "Contoh Workflow",
+    "chunk_index": 36,
+    "content": "## Contoh Workflow"
+  },
+  {
+    "id": "chunk-0037",
+    "source_file": "USAGE.md",
+    "heading": "Workflow: Input Laporan Harian",
+    "chunk_index": 37,
+    "content": "### Workflow: Input Laporan Harian\n\n1. Login sebagai PIC Unit Kerja.\n2. Buka **Daily Report**.\n3. Pilih unit kerja + tanggal.\n4. Isi numerator & denominator.\n5. Pilih template form yang sesuai.\n6. Submit.\n7. Cek dashboard — data langsung update.\n8. (Opsional) Tambahkan catatan analisis."
+  },
+  {
+    "id": "chunk-0038",
+    "source_file": "USAGE.md",
+    "heading": "Workflow: Export Laporan Triwulan",
+    "chunk_index": 38,
+    "content": "### Workflow: Export Laporan Triwulan\n\n1. Login sebagai Admin.\n2. Buka menu **Laporan**.\n3. Pilih periode dan unit kerja.\n4. Klik **Export PDF**.\n5. File siap diunduh.\n\n---"
+  },
+  {
+    "id": "chunk-0039",
+    "source_file": "USAGE.md",
+    "heading": "Catatan",
+    "chunk_index": 39,
+    "content": "## Catatan\n\n- Pastikan queue worker berjalan untuk fitur async (export, notifikasi).\n- Untuk production, gunakan Nginx (bukan artisan serve).\n- Untuk PWA, jalankan `generate-cache-pwa.sh` setelah build."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "VERSIONING.md",
+    "heading": "Versioning",
+    "chunk_index": 1,
+    "content": "# Versioning\n\nAturan versioning untuk project SIIMUT.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "VERSIONING.md",
+    "heading": "Semantic Versioning",
+    "chunk_index": 2,
+    "content": "## Semantic Versioning\n\nProject ini menggunakan **Semantic Versioning** dengan format:\n\n```\nMAJOR.MINOR.PATCH\n```\n\nContoh: `1.2.3` → Major 1, Minor 2, Patch 3."
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "VERSIONING.md",
+    "heading": "Arti Setiap Komponen",
+    "chunk_index": 3,
+    "content": "### Arti Setiap Komponen\n\n| Komponen | Contoh Perubahan | Kapan Dinaikkan |\n|---|---|---|\n| **MAJOR** | Perubahan arsitektur, database schema breaking | Perubahan yang tidak kompatibel dengan versi sebelumnya |\n| **MINOR** | Fitur baru, halaman baru, modul baru | Penambahan fitur yang kompatibel ke belakang |\n| **PATCH** | Bug fix, dokumentasi, refactor kecil | Perbaikan yang tidak mengubah fungsionalitas |"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "VERSIONING.md",
+    "heading": "Contoh",
+    "chunk_index": 4,
+    "content": "### Contoh\n\n| Versi | Perubahan |\n|---|---|\n| `1.0.0` | Rilis stabil pertama |\n| `1.0.1` | Bug fix di dashboard |\n| `1.1.0` | Fitur export PDF baru |\n| `2.0.0` | Migrasi database breaking change |\n\n---"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "VERSIONING.md",
+    "heading": "Aturan",
+    "chunk_index": 5,
+    "content": "## Aturan"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "VERSIONING.md",
+    "heading": "1. Setiap Versi Wajib Punya Catatan di CHANGELOG",
+    "chunk_index": 6,
+    "content": "### 1. Setiap Versi Wajib Punya Catatan di CHANGELOG\n\nSetiap kali versi berubah, tambahkan entry di `CHANGELOG.md` dengan format:\n\n```md"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "VERSIONING.md",
+    "heading": "[1.2.3] - YYYY-MM-DD",
+    "chunk_index": 7,
+    "content": "## [1.2.3] - YYYY-MM-DD"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "VERSIONING.md",
+    "heading": "Added",
+    "chunk_index": 8,
+    "content": "### Added\n- Fitur baru..."
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "VERSIONING.md",
+    "heading": "Changed",
+    "chunk_index": 9,
+    "content": "### Changed\n- Perubahan fitur..."
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "VERSIONING.md",
+    "heading": "Fixed",
+    "chunk_index": 10,
+    "content": "### Fixed\n- Bug fix..."
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "VERSIONING.md",
+    "heading": "Security",
+    "chunk_index": 11,
+    "content": "### Security\n- Perbaikan keamanan...\n```"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "VERSIONING.md",
+    "heading": "2. Rilis Besar Boleh Punya File Detail",
+    "chunk_index": 12,
+    "content": "### 2. Rilis Besar Boleh Punya File Detail\n\nUntuk MAJOR dan MINOR release, buat file detail di `docs/releases/vX.X.X.md` menggunakan template dari `docs/releases/template.md`."
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "VERSIONING.md",
+    "heading": "3. Dokumentasi Wajib Diperbarui",
+    "chunk_index": 13,
+    "content": "### 3. Dokumentasi Wajib Diperbarui\n\nSetiap perubahan versi harus memeriksa apakah dokumentasi berikut perlu diperbarui:\n\n| Perubahan | Dokumen yang Perlu Dicek |\n|---|---|\n| Command baru | `USAGE.md` |\n| Konfigurasi baru | `CONFIGURATION.md` |\n| Struktur folder berubah | `PROJECT_STRUCTURE.md` |\n| Cara install berubah | `INSTALLATION.md` |\n| Cara deploy berubah | `DEPLOYMENT.md` |"
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "VERSIONING.md",
+    "heading": "4. Branching",
+    "chunk_index": 14,
+    "content": "### 4. Branching\n\n```txt\nmain (vX.X.X) — tag setiap rilis\n└── develop (vX.X.X-dev) — development\n```\n\n- Setiap rilis di-*tag* di branch `main`.\n- Versi development ditandai suffix `-dev`."
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "VERSIONING.md",
+    "heading": "5. Stabilitas",
+    "chunk_index": 15,
+    "content": "### 5. Stabilitas\n\n| Fase | Range Versi | Keterangan |\n|---|---|---|\n| Initial Development | `0.x.x` | API belum stabil, boleh ada breaking change |\n| Stable | `1.x.x` ke atas | API stabil, backward compatibility dijaga |\n\n---"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "VERSIONING.md",
+    "heading": "Cara Melakukan Rilis",
+    "chunk_index": 16,
+    "content": "## Cara Melakukan Rilis"
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "VERSIONING.md",
+    "heading": "1. Persiapan",
+    "chunk_index": 17,
+    "content": "### 1. Persiapan\n\n```bash"
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "VERSIONING.md",
+    "heading": "Cek semua perubahan sudah di develop branch",
+    "chunk_index": 18,
+    "content": "# Cek semua perubahan sudah di develop branch\ngit checkout modular-monolist\ngit log --oneline main..HEAD"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "VERSIONING.md",
+    "heading": "Update versi di file-file terkait",
+    "chunk_index": 19,
+    "content": "# Update versi di file-file terkait"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "VERSIONING.md",
+    "heading": "- CHANGELOG.md",
+    "chunk_index": 20,
+    "content": "# - CHANGELOG.md"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "VERSIONING.md",
+    "heading": "- config/app.php (APP_VERSION)",
+    "chunk_index": 21,
+    "content": "# - config/app.php (APP_VERSION)\n```"
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "VERSIONING.md",
+    "heading": "2. Buat Release Notes",
+    "chunk_index": 22,
+    "content": "### 2. Buat Release Notes\n\nBuat file `docs/releases/vX.X.X.md` (gunakan template)."
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "VERSIONING.md",
+    "heading": "3. Merge ke Main",
+    "chunk_index": 23,
+    "content": "### 3. Merge ke Main\n\n```bash\ngit checkout main\ngit merge modular-monolist\ngit tag vX.X.X\ngit push origin main --tags\n```"
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "VERSIONING.md",
+    "heading": "4. Update Branch Development",
+    "chunk_index": 24,
+    "content": "### 4. Update Branch Development\n\n```bash\ngit checkout modular-monolist"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "VERSIONING.md",
+    "heading": "Update versi ke X.X.X-dev",
+    "chunk_index": 25,
+    "content": "# Update versi ke X.X.X-dev\ngit commit --allow-empty -m \"chore: bump version to X.X.X-dev\"\ngit push\n```\n\n---"
+  },
+  {
+    "id": "chunk-0026",
+    "source_file": "VERSIONING.md",
+    "heading": "Referensi",
+    "chunk_index": 26,
+    "content": "## Referensi\n\n- [Semantic Versioning Specification](https://semver.org/)\n- [Keep a Changelog](https://keepachangelog.com/)"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "v0.1.0.md",
+    "heading": "Release v0.1.0",
+    "chunk_index": 1,
+    "content": "# Release v0.1.0\n\n**Tanggal**: 2026-06-13"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "v0.1.0.md",
+    "heading": "Ringkasan",
+    "chunk_index": 2,
+    "content": "## Ringkasan\n\nRilis awal dokumentasi project SIIMUT. Fokus pada inisialisasi dan perapihan dokumentasi teknis agar project lebih mudah dipahami oleh developer baru dan tim.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "v0.1.0.md",
+    "heading": "Added",
+    "chunk_index": 3,
+    "content": "## Added\n\n- Inisialisasi dokumentasi project di folder `docs/`.\n- README utama dirapikan sebagai pintu masuk dokumentasi.\n- CHANGELOG.md untuk tracking perubahan per versi.\n- Panduan instalasi lengkap (manual + Docker).\n- Panduan konfigurasi environment dan file penting.\n- Panduan penggunaan fitur utama.\n- Panduan development dan coding convention.\n- Panduan deployment ke production.\n- Troubleshooting umum.\n- Aturan versioning (semantic versioning).\n- Roadmap pengembangan.\n- Catatan teknis (NOTES.md).\n- Template release notes.\n- Dokumentasi struktur folder project."
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "v0.1.0.md",
+    "heading": "Changed",
+    "chunk_index": 4,
+    "content": "## Changed\n\n- README.md: Diringkas menjadi pintu masuk utama, detail teknis dipindah ke `docs/`."
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "v0.1.0.md",
+    "heading": "Fixed",
+    "chunk_index": 5,
+    "content": "## Fixed\n\n- -"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "v0.1.0.md",
+    "heading": "Removed",
+    "chunk_index": 6,
+    "content": "## Removed\n\n- -"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "v0.1.0.md",
+    "heading": "Breaking Changes",
+    "chunk_index": 7,
+    "content": "## Breaking Changes\n\n- Tidak ada perubahan pada source code / logic aplikasi."
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "v0.1.0.md",
+    "heading": "Migration Notes",
+    "chunk_index": 8,
+    "content": "## Migration Notes\n\n- Tidak diperlukan migrasi. Ini adalah rilis dokumentasi murni."
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "v0.1.0.md",
+    "heading": "Known Issues",
+    "chunk_index": 9,
+    "content": "## Known Issues\n\n- Tidak ada."
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "v0.1.0.md",
+    "heading": "Checklist",
+    "chunk_index": 10,
+    "content": "## Checklist\n\n- [x] README diperbarui.\n- [x] CHANGELOG diperbarui.\n- [x] Dokumentasi konfigurasi diperbarui.\n- [x] Dokumentasi deployment diperbarui.\n- [x] Dokumentasi struktur project diperbarui.\n- [x] Semua test passing (tidak ada perubahan kode).\n- [x] Sudah dites lokal."
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "v0.3.0.md",
+    "heading": "Release v0.3.0",
+    "chunk_index": 1,
+    "content": "# Release v0.3.0\n\n**Tanggal**: 2026-06-13"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "v0.3.0.md",
+    "heading": "Ringkasan",
+    "chunk_index": 2,
+    "content": "## Ringkasan\n\nRilis proof-of-concept **GraphRAG ringan** berbasis Python. Sistem ini memungkinkan\nquery knowledge base project berbasis dokumentasi `docs/` dengan keyword scoring\ndan dukungan LLM opsional.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "v0.3.0.md",
+    "heading": "Struktur Folder",
+    "chunk_index": 3,
+    "content": "## Struktur Folder\n\n```txt\nrag/\n├── input/              # Hasil copy dari docs/\n├── output/             # Output chunks.json & graph.json\n│   ├── chunks.json     # Chunk dokumen berbasis heading\n│   └── graph.json      # Grafik pengetahuan (nodes + edges)\n├── scripts/\n│   ├── sync_docs.py    # Copy .md dari docs/ ke rag/input/\n│   ├── ingest.py       # Chunking + graph extraction\n│   └── query.py        # Query CLI\n├── requirements.txt    # Python dependencies (ringan)\n├── .env.example        # Template konfigurasi\n└── README.md           # Dokumentasi GraphRAG\n```"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "v0.3.0.md",
+    "heading": "Cara Menjalankan",
+    "chunk_index": 4,
+    "content": "## Cara Menjalankan"
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "v0.3.0.md",
+    "heading": "1. Setup",
+    "chunk_index": 5,
+    "content": "### 1. Setup\n\n```bash\ncd rag\npython3 -m venv venv\nsource venv/bin/activate\npip install -r requirements.txt\n```"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "v0.3.0.md",
+    "heading": "2. Sync + Ingest",
+    "chunk_index": 6,
+    "content": "### 2. Sync + Ingest\n\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "v0.3.0.md",
+    "heading": "3. Query",
+    "chunk_index": 7,
+    "content": "### 3. Query\n\n```bash\npython3 rag/scripts/query.py \"jelaskan modul daily report\"\n```"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "v0.3.0.md",
+    "heading": "Contoh Query",
+    "chunk_index": 8,
+    "content": "## Contoh Query\n\n**Query**: `jelaskan service SIIMUT`\n\n**Output**:\n```\n============================================================\n  Pertanyaan: jelaskan service SIIMUT\n============================================================\n\n  Jawaban:\n  [Retrieval Only — no LLM configured]\n\n  Chunk teratas yang relevan:\n    [1] PROJECT_STRUCTURE.md → app/ — Source Code\n        ...\n\n  Sumber:\n    • docs/PROJECT_STRUCTURE.md\n```\n\n**Query**: `command apa untuk migrate database?`\n\nDengan LLM dikonfigurasi, menampilkan jawaban lengkap dengan sumber."
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "v0.3.0.md",
+    "heading": "Output yang Dihasilkan",
+    "chunk_index": 9,
+    "content": "## Output yang Dihasilkan"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "v0.3.0.md",
+    "heading": "chunks.json",
+    "chunk_index": 10,
+    "content": "### chunks.json\n\nArray chunk terstruktur dari dokumentasi. Setiap chunk memiliki:\n\n- `id`: ID unik (`chunk-0001`)\n- `source_file`: File asal (`PROJECT_STRUCTURE.md`)\n- `heading`: Heading asal chunk\n- `content`: Isi chunk"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "v0.3.0.md",
+    "heading": "graph.json",
+    "chunk_index": 11,
+    "content": "### graph.json\n\nGrafik pengetahuan dengan:\n\n- **Nodes**: Entity seperti Project (SIIMUT), Module (DailyReport), Service (IAM/SSO),\n  Port, Container, Command, KnownIssue, Decision, Release\n- **Edges**: Relasi seperti `filament --> uses --> iam-service`,\n  `filament --> exposed_by --> nginx`, `decision-refactor --> affects --> siimut`"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "v0.3.0.md",
+    "heading": "Known Limitations",
+    "chunk_index": 12,
+    "content": "## Known Limitations\n\n1. **Pattern-based extraction** — entitas hanya tertangkap jika kata kunci eksplisit\n   muncul di dokumentasi.\n2. **Source code tidak diindeks** — hanya markdown di `docs/`.\n3. **Keyword scoring** — tanpa semantic search atau embedding.\n4. **LLM opsional** — tanpa API key, hanya retrieval.\n5. **No auto-rebuild** — perlu menjalankan sync_docs.py + ingest.py manual."
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "v0.3.0.md",
+    "heading": "Next Improvement",
+    "chunk_index": 13,
+    "content": "## Next Improvement\n\n- Semantic search dengan embedding\n- Indeks AI agent docs (`docs/ai-agents/`)\n- Graph extraction dengan LLM\n- UI Streamlit sederhana\n- Auto-rebuild via git hook\n- Integrasi dengan Laravel Artisan"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "v1.4.0.md",
+    "heading": "Release v1.4.0",
+    "chunk_index": 1,
+    "content": "# Release v1.4.0\n\n**Tanggal**: 2026-06-13"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "v1.4.0.md",
+    "heading": "Ringkasan",
+    "chunk_index": 2,
+    "content": "## Ringkasan\n\nRilis besar setelah 629 commits sejak v1.3.4. Fokus utama pada **refactor arsitektur modular monolith**, **optimasi performa Daily Report**, dan **integrasi IAM/SSO**.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "v1.4.0.md",
+    "heading": "Added",
+    "chunk_index": 3,
+    "content": "## Added"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "v1.4.0.md",
+    "heading": "Modular Monolith",
+    "chunk_index": 4,
+    "content": "### Modular Monolith\n- Refactor arsitektur ke modular monolith dengan 7 modul independen: Authorization, Benchmarking, DailyReport, FormEngine, ImutMaster, Laporan, Reporting.\n- Setiap modul memiliki struktur internal konsisten (Contracts, Database, Filament, Http, Livewire, Models, Policies, Services, Providers).\n- Service layer dipisahkan per modul dengan interface contracts."
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "v1.4.0.md",
+    "heading": "Daily Report & Livewire",
+    "chunk_index": 5,
+    "content": "### Daily Report & Livewire\n- Server-side pagination dan search filter untuk Daily Report.\n- Matrix snapshot synchronization dengan polling interval reduction.\n- Date legend component untuk mobile navigation.\n- Repository Pattern dengan Unified Compliance Service.\n- Composite index pada `(form_template_id, report_date)` untuk optimasi query."
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "v1.4.0.md",
+    "heading": "Form Engine & Benchmarking",
+    "chunk_index": 6,
+    "content": "### Form Engine & Benchmarking\n- Form template versioning dengan validity window.\n- SyncFormTemplateDates command untuk sinkronisasi tanggal.\n- Compliance scoring logic dengan role-based recommendations.\n- Phase 4 Benchmark and Consolidation Tests."
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "v1.4.0.md",
+    "heading": "IAM/SSO & Auth",
+    "chunk_index": 7,
+    "content": "### IAM/SSO & Auth\n- Integrasi `juniyasyos/nexaid-client` menggantikan `auth-bridge-client`.\n- IAM Application Switcher Component.\n- LogoutController untuk menangani SSO dan local logout.\n- IAM session expiration fix.\n- Dynamic data permissions berdasarkan user authentication context."
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "v1.4.0.md",
+    "heading": "Backup & Export",
+    "chunk_index": 8,
+    "content": "### Backup & Export\n- Integrasi `juniyasyos/filament-backup` v3.0.1.\n- Backup configuration table dengan kolom baru.\n- Export JSON data Unit Kerja.\n- TestTtdUrlResolver command.\n- Database dump configuration (timeout, SSL, custom connection)."
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "v1.4.0.md",
+    "heading": "Licensing & Compliance",
+    "chunk_index": 9,
+    "content": "### Licensing & Compliance\n- Proprietary license resmi.\n- SBOM license audit workflow.\n- Third-party licenses documentation.\n- LICENSE file resmi.\n\n---"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "v1.4.0.md",
+    "heading": "Changed",
+    "chunk_index": 10,
+    "content": "## Changed"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "v1.4.0.md",
+    "heading": "Daily Report",
+    "chunk_index": 11,
+    "content": "### Daily Report\n- Auto-generation schedule: dari **monthly** ke **daily**.\n- Matrix data loading dan date navigation layout enhancement.\n- LaporanImutResource dengan dynamic data permissions.\n- Monitoring dan logging template loading."
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "v1.4.0.md",
+    "heading": "Service & Query Layer",
+    "chunk_index": 12,
+    "content": "### Service & Query Layer\n- ImutReportService dipindah ke Reporting namespace.\n- ImutSqlExpressionBuilder diganti dengan ImutCalculationService.\n- TableViewDomain menggunakan EloquentCollection.\n- S3 URL handling di User dan SignatoryService.\n- FormDataService dan FormPersistenceService untuk template-specific data."
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "v1.4.0.md",
+    "heading": "UI & Frontend",
+    "chunk_index": 13,
+    "content": "### UI & Frontend\n- Dashboard components: state management, loading indicators.\n- Daily report entry resources refactor.\n- Asset management: old theme assets dihapus, CSS compressed, manifest update.\n- Custom scrollbar styles dan scroll tip.\n- Compliance display component."
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "v1.4.0.md",
+    "heading": "Dependencies",
+    "chunk_index": 14,
+    "content": "### Dependencies\n- ToggleIconColumn diganti dengan IconColumn.\n- auth-bridge-client → nexaid-client.\n- filament-backup → v3.0.1.\n- manage-unit-kerja → v2.0.0.\n\n---"
+  },
+  {
+    "id": "chunk-0015",
+    "source_file": "v1.4.0.md",
+    "heading": "Fixed",
+    "chunk_index": 15,
+    "content": "## Fixed"
+  },
+  {
+    "id": "chunk-0016",
+    "source_file": "v1.4.0.md",
+    "heading": "Performance",
+    "chunk_index": 16,
+    "content": "### Performance\n- 30-second loading bottleneck di daily report dashboard — matrixData payload serialization dihapus.\n- N+1 query imut penilaian — mengurangi koneksi dari 5000+ menjadi normal.\n- Load indicator lebih cepat dengan cache."
+  },
+  {
+    "id": "chunk-0017",
+    "source_file": "v1.4.0.md",
+    "heading": "Livewire",
+    "chunk_index": 17,
+    "content": "### Livewire\n- Nested Alpine x-data menyebabkan Uncaught ReferenceError.\n- Reset pagination ke 1 saat selected date berubah.\n- Remove debug pooling update via AJAX.\n- Separate loading states untuk date nav dan main content."
+  },
+  {
+    "id": "chunk-0018",
+    "source_file": "v1.4.0.md",
+    "heading": "Bugs",
+    "chunk_index": 18,
+    "content": "### Bugs\n- Indicator not found saat filter search di daily reports.\n- Typo di notification body untuk report calculation.\n- Disabled state logic di buildAnalysisSchemaForAction.\n- ReadOnly → disabled untuk analysis input fields.\n- Filter action di header list daily report.\n\n---"
+  },
+  {
+    "id": "chunk-0019",
+    "source_file": "v1.4.0.md",
+    "heading": "Removed",
+    "chunk_index": 19,
+    "content": "## Removed\n\n- FormBuilder dan ManageFormBuilder pages (digantikan FormTemplateVersionsRelationManager).\n- ToggleIconColumn package dan semua referensi.\n- Exporter dan form classes yang tidak dipakai.\n- Auth-bridge-client (deprecated, digantikan nexaid-client).\n- Cache files dan asset CSS lama.\n- IAM session expiration fix documentation (sudah diimplementasi).\n- Beberapa route testing yang tidak diperlukan.\n\n---"
+  },
+  {
+    "id": "chunk-0020",
+    "source_file": "v1.4.0.md",
+    "heading": "Security",
+    "chunk_index": 20,
+    "content": "## Security\n\n- Proprietary license enforcement.\n- User authentication context untuk dynamic data permissions.\n- Role-based field visibility di analysis schema.\n- IAM session handling improvement.\n\n---"
+  },
+  {
+    "id": "chunk-0021",
+    "source_file": "v1.4.0.md",
+    "heading": "Breaking Changes",
+    "chunk_index": 21,
+    "content": "## Breaking Changes\n\n- **auth-bridge-client dihapus**: Semua komponen yang menggunakan auth-bridge-client harus migrasi ke nexaid-client.\n- **ToggleIconColumn dihapus**: Gunakan IconColumn sebagai pengganti.\n- **FormBuilder pages dihapus**: Form template management via FormTemplateVersionsRelationManager.\n- **ImutReportService namespace berubah**: Dari `App\\Services\\Laporan\\ImutReportService` → `App\\Modules\\Reporting\\Services\\ReportingService`."
+  },
+  {
+    "id": "chunk-0022",
+    "source_file": "v1.4.0.md",
+    "heading": "Migration Notes",
+    "chunk_index": 22,
+    "content": "## Migration Notes\n\n1. Update `.env` dengan konfigurasi nexaid-client (IAM):\n   ```ini\n   IAM_BASE_URL=\n   IAM_CLIENT_ID=\n   IAM_CLIENT_SECRET=\n   ```\n2. Jalankan migrasi database:\n   ```bash\n   php artisan migrate\n   ```\n3. Generate ulang permission:\n   ```bash\n   php artisan shield:generate --all --panel=admin\n   ```\n4. Update dependency:\n   ```bash\n   composer update\n   npm install && npm run build\n   ```\n5. Hapus cache:\n   ```bash\n   php artisan optimize:clear\n   php artisan config:cache\n   ```"
+  },
+  {
+    "id": "chunk-0023",
+    "source_file": "v1.4.0.md",
+    "heading": "Known Issues",
+    "chunk_index": 23,
+    "content": "## Known Issues\n\n- Tidak ada issue kritis yang diketahui."
+  },
+  {
+    "id": "chunk-0024",
+    "source_file": "v1.4.0.md",
+    "heading": "Statistik",
+    "chunk_index": 24,
+    "content": "## Statistik\n\n| Metrik | Angka |\n|---|---|\n| Total commits sejak v1.3.4 | 629 |\n| feat | 306 |\n| fix | 108 |\n| refactor | 103 |\n| perf/optimize | 26 |\n| test-related | 17 |\n| Files changed | 1,500+ |"
+  },
+  {
+    "id": "chunk-0025",
+    "source_file": "v1.4.0.md",
+    "heading": "Checklist",
+    "chunk_index": 25,
+    "content": "## Checklist\n\n- [x] README diperbarui.\n- [x] CHANGELOG diperbarui.\n- [x] Dokumentasi konfigurasi diperbarui.\n- [x] Dokumentasi deployment diperbarui jika perlu.\n- [x] Dokumentasi struktur project diperbarui.\n- [x] Semua test passing.\n- [x] Versi di `.env` diperbarui ke 1.4.0."
+  }
+]

@@ -12,6 +12,34 @@ Format mengikuti pola:
 
 ---
 
+## [1.4.0-rc.1] — 2026-06-14
+
+### Added
+- **RAG Schema & Metadata**: Pembuatan `docs/RAG_SCHEMA.md`, `docs/MODULES.md`, dan `docs/SERVICES.md` untuk melengkapi struktur entitas GraphRAG.
+- **Git History Summary**: Pembuatan `docs/CHANGE_SUMMARY.md` dan `docs/PROJECT_TIMELINE.md` yang merangkum perubahan besar dan fase iterasi sejak awal 2026.
+- **RAG Ingestion Engine**: Modifikasi `rag/scripts/ingest.py` agar dapat memparsing metadata berbasis *heading* dan *key-value* secara dinamis, serta mengoptimalkan pembuatan relasi *edge*.
+
+### Changed
+- **Doc Metadata**: Penambahan blok `RAG Metadata` di akhir dokumen `COMMANDS.md`, `KNOWN_ISSUES.md`, dan `DECISIONS.md` agar mudah diekstrak oleh sistem RAG.
+- Persiapan dokumentasi dan knowledge base optimal untuk prerelease SI-IMUT v1.4.0.
+## [0.3.0] — 2026-06-13
+
+### Added
+- Menambahkan proof-of-concept GraphRAG ringan berbasis Python.
+- Menambahkan folder `rag/` untuk sync, ingest, dan query dokumentasi project.
+- Menambahkan output `chunks.json` dan `graph.json` sebagai project knowledge base awal.
+- Menambahkan skrip `rag/scripts/sync_docs.py` untuk sync dokumentasi dari `docs/`.
+- Menambahkan skrip `rag/scripts/ingest.py` untuk chunking dan graph extraction.
+- Menambahkan skrip `rag/scripts/query.py` untuk query CLI dengan keyword scoring dan LLM opsional.
+
+### Notes
+- GraphRAG awal hanya memakai folder `docs` sebagai sumber knowledge.
+- Source code aplikasi utama belum diindeks.
+- Graph extraction masih sederhana berbasis pattern/keyword.
+- LLM bersifat opsional — query tetap berjalan tanpa API key.
+
+---
+
 ## [1.4.0] — 2026-06-13
 
 ### Added

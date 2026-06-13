@@ -1,0 +1,788 @@
+{
+  "nodes": [
+    {
+      "id": "filament",
+      "type": "App",
+      "label": "Filament",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "benchmarking",
+      "type": "Module",
+      "label": "Benchmarking",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "daily-report",
+      "type": "Module",
+      "label": "DailyReport",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "form-engine",
+      "type": "Module",
+      "label": "FormEngine",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "reporting",
+      "type": "Module",
+      "label": "Reporting",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "iam-service",
+      "type": "Service",
+      "label": "IAM/SSO Service",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "mysql",
+      "type": "Service",
+      "label": "MySQL",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "known-issue-kernel",
+      "type": "KnownIssue",
+      "label": "Kernel Duplication Issue",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "decision-refactor",
+      "type": "Decision",
+      "label": "Refactor Decision",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "id": "siimut",
+      "type": "Project",
+      "label": "SIIMUT",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "nginx",
+      "type": "Service",
+      "label": "Nginx",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "queue-worker",
+      "type": "Service",
+      "label": "Queue Worker",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "backup-service",
+      "type": "Service",
+      "label": "Backup Service",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "port-8000",
+      "type": "Port",
+      "label": "Port 8000",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "port-8088",
+      "type": "Port",
+      "label": "Port 8088",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "env-config",
+      "type": "Env",
+      "label": "Environment Config",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "cmd-serve",
+      "type": "Command",
+      "label": "php artisan serve",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "cmd-migrate",
+      "type": "Command",
+      "label": "php artisan migrate",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "cmd-composer",
+      "type": "Command",
+      "label": "Composer",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "docker",
+      "type": "Container",
+      "label": "Docker",
+      "source": "COMMANDS.md"
+    },
+    {
+      "id": "cmd-001",
+      "type": "Command",
+      "label": "sync:form-template-dates",
+      "source": [
+        "commit: 4bb5bd7"
+      ],
+      "status": "Active",
+      "area": "Form Template",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_modules": [
+        "MOD-002"
+      ],
+      "commit": "4bb5bd7"
+    },
+    {
+      "id": "cmd-002",
+      "type": "Command",
+      "label": "test:ttd-url-resolver",
+      "source": [
+        "commit: 2fa6f26"
+      ],
+      "status": "Active",
+      "area": "Reporting",
+      "related_modules": [
+        "MOD-003"
+      ],
+      "commit": "2fa6f26"
+    },
+    {
+      "id": "redis",
+      "type": "Service",
+      "label": "Redis",
+      "source": "CONFIGURATION.md"
+    },
+    {
+      "id": "authorization",
+      "type": "Module",
+      "label": "Authorization",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "imut-master",
+      "type": "Module",
+      "label": "ImutMaster",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-001",
+      "type": "Decision",
+      "label": "Migrasi ke Modular Monolith Architecture",
+      "source": [
+        "commit: 57291cf"
+      ],
+      "status": "Implemented",
+      "area": "Arsitektur",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "Needs Verification"
+      ],
+      "related_modules": [
+        "MOD-001",
+        "MOD-002",
+        "MOD-003",
+        "MOD-004",
+        "MOD-005"
+      ],
+      "commit": "57291cf"
+    },
+    {
+      "id": "dec-002",
+      "type": "Decision",
+      "label": "Ganti `whereHas` dengan JOIN untuk Query Aggregasi",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-003",
+      "type": "Decision",
+      "label": "Composite Index pada `(form_template_id, report_date)`",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-004",
+      "type": "Decision",
+      "label": "Hapus Serialisasi Payload Matrix Data",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-005",
+      "type": "Decision",
+      "label": "Gunakan `database` sebagai Session Driver",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-006",
+      "type": "Decision",
+      "label": "Integrasi IAM/SSO dengan nexaid-client",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-007",
+      "type": "Decision",
+      "label": "Auto-generation Laporan dari Monthly ke Daily",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-008",
+      "type": "Decision",
+      "label": "Format Dokumentasi Bilingual",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "dec-009",
+      "type": "Decision",
+      "label": "GraphRAG Ringan Berbasis Python",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "release-v1-4-0",
+      "type": "Release",
+      "label": "Release v1.4.0",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "release-v1-3-4",
+      "type": "Release",
+      "label": "Release v1.3.4",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "release-v0-3-0",
+      "type": "Release",
+      "label": "Release v0.3.0",
+      "source": "DECISIONS.md"
+    },
+    {
+      "id": "laporan",
+      "type": "Module",
+      "label": "Laporan",
+      "source": "DEVELOPMENT.md"
+    },
+    {
+      "id": "ki-002",
+      "type": "KnownIssue",
+      "label": "Duplikasi Kode di `app/Kernel/`",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-003",
+      "type": "KnownIssue",
+      "label": "`app/Domain/` Underutilized",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-004",
+      "type": "KnownIssue",
+      "label": "Routes `test.php` Mungkin Aktif di Production",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-005",
+      "type": "KnownIssue",
+      "label": "Session Driver Wajib Database untuk IAM",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-006",
+      "type": "KnownIssue",
+      "label": "Nested Alpine x-data ReferenceError",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-007",
+      "type": "KnownIssue",
+      "label": "Package Filament Kustom dari Private Repository",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-008",
+      "type": "KnownIssue",
+      "label": "Auto-generation Schedule Berubah dari Monthly ke Daily",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "id": "ki-001",
+      "type": "KnownIssue",
+      "label": "Loading Dashboard 30 Detik",
+      "source": [
+        "commit: 8dece0a"
+      ],
+      "status": "Resolved",
+      "area": "Performance",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_decisions": [
+        "DEC-002",
+        "DEC-003",
+        "DEC-004"
+      ],
+      "related_modules": [
+        "MOD-001"
+      ],
+      "commit": "8dece0a"
+    },
+    {
+      "id": "mod-001",
+      "type": "Module",
+      "label": "Daily Report",
+      "source": [
+        "app/Modules/DailyReport",
+        "commit: abc1234"
+      ],
+      "status": "Active",
+      "area": "Daily Report",
+      "related_services": [
+        "SVC-001"
+      ],
+      "related_commands": [
+        "CMD-001"
+      ],
+      "related_issues": [
+        "KI-001"
+      ],
+      "related_decisions": [
+        "DEC-001"
+      ],
+      "commit": "abc1234"
+    },
+    {
+      "id": "mod-002",
+      "type": "Module",
+      "label": "Form Engine",
+      "source": [
+        "app/Modules/FormEngine",
+        "commit: 4bb5bd7"
+      ],
+      "status": "Active",
+      "area": "Form Template",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "Needs Verification"
+      ],
+      "related_decisions": [
+        "Needs Verification"
+      ],
+      "commit": "4bb5bd7"
+    },
+    {
+      "id": "mod-003",
+      "type": "Module",
+      "label": "Reporting & Analytics",
+      "source": [
+        "app/Modules/Reporting",
+        "commit: 6f86712"
+      ],
+      "status": "Active",
+      "area": "Reporting",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "KI-002"
+      ],
+      "related_decisions": [
+        "Needs Verification"
+      ],
+      "commit": "6f86712"
+    },
+    {
+      "id": "mod-004",
+      "type": "Module",
+      "label": "Authorization & IAM",
+      "source": [
+        "app/Modules/Auth",
+        "commit: 1062390"
+      ],
+      "status": "Active",
+      "area": "Authentication",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "Needs Verification"
+      ],
+      "related_decisions": [
+        "Needs Verification"
+      ],
+      "commit": "1062390"
+    },
+    {
+      "id": "mod-005",
+      "type": "Module",
+      "label": "Core & UI Framework",
+      "source": [
+        "app/Providers",
+        "commit: 84565d6"
+      ],
+      "status": "Active",
+      "area": "Core Application",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "Needs Verification"
+      ],
+      "related_decisions": [
+        "Needs Verification"
+      ],
+      "commit": "84565d6"
+    },
+    {
+      "id": "release-v3-0-1",
+      "type": "Release",
+      "label": "Release v3.0.1",
+      "source": "NOTES.md"
+    },
+    {
+      "id": "release-v1-2-11",
+      "type": "Release",
+      "label": "Release v1.2.11",
+      "source": "NOTES.md"
+    },
+    {
+      "id": "release-v1-0-1",
+      "type": "Release",
+      "label": "Release v1.0.1",
+      "source": "NOTES.md"
+    },
+    {
+      "id": "release-v0-1-0",
+      "type": "Release",
+      "label": "Release v0.1.0",
+      "source": "README.md"
+    },
+    {
+      "id": "release-v1-2-0",
+      "type": "Release",
+      "label": "Release v1.2.0",
+      "source": "ROADMAP.md"
+    },
+    {
+      "id": "svc-001",
+      "type": "Service",
+      "label": "ImutCalculationService",
+      "source": [
+        "app/Services/ImutCalculationService.php",
+        "commit: 1be0c3f"
+      ],
+      "status": "Active",
+      "area": "Reporting",
+      "related_services": [
+        "Needs Verification"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "Needs Verification"
+      ],
+      "related_decisions": [
+        "Needs Verification"
+      ],
+      "commit": "1be0c3f"
+    },
+    {
+      "id": "svc-002",
+      "type": "Service",
+      "label": "DailyReportCalculationService",
+      "source": [
+        "app/Services/DailyReportCalculationService.php",
+        "commit: 601d0da"
+      ],
+      "status": "Active",
+      "area": "Daily Report",
+      "related_services": [
+        "SVC-001"
+      ],
+      "related_commands": [
+        "Needs Verification"
+      ],
+      "related_issues": [
+        "Needs Verification"
+      ],
+      "related_decisions": [
+        "Needs Verification"
+      ],
+      "commit": "601d0da"
+    },
+    {
+      "id": "release-v2-0-0",
+      "type": "Release",
+      "label": "Release v2.0.0",
+      "source": "v1.4.0.md"
+    },
+    {
+      "id": "docker-compose",
+      "type": "Container",
+      "label": "Docker Compose",
+      "source": "INSTALLATION.md"
+    }
+  ],
+  "edges": [
+    {
+      "from": "filament",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "filament",
+      "to": "backup-service",
+      "type": "uses",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "benchmarking",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "laporan",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "reporting",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "decision-refactor",
+      "to": "siimut",
+      "type": "affects",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "known-issue-kernel",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
+      "from": "filament",
+      "to": "nginx",
+      "type": "exposed_by",
+      "source": "COMMANDS.md"
+    },
+    {
+      "from": "filament",
+      "to": "port-8000",
+      "type": "has_port",
+      "source": "CONFIGURATION.md"
+    },
+    {
+      "from": "authorization",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "daily-report",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "form-engine",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "imut-master",
+      "to": "iam-service",
+      "type": "uses",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-001",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-001",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-002",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-002",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-003",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-003",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-004",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-004",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-005",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-005",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-006",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-006",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-007",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-007",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-008",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-008",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-009",
+      "to": "siimut",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "dec-009",
+      "to": "daily-report",
+      "type": "affects",
+      "source": "DECISIONS.md"
+    },
+    {
+      "from": "ki-001",
+      "to": "siimut",
+      "type": "related_to",
+      "source": "DOCS_UPDATE_RULES.md"
+    },
+    {
+      "from": "docker",
+      "to": "docker-compose",
+      "type": "depends_on",
+      "source": "INSTALLATION.md"
+    },
+    {
+      "from": "ki-002",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "from": "ki-003",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "from": "ki-004",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "from": "ki-005",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "from": "ki-006",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "from": "ki-007",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    },
+    {
+      "from": "ki-008",
+      "to": "daily-report",
+      "type": "related_to",
+      "source": "KNOWN_ISSUES.md"
+    }
+  ]
+}
