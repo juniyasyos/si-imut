@@ -602,12 +602,16 @@
 
 /* Button Component Start */
 .fi-btn {
-    @apply rounded-md sm:rounded-lg;
-    @apply py-1 px-3 sm:py-2 sm:px-4;
-    @apply text-sm sm:text-base;
+    @apply rounded-md;
+    @apply py-1 px-2.5 sm:py-1.5 sm:px-3;
+    @apply text-xs sm:text-sm;
 
     .fi-btn-label {
-        @apply text-xs sm:text-base;
+        @apply text-xs sm:text-sm font-medium;
+    }
+
+    .fi-btn-icon {
+        @apply size-4;
     }
 }
 
