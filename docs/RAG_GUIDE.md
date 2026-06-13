@@ -3,6 +3,8 @@
 Panduan lengkap tentang sistem **GraphRAG** (Graph Retrieval-Augmented Generation)
 untuk query knowledge base project SIIMUT.
 
+> **Khusus AI Agents:** Wajib membaca alur kerja dan pola penggunaan RAG di [RAG_USAGE_FOR_AGENT.md](RAG_USAGE_FOR_AGENT.md).
+
 ---
 
 ## 📋 Ringkasan

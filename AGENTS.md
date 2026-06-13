@@ -73,6 +73,7 @@ python3 scripts/query.py "pertanyaan anda"
 ```
 
 > Dokumentasi lengkap: [RAG_GUIDE.md](docs/RAG_GUIDE.md)
+> Panduan untuk AI Agent: [RAG_USAGE_FOR_AGENT.md](docs/RAG_USAGE_FOR_AGENT.md)
 
 ---
 
@@ -129,3 +130,4 @@ Hook diaktifkan di `.claude/settings.local.json`:
 4. **Fokus dokumentasi** — semua perubahan docs wajib dicatat di CHANGELOG.
 5. **RAG rebuild** — setiap kali docs berubah, jalankan sync_docs + ingest.
 6. **Bahasa** — dokumentasi dalam Bahasa Indonesia, kecuali file teknis tertentu (SBOM, LICENSE).
+7. **Wajib baca panduan RAG** — lihat [RAG_USAGE_FOR_AGENT.md](docs/RAG_USAGE_FOR_AGENT.md) sebelum memulai eksplorasi/debugging.

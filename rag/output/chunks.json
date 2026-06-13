@@ -1887,7 +1887,7 @@
     "source_file": "RAG_GUIDE.md",
     "heading": "Panduan GraphRAG untuk Dokumentasi Project",
     "chunk_index": 1,
-    "content": "# Panduan GraphRAG untuk Dokumentasi Project\n\nPanduan lengkap tentang sistem **GraphRAG** (Graph Retrieval-Augmented Generation)\nuntuk query knowledge base project SIIMUT.\n\n---"
+    "content": "# Panduan GraphRAG untuk Dokumentasi Project\n\nPanduan lengkap tentang sistem **GraphRAG** (Graph Retrieval-Augmented Generation)\nuntuk query knowledge base project SIIMUT.\n\n> **Khusus AI Agents:** Wajib membaca alur kerja dan pola penggunaan RAG di [RAG_USAGE_FOR_AGENT.md](RAG_USAGE_FOR_AGENT.md).\n\n---"
   },
   {
     "id": "chunk-0002",
@@ -2063,6 +2063,104 @@
     "heading": "MOD-001 - Daily Report",
     "chunk_index": 5,
     "content": "## MOD-001 - Daily Report\n\nType: Module\nStatus: Active\nArea: Daily Report\nRelated Services:\n- SVC-001\nRelated Commands:\n- CMD-001\nRelated Issues:\n- KI-001\nRelated Decisions:\n- DEC-001\nSource:\n- app/Modules/DailyReport\n- commit: abc1234\n\nSummary:\nModul ini menangani laporan harian...\n```"
+  },
+  {
+    "id": "chunk-0001",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Panduan Penggunaan RAG untuk AI Agent",
+    "chunk_index": 1,
+    "content": "# Panduan Penggunaan RAG untuk AI Agent\n\nDokumen ini berisi panduan wajib bagi AI Agent (termasuk Anda) saat berinteraksi dan membantu pengembangan pada project SIIMUT.\n\n---"
+  },
+  {
+    "id": "chunk-0002",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "1. Aturan Utama",
+    "chunk_index": 2,
+    "content": "## 1. Aturan Utama\n\nSetiap AI Agent wajib mematuhi aturan berikut sebelum melakukan tindakan modifikasi atau eksplorasi:\n- **Jangan langsung scan seluruh repo.** Jangan pernah menggunakan perintah pencarian skala penuh pada keseluruhan source code tanpa konteks.\n- **Baca `AGENTS.md` dulu.** Pastikan memahami mode dan peran agen pada sistem.\n- **Query RAG dulu.** Untuk mencari tahu struktur, modul, atau konteks sistem, selalu tanyakan pada RAG (knowledge base) terlebih dahulu.\n- **Baru baca source code yang relevan.** Setelah mendapatkan ID modul atau path yang relevan dari RAG, baru gunakan perintah baca file pada source code.\n- **Jangan scan folder yang dilarang:** `vendor/`, `node_modules/`, `storage/`, `bootstrap/cache/`, `public/build/`.\n- **Tulis \"Needs Verification\".** Jika menemukan informasi dalam RAG atau source code yang meragukan atau belum pasti, gunakan tag `Needs Verification`.\n- **Update docs & Rebuild RAG.** Jika terdapat perubahan arsitektur, keputusan penting, atau penambahan modul, wajib memperbarui dokumentasi dan me-rebuild RAG.\n\n---"
+  },
+  {
+    "id": "chunk-0003",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "2. Kapan Harus Menggunakan RAG vs Source Code",
+    "chunk_index": 3,
+    "content": "## 2. Kapan Harus Menggunakan RAG vs Source Code"
+  },
+  {
+    "id": "chunk-0004",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Wajib Pakai RAG",
+    "chunk_index": 4,
+    "content": "### Wajib Pakai RAG\n- Saat pertama kali diberikan *task* yang melibatkan bisnis logic besar atau arsitektur (contoh: \"Tolong perbaiki Daily Report\").\n- Saat ingin mengetahui *Known Issues* atau bug yang sudah dicatat sebelumnya.\n- Saat mencari relasi antara sebuah *Service*, *Command*, dan *Modul*.\n- Saat mereviu *Decisions* (keputusan arsitektur) lama."
+  },
+  {
+    "id": "chunk-0005",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Boleh Membaca Source Code",
+    "chunk_index": 5,
+    "content": "### Boleh Membaca Source Code\n- **Hanya setelah** mendapat referensi path file atau service dari hasil query RAG.\n- Saat ingin mengetahui implementasi detail (baris kode) pada class, method, atau file spesifik.\n- Saat melakukan proses debugging langsung pada baris yang error.\n\n---"
+  },
+  {
+    "id": "chunk-0006",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "3. Urutan Kerja AI Agent",
+    "chunk_index": 6,
+    "content": "## 3. Urutan Kerja AI Agent\n\n1. **Memahami Task:** Baca request dari user.\n2. **Query RAG:** Cari modul, issue, atau informasi terdekat menggunakan keyword.\n3. **Eksplorasi Source Code Spesifik:** Jika RAG mengembalikan referensi file, buka dan analisa file spesifik tersebut.\n4. **Eksekusi Solusi:** Lakukan modifikasi.\n5. **Update Dokumentasi (Opsional):** Jika solusi mengubah struktur modul/decision.\n6. **Rebuild RAG:** Jika ada update dokumentasi.\n7. **Lapor:** Tulis rangkuman dan kembalikan pada user.\n\n---"
+  },
+  {
+    "id": "chunk-0007",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "4. Command Penting",
+    "chunk_index": 7,
+    "content": "## 4. Command Penting"
+  },
+  {
+    "id": "chunk-0008",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Query RAG",
+    "chunk_index": 8,
+    "content": "### Query RAG\nGunakan perintah ini untuk mencari informasi pada knowledge base:\n```bash\npython3 rag/scripts/query.py \"pertanyaan\"\n```"
+  },
+  {
+    "id": "chunk-0009",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Rebuild RAG",
+    "chunk_index": 9,
+    "content": "### Rebuild RAG\nSetiap kali ada dokumen yang diubah (misalnya `CHANGELOG.md`, `MODULES.md`, dsb.), wajib jalankan dua perintah berikut secara berurutan:\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```\n\n---"
+  },
+  {
+    "id": "chunk-0010",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "5. Pola Kerja Berdasarkan Situasi",
+    "chunk_index": 10,
+    "content": "## 5. Pola Kerja Berdasarkan Situasi"
+  },
+  {
+    "id": "chunk-0011",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Contoh Prompt Awal untuk Agent",
+    "chunk_index": 11,
+    "content": "### Contoh Prompt Awal untuk Agent\nJika sebagai agent kamu baru diberikan task: *\"Cek mengapa dashboard lambat\"*. \nPrompt internal yang kamu jalankan pertama kali seharusnya:\n*Eksekusi command:* `python3 rag/scripts/query.py \"kenapa dashboard lambat atau issue performance dashboard\"`"
+  },
+  {
+    "id": "chunk-0012",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Pola Kerja untuk Debugging",
+    "chunk_index": 12,
+    "content": "### Pola Kerja untuk Debugging\n1. Query RAG terkait issue: `python3 rag/scripts/query.py \"known issue terkait [fitur]\"`\n2. Ekstrak nama Service atau Controller dari output.\n3. Baca source code dari path yang didapat.\n4. Fix bug pada file tersebut."
+  },
+  {
+    "id": "chunk-0013",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Pola Kerja untuk Tambah Fitur",
+    "chunk_index": 13,
+    "content": "### Pola Kerja untuk Tambah Fitur\n1. Query RAG: `python3 rag/scripts/query.py \"modul apa yang mengurus [fitur]\"`\n2. Identifikasi Module yang tepat.\n3. Buat service baru dan daftarkan pada `SERVICES.md`.\n4. Rebuild RAG."
+  },
+  {
+    "id": "chunk-0014",
+    "source_file": "RAG_USAGE_FOR_AGENT.md",
+    "heading": "Pola Kerja Setelah Ubah Docs / Kode",
+    "chunk_index": 14,
+    "content": "### Pola Kerja Setelah Ubah Docs / Kode\n1. Update `docs/CHANGELOG.md` jika perubahan rilis.\n2. Update metadata di `docs/MODULES.md` atau `docs/SERVICES.md` jika nambah logic penting.\n3. Jalankan command **Rebuild RAG**."
   },
   {
     "id": "chunk-0001",
