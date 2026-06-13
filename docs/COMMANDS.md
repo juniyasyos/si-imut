@@ -188,29 +188,28 @@ cp .env.example .env
 
 | Command | Fungsi |
 |---|---|
-| `python3 rag/scripts/sync_docs.py` | Sync dokumentasi dari docs/ ke rag/input/ |
-| `python3 rag/scripts/ingest.py` | Chunking markdown + graph extraction |
-| `python3 rag/scripts/query.py "<pertanyaan>"` | Query knowledge base |
+| `rag-project sync` | Sync dokumentasi dari docs/ ke rag/input/ |
+| `rag-project ingest` | Chunking markdown + graph extraction |
+| `rag-project query "<pertanyaan>"` | Query knowledge base |
 
 ### Contoh Query
 
 ```bash
 # Retrieval-only
-python3 rag/scripts/query.py "jelaskan service SIIMUT"
-python3 rag/scripts/query.py "apa itu modular monolith?"
-python3 rag/scripts/query.py "command apa untuk setup development?"
-python3 rag/scripts/query.py "apa isi dari docs/?"
+rag-project query "jelaskan service SIIMUT"
+rag-project query "apa itu modular monolith?"
+rag-project query "command apa untuk setup development?"
+rag-project query "apa isi dari docs/?"
 
 # Dengan LLM (copy .env dulu)
-python3 rag/scripts/query.py "jelaskan modul daily report"
-python3 rag/scripts/query.py "apa known issue terkait performa?"
+rag-project query "jelaskan modul daily report"
+rag-project query "apa known issue terkait performa?"
 ```
 
 ### Rebuild
 
 ```bash
-python3 rag/scripts/sync_docs.py
-python3 rag/scripts/ingest.py
+rag-project rebuild
 ```
 
 ---
@@ -240,7 +239,7 @@ python3 rag/scripts/ingest.py
 | Cek log real-time | `php artisan pail` |
 | Docker up | `make up` |
 | Test app | `composer test` |
-| Query knowledge base | `python3 rag/scripts/query.py "<tanya>"` |
+| Query knowledge base | `rag-project query "<tanya>"` |
 
 ---
 

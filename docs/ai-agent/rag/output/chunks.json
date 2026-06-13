@@ -200,7 +200,7 @@
     "source_file": "COMMANDS.md",
     "heading": "Sync, Ingest, Query",
     "chunk_index": 22,
-    "content": "### Sync, Ingest, Query\n\n| Command | Fungsi |\n|---|---|\n| `python3 rag/scripts/sync_docs.py` | Sync dokumentasi dari docs/ ke rag/input/ |\n| `python3 rag/scripts/ingest.py` | Chunking markdown + graph extraction |\n| `python3 rag/scripts/query.py \"<pertanyaan>\"` | Query knowledge base |"
+    "content": "### Sync, Ingest, Query\n\n| Command | Fungsi |\n|---|---|\n| `rag-project sync` | Sync dokumentasi dari docs/ ke rag/input/ |\n| `rag-project ingest` | Chunking markdown + graph extraction |\n| `rag-project query \"<pertanyaan>\"` | Query knowledge base |"
   },
   {
     "id": "chunk-0023",
@@ -214,21 +214,21 @@
     "source_file": "COMMANDS.md",
     "heading": "Retrieval-only",
     "chunk_index": 24,
-    "content": "# Retrieval-only\npython3 rag/scripts/query.py \"jelaskan service SIIMUT\"\npython3 rag/scripts/query.py \"apa itu modular monolith?\"\npython3 rag/scripts/query.py \"command apa untuk setup development?\"\npython3 rag/scripts/query.py \"apa isi dari docs/?\""
+    "content": "# Retrieval-only\nrag-project query \"jelaskan service SIIMUT\"\nrag-project query \"apa itu modular monolith?\"\nrag-project query \"command apa untuk setup development?\"\nrag-project query \"apa isi dari docs/?\""
   },
   {
     "id": "chunk-0025",
     "source_file": "COMMANDS.md",
     "heading": "Dengan LLM (copy .env dulu)",
     "chunk_index": 25,
-    "content": "# Dengan LLM (copy .env dulu)\npython3 rag/scripts/query.py \"jelaskan modul daily report\"\npython3 rag/scripts/query.py \"apa known issue terkait performa?\"\n```"
+    "content": "# Dengan LLM (copy .env dulu)\nrag-project query \"jelaskan modul daily report\"\nrag-project query \"apa known issue terkait performa?\"\n```"
   },
   {
     "id": "chunk-0026",
     "source_file": "COMMANDS.md",
     "heading": "Rebuild",
     "chunk_index": 26,
-    "content": "### Rebuild\n\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```\n\n---"
+    "content": "### Rebuild\n\n```bash\nrag-project rebuild\n```\n\n---"
   },
   {
     "id": "chunk-0027",
@@ -242,7 +242,7 @@
     "source_file": "COMMANDS.md",
     "heading": "📋 Ringkasan Command Terpopuler",
     "chunk_index": 28,
-    "content": "## 📋 Ringkasan Command Terpopuler\n\n| Yang Ingin Dilakukan | Command |\n|---|---|\n| Jalankan app (full stack) | `composer run dev` |\n| Jalankan migrasi | `php artisan migrate` |\n| Generate permission | `php artisan shield:generate --all --panel=admin` |\n| Seed database | `php artisan db:seed` |\n| Cek routes | `php artisan route:list` |\n| Jalankan queue worker | `php artisan queue:listen` |\n| Jalankan scheduler | `php artisan schedule:work` |\n| Backup database | `php artisan backup:run` |\n| Cek log real-time | `php artisan pail` |\n| Docker up | `make up` |\n| Test app | `composer test` |\n| Query knowledge base | `python3 rag/scripts/query.py \"<tanya>\"` |\n\n---"
+    "content": "## 📋 Ringkasan Command Terpopuler\n\n| Yang Ingin Dilakukan | Command |\n|---|---|\n| Jalankan app (full stack) | `composer run dev` |\n| Jalankan migrasi | `php artisan migrate` |\n| Generate permission | `php artisan shield:generate --all --panel=admin` |\n| Seed database | `php artisan db:seed` |\n| Cek routes | `php artisan route:list` |\n| Jalankan queue worker | `php artisan queue:listen` |\n| Jalankan scheduler | `php artisan schedule:work` |\n| Backup database | `php artisan backup:run` |\n| Cek log real-time | `php artisan pail` |\n| Docker up | `make up` |\n| Test app | `composer test` |\n| Query knowledge base | `rag-project query \"<tanya>\"` |\n\n---"
   },
   {
     "id": "chunk-0029",
@@ -522,7 +522,7 @@
     "source_file": "DECISIONS.md",
     "heading": "DEC-009: GraphRAG Ringan Berbasis Python",
     "chunk_index": 10,
-    "content": "## DEC-009: GraphRAG Ringan Berbasis Python\n\n- **ID**: DEC-009\n- **Tanggal**: 2026-06-13\n- **Status**: Implemented (v0.3.0)\n- **Context**: Butuh sistem knowledge base untuk query cepat dari dokumentasi\n  tanpa harus membaca puluhan file manual. Target: developer dan AI agents.\n- **Decision**: Bangun POC GraphRAG ringan berbasis Python dengan dependency\n  minimal (rich, python-dotenv, anthropic). Pattern-based graph extraction,\n  keyword scoring, LLM opsional.\n- **Reason**:\n  - **Ringan** — 3 dependencies Python, tanpa Docker/Neo4j\n  - **File-based** — output JSON, mudah dibaca tools lain\n  - **LLM opsional** — tetap jalan tanpa API key\n  - **Fokus docs** — tidak scan source code, aman untuk POC\n- **Impact**:\n  - ✅ Query dokumentasi jadi cepat — cukup `python3 rag/scripts/query.py`\n  - ✅ Bisa diintegrasikan dengan AI agents untuk context retrieval\n  - ⚠️ Pattern-based extraction — terbatas pada kata kunci eksplisit\n  - ⚠️ Source code tidak diindeks (belum)\n\n---"
+    "content": "## DEC-009: GraphRAG Ringan Berbasis Python\n\n- **ID**: DEC-009\n- **Tanggal**: 2026-06-13\n- **Status**: Implemented (v0.3.0)\n- **Context**: Butuh sistem knowledge base untuk query cepat dari dokumentasi\n  tanpa harus membaca puluhan file manual. Target: developer dan AI agents.\n- **Decision**: Bangun POC GraphRAG ringan berbasis Python dengan dependency\n  minimal (rich, python-dotenv, anthropic). Pattern-based graph extraction,\n  keyword scoring, LLM opsional.\n- **Reason**:\n  - **Ringan** — 3 dependencies Python, tanpa Docker/Neo4j\n  - **File-based** — output JSON, mudah dibaca tools lain\n  - **LLM opsional** — tetap jalan tanpa API key\n  - **Fokus docs** — tidak scan source code, aman untuk POC\n- **Impact**:\n  - ✅ Query dokumentasi jadi cepat — cukup `rag-project query \"pertanyaan\"`\n  - ✅ Bisa diintegrasikan dengan AI agents untuk context retrieval\n  - ⚠️ Pattern-based extraction — terbatas pada kata kunci eksplisit\n  - ⚠️ Source code tidak diindeks (belum)\n\n---"
   },
   {
     "id": "chunk-0011",
@@ -1173,7 +1173,7 @@
     "source_file": "DOCS_UPDATE_RULES.md",
     "heading": "1. Lokasi File",
     "chunk_index": 3,
-    "content": "### 1. Lokasi File\n\n| File | Lokasi | Fungsi |\n|---|---|---|\n| Dokumentasi utama | `docs/*.md` | Panduan, referensi, arsitektur |\n| Release notes | `docs/releases/vX.Y.Z.md` | Catatan rilis per versi |\n| Panduan upgrade | `docs/upgrade/*.md` | Panduan migrasi teknis |\n| AI agents | `docs/ai-agents/*.md` | Konfigurasi agen AI |\n| Gambar | `docs/images/` | Screenshot, diagram, ilustrasi |\n| Root docs | `AGENTS.md`, `CHANGELOG.md` | Root-level dokumentasi |\n| RAG system | `rag/*` | Knowledge base query |\n| Template release | `docs/releases/template.md` | Template — **jangan di-copy ke rag/input/** |"
+    "content": "### 1. Lokasi File\n\n| File | Lokasi | Fungsi |\n|---|---|---|\n| Dokumentasi utama | `docs/*.md` | Panduan, referensi, arsitektur |\n| Release notes | `docs/releases/vX.Y.Z.md` | Catatan rilis per versi |\n| Panduan upgrade | `docs/upgrade/*.md` | Panduan migrasi teknis |\n| AI agents | `docs/ai-agents/*.md` | Konfigurasi agen AI |\n| Gambar | `docs/images/` | Screenshot, diagram, ilustrasi |\n| Root docs | `AGENTS.md`, `CHANGELOG.md` | Root-level dokumentasi |\n| RAG system | `docs/ai-agent/rag/*` | Knowledge base query |\n| Template release | `docs/releases/template.md` | Template — **jangan di-copy ke docs/ai-agent/rag/input/** |"
   },
   {
     "id": "chunk-0004",
@@ -1236,7 +1236,7 @@
     "source_file": "DOCS_UPDATE_RULES.md",
     "heading": "5. Template Release Notes",
     "chunk_index": 12,
-    "content": "### 5. Template Release Notes\n\nGunakan `docs/releases/template.md` untuk membuat release note baru.\nTemplate ini TIDAK di-copy ke rag/input/ oleh sync_docs.py.\n\n---"
+    "content": "### 5. Template Release Notes\n\nGunakan `docs/releases/template.md` untuk membuat release note baru.\nTemplate ini TIDAK di-copy ke `docs/ai-agent/rag/input/` oleh sync_docs.py.\n\n---"
   },
   {
     "id": "chunk-0013",
@@ -1894,14 +1894,14 @@
     "source_file": "RAG_GUIDE.md",
     "heading": "📋 Ringkasan",
     "chunk_index": 2,
-    "content": "## 📋 Ringkasan\n\nGraphRAG adalah sistem knowledge base ringan yang:\n\n1. **Sync** — Menyalin dokumentasi dari `docs/` ke `rag/input/`\n2. **Ingest** — Memecah dokumen jadi chunk + mengekstrak grafik pengetahuan\n3. **Query** — Menjawab pertanyaan dengan keyword scoring + LLM opsional (Claude)\n\n**Tujuan**: Memudahkan developer (manusia dan AI) untuk mencari informasi\ntentang project tanpa harus membaca puluhan file dokumentasi manual.\n\n---"
+    "content": "## 📋 Ringkasan\n\nGraphRAG adalah sistem knowledge base ringan yang:\n\n1. **Sync** — Menyalin dokumentasi dari `docs/` ke `docs/ai-agent/rag/input/`\n2. **Ingest** — Memecah dokumen jadi chunk + mengekstrak grafik pengetahuan\n3. **Query** — Menjawab pertanyaan dengan keyword scoring + LLM opsional (Claude)\n\n**Tujuan**: Memudahkan developer (manusia dan AI) untuk mencari informasi\ntentang project tanpa harus membaca puluhan file dokumentasi manual.\n\n---"
   },
   {
     "id": "chunk-0003",
     "source_file": "RAG_GUIDE.md",
     "heading": "📁 Struktur",
     "chunk_index": 3,
-    "content": "## 📁 Struktur\n\n```txt\nproject/\n├── docs/                          # Dokumentasi sumber (markdown)\n│   ├── *.md                       # Dokumentasi utama\n│   ├── releases/                  # Release notes\n│   └── upgrade/                   # Panduan upgrade/migrasi\n├── rag/                           # GraphRAG system\n│   ├── input/                     # Copy dari docs/ (sync_docs.py)\n│   ├── output/                    # Output hasil ingest\n│   │   ├── chunks.json            # Chunk dokumen\n│   │   └── graph.json             # Grafik pengetahuan\n│   ├── scripts/\n│   │   ├── sync_docs.py           # Sync markdown\n│   │   ├── ingest.py              # Chunking + graph extraction\n│   │   └── query.py               # Query CLI\n│   ├── .env.example               # Konfigurasi API key\n│   └── README.md                  # Dokumentasi teknis RAG\n├── AGENTS.md                      # Daftar AI agents & tooling\n└── CHANGELOG.md                   # Catatan perubahan\n```\n\n---"
+    "content": "## 📁 Struktur\n\n```txt\nproject/\n├── docs/                          # Dokumentasi sumber (markdown)\n│   ├── *.md                       # Dokumentasi utama\n│   ├── releases/                  # Release notes\n│   ├── upgrade/                   # Panduan upgrade/migrasi\n│   └── ai-agent/\n│       └── rag/\n│           ├── input/             # Hasil copy dari docs/\n│           ├── output/            # Output chunks.json & graph.json\n│           └── config.yml         # Konfigurasi path\n├── rag/                           # Source code / Python module (rag_project)\n│   ├── scripts/\n│   │   ├── sync_docs.py           # Sync markdown\n│   │   ├── ingest.py              # Chunking + graph extraction\n│   │   └── query.py               # Query CLI\n│   ├── .env.example               # Konfigurasi API key\n│   └── README.md                  # Dokumentasi teknis RAG\n├── AGENTS.md                      # Daftar AI agents & tooling\n└── CHANGELOG.md                   # Catatan perubahan\n```\n\n---"
   },
   {
     "id": "chunk-0004",
@@ -1922,14 +1922,14 @@
     "source_file": "RAG_GUIDE.md",
     "heading": "2. Sync Dokumentasi",
     "chunk_index": 6,
-    "content": "### 2. Sync Dokumentasi\n\n```bash\npython3 rag/scripts/sync_docs.py\n```\n\nPerintah ini membersihkan `rag/input/` dan menyalin semua file `.md` dari `docs/` dan\n`docs/releases/` (kecuali template) ke `rag/input/`."
+    "content": "### 2. Sync Dokumentasi\n\n```bash\nrag-project sync\n```\n\nPerintah ini membersihkan `docs/ai-agent/rag/input/` dan menyalin semua file `.md` dari `docs/` dan\n`docs/releases/` (kecuali template) ke `docs/ai-agent/rag/input/`."
   },
   {
     "id": "chunk-0007",
     "source_file": "RAG_GUIDE.md",
     "heading": "3. Ingest",
     "chunk_index": 7,
-    "content": "### 3. Ingest\n\n```bash\npython3 rag/scripts/ingest.py\n```\n\nMembaca semua markdown dari `rag/input/` dan menghasilkan:\n\n- **chunks.json** — 400+ chunk dokumen berbasis heading\n- **graph.json** — 30+ node entitas + 10+ edge relasi"
+    "content": "### 3. Ingest\n\n```bash\nrag-project ingest\n```\n\nMembaca semua markdown dari `docs/ai-agent/rag/input/` dan menghasilkan:\n\n- **chunks.json** — 400+ chunk dokumen berbasis heading\n- **graph.json** — 30+ node entitas + 10+ edge relasi"
   },
   {
     "id": "chunk-0008",
@@ -1943,7 +1943,7 @@
     "source_file": "RAG_GUIDE.md",
     "heading": "Retrieval-only (tanpa LLM)",
     "chunk_index": 9,
-    "content": "# Retrieval-only (tanpa LLM)\npython3 rag/scripts/query.py \"apa itu modular monolith?\""
+    "content": "# Retrieval-only (tanpa LLM)\nrag-project query \"apa itu modular monolith?\""
   },
   {
     "id": "chunk-0010",
@@ -1957,14 +1957,14 @@
     "source_file": "RAG_GUIDE.md",
     "heading": "Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL",
     "chunk_index": 11,
-    "content": "# Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL\npython3 rag/scripts/query.py \"command apa untuk setup development?\"\n```\n\n---"
+    "content": "# Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL\nrag-project query \"command apa untuk setup development?\"\n```\n\n---"
   },
   {
     "id": "chunk-0012",
     "source_file": "RAG_GUIDE.md",
     "heading": "🔄 Rebuild",
     "chunk_index": 12,
-    "content": "## 🔄 Rebuild\n\nJalankan setiap kali dokumentasi berubah:\n\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```\n\n---"
+    "content": "## 🔄 Rebuild\n\nJalankan setiap kali dokumentasi berubah:\n\n```bash\nrag-project rebuild\n```\n\n---"
   },
   {
     "id": "chunk-0013",
@@ -2118,14 +2118,14 @@
     "source_file": "RAG_USAGE_FOR_AGENT.md",
     "heading": "Query RAG",
     "chunk_index": 8,
-    "content": "### Query RAG\nGunakan perintah ini untuk mencari informasi pada knowledge base:\n```bash\npython3 rag/scripts/query.py \"pertanyaan\"\n```"
+    "content": "### Query RAG\nGunakan perintah ini untuk mencari informasi pada knowledge base:\n```bash\nrag-project query \"pertanyaan\"\n```"
   },
   {
     "id": "chunk-0009",
     "source_file": "RAG_USAGE_FOR_AGENT.md",
     "heading": "Rebuild RAG",
     "chunk_index": 9,
-    "content": "### Rebuild RAG\nSetiap kali ada dokumen yang diubah (misalnya `CHANGELOG.md`, `MODULES.md`, dsb.), wajib jalankan dua perintah berikut secara berurutan:\n```bash\npython3 rag/scripts/sync_docs.py\npython3 rag/scripts/ingest.py\n```\n\n---"
+    "content": "### Rebuild RAG\nSetiap kali ada dokumen yang diubah (misalnya `CHANGELOG.md`, `MODULES.md`, dsb.), wajib jalankan perintah berikut:\n```bash\nrag-project rebuild\n```\n\n---"
   },
   {
     "id": "chunk-0010",
@@ -2139,21 +2139,21 @@
     "source_file": "RAG_USAGE_FOR_AGENT.md",
     "heading": "Contoh Prompt Awal untuk Agent",
     "chunk_index": 11,
-    "content": "### Contoh Prompt Awal untuk Agent\nJika sebagai agent kamu baru diberikan task: *\"Cek mengapa dashboard lambat\"*. \nPrompt internal yang kamu jalankan pertama kali seharusnya:\n*Eksekusi command:* `python3 rag/scripts/query.py \"kenapa dashboard lambat atau issue performance dashboard\"`"
+    "content": "### Contoh Prompt Awal untuk Agent\nJika sebagai agent kamu baru diberikan task: *\"Cek mengapa dashboard lambat\"*. \nPrompt internal yang kamu jalankan pertama kali seharusnya:\n*Eksekusi command:* `rag-project query \"kenapa dashboard lambat atau issue performance dashboard\"`"
   },
   {
     "id": "chunk-0012",
     "source_file": "RAG_USAGE_FOR_AGENT.md",
     "heading": "Pola Kerja untuk Debugging",
     "chunk_index": 12,
-    "content": "### Pola Kerja untuk Debugging\n1. Query RAG terkait issue: `python3 rag/scripts/query.py \"known issue terkait [fitur]\"`\n2. Ekstrak nama Service atau Controller dari output.\n3. Baca source code dari path yang didapat.\n4. Fix bug pada file tersebut."
+    "content": "### Pola Kerja untuk Debugging\n1. Query RAG terkait issue: `rag-project query \"known issue terkait [fitur]\"`\n2. Ekstrak nama Service atau Controller dari output.\n3. Baca source code dari path yang didapat.\n4. Fix bug pada file tersebut."
   },
   {
     "id": "chunk-0013",
     "source_file": "RAG_USAGE_FOR_AGENT.md",
     "heading": "Pola Kerja untuk Tambah Fitur",
     "chunk_index": 13,
-    "content": "### Pola Kerja untuk Tambah Fitur\n1. Query RAG: `python3 rag/scripts/query.py \"modul apa yang mengurus [fitur]\"`\n2. Identifikasi Module yang tepat.\n3. Buat service baru dan daftarkan pada `SERVICES.md`.\n4. Rebuild RAG."
+    "content": "### Pola Kerja untuk Tambah Fitur\n1. Query RAG: `rag-project query \"modul apa yang mengurus [fitur]\"`\n2. Identifikasi Module yang tepat.\n3. Buat service baru dan daftarkan pada `SERVICES.md`.\n4. Rebuild RAG."
   },
   {
     "id": "chunk-0014",

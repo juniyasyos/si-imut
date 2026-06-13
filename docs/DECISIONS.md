@@ -185,7 +185,7 @@ lengkap dengan konteks, alasan, dan dampak.
   - **LLM opsional** — tetap jalan tanpa API key
   - **Fokus docs** — tidak scan source code, aman untuk POC
 - **Impact**:
-  - ✅ Query dokumentasi jadi cepat — cukup `python3 rag/scripts/query.py`
+  - ✅ Query dokumentasi jadi cepat — cukup `rag-project query "pertanyaan"`
   - ✅ Bisa diintegrasikan dengan AI agents untuk context retrieval
   - ⚠️ Pattern-based extraction — terbatas pada kata kunci eksplisit
   - ⚠️ Source code tidak diindeks (belum)

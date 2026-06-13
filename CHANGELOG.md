@@ -18,6 +18,7 @@ Format mengikuti pola:
 - **RAG Schema & Metadata**: Pembuatan `docs/RAG_SCHEMA.md`, `docs/MODULES.md`, dan `docs/SERVICES.md` untuk melengkapi struktur entitas GraphRAG.
 - **Git History Summary**: Pembuatan `docs/CHANGE_SUMMARY.md` dan `docs/PROJECT_TIMELINE.md` yang merangkum perubahan besar dan fase iterasi sejak awal 2026.
 - **RAG Ingestion Engine**: Modifikasi `rag/scripts/ingest.py` agar dapat memparsing metadata berbasis *heading* dan *key-value* secara dinamis, serta mengoptimalkan pembuatan relasi *edge*.
+- **RAG Refactor**: Folder `rag/` di-refactor menjadi Python module lokal (`rag_project`) dengan CLI terintegrasi (`rag-project sync`, `ingest`, `query`, dll) untuk mempermudah penggunaan oleh AI agent tanpa mengubah dependensi aplikasi utama.
 
 ### Changed
 - **Doc Metadata**: Penambahan blok `RAG Metadata` di akhir dokumen `COMMANDS.md`, `KNOWN_ISSUES.md`, dan `DECISIONS.md` agar mudah diekstrak oleh sistem RAG.

@@ -52,7 +52,7 @@ Sistem RAG ringan berbasis Python untuk query knowledge base project dari dokume
 
 | Skrip | Fungsi |
 |---|---|
-| `rag/scripts/sync_docs.py` | Sync markdown dari `docs/` ke `rag/input/` |
+| `rag/scripts/sync_docs.py` | Sync markdown dari `docs/` ke `docs/ai-agent/rag/input/` |
 | `rag/scripts/ingest.py` | Chunking + graph extraction |
 | `rag/scripts/query.py` | Query CLI (keyword scoring + LLM opsional) |
 
@@ -62,14 +62,14 @@ Sistem RAG ringan berbasis Python untuk query knowledge base project dari dokume
 cd rag
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 
-# Sync + Ingest
-python3 scripts/sync_docs.py
-python3 scripts/ingest.py
+# Sync + Ingest (Rebuild)
+rag-project rebuild
 
 # Query
-python3 scripts/query.py "pertanyaan anda"
+rag-project query "pertanyaan anda"
+rag-project graph "entity"
 ```
 
 > Dokumentasi lengkap: [RAG_GUIDE.md](docs/RAG_GUIDE.md)

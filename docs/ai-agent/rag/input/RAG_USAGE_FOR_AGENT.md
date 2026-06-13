@@ -49,14 +49,13 @@ Setiap AI Agent wajib mematuhi aturan berikut sebelum melakukan tindakan modifik
 ### Query RAG
 Gunakan perintah ini untuk mencari informasi pada knowledge base:
 ```bash
-python3 rag/scripts/query.py "pertanyaan"
+rag-project query "pertanyaan"
 ```
 
 ### Rebuild RAG
-Setiap kali ada dokumen yang diubah (misalnya `CHANGELOG.md`, `MODULES.md`, dsb.), wajib jalankan dua perintah berikut secara berurutan:
+Setiap kali ada dokumen yang diubah (misalnya `CHANGELOG.md`, `MODULES.md`, dsb.), wajib jalankan perintah berikut:
 ```bash
-python3 rag/scripts/sync_docs.py
-python3 rag/scripts/ingest.py
+rag-project rebuild
 ```
 
 ---
@@ -66,16 +65,16 @@ python3 rag/scripts/ingest.py
 ### Contoh Prompt Awal untuk Agent
 Jika sebagai agent kamu baru diberikan task: *"Cek mengapa dashboard lambat"*. 
 Prompt internal yang kamu jalankan pertama kali seharusnya:
-*Eksekusi command:* `python3 rag/scripts/query.py "kenapa dashboard lambat atau issue performance dashboard"`
+*Eksekusi command:* `rag-project query "kenapa dashboard lambat atau issue performance dashboard"`
 
 ### Pola Kerja untuk Debugging
-1. Query RAG terkait issue: `python3 rag/scripts/query.py "known issue terkait [fitur]"`
+1. Query RAG terkait issue: `rag-project query "known issue terkait [fitur]"`
 2. Ekstrak nama Service atau Controller dari output.
 3. Baca source code dari path yang didapat.
 4. Fix bug pada file tersebut.
 
 ### Pola Kerja untuk Tambah Fitur
-1. Query RAG: `python3 rag/scripts/query.py "modul apa yang mengurus [fitur]"`
+1. Query RAG: `rag-project query "modul apa yang mengurus [fitur]"`
 2. Identifikasi Module yang tepat.
 3. Buat service baru dan daftarkan pada `SERVICES.md`.
 4. Rebuild RAG.

@@ -30,3 +30,9 @@ yarn-error.log
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# AI GRAPHRAG
+docs/ai-agent/rag/input/
+docs/ai-agent/rag/output/
+rag/rag_project.egg-info/
+rag/.env

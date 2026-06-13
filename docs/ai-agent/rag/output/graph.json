@@ -25,6 +25,12 @@
       "source": "CHANGE_SUMMARY.md"
     },
     {
+      "id": "laporan",
+      "type": "Module",
+      "label": "Laporan",
+      "source": "CHANGE_SUMMARY.md"
+    },
+    {
       "id": "reporting",
       "type": "Module",
       "label": "Reporting",
@@ -258,12 +264,6 @@
       "type": "Release",
       "label": "Release v0.3.0",
       "source": "DECISIONS.md"
-    },
-    {
-      "id": "laporan",
-      "type": "Module",
-      "label": "Laporan",
-      "source": "DEVELOPMENT.md"
     },
     {
       "id": "ki-002",

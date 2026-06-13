@@ -11,7 +11,7 @@ untuk query knowledge base project SIIMUT.
 
 GraphRAG adalah sistem knowledge base ringan yang:
 
-1. **Sync** — Menyalin dokumentasi dari `docs/` ke `rag/input/`
+1. **Sync** — Menyalin dokumentasi dari `docs/` ke `docs/ai-agent/rag/input/`
 2. **Ingest** — Memecah dokumen jadi chunk + mengekstrak grafik pengetahuan
 3. **Query** — Menjawab pertanyaan dengan keyword scoring + LLM opsional (Claude)
 
@@ -27,12 +27,13 @@ project/
 ├── docs/                          # Dokumentasi sumber (markdown)
 │   ├── *.md                       # Dokumentasi utama
 │   ├── releases/                  # Release notes
-│   └── upgrade/                   # Panduan upgrade/migrasi
-├── rag/                           # GraphRAG system
-│   ├── input/                     # Copy dari docs/ (sync_docs.py)
-│   ├── output/                    # Output hasil ingest
-│   │   ├── chunks.json            # Chunk dokumen
-│   │   └── graph.json             # Grafik pengetahuan
+│   ├── upgrade/                   # Panduan upgrade/migrasi
+│   └── ai-agent/
+│       └── rag/
+│           ├── input/             # Hasil copy dari docs/
+│           ├── output/            # Output chunks.json & graph.json
+│           └── config.yml         # Konfigurasi path
+├── rag/                           # Source code / Python module (rag_project)
 │   ├── scripts/
 │   │   ├── sync_docs.py           # Sync markdown
 │   │   ├── ingest.py              # Chunking + graph extraction
@@ -59,19 +60,19 @@ pip install -r requirements.txt
 ### 2. Sync Dokumentasi
 
 ```bash
-python3 rag/scripts/sync_docs.py
+rag-project sync
 ```
 
-Perintah ini membersihkan `rag/input/` dan menyalin semua file `.md` dari `docs/` dan
-`docs/releases/` (kecuali template) ke `rag/input/`.
+Perintah ini membersihkan `docs/ai-agent/rag/input/` dan menyalin semua file `.md` dari `docs/` dan
+`docs/releases/` (kecuali template) ke `docs/ai-agent/rag/input/`.
 
 ### 3. Ingest
 
 ```bash
-python3 rag/scripts/ingest.py
+rag-project ingest
 ```
 
-Membaca semua markdown dari `rag/input/` dan menghasilkan:
+Membaca semua markdown dari `docs/ai-agent/rag/input/` dan menghasilkan:
 
 - **chunks.json** — 400+ chunk dokumen berbasis heading
 - **graph.json** — 30+ node entitas + 10+ edge relasi
@@ -80,12 +81,12 @@ Membaca semua markdown dari `rag/input/` dan menghasilkan:
 
 ```bash
 # Retrieval-only (tanpa LLM)
-python3 rag/scripts/query.py "apa itu modular monolith?"
+rag-project query "apa itu modular monolith?"
 
 # Dengan LLM (copy .env dulu)
 cp rag/.env.example rag/.env
 # Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL
-python3 rag/scripts/query.py "command apa untuk setup development?"
+rag-project query "command apa untuk setup development?"
 ```
 
 ---
@@ -95,8 +96,7 @@ python3 rag/scripts/query.py "command apa untuk setup development?"
 Jalankan setiap kali dokumentasi berubah:
 
 ```bash
-python3 rag/scripts/sync_docs.py
-python3 rag/scripts/ingest.py
+rag-project rebuild
 ```
 
 ---

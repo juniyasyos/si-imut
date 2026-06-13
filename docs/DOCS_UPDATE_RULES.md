@@ -17,8 +17,8 @@ Berlaku untuk semua kontributor (manusia dan AI agents).
 | AI agents | `docs/ai-agents/*.md` | Konfigurasi agen AI |
 | Gambar | `docs/images/` | Screenshot, diagram, ilustrasi |
 | Root docs | `AGENTS.md`, `CHANGELOG.md` | Root-level dokumentasi |
-| RAG system | `rag/*` | Knowledge base query |
-| Template release | `docs/releases/template.md` | Template — **jangan di-copy ke rag/input/** |
+| RAG system | `docs/ai-agent/rag/*` | Knowledge base query |
+| Template release | `docs/releases/template.md` | Template — **jangan di-copy ke docs/ai-agent/rag/input/** |
 
 ### 2. Format Markdown
 
@@ -82,7 +82,7 @@ Setiap decision di DECISIONS.md wajib punya:
 ### 5. Template Release Notes
 
 Gunakan `docs/releases/template.md` untuk membuat release note baru.
-Template ini TIDAK di-copy ke rag/input/ oleh sync_docs.py.
+Template ini TIDAK di-copy ke `docs/ai-agent/rag/input/` oleh sync_docs.py.
 
 ---
 
