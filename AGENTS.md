@@ -124,10 +124,14 @@ Hook diaktifkan di `.claude/settings.local.json`:
 
 ## 📝 Aturan untuk AI Agents
 
-1. **Jangan ubah logic aplikasi utama** tanpa persetujuan eksplisit.
-2. **Jangan scan** vendor, node_modules, storage, logs, build.
-3. **Jangan hardcode** secret, API key, atau credential.
-4. **Fokus dokumentasi** — semua perubahan docs wajib dicatat di CHANGELOG.
-5. **RAG rebuild** — setiap kali docs berubah, jalankan sync_docs + ingest.
-6. **Bahasa** — dokumentasi dalam Bahasa Indonesia, kecuali file teknis tertentu (SBOM, LICENSE).
-7. **Wajib baca panduan RAG** — lihat [RAG_USAGE_FOR_AGENT.md](docs/RAG_USAGE_FOR_AGENT.md) sebelum memulai eksplorasi/debugging.
+1. **Jika task tentang SIIMUT**, pakai `rag-project` sebagai peta awal.
+2. **Jika task tentang RAG/parser/chunks/graph/query/ingest**, mulai dari `rag-project/`.
+3. **Jangan baca seluruh repo** kalau RAG/docs cukup.
+4. **Kalau RAG kurang jelas/gagal**, baru baca source file relevan. Source code tetap source of truth.
+5. **Jangan ubah logic aplikasi utama** tanpa persetujuan eksplisit.
+6. **Jangan scan** `app/` secara penuh, vendor, node_modules, storage, logs, build.
+7. **Jangan hardcode** secret, API key, atau credential.
+8. **Fokus dokumentasi** — semua perubahan docs wajib dicatat di CHANGELOG.
+9. **RAG rebuild** — setiap kali docs berubah, jalankan sync_docs + ingest.
+10. **Bahasa** — dokumentasi dalam Bahasa Indonesia, kecuali file teknis tertentu (SBOM, LICENSE).
+11. **Wajib baca panduan RAG** — lihat [AI_AGENT_USAGE.md](docs/AI_AGENT_USAGE.md) dan [RAG_WORKFLOW.md](docs/RAG_WORKFLOW.md).

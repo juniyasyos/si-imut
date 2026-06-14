@@ -127,6 +127,17 @@ make up
 
 > 📖 Lihat [docs/USAGE.md](docs/USAGE.md) untuk panduan penggunaan.
 
+## AI Agent & RAG Usage
+
+Project ini punya `rag-project/` untuk membantu AI agent memahami SIIMUT tanpa membaca seluruh repo dari nol.
+
+Urutan agent:
+1. Baca `AGENTS.md`
+2. Baca `rag-project/README.md`
+3. Baca docs RAG
+4. Query RAG jika bisa
+5. Baru baca source file relevan
+
 ## 📚 Dokumentasi Detail
 
 Dokumentasi teknis lengkap ada di folder [`docs/`](docs/README.md):
