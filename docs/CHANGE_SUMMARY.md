@@ -11,7 +11,7 @@ Dokumen ini merangkum perubahan produk skala besar dan fitur penting yang diimpl
 - **Commit Contoh**: `4bb5bd7` (SyncFormTemplateDates command & versioning), `1efd151` (Dynamic form field generation), `f879acb` (Form template versioning system)
 
 ## 3. Sistem Pelaporan (Reporting) & Monitoring Lanjutan
-- **Deskripsi**: Penambahan laporan tabel dinamis, laporan berbasis kategori, laporan unit kerja, integrasi reporting berbasis JSON, serta integrasi toggle indikator benchmarking. Mendukung juga ekspor ke format PDF.
+- **Deskripsi**: Penambahan laporan tabel dinamis, laporan berbasis kategori, laporan unit kerja, integrasi reporting berbasis JSON, serta integrasi toggle indikator benchmarking. Mendukung juga ekspor ke format PDF. Peningkatan `ImutCapaianWidget` untuk menampilkan tren pencapaian per "Triwulan" (Quarter) menggunakan grafik garis mulus melintasi bulan.
 - **Commit Contoh**: `5aa68cb` (Unit Kerja Laporan), `6f86712` (Category-based indicator report), `3a5d5e9` (Monthly monitoring feature)
 
 ## 4. Otorisasi, Integrasi IAM, & Keamanan (SSO)
