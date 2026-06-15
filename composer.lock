@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7b42bca4577e95f0580513561dfb79b4",
+    "content-hash": "5d1e50398cb6dfddb270bc1fdf94757c",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3903,16 +3903,16 @@
         },
         {
             "name": "juniyasyos/nexaid-client",
-            "version": "v1.2.11",
+            "version": "v1.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/juniyasyos/nexaid-client.git",
-                "reference": "e933df07d5fc7ab7483f4a325c044ab9c4e97b82"
+                "reference": "e76c4bca9067d35553759e680c690f32d12ba05a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/juniyasyos/nexaid-client/zipball/e933df07d5fc7ab7483f4a325c044ab9c4e97b82",
-                "reference": "e933df07d5fc7ab7483f4a325c044ab9c4e97b82",
+                "url": "https://api.github.com/repos/juniyasyos/nexaid-client/zipball/e76c4bca9067d35553759e680c690f32d12ba05a",
+                "reference": "e76c4bca9067d35553759e680c690f32d12ba05a",
                 "shasum": ""
             },
             "require": {
@@ -3940,7 +3940,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Proprietary"
+                "proprietary"
             ],
             "authors": [
                 {
@@ -3958,9 +3958,9 @@
             ],
             "support": {
                 "issues": "https://github.com/juniyasyos/nexaid-client/issues",
-                "source": "https://github.com/juniyasyos/nexaid-client/tree/v1.2.11"
+                "source": "https://github.com/juniyasyos/nexaid-client/tree/v1.2.13"
             },
-            "time": "2026-06-01T05:20:09+00:00"
+            "time": "2026-06-15T08:04:32+00:00"
         },
         {
             "name": "juniyasyos/table-repeater",
@@ -6276,16 +6276,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "3.11.4",
+            "version": "3.12.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CarbonPHP/carbon.git",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60"
+                "reference": "6e7853a668c3107294aff38d42bf760ec02126b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/e890471a3494740f7d9326d72ce6a8c559ffee60",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/6e7853a668c3107294aff38d42bf760ec02126b6",
+                "reference": "6e7853a668c3107294aff38d42bf760ec02126b6",
                 "shasum": ""
             },
             "require": {
@@ -6377,7 +6377,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-07T09:57:54+00:00"
+            "time": "2026-06-14T20:41:42+00:00"
         },
         {
             "name": "nette/schema",
@@ -7472,16 +7472,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "3.0.53",
+            "version": "3.0.55",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "511ddc8e352d5d1f1e33bea468b6f4ef48438cf9"
+                "reference": "db9744e6d47e742b1f974e965ad49bdd041105af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/511ddc8e352d5d1f1e33bea468b6f4ef48438cf9",
-                "reference": "511ddc8e352d5d1f1e33bea468b6f4ef48438cf9",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/db9744e6d47e742b1f974e965ad49bdd041105af",
+                "reference": "db9744e6d47e742b1f974e965ad49bdd041105af",
                 "shasum": ""
             },
             "require": {
@@ -7562,7 +7562,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.53"
+                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.55"
             },
             "funding": [
                 {
@@ -7578,7 +7578,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-09T18:08:26+00:00"
+            "time": "2026-06-14T23:24:10+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",

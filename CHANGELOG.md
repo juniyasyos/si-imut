@@ -12,6 +12,26 @@ Format mengikuti pola:
 
 ---
 
+## [1.4.1] — 2026-06-15
+
+### Added
+- **Widget**: Implementasi tampilan Triwulan untuk `ImutCapaianWidget`.
+- **Docs**: Menambahkan panduan `RAG_USAGE_FOR_AGENT.md` untuk penggunaan AI agent.
+
+### Changed
+- **GraphRAG**: Refactor struktur RAG dengan memisahkan source code Python dengan data penyimpanan.
+- **GraphRAG**: Pembaruan *knowledge base* dengan grafik multi-domain yang baru.
+- **GraphRAG**: Optimasi RAG metadata dan pembaruan *entity topics*.
+- **Docs**: Membersihkan duplikasi dokumen pada input RAG dan memperbarui dokumentasi *agent RAG project*.
+
+### Fixed
+- **Widget**: Memperbaiki tampilan *line chart* pada `ImutCapaianWidget` dengan membatasi kategori yang ditampilkan secara default (menambahkan filter).
+
+### Removed
+- **Docs**: Menghapus direktori/file development AI agent yang tidak diperlukan.
+
+---
+
 ## [1.4.0-rc.1] — 2026-06-14
 
 ### Added
