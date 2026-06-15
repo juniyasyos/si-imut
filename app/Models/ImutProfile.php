@@ -2,6 +2,6 @@
 
 namespace App\Models;
 
-if (!class_exists(\App\Models\ImutProfile::class, false)) {
-    class_alias(\App\Modules\ImutMaster\Models\ImutProfile::class, \App\Models\ImutProfile::class);
+class ImutProfile extends \App\Modules\ImutMaster\Models\ImutProfile
+{
 }
