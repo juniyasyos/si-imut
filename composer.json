@@ -35,7 +35,7 @@
         "juniyasyos/filament-media-manager": "3.0",
         "juniyasyos/filament-pwa-kaido": "^2.1",
         "juniyasyos/filament-settings-hub-kaido": "^4.0",
-        "juniyasyos/nexaid-client": "v1.2.11",
+        "juniyasyos/nexaid-client": "v1.2.13",
         "juniyasyos/table-repeater": "v1.0.1",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
