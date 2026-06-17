@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LaporanReportActionHelper
 {
-    public static function buildCategoryRedirect(array $data): RedirectResponse
+    public static function buildCategoryRedirect(array $data)
     {
         $categories = implode(',', $data['imut_category'] ?? []);
         $periode = self::resolvePeriode($data);
