@@ -60,7 +60,7 @@ class CategoryReportController extends Controller
         // "missing august" confusion when records span months.
         $yearMonthStrings = $months; // already in 'YYYY-MM' format
 
-        $penilaians = ImutPenilaian::with(['profile.imutData', 'laporanUnitKerja.laporanImut'])
+        $penilaians = ImutPenilaian::with(['profile.imutData.categories', 'laporanUnitKerja.laporanImut', 'laporanUnitKerja.unitKerja'])
             ->whereHas('profile.imutData', fn($q) => $q->where('status', true))
             ->when(count($categories) > 0, fn($q) => $q->whereHas('profile.imutData.categories', fn($q2) => $q2->whereIn('id', $categories)))
             ->when(count($yearMonthStrings) > 0, function ($q) use ($yearMonthStrings, $startDate, $endDate) {
@@ -277,6 +277,9 @@ class CategoryReportController extends Controller
             }
         }
 
+        $allRegionTypes = RegionType::whereIn('imut_data_id', $imutIds)->get();
+        $allBenchmarks = ImutBenchmarking::whereIn('region_type_id', $allRegionTypes->pluck('id'))->get();
+
         $dataByImut = [];
         foreach ($results as $row) {
             $imutId = $row['imut_data_id'];
@@ -365,9 +368,9 @@ class CategoryReportController extends Controller
             $rowOperator = $lastOperator;
 
             // collect region type metadata and benchmarking values so view can render them
-            $rtIds = RegionType::where('imut_data_id', $imutId)->pluck('id')->toArray();
-            $regionTypeInfo = RegionType::whereIn('id', $rtIds)
-                ->get(['id', 'type', 'chart_type', 'display_color'])
+            $regionTypesForImut = $allRegionTypes->where('imut_data_id', $imutId);
+            $rtIds = $regionTypesForImut->pluck('id')->toArray();
+            $regionTypeInfo = $regionTypesForImut
                 ->map(function ($rt) {
                     return [
                         'id' => $rt->id,
@@ -377,11 +380,11 @@ class CategoryReportController extends Controller
                         'color' => $rt->getDisplayColorWithFallback(),
                     ];
                 })
+                ->values()
                 ->toArray();
 
             // when building benchmarks we also want a per-month series
-            $benchmarks = ImutBenchmarking::whereHas('regionType', fn($q) => $q->where('imut_data_id', $imutId))
-                ->get()
+            $benchmarks = $allBenchmarks->whereIn('region_type_id', $rtIds)
                 ->map(function ($b) use ($months) {
                     $val = floatval($b->benchmark_value);
                     // fill monthly values only for months within period range
@@ -402,6 +405,7 @@ class CategoryReportController extends Controller
                         'monthly' => $series,
                     ];
                 })
+                ->values()
                 ->toArray();
 
             $dataByImut[] = [
