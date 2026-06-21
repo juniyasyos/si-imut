@@ -1,7 +1,6 @@
-# Panduan GraphRAG untuk Dokumentasi Project
+# Panduan contexta (Architectural RAG)
 
-Panduan lengkap tentang sistem **GraphRAG** (Graph Retrieval-Augmented Generation)
-untuk query knowledge base project SIIMUT.
+Panduan lengkap tentang sistem **contexta** untuk memetakan dan melakukan query terhadap knowledge base arsitektural project SIIMUT.
 
 > **Khusus AI Agents:** Wajib membaca alur kerja dan pola penggunaan RAG di [RAG_USAGE_FOR_AGENT.md](RAG_USAGE_FOR_AGENT.md).
 
@@ -9,170 +8,111 @@ untuk query knowledge base project SIIMUT.
 
 ## 📋 Ringkasan
 
-GraphRAG adalah sistem knowledge base ringan yang:
+`contexta` adalah sistem Architectural RAG berbasis Node.js/Bun yang dirancang khusus untuk membedah source code Laravel dan mengekstrak relasi antar entitas (Controller, Model, Service, Route, dll) menggunakan teknik Regex ringan (Caveman Librarian).
 
-1. **Sync** — Menyalin dokumentasi dari `docs/` ke `docs/ai-agent/rag/input/`
-2. **Ingest** — Memecah dokumen jadi chunk + mengekstrak grafik pengetahuan
-3. **Query** — Menjawab pertanyaan dengan keyword scoring + LLM opsional (Claude)
+1. **Scan** — Membaca source code dan ekstrak entitas & relasi ke `graph.json`.
+2. **Inspect** — Melihat blast radius / ketergantungan dari satu file ke file lain.
+3. **Query** — Melakukan pencarian arsitektural berdasarkan intent.
 
-**Tujuan**: Memudahkan developer (manusia dan AI) untuk mencari informasi
-tentang project tanpa harus membaca puluhan file dokumentasi manual.
+**Tujuan**: Memudahkan developer (manusia dan AI) memetakan *blast radius* dan keterkaitan komponen tanpa harus membaca ribuan file secara manual, sehingga menghemat konsumsi token LLM.
 
 ---
 
-## 📁 Struktur
+## 📁 Instalasi & Setup
 
-```txt
-project/
-├── docs/                          # Dokumentasi sumber (markdown)
-│   ├── *.md                       # Dokumentasi utama
-│   ├── releases/                  # Release notes
-│   ├── upgrade/                   # Panduan upgrade/migrasi
-│   └── ai-agent/
-│       └── rag/
-│           ├── input/             # Hasil copy dari docs/
-│           ├── output/            # Output chunks.json & graph.json
-│           └── config.yml         # Konfigurasi path
-├── rag/                           # Source code / Python module (rag_project)
-│   ├── scripts/
-│   │   ├── sync_docs.py           # Sync markdown
-│   │   ├── ingest.py              # Chunking + graph extraction
-│   │   └── query.py               # Query CLI
-│   ├── .env.example               # Konfigurasi API key
-│   └── README.md                  # Dokumentasi teknis RAG
-├── AGENTS.md                      # Daftar AI agents & tooling
-└── CHANGELOG.md                   # Catatan perubahan
+`contexta` diinstal sebagai tool CLI menggunakan `bun`.
+
+```bash
+# Pastikan berada di root project contexta
+cd /home/juni/projects/plugin/contexta
+bun install
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Setup Environment
+Semua perintah dijalankan di dalam root direktori aplikasi `siimut`.
+
+### 1. Build / Scan Arsitektur
+
+Perintah ini akan membaca `laravel.yml` scanner dan mengekstrak seluruh entitas di dalam `app/`, `database/`, dan `routes/` ke dalam file `docs/ai-agent/rag/output/graph.json`.
 
 ```bash
-cd rag
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+bunx contexta scan
 ```
 
-### 2. Sync Dokumentasi
+### 2. Cek Statistik
+Melihat ringkasan arsitektur (jumlah Controller, Model, relasi, dll).
 
 ```bash
-rag-project sync
+bunx contexta graph stats
 ```
 
-Perintah ini membersihkan `docs/ai-agent/rag/input/` dan menyalin semua file `.md` dari `docs/` dan
-`docs/releases/` (kecuali template) ke `docs/ai-agent/rag/input/`.
+### 3. Inspect (Analisis Dampak / Relasi)
 
-### 3. Ingest
+Jika Anda ingin mengubah suatu `Model` atau `Service`, gunakan command ini untuk melihat file apa saja yang bergantung padanya:
 
 ```bash
-rag-project ingest
+bunx contexta inspect model-user
+```
+*(Akan menghasilkan list Controller, Service, Resource, dll yang menggunakan `User`)*
+
+Untuk melihat grafik dampak dengan kedalaman tertentu:
+```bash
+bunx contexta impact model-user --depth 2
 ```
 
-Membaca semua markdown dari `docs/ai-agent/rag/input/` dan menghasilkan:
+### 4. Query Intent
 
-- **chunks.json** — 400+ chunk dokumen berbasis heading
-- **graph.json** — 30+ node entitas + 10+ edge relasi
-
-### 4. Query
+Mencari service, dokumentasi, atau entitas tertentu berdasarkan intent:
 
 ```bash
-# Retrieval-only (tanpa LLM)
-rag-project query "apa itu modular monolith?"
-
-# Dengan LLM (copy .env dulu)
-cp rag/.env.example rag/.env
-# Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL
-rag-project query "command apa untuk setup development?"
+bunx contexta query --intent service_lookup --entity LaporanImut
 ```
 
 ---
 
-## 🔄 Rebuild
+## 🔄 Kapan Harus Rebuild / Scan Ulang?
 
-Jalankan setiap kali dokumentasi berubah:
-
-```bash
-rag-project rebuild
-```
+Jalankan `bunx contexta scan` setiap kali Anda melakukan:
+1. Pembuatan Model / Controller / Service baru.
+2. Perubahan relasi antar class (misalnya sebuah Controller baru mulai memanggil sebuah Service).
+3. Perubahan besar pada struktur folder.
 
 ---
 
-## 📤 Output
-
-### chunks.json
-
-Array chunk dengan format:
-
-```json
-{
-  "id": "chunk-0001",
-  "source_file": "PROJECT_STRUCTURE.md",
-  "heading": "app/ — Source Code",
-  "chunk_index": 1,
-  "content": "| Path | Fungsi | Catatan |..."
-}
-```
+## 📤 Output Arsitektur
 
 ### graph.json
 
-Object dengan nodes dan edges:
+File utama (bisa mencapai 1MB+) yang berisi ribuan *nodes* (entitas) dan *edges* (relasi).
 
 ```json
 {
   "nodes": [
-    { "id": "siimut", "type": "Project", "label": "SIIMUT", "source": "..." }
+    { "id": "model-user", "type": "model", "label": "User", "domain": "models" }
   ],
   "edges": [
-    { "from": "filament", "to": "nginx", "type": "exposed_by", "source": "..." }
+    { "from": "controller-logincontroller", "to": "model-user", "type": "uses_model" }
   ]
 }
 ```
 
 ---
 
-## 🧠 Cara Kerja
+## 🧠 Cara Kerja (Caveman Librarian)
 
-### Chunking
-1. Baca setiap file `.md`
-2. Pecah berdasarkan heading markdown (`#`, `##`, dst.)
-3. Jika > 2000 karakter, pecah per paragraf
-4. Setiap chunk punya ID unik (`chunk-0001`)
-
-### Graph Extraction
-1. Pattern matching dengan kata kunci untuk entity types
-2. Entity types: Project, App, Service, Module, Command, Port, Container, Env, KnownIssue, Decision, Release
-3. Relasi: uses, exposed_by, has_port, contains, defined_in, related_to, affects, includes
-4. Deduplikasi otomatis — node yang sama tidak dibuat dua kali
-
-### Query
-1. Tokenize pertanyaan
-2. Score chunk berdasar keyword overlap + heading boost + source boost
-3. Cari node/edge graph relevan
-4. (Opsional) Kirim konteks ke Claude untuk jawaban natural language
+`contexta` sengaja tidak menggunakan AST (Abstract Syntax Tree) Parser seperti PHPStan, melainkan menggunakan regex pattern matching.
+Alasannya:
+1. **Kecepatan**: Sangat cepat (scan ribuan file dalam hitungan detik).
+2. **Toleransi Error**: Tidak peduli jika ada syntax error di dalam kode PHP, ia tetap bisa membaca struktur dasarnya.
+3. **Efisiensi Token**: Outputnya berukuran kecil namun mencakup relasi level makro, sangat disukai oleh AI Agents.
 
 ---
 
 ## ⚠️ Keterbatasan
 
-1. **Pattern-based graph** — hanya entitas eksplisit dengan kata kunci
-2. **Source code tidak diindeks** — hanya markdown di `docs/`
-3. **Keyword scoring** — tanpa semantic search / embedding
-4. **LLM opsional** — tanpa API key, hanya retrieval
-5. **No auto-rebuild** — perlu manual sync_docs + ingest
-6. **Bahasa campuran** — dokumentasi ID/EN, query keduanya
-
----
-
-## 🔮 Next Improvement
-
-- [ ] Semantic chunk search dengan embedding (sentence-transformers)
-- [ ] Indeks AI agent docs (`docs/ai-agents/`)
-- [ ] Graph extraction dengan LLM untuk akurasi lebih tinggi
-- [ ] UI Streamlit untuk browsing knowledge base
-- [ ] Auto-rebuild via git hook
-- [ ] Caching query untuk pertanyaan berulang
-- [ ] Integrasi Laravel Artisan command
+1. **Bukan Analisis Fungsi/Method**: Tidak bisa mendeteksi logika baris-per-baris atau parameter fungsi.
+2. **False Positive Regex**: Terkadang regex bisa menangkap string/komentar yang menyerupai definisi class.
+3. **Spesifik Laravel**: Aturan pencariannya di-hardcode ke struktur Laravel (`src/scanners/laravel.yml`).

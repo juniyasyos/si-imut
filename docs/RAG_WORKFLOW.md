@@ -3,23 +3,23 @@
 Alur kerja penggunaan RAG untuk AI Agent:
 
 1. Baca `AGENTS.md`
-2. Baca `rag-project/README.md`
+2. Pahami perintah CLI `contexta` (e.g., `bunx contexta scan`)
 3. Baca docs RAG
-4. Query RAG jika bisa
+4. Query RAG jika perlu mengetahui arsitektur
 5. Baru baca source file relevan
 
 ## Troubleshooting Command RAG
 
 Jika command RAG dijalankan, contohnya:
 ```bash
-cd rag-project && python -m rag_project.cli --help
+bunx contexta scan
 ```
 
 Dan menghasilkan error:
 ```
-bash: line 1: python: command not found
+SyntaxError: Export named ...
 ```
-*(Exit code: 127)*
+*(Exit code: 1)*
 
 **Catatan / Solusi:**
-Ini terjadi karena command `python` tidak ditemukan di environment saat ini (kemungkinan karena harus menggunakan `python3` atau virtual environment belum aktif). Silakan sesuaikan eksekusi menggunakan `python3` atau aktifkan environment yang sesuai jika ingin menjalankan CLI tersebut.
+Ini biasanya terjadi karena Anda belum menjalankan `bun install` di dalam root project `contexta` atau environment belum di-setup dengan benar. Pastikan dependensi package manager sudah terinstal.

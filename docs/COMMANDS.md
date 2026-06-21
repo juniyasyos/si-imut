@@ -169,47 +169,37 @@ Daftar lengkap command yang tersedia di project SIIMUT, dikelompokkan per katego
 
 ---
 
-## 🐍 Python / RAG Commands
+## 🧠 RAG (contexta) Commands
 
 ### Setup
-
+Karena menggunakan `bun`, pastikan `bun` sudah terinstal:
 ```bash
-cd rag
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# (Optional) Setup LLM
-cp .env.example .env
-# Isi ANTHROPIC_API_KEY dan ANTHROPIC_MODEL
+# Instalasi di dalam folder plugin contexta
+cd /home/juni/projects/plugin/contexta
+bun install
 ```
 
-### Sync, Ingest, Query
+### Scan & Query
 
 | Command | Fungsi |
 |---|---|
-| `rag-project sync` | Sync dokumentasi dari docs/ ke rag/input/ |
-| `rag-project ingest` | Chunking markdown + graph extraction |
-| `rag-project query "<pertanyaan>"` | Query knowledge base |
+| `bunx contexta scan` | Scan project dan buat graph RAG |
+| `bunx contexta graph stats` | Lihat statistik graph RAG |
+| `bunx contexta inspect <node_id>` | Lihat relasi spesifik dari sebuah node |
+| `bunx contexta impact <node_id>` | Lihat analisis dampak perubahan dari sebuah node |
+| `bunx contexta query --intent <intent> --entity <entitas>` | Melakukan query/pencarian intent arsitektural |
 
-### Contoh Query
-
-```bash
-# Retrieval-only
-rag-project query "jelaskan service SIIMUT"
-rag-project query "apa itu modular monolith?"
-rag-project query "command apa untuk setup development?"
-rag-project query "apa isi dari docs/?"
-
-# Dengan LLM (copy .env dulu)
-rag-project query "jelaskan modul daily report"
-rag-project query "apa known issue terkait performa?"
-```
-
-### Rebuild
+### Contoh Penggunaan
 
 ```bash
-rag-project rebuild
+# Scan/Update Graph
+bunx contexta scan
+
+# Mengecek siapa yang memanggil User Model
+bunx contexta inspect model-user
+
+# Mencari controller untuk entitas ImutData
+bunx contexta query --intent service_lookup --entity ImutData
 ```
 
 ---
@@ -239,7 +229,7 @@ rag-project rebuild
 | Cek log real-time | `php artisan pail` |
 | Docker up | `make up` |
 | Test app | `composer test` |
-| Query knowledge base | `rag-project query "<tanya>"` |
+| Query knowledge base | `bunx contexta inspect <entitas>` |
 
 ---
 

@@ -13,7 +13,7 @@ Setiap AI Agent wajib mematuhi aturan berikut sebelum melakukan tindakan modifik
 - **Baru baca source code yang relevan.** Setelah mendapatkan ID modul atau path yang relevan dari RAG, baru gunakan perintah baca file pada source code.
 - **Jangan scan folder yang dilarang:** `vendor/`, `node_modules/`, `storage/`, `bootstrap/cache/`, `public/build/`.
 - **Tulis "Needs Verification".** Jika menemukan informasi dalam RAG atau source code yang meragukan atau belum pasti, gunakan tag `Needs Verification`.
-- **Update docs & Rebuild RAG.** Jika terdapat perubahan arsitektur, keputusan penting, atau penambahan modul, wajib memperbarui dokumentasi dan me-rebuild RAG.
+- **Update docs & Rebuild RAG.** Jika terdapat perubahan arsitektur, keputusan penting, atau penambahan modul, wajib memperbarui dokumentasi dan me-rebuild RAG (`bunx contexta scan`).
 
 ---
 
@@ -46,16 +46,24 @@ Setiap AI Agent wajib mematuhi aturan berikut sebelum melakukan tindakan modifik
 
 ## 4. Command Penting
 
-### Query RAG
-Gunakan perintah ini untuk mencari informasi pada knowledge base:
+### Inspeksi Arsitektur & Relasi
+Gunakan perintah ini untuk memetakan arsitektur dan relasi (blast radius):
 ```bash
-rag-project query "pertanyaan"
+bunx contexta inspect <node_id>
+# atau
+bunx contexta impact <node_id>
 ```
 
-### Rebuild RAG
-Setiap kali ada dokumen yang diubah (misalnya `CHANGELOG.md`, `MODULES.md`, dsb.), wajib jalankan perintah berikut:
+### Query Arsitektur
+Gunakan perintah ini untuk mencari informasi spesifik pada knowledge base:
 ```bash
-rag-project rebuild
+bunx contexta query --intent <intent> --entity <entitas>
+```
+
+### Rebuild RAG / Scan Ulang
+Setiap kali ada struktur file/arsitektur yang berubah secara masif, wajib jalankan perintah berikut:
+```bash
+bunx contexta scan
 ```
 
 ---
@@ -63,23 +71,23 @@ rag-project rebuild
 ## 5. Pola Kerja Berdasarkan Situasi
 
 ### Contoh Prompt Awal untuk Agent
-Jika sebagai agent kamu baru diberikan task: *"Cek mengapa dashboard lambat"*. 
+Jika sebagai agent kamu baru diberikan task: *"Cek mengapa LaporanImut lambat"*. 
 Prompt internal yang kamu jalankan pertama kali seharusnya:
-*Eksekusi command:* `rag-project query "kenapa dashboard lambat atau issue performance dashboard"`
+*Eksekusi command:* `bunx contexta inspect model-laporanimut` (untuk melihat service/controller yang terkait).
 
 ### Pola Kerja untuk Debugging
-1. Query RAG terkait issue: `rag-project query "known issue terkait [fitur]"`
+1. Cek relasi file terkait: `bunx contexta inspect <entity>`
 2. Ekstrak nama Service atau Controller dari output.
 3. Baca source code dari path yang didapat.
 4. Fix bug pada file tersebut.
 
 ### Pola Kerja untuk Tambah Fitur
-1. Query RAG: `rag-project query "modul apa yang mengurus [fitur]"`
+1. Query RAG (jika perlu) atau cek relasi fitur saat ini dengan `bunx contexta inspect`.
 2. Identifikasi Module yang tepat.
-3. Buat service baru dan daftarkan pada `SERVICES.md`.
-4. Rebuild RAG.
+3. Buat service baru.
+4. Rebuild RAG dengan `bunx contexta scan`.
 
 ### Pola Kerja Setelah Ubah Docs / Kode
 1. Update `docs/CHANGELOG.md` jika perubahan rilis.
 2. Update metadata di `docs/MODULES.md` atau `docs/SERVICES.md` jika nambah logic penting.
-3. Jalankan command **Rebuild RAG**.
+3. Jalankan command **Rebuild RAG**: `bunx contexta scan`.

@@ -42,37 +42,33 @@ Project mendukung **ultracode workflows** untuk task skala besar:
 
 ---
 
-## 🐍 GraphRAG (Python Knowledge Base)
+## 🧠 contexta (Node/Bun Architectural RAG)
 
-**Lokasi**: `rag/`
+Sistem pemetaan arsitektur (Caveman Librarian) ringan berbasis Regex untuk memahami relasi file, class, dan entity di dalam proyek Laravel.
 
-Sistem RAG ringan berbasis Python untuk query knowledge base project dari dokumentasi.
+### Skrip / CLI
 
-### Skrip
-
-| Skrip | Fungsi |
+| Perintah | Fungsi |
 |---|---|
-| `rag/scripts/sync_docs.py` | Sync markdown dari `docs/` ke `docs/ai-agent/rag/input/` |
-| `rag/scripts/ingest.py` | Chunking + graph extraction |
-| `rag/scripts/query.py` | Query CLI (keyword scoring + LLM opsional) |
+| `bunx contexta scan` | Scan file proyek menggunakan `laravel.yml` dan ekstrak ke `graph.json` |
+| `bunx contexta graph stats` | Menampilkan statistik keseluruhan node dan edge |
+| `bunx contexta inspect <node_id>` | Menampilkan detail relasi dari suatu node (misal: `model-user`) |
+| `bunx contexta impact <node_id>` | Melakukan analisis dampak (blast radius) dari sebuah node |
+| `bunx contexta query --intent <intent> --entity <entitas>` | Melakukan pencarian arsitektural |
 
 ### Cara Pakai
 
 ```bash
-cd rag
-python3 -m venv venv
-source venv/bin/activate
-pip install -e .
+# Scan & Ingest (Rebuild Graph)
+bunx contexta scan
 
-# Sync + Ingest (Rebuild)
-rag-project rebuild
+# Inspect relasi suatu model
+bunx contexta inspect model-user
 
-# Query
-rag-project query "pertanyaan anda"
-rag-project graph "entity"
+# Cek dampak perubahan
+bunx contexta impact model-user --depth 2
 ```
 
-> Dokumentasi lengkap: [RAG_GUIDE.md](docs/RAG_GUIDE.md)
 > Panduan untuk AI Agent: [RAG_USAGE_FOR_AGENT.md](docs/RAG_USAGE_FOR_AGENT.md)
 
 ---
@@ -124,14 +120,13 @@ Hook diaktifkan di `.claude/settings.local.json`:
 
 ## 📝 Aturan untuk AI Agents
 
-1. **Jika task tentang SIIMUT**, pakai `rag-project` sebagai peta awal.
-2. **Jika task tentang RAG/parser/chunks/graph/query/ingest**, mulai dari `rag-project/`.
-3. **Jangan baca seluruh repo** kalau RAG/docs cukup.
-4. **Kalau RAG kurang jelas/gagal**, baru baca source file relevan. Source code tetap source of truth.
-5. **Jangan ubah logic aplikasi utama** tanpa persetujuan eksplisit.
-6. **Jangan scan** `app/` secara penuh, vendor, node_modules, storage, logs, build.
-7. **Jangan hardcode** secret, API key, atau credential.
-8. **Fokus dokumentasi** — semua perubahan docs wajib dicatat di CHANGELOG.
-9. **RAG rebuild** — setiap kali docs berubah, jalankan sync_docs + ingest.
-10. **Bahasa** — dokumentasi dalam Bahasa Indonesia, kecuali file teknis tertentu (SBOM, LICENSE).
-11. **Wajib baca panduan RAG** — lihat [AI_AGENT_USAGE.md](docs/AI_AGENT_USAGE.md) dan [RAG_WORKFLOW.md](docs/RAG_WORKFLOW.md).
+1. **Jika task tentang SIIMUT**, pakai `bunx contexta` sebagai peta awal.
+2. **Jangan baca seluruh repo** kalau hasil `contexta` cukup jelas.
+3. **Kalau `contexta` kurang jelas/gagal**, baru baca source file relevan. Source code tetap source of truth.
+4. **Jangan ubah logic aplikasi utama** tanpa persetujuan eksplisit.
+5. **Jangan scan** `app/` secara penuh, vendor, node_modules, storage, logs, build.
+6. **Jangan hardcode** secret, API key, atau credential.
+7. **Fokus dokumentasi** — semua perubahan docs wajib dicatat di CHANGELOG.
+8. **RAG rebuild** — setiap kali ada perubahan struktur besar, jalankan `bunx contexta scan`.
+9. **Bahasa** — dokumentasi dalam Bahasa Indonesia, kecuali file teknis tertentu (SBOM, LICENSE).
+10. **Wajib baca panduan RAG** — lihat [AI_AGENT_USAGE.md](docs/AI_AGENT_USAGE.md) dan [RAG_WORKFLOW.md](docs/RAG_WORKFLOW.md).

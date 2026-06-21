@@ -169,11 +169,11 @@ lengkap dengan konteks, alasan, dan dampak.
 
 ---
 
-## DEC-009: GraphRAG Ringan Berbasis Python
+## DEC-009: GraphRAG Ringan Berbasis Python (Deprecated)
 
 - **ID**: DEC-009
 - **Tanggal**: 2026-06-13
-- **Status**: Implemented (v0.3.0)
+- **Status**: Deprecated (Digantikan oleh DEC-010)
 - **Context**: Butuh sistem knowledge base untuk query cepat dari dokumentasi
   tanpa harus membaca puluhan file manual. Target: developer dan AI agents.
 - **Decision**: Bangun POC GraphRAG ringan berbasis Python dengan dependency
@@ -189,6 +189,25 @@ lengkap dengan konteks, alasan, dan dampak.
   - ✅ Bisa diintegrasikan dengan AI agents untuk context retrieval
   - ⚠️ Pattern-based extraction — terbatas pada kata kunci eksplisit
   - ⚠️ Source code tidak diindeks (belum)
+
+---
+
+## DEC-010: Migrasi RAG dari Python ke Node/Bun (contexta)
+
+- **ID**: DEC-010
+- **Tanggal**: 2026-06-22
+- **Status**: Implemented
+- **Context**: Solusi Python RAG sebelumnya (`rag-project`) hanya menscan file Markdown, sehingga tidak memiliki konteks arsitektur source code secara real-time. Proses manual dan kurang dalam.
+- **Decision**: Bermigrasi dari `rag-project` (Python) ke `contexta` (Node/Bun). `contexta` berjalan di level source code (menggunakan Regex ringan / Caveman Librarian) untuk mengekstrak hubungan Controller, Model, Service, dan lain-lain.
+- **Reason**:
+  - **Source Code indexing**: Lebih relevan untuk developer dan AI agent karena memetakan class dan file kode aktual.
+  - **Performa & Tooling**: Dijalankan dengan BunJS yang sangat cepat, cocok untuk project berbasis web stack.
+  - **Blast Radius**: Fitur impact analysis (`bunx contexta impact`) secara langsung meningkatkan produktivitas untuk refactoring.
+- **Impact**:
+  - ✅ Hemat penggunaan token LLM hingga 75% saat pencarian konteks.
+  - ✅ Ekstraksi langsung dari PHP/JS code, bukan hanya Markdown.
+  - ✅ AI agent mendapat "Peta Arsitektur" yang solid (1.500+ entitas).
+  - ⚠️ Mengharuskan `bun` terinstal di environment developer.
 
 ---
 
