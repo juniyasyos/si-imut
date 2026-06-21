@@ -663,7 +663,7 @@ class TableViewDomain
         }
 
         return $scorableResponses->every(
-            fn($fieldResponse): bool => (float) $fieldResponse->compliance_score > 0
+            fn($fieldResponse): bool => (float) $fieldResponse->compliance_score >= 100
         ) ? 1 : 0;
     }
 
@@ -721,7 +721,9 @@ class TableViewDomain
     {
         return in_array($fieldType, [
             'boolean',
+            'select',
             'single_select',
+            'radio',
             'multi_select',
             'conditional_trigger',
             'compliance_checker',
