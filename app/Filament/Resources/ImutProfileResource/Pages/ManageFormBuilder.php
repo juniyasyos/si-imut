@@ -54,6 +54,8 @@ class ManageFormBuilder extends Page implements HasForms
 
         $this->canForceUpdate = $this->evaluateCanForceUpdate();
 
+        $this->record->loadMissing('imutData');
+
         // Check both path parameter and query parameter for template selection
         // Path parameter takes precedence: /form-builder/349
         // Query parameter fallback: ?templateId=349 (for backward compatibility)
@@ -61,7 +63,7 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Determine which template to load. Load minimal relations for permission checks.
         if ($requestedTemplateId) {
-            $this->formTemplate = \App\Models\FormTemplate::with('imutProfile.imutData')
+            $this->formTemplate = \App\Models\FormTemplate::with(['imutProfile.imutData', 'formFields.options'])
                 ->where('id', $requestedTemplateId)
                 ->where('imut_profile_id', $record->id)
                 ->first();
@@ -70,7 +72,7 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Fallback to active template if not found or not specified
         if (!$this->formTemplate) {
-            $this->formTemplate = $record->activeFormTemplate?->load('imutProfile.imutData');
+            $this->formTemplate = $record->activeFormTemplate?->load(['imutProfile.imutData', 'formFields.options']);
             $this->selectedTemplateId = $this->formTemplate?->id;
         }
 
@@ -304,9 +306,9 @@ class ManageFormBuilder extends Page implements HasForms
 
         // Reload selected template
         if ($this->selectedTemplateId) {
-            $this->formTemplate = \App\Models\FormTemplate::with('imutProfile.imutData')->find($this->selectedTemplateId);
+            $this->formTemplate = \App\Models\FormTemplate::with(['imutProfile.imutData', 'formFields.options'])->find($this->selectedTemplateId);
         } else {
-            $this->formTemplate = $this->record?->activeFormTemplate?->load('imutProfile.imutData') ?? $this->formTemplate;
+            $this->formTemplate = $this->record?->activeFormTemplate?->load(['imutProfile.imutData', 'formFields.options']) ?? $this->formTemplate;
             $this->selectedTemplateId = $this->formTemplate?->id;
         }
 
