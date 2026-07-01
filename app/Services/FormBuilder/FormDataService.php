@@ -31,45 +31,49 @@ class FormDataService
 
     private function loadFromFormTemplate(FormTemplate $formTemplate): array
     {
-        $fields = $formTemplate->formFields->map(function ($field) {
-            $options = $field->options->map(function ($option) {
+        $cacheKey = \App\Support\CacheKey::formTemplateData($formTemplate->id);
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addDays(30), function () use ($formTemplate) {
+            $fields = $formTemplate->formFields->map(function ($field) {
+                $options = $field->options->map(function ($option) {
+                    return [
+                        'label' => $option->option_text, // Map option_text to label for UI
+                        'value' => $option->option_value,
+                        'is_correct' => $option->is_correct ?? true, // Boolean compliance
+                    ];
+                })->toArray();
+
                 return [
-                    'label' => $option->option_text, // Map option_text to label for UI
-                    'value' => $option->option_value,
-                    'is_correct' => $option->is_correct ?? true, // Boolean compliance
+                    'id' => $field->id,
+                    'field_key' => $field->field_key,
+                    'field_label' => $field->field_label, // Fixed: EnhancedFormField uses field_label column
+                    'field_description' => $field->field_description,
+                    'field_type' => $field->field_type ?: 'text', // Fallback for empty field_type
+                    'validation_config' => $field->validation_config,
+                    'history_suggestions' => $this->formatHistorySuggestionsForUI($field->history_suggestions),
+                    'compliance_weight' => $field->compliance_weight,
+                    'is_critical_field' => $field->is_critical_field,
+                    'conditional_logic' => $field->conditional_logic,
+                    'compliance_rules' => $field->compliance_rules, // Add compliance_rules
+                    'has_conditional_logic' => !empty($field->conditional_logic), // Add toggle state based on data
+                    'time_format' => $field->time_format ?? 'HM',
+                    'default_valid_duration' => $field->default_valid_duration ?? 480,
+                    'options' => $options,
+                    'order_index' => $field->order_index,
                 ];
             })->toArray();
 
             return [
-                'id' => $field->id,
-                'field_key' => $field->field_key,
-                'field_label' => $field->field_label, // Fixed: EnhancedFormField uses field_label column
-                'field_description' => $field->field_description,
-                'field_type' => $field->field_type ?: 'text', // Fallback for empty field_type
-                'validation_config' => $field->validation_config,
-                'history_suggestions' => $this->formatHistorySuggestionsForUI($field->history_suggestions),
-                'compliance_weight' => $field->compliance_weight,
-                'is_critical_field' => $field->is_critical_field,
-                'conditional_logic' => $field->conditional_logic,
-                'compliance_rules' => $field->compliance_rules, // Add compliance_rules
-                'has_conditional_logic' => !empty($field->conditional_logic), // Add toggle state based on data
-                'time_format' => $field->time_format ?? 'HM',
-                'default_valid_duration' => $field->default_valid_duration ?? 480,
-                'options' => $options,
-                'order_index' => $field->order_index,
+                'title' => $formTemplate->title,
+                'description' => $formTemplate->description,
+                // include validity window so DatePicker components can display existing values
+                'valid_from' => $formTemplate->valid_from,
+                'valid_until' => $formTemplate->valid_until,
+                'compliance_method' => $formTemplate->compliance_method,
+                'auto_fail_on_critical' => $formTemplate->auto_fail_on_critical,
+                'fields' => $fields,
             ];
-        })->toArray();
-
-        return [
-            'title' => $formTemplate->title,
-            'description' => $formTemplate->description,
-            // include validity window so DatePicker components can display existing values
-            'valid_from' => $formTemplate->valid_from,
-            'valid_until' => $formTemplate->valid_until,
-            'compliance_method' => $formTemplate->compliance_method,
-            'auto_fail_on_critical' => $formTemplate->auto_fail_on_critical,
-            'fields' => $fields,
-        ];
+        });
     }
 
     private function formatHistorySuggestionsForUI(mixed $suggestions): array

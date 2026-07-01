@@ -345,6 +345,7 @@ class ManageFormBuilder extends Page implements HasForms
             if ($this->formTemplate) {
                 $this->formTemplate->formFields()->delete();
                 $this->formTemplate->update(['scoring_config' => null]);
+                \Illuminate\Support\Facades\Cache::forget(\App\Support\CacheKey::formTemplateData($this->formTemplate->id));
             }
 
             DB::commit();

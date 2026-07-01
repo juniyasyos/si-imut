@@ -258,6 +258,14 @@ final class CacheKey
     }
 
     /**
+     * Cache key untuk form template data (Form Builder)
+     */
+    public static function formTemplateData(int $templateId): string
+    {
+        return "form:template:data:{$templateId}";
+    }
+
+    /**
      * Utility: menormalkan array (sort rekursif) supaya JSON/hash stabil.
      */
     private static function stableArray(array $array): array

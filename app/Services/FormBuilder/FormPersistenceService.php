@@ -57,6 +57,9 @@ class FormPersistenceService
 
         // Reconcile fields with incoming payload in a non-destructive way
         $this->reconcileEnhancedFields($formTemplate, $data['fields'] ?? [], $hasExistingResponses);
+
+        // Invalidate cache for this template
+        \Illuminate\Support\Facades\Cache::forget(\App\Support\CacheKey::formTemplateData($formTemplate->id));
     }
 
     private function validateTemplateDateWindow(FormTemplate $formTemplate, array $data): void
@@ -168,6 +171,9 @@ class FormPersistenceService
             $data['fields'] ?? [],
             $this->hasExistingResponsesForTemplate($formTemplate)
         );
+
+        // Invalidate cache for this template
+        \Illuminate\Support\Facades\Cache::forget(\App\Support\CacheKey::formTemplateData($formTemplate->id));
     }
 
     /**
