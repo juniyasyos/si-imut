@@ -257,18 +257,24 @@ class FormTemplateVersionService
      */
     private function replicateFormFields(FormTemplate $baseTemplate, FormTemplate $newTemplate): void
     {
-        $baseTemplate->formFields->each(function ($field) use ($newTemplate) {
+        $now = now();
+        $baseTemplate->formFields->each(function ($field) use ($newTemplate, $now) {
             $newField = $field->replicate();
             $newField->form_template_id = $newTemplate->id;
             $newField->save();
 
             // Replicate field options if they exist
-            if ($field->relationLoaded('options')) {
-                $field->options->each(function ($option) use ($newField) {
-                    $newOption = $option->replicate();
-                    $newOption->enhanced_form_field_id = $newField->id;
-                    $newOption->save();
-                });
+            if ($field->relationLoaded('options') && $field->options->isNotEmpty()) {
+                $optionsData = $field->options->map(function ($option) use ($newField, $now) {
+                    $arr = $option->getAttributes();
+                    unset($arr['id']); // Remove primary key
+                    $arr['enhanced_form_field_id'] = $newField->id;
+                    $arr['created_at'] = $now;
+                    $arr['updated_at'] = $now;
+                    return $arr;
+                })->toArray();
+
+                \App\Models\FormFieldOption::insert($optionsData);
             }
         });
     }
