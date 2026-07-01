@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Juniyasyos\IamClient\Models\UnitKerja as IamUnitKerja;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Juniyasyos\FilamentMediaManager\Models\Folder;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -24,61 +23,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Folder|null $folder
  * @property-read \App\Models\LaporanImut|null $laporanImut
  */
-class UnitKerja extends Model
+class UnitKerja extends IamUnitKerja
 {
-    use HasFactory, LogsActivity, SoftDeletes, HasUniqueWithSoftDeletes;
+    use HasFactory, LogsActivity, HasUniqueWithSoftDeletes;
 
-    /**
-     * Table name.
-     *
-     * @var string
-     */
-    protected $table = 'unit_kerja';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'unit_name',
-        'description',
-        'slug',
-    ];
-
-    /**
-     * The attributes that are hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function ($model) {
-            $model->slug = \Illuminate\Support\Str::slug($model->unit_name);
-        });
-    }
-
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'deleted_at' => 'datetime',
-    ];
 
     /**
      * Activity log configuration.
