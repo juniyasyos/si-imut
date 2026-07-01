@@ -120,6 +120,10 @@ class ImutCapaianWidget extends ApexChartWidget
 
         $this->selectedLaporanId = $selectedLaporan->id;
 
+        $selectedLaporan->loadMissing([
+            'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
+        ]);
+
         $categories = $this->getChartService()->getCategories();
 
         if (!empty($selectedCategories)) {
@@ -191,16 +195,13 @@ class ImutCapaianWidget extends ApexChartWidget
     {
         $statuses = $this->filterFormData['status'] ?? [LaporanImut::STATUS_COMPLETE];
 
-        $cacheKey = CacheKey::imutLaporans() . '_' . implode('_', $statuses);
+        $cacheKey = CacheKey::imutLaporans() . '_basic_' . implode('_', $statuses);
 
         return Cache::remember(
             $cacheKey,
             now()->addMinutes(5),
             function () use ($statuses) {
-                return LaporanImut::with([
-                    'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-                ])
-                    ->whereIn('status', $statuses)
+                return LaporanImut::whereIn('status', $statuses)
                     ->orderBy('assessment_period_start', 'desc')
                     ->get();
             }
