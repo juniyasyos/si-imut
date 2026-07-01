@@ -14,12 +14,17 @@ class FormDataService
     {
         // If templateId provided, load that specific template
         if ($templateId) {
-            $formTemplate = FormTemplate::where('id', $templateId)
+            $formTemplate = FormTemplate::with('formFields.options')
+                ->where('id', $templateId)
                 ->where('imut_profile_id', $record->id)
                 ->first();
         } else {
             // Fallback to active template
-            $formTemplate = $record->activeFormTemplate;
+            $formTemplate = clone $record;
+            $formTemplate = $formTemplate->activeFormTemplate;
+            if ($formTemplate) {
+                $formTemplate->loadMissing('formFields.options');
+            }
         }
 
         if (!$formTemplate) {
