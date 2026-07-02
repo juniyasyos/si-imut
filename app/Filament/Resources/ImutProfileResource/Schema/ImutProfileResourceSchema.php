@@ -117,7 +117,7 @@ class ImutProfileResourceSchema extends ImutProfileResource
                             ->maxLength(255),
 
                         ToggleButtons::make('indicator_type')
-                            ->label('Tipe Indikator')
+                            ->label('Jenis Indikator')
                             ->disabled(fn(?Model $record) => self::shouldDisableProfileField($record))
                             ->options([
                                 'process' => 'Proses',
@@ -147,7 +147,7 @@ class ImutProfileResourceSchema extends ImutProfileResource
                 ->collapsible()
                 ->schema([
                     RichEditor::make('rationale')
-                        ->label('Rasional')
+                        ->label('Dasar Pemikiran')
                         ->disabled(fn(?Model $record) => self::shouldDisableProfileField($record))
                         ->toolbarButtons([
                             'bold',
