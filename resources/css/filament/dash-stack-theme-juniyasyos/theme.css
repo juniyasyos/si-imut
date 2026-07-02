@@ -603,7 +603,7 @@
 /* Button Component Start */
 .fi-btn {
     @apply rounded-md;
-    @apply py-1 px-2.5 sm:py-1.5 sm:px-3;
+    @apply py-0.5 px-2 sm:py-1 sm:px-2.5;
     @apply text-xs sm:text-sm;
 
     .fi-btn-label {
