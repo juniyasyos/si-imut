@@ -391,7 +391,7 @@
                 </div>
 
                 <div class="pt-2 border-t border-slate-200 mt-2">
-                    Dari <strong>{{ $totalIndikator }}</strong> indikator mutu nasional yang dinilai,
+                    Dari <strong>{{ $totalIndikator }}</strong> indikator mutu yang dinilai,
                     terdapat <strong class="text-red-700">
                         {{ $notAchievedCount }}
                     </strong> indikator yang belum mencapai target dan
