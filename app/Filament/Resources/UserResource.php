@@ -155,6 +155,7 @@ class UserResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->modifyQueryUsing(fn(Builder $query) => $query->with([
                 'roles:id,name,label',
                 'unitKerjas:id,unit_name',

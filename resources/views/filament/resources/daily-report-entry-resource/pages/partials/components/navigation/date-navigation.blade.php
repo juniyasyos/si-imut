@@ -9,7 +9,7 @@
 
     <!-- Date List -->
     <!-- Skeleton Loading -->
-    <div wire:loading class="w-full space-y-2">
+    <div wire:loading wire:target="previousMonth, nextMonth, selectMonth" class="w-full space-y-2">
         @for ($i = 0; $i < 6; $i++)
             <div
                 class="w-full animate-pulse rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
@@ -35,7 +35,7 @@
     </div>
 
     <!-- Actual Date List -->
-    <div wire:loading.remove
+    <div wire:loading.remove wire:target="previousMonth, nextMonth, selectMonth"
         class="flex flex-row lg:flex-col flex-nowrap overflow-x-auto lg:overflow-x-hidden overflow-y-hidden lg:overflow-y-auto space-x-2 lg:space-x-0 lg:space-y-1 max-h-none lg:max-h-[600px]">
         @foreach($daysInMonth as $day)
             @php
@@ -47,14 +47,7 @@
                 $isSelected = $selectedDate === $dateString;
 
                 // Check if any indicator has data for this date
-                $hasAnyData = false;
-                foreach ($indicators as $indicator) {
-                    $cellData = $matrixData[$indicator['id']][$day] ?? null;
-                    if ($cellData && ($cellData['has_data'] ?? false)) {
-                        $hasAnyData = true;
-                        break;
-                    }
-                }
+                $hasAnyData = $daysWithData[$day] ?? false;
 
                 // Locked = past date beyond the allowed input window
                 $backDays = \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays();

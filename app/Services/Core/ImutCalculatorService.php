@@ -24,7 +24,8 @@ class ImutCalculatorService
 
         $percentage = ($numerator / $denominator) * 100;
 
-        return ceil($percentage * 100) / 100;
+        $factor = pow(10, $precision);
+        return ceil($percentage * $factor) / $factor;
     }
 
     /**

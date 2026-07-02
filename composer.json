@@ -73,6 +73,8 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "App\\Kernel\\": "app/Kernel/",
+            "App\\Modules\\": "app/Modules/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Juniyasyos\\FilamentMediaManager\\": "packages/juniyasyos/filament-media-manager/src/"

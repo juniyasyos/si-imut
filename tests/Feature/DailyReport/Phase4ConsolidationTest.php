@@ -7,7 +7,7 @@ use App\Models\EnhancedFormField;
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
 use App\Models\User;
-use App\Services\DailyReport\DailyReportService;
+use App\Modules\DailyReport\Contracts\DailyReportInterface;
 use Carbon\Carbon;
 use Tests\TestCase;
 
@@ -22,12 +22,16 @@ use Tests\TestCase;
  */
 class Phase4ConsolidationTest extends TestCase
 {
-    private DailyReportService $dailyReportService;
+    private DailyReportInterface $dailyReportService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->dailyReportService = app(DailyReportService::class);
+        $this->dailyReportService = app(DailyReportInterface::class);
+
+        // Create Spatie permissions required by the tests
+        \Spatie\Permission\Models\Permission::findOrCreate('view_by_unit_kerja_imut::data');
+        \Spatie\Permission\Models\Permission::findOrCreate('view_all_data_imut::data');
     }
 
     /**
@@ -47,7 +51,7 @@ class Phase4ConsolidationTest extends TestCase
             ->has(EnhancedFormField::factory()->count(3), 'formFields')
             ->create();
 
-        $template->imutProfile->imutData->unitKerjas()->attach($unitKerja->id);
+        $template->imutProfile->imutData->unitKerja()->attach($unitKerja->id);
 
         // Prepare form data
         $formData = [];
@@ -120,7 +124,7 @@ class Phase4ConsolidationTest extends TestCase
             ->has(EnhancedFormField::factory()->count(1), 'formFields')
             ->create();
         
-        $template->imutProfile->imutData->unitKerjas()->attach($unauthorizedUnitKerja->id);
+        $template->imutProfile->imutData->unitKerja()->attach($unauthorizedUnitKerja->id);
 
         $formData = [];
         foreach ($template->formFields as $field) {
@@ -155,7 +159,7 @@ class Phase4ConsolidationTest extends TestCase
             ->has(EnhancedFormField::factory()->count(1), 'formFields')
             ->create();
         
-        $template->imutProfile->imutData->unitKerjas()->attach($otherUnitKerja->id);
+        $template->imutProfile->imutData->unitKerja()->attach($otherUnitKerja->id);
 
         $formData = [];
         foreach ($template->formFields as $field) {
@@ -189,7 +193,7 @@ class Phase4ConsolidationTest extends TestCase
             ->has(EnhancedFormField::factory()->state(['field_type' => 'rating_scale'])->count(1), 'formFields')
             ->create();
 
-        $template->imutProfile->imutData->unitKerjas()->attach($unitKerja->id);
+        $template->imutProfile->imutData->unitKerja()->attach($unitKerja->id);
 
         $formData = [];
         foreach ($template->formFields as $field) {
@@ -229,7 +233,7 @@ class Phase4ConsolidationTest extends TestCase
             ->has(EnhancedFormField::factory()->count(1), 'formFields')
             ->create();
 
-        $template->imutProfile->imutData->unitKerjas()->attach($unitKerja->id);
+        $template->imutProfile->imutData->unitKerja()->attach($unitKerja->id);
 
         $formData = [];
         foreach ($template->formFields as $field) {

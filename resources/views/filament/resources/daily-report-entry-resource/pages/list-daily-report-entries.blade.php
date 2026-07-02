@@ -7,8 +7,8 @@
     --}}
 
     <div x-data="{
-    selectedDate: '{{ $selectedDate ?: now()->format('Y-m-d') }}',
-    selectedMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
+    selectedDate: @entangle('selectedDate').live,
+    selectedMonth: @entangle('selectedMonth').live,
     currentDate: new Date('{{ ($selectedMonth ?: now()->format('Y-m')) }}-01'),
 
     isMobile: false,
@@ -19,7 +19,6 @@
     slideOverRequest: null,
 
     monitoringSearchQuery: '',
-    monitoringMonth: '{{ $selectedMonth ?: now()->format('Y-m') }}',
 
     // Client-side search/filter state (no server round-trip needed)
     searchQuery: '',
@@ -34,13 +33,25 @@
         this.initResize();
         this.selectToday();
         this.ensureValidSelectedDate();
-        this.monitoringMonth = this.selectedMonth;
 
         this.$watch('selectedDate', (newDate) => {
             if (newDate) {
                 $wire.call('loadAllReportCounts');
             }
         });
+    },
+
+    isCurrentOrFutureMonth() {
+        const current = new Date();
+        const selected = new Date(this.selectedMonth + '-01');
+
+        return (
+            selected.getFullYear() > current.getFullYear() ||
+            (
+                selected.getFullYear() === current.getFullYear() &&
+                selected.getMonth() >= current.getMonth()
+            )
+        );
     },
 
     initResize() {
@@ -243,7 +254,7 @@
     },
 
     getMonitoringPeriodText() {
-        const date = new Date(this.monitoringMonth + '-01');
+        const date = new Date(this.selectedMonth + '-01');
 
         const monthName = date.toLocaleDateString('id-ID', {
             month: 'long',
@@ -254,39 +265,33 @@
     },
 
     changeMonitoringPeriod(direction) {
-        const date = new Date(this.monitoringMonth + '-01');
+        const date = new Date(this.selectedMonth + '-01');
 
         if (direction === 'prev') {
             date.setMonth(date.getMonth() - 1);
         } else if (direction === 'next') {
             date.setMonth(date.getMonth() + 1);
         } else if (direction === 'current') {
-            this.monitoringMonth = '{{ now()->format('Y-m') }}';
-            this.loadMonitoringData();
+            this.isLoadingMonth = true;
+            $wire.call('selectMonth', '{{ now()->format('Y-m') }}').then(() => {
+                this.isLoadingMonth = false;
+            }).catch(() => {
+                this.isLoadingMonth = false;
+            });
             return;
         }
 
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
+        const newPeriod = `${year}-${month}`;
 
-        this.monitoringMonth = `${year}-${month}`;
-        this.loadMonitoringData();
+        this.isLoadingMonth = true;
+        $wire.call('selectMonth', newPeriod).then(() => {
+            this.isLoadingMonth = false;
+        }).catch(() => {
+            this.isLoadingMonth = false;
+        });
     },
-
-    loadMonitoringData() {
-        this.isDateLoading = true;
-
-        $wire.call('loadMonitoringForPeriod', this.monitoringMonth)
-            .then(data => {
-                this.monitoringData = data;
-            })
-            .catch(error => {
-                console.error('[Monitoring] Gagal memuat data monitoring:', error);
-            })
-            .finally(() => {
-                this.isDateLoading = false;
-            });
-    }
 }" x-cloak>
 
         {{-- Full Screen Loading Overlay --}}
@@ -306,7 +311,8 @@
                 </div>
 
                 {{-- Main Content: Indicators --}}
-                <div class="lg:col-span-9" x-data="{ 
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 lg:col-span-9 overflow-y-auto space-x-2"
+                    x-data="{ 
                     contentSelectedDate: @entangle('selectedDate'),
                     
                     init() {
@@ -329,6 +335,7 @@
                 }">
 
                     <div wire:loading
+                        wire:target="previousMonth, nextMonth, selectMonth, selectDate, loadAllReportCounts, indicatorSearch, statusFilter, goToIndicatorPage"
                         class="bg-white w-full dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                         <div
                             class="flex animate-pulse pb-2 mb-2 border-b border-slate-200 dark:border-slate-700 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -366,71 +373,130 @@
                     </div>
 
                     <div wire:loading.remove
-                        class="w-full h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                        @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
+                        wire:target="previousMonth, nextMonth, selectMonth, selectDate, loadAllReportCounts, indicatorSearch, statusFilter, goToIndicatorPage"
+                        class="h-full p-6  lg:space-x-0 lg:space-y-1 max-h-none lg:max-h-[800px]">
+                        <div class="sticky top-0 z-10 bg-white dark:bg-slate-800">
+                            @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
+    
+                            {{-- Search & Filter Bar --}}
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white/95 pb-4 backdrop-blur dark:bg-slate-800/95">
+                                {{-- Livewire Search --}}
+                                <div class="relative w-full sm:w-64 mb-4">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        @svg("heroicon-o-magnifying-glass", "h-4 w-4 text-slate-400")
+                                    </div>
+                                    <input type="text" wire:model.live.debounce.300ms="indicatorSearch"
+                                        placeholder="Cari indikator..."
+                                        class="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                                </div>
+    
+                                {{-- Status Filter --}}
+                                <div class="flex items-center gap-2">
+                                    <select wire:model.live="statusFilter"
+                                        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                        <option value="all">Semua Status</option>
+                                        <option value="pending">Belum Diisi</option>
+                                        <option value="done">Sudah Diisi</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
-                        {{-- Indicators List with Server-Side Filtering --}}
-                        <div class="space-y-4 max-h-[600px] overflow-y-auto">
-
-                            <template x-for="(indicator, index) in filteredIndicators" :key="indicator.id">
+                        {{-- Indicators List (Livewire server-side) --}}
+                        <div class="space-y-3">
+                            @forelse ($filteredIndicators as $indicator)
                                 <div
-                                    class="indicator-card mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+                                    class="indicator-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-start justify-between gap-3">
                                                 <div class="min-w-0 flex-1">
-                                                    <div>
-                                                        <h3 class="text-sm font-semibold leading-snug text-slate-900 dark:text-white"
-                                                            x-text="indicator.title"></h3>
-
-                                                        <div class="flex items-center gap-2 mt-1">
-                                                            <span
-                                                                class="text-xs italic text-gray-500 dark:text-gray-400">profile
-                                                                version:</span>
-                                                            <span
-                                                                class="inline-flex items-center gap-1 text-xs italic text-gray-500 dark:text-gray-400">
-                                                                @svg("heroicon-m-document-text", "w-3 h-3")
-                                                                <span
-                                                                    x-text="formatImutVersion(indicator.imut_profile_version)"></span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mt-4 flex flex-wrap items-center gap-2">
-                                                        <span x-show="indicator.category"
-                                                            class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                                                            :class="getCategoryColor(indicator.category)">
-                                                            @svg("heroicon-m-tag", "h-3 w-3 hidden sm:block")
-                                                            <span x-text="indicator.category"></span>
+                                                    <h3
+                                                        class="text-sm font-semibold leading-snug text-slate-900 dark:text-white">
+                                                        {{ $indicator['title'] }}
+                                                    </h3>
+                                                    <div class="mt-1 flex items-center gap-2">
+                                                        <span
+                                                            class="text-xs italic text-gray-500 dark:text-gray-400">profile
+                                                            version:</span>
+                                                        <span
+                                                            class="inline-flex items-center gap-1 text-xs italic text-gray-500 dark:text-gray-400">
+                                                            @svg("heroicon-m-document-text", "w-3 h-3")
+                                                            {{ $indicator['imut_profile_version'] ?? '-' }}
                                                         </span>
                                                     </div>
+                                                    @if (!empty($indicator['category']))
+                                                        <div class="mt-3">
+                                                            <span
+                                                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {{ $categoryColors[$indicator['category']] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
+                                                                @svg("heroicon-m-tag", "h-3 w-3 hidden sm:block")
+                                                                {{ $indicator['category'] }}
+                                                            </span>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
 
                                             <div class="mt-2">
+                                                @php $count = $reportCounts[$indicator['id']] ?? 0; @endphp
                                                 <span
-                                                    :class="($wire.reportCounts[indicator.id] ?? 0) > 0
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                                    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'"
-                                                    class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium">
+                                                    class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium {{ $count > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300' }}">
                                                     @svg("heroicon-m-document-text", "h-3 w-3 hidden sm:block")
-                                                    <span
-                                                        x-text="($wire.reportCounts[indicator.id] ?? 0) + ' laporan'"></span>
+                                                    {{ $count }} laporan
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div class="flex shrink-0 gap-2 lg:justify-end">
+                                        {{-- Action buttons — still use Alpine for slide-over --}}
+                                        <div class="flex shrink-0 gap-2 lg:justify-end"
+                                            x-data="{ indicator: @js($indicator) }">
                                             @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.action-buttons')
                                         </div>
                                     </div>
                                 </div>
-                            </template>
-
-
-                            <div x-show="!filteredIndicators || filteredIndicators.length === 0">
+                            @empty
                                 @include('filament.resources.daily-report-entry-resource.pages.partials.components.indicators.indicators-empty-state')
-                            </div>
+                            @endforelse
+                        </div>
+
+                        {{-- Pagination Controls --}}
+                        <div class="pb-10 pt-2">
+                            @if ($indicatorTotalPages > 1)
+                                <div
+                                    class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-700">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                                        Halaman {{ $indicatorPage }} dari {{ $indicatorTotalPages }}
+                                        &bull; {{ $indicatorTotal }} indikator
+                                    </span>
+
+                                    <div class="flex items-center gap-1">
+                                        {{-- Prev --}}
+                                        <button wire:click="goToIndicatorPage({{ $indicatorPage - 1 }})"
+                                            @disabled($indicatorPage <= 1)
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
+                                            @svg("heroicon-m-chevron-left", "h-4 w-4")
+                                        </button>
+
+                                        {{-- Page numbers --}}
+                                        @for ($p = max(1, $indicatorPage - 2); $p <= min($indicatorTotalPages, $indicatorPage + 2); $p++)
+                                                                    <button wire:click="goToIndicatorPage({{ $p }})"
+                                                                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-medium transition
+                                                                                                                                                                                                        {{ $p === $indicatorPage
+                                            ? 'border-primary-500 bg-primary-600 text-white'
+                                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700' }}">
+                                                                        {{ $p }}
+                                                                    </button>
+                                        @endfor
+
+                                        {{-- Next --}}
+                                        <button wire:click="goToIndicatorPage({{ $indicatorPage + 1 }})"
+                                            @disabled($indicatorPage >= $indicatorTotalPages)
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
+                                            @svg("heroicon-m-chevron-right", "h-4 w-4")
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

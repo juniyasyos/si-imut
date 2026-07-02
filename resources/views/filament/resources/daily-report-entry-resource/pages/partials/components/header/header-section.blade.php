@@ -42,9 +42,5 @@
                 </button>
             </div>
         </div>
-
-        <div >
-            @include('filament.resources.daily-report-entry-resource.pages.partials.components.header.filters-section')
-        </div>
     </div>
 </div>

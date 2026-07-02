@@ -3,33 +3,24 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
-use App\Filament\Pages\IAMLogin;
 use App\Filament\Pages\Login;
-use App\Filament\Plugins\PanelTheme;
 use App\Filament\Resources\LaporanImutResource\Widgets\ImutDataCompletionChart;
 use App\Filament\Resources\LaporanImutResource\Widgets\UnitKerjaCompletionChart;
 use App\Filament\Widgets\AccountWidget;
-use App\Filament\Widgets\FilamentInfoWidget;
 use App\Filament\Widgets\ImutCapaianUnitKerjaWidget;
 use App\Filament\Widgets\LaporanLatestWidget;
-use App\Filament\Widgets\LaporanUnitWidget;
-use App\Livewire\TtdUploadComponent;
 use App\Livewire\CustomPersonalInfo;
-use App\Models\UnitKerja;
-use App\Models\User;
+use App\Livewire\TtdUploadComponent;
 use App\Settings\KaidoSetting;
 use Asmit\ResizedColumn\ResizedColumnPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
-use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
-use DutchCodingCompany\FilamentSocialite\Provider;
-use Filament\Forms\Components\FileUpload;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -105,10 +96,15 @@ class AdminPanelProvider extends PanelProvider
             ->plugins(
                 $this->getPlugins()
             )
-            ->databaseNotifications();
+            ->databaseNotifications()
+            ->renderHook(
+                PanelsRenderHook::FOOTER,
+                fn () => view('filament.global-footer')
+            )
+            ->spa();
 
         // Only register login page if SSO is disabled
-        if (!$ssoEnabled) {
+        if (! $ssoEnabled) {
             $panel->login(Login::class);
         }
 

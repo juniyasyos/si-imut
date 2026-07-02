@@ -31,6 +31,29 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     public array $reportCounts = [];
     public array $filteredIndicators = [];
 
+    // ========================================
+    // PAGINATION: Indicator List
+    // ========================================
+    const PER_PAGE = 10;
+
+    public int  $indicatorPage        = 1;
+    public int  $indicatorTotalPages  = 1;
+    public int  $indicatorTotal       = 0;
+
+    // ========================================
+    // PAGINATION: Monitoring List
+    // ========================================
+    public int  $monitoringPage       = 1;
+    public int  $monitoringTotalPages = 1;
+    public int  $monitoringTotal      = 0;
+    public array $pagedMonitoringTemplates = [];
+
+    // ========================================
+    // SEARCH: Livewire-driven (replace Alpine client-side)
+    // ========================================
+    public string $indicatorSearch   = '';
+    public string $monitoringSearch  = '';
+
     public function __construct()
     {
         $this->monitoringService = app(DailyReportMonitoringService::class);
@@ -114,9 +137,6 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         $this->loadMatrixData();
 
         $this->loadAllReportCounts();
-
-        // Compute filtered indicators for display
-        $this->computeFilteredIndicators();
 
         \Log::info('📦 [DailyReport] Matrix data loaded', [
             'source' => 'mount',
@@ -299,6 +319,11 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
         );
         $this->monitoringTemplatesLoadedForMonth = $this->selectedMonth;
 
+        // Reset monitoring pagination & recompute paged data
+        $this->monitoringPage   = 1;
+        $this->monitoringSearch = '';
+        $this->computePagedMonitoringTemplates();
+
         \Log::info('📊 [Monitoring] Templates loaded', [
             'month' => $this->selectedMonth,
             'count' => count($this->monitoringTemplates),
@@ -452,19 +477,18 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     }
 
     /**
-     * Get filtered indicators based on search query and status filter
-     * Server-side filtering to improve performance
-     * Updated whenever searchQuery or statusFilter changes
+     * Compute filtered + paginated indicators.
+     * Triggered by: search, statusFilter change, page change, month navigation.
      */
     public function computeFilteredIndicators(): void
     {
         $filtered = collect($this->indicators);
 
-        // Filter by search query (title or category)
-        if ($this->searchQuery) {
-            $query = strtolower($this->searchQuery);
+        // Filter by Livewire search (replaces Alpine client-side search)
+        if ($this->indicatorSearch) {
+            $query = strtolower($this->indicatorSearch);
             $filtered = $filtered->filter(function ($indicator) use ($query) {
-                $titleMatch = str_contains(strtolower($indicator['title']), $query);
+                $titleMatch    = str_contains(strtolower($indicator['title']), $query);
                 $categoryMatch = isset($indicator['category']) && str_contains(strtolower($indicator['category']), $query);
                 return $titleMatch || $categoryMatch;
             });
@@ -472,43 +496,110 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
 
         // Filter by status
         if ($this->statusFilter && $this->statusFilter !== 'all') {
-            $date = new \DateTime($this->selectedDate);
-            $day = (int) $date->format('d');
+            $today = now()->startOfDay();
+            $cellDate = \Carbon\Carbon::parse($this->selectedDate)->startOfDay();
+            $backDays = \App\Services\DailyReport\CachedSettingsService::getBackDataEntryDays();
+            $startAllowedDate = $today->copy()->subDays($backDays)->startOfDay();
+            
+            $isPastOrToday = $cellDate->lte($today);
+            $isWithinWindow = $cellDate->gte($startAllowedDate) && $isPastOrToday;
+            
+            $emptyState = !$isPastOrToday ? 'disabled' : ($isWithinWindow ? 'pending' : 'overdue');
 
-            $filtered = $filtered->filter(function ($indicator) use ($day) {
-                $cellData = $this->matrixData[$indicator['id']][$day] ?? null;
-                $state = $cellData ? $cellData['cell_state'] : 'disabled';
-                
-                // 'pending' = belum diisi (no entry yet)
-                // 'done' = sudah diisi (has report - any non-pending state)
+            $filtered = $filtered->filter(function ($indicator) use ($emptyState) {
+                // If report count > 0, it has data, so it's 'done'
+                $count = $this->reportCounts[$indicator['id']] ?? 0;
+                $state = $count > 0 ? 'done' : $emptyState;
+
                 if ($this->statusFilter === 'pending') {
                     return $state === 'pending';
                 } elseif ($this->statusFilter === 'done') {
-                    return $state !== 'pending' && $state !== 'disabled';
+                    return $state === 'done';
                 }
                 return true;
             });
         }
 
-        $this->filteredIndicators = $filtered->toArray();
+        // Pagination
+        $this->indicatorTotal      = $filtered->count();
+        $this->indicatorTotalPages = (int) max(1, ceil($this->indicatorTotal / self::PER_PAGE));
+
+        // Reset to page 1 when filter/search changes and current page is out of range
+        if ($this->indicatorPage > $this->indicatorTotalPages) {
+            $this->indicatorPage = 1;
+        }
+
+        $this->filteredIndicators = $filtered
+            ->values()
+            ->slice(($this->indicatorPage - 1) * self::PER_PAGE, self::PER_PAGE)
+            ->values()
+            ->toArray();
     }
 
-    /**
-     * Update filtered indicators when search query changes
-     * Livewire automatically calls this when searchQuery property updates
-     */
-    public function updatedSearchQuery(): void
+    /** Livewire hook: indicator search changed */
+    public function updatedIndicatorSearch(): void
     {
+        $this->indicatorPage = 1;
         $this->computeFilteredIndicators();
     }
 
-    /**
-     * Update filtered indicators when status filter changes
-     * Livewire automatically calls this when statusFilter property updates
-     */
+    /** Livewire hook: status filter changed */
     public function updatedStatusFilter(): void
     {
+        $this->indicatorPage = 1;
         $this->computeFilteredIndicators();
+    }
+
+    /** Navigate indicator list pages */
+    public function goToIndicatorPage(int $page): void
+    {
+        $this->indicatorPage = max(1, min($page, $this->indicatorTotalPages));
+        $this->computeFilteredIndicators();
+    }
+
+    /** Livewire hook: monitoring search changed */
+    public function updatedMonitoringSearch(): void
+    {
+        $this->monitoringPage = 1;
+        $this->computePagedMonitoringTemplates();
+    }
+
+    /** Navigate monitoring list pages */
+    public function goToMonitoringPage(int $page): void
+    {
+        $this->monitoringPage = max(1, min($page, $this->monitoringTotalPages));
+        $this->computePagedMonitoringTemplates();
+    }
+
+    /**
+     * Filter + paginate monitoringTemplates server-side.
+     * Called after loadMonitoringTemplates() and on search/page change.
+     */
+    public function computePagedMonitoringTemplates(): void
+    {
+        $filtered = collect($this->monitoringTemplates);
+
+        if ($this->monitoringSearch) {
+            $q = strtolower($this->monitoringSearch);
+            $filtered = $filtered->filter(function ($item) use ($q) {
+                return str_contains(strtolower($item['title'] ?? ''), $q)
+                    || str_contains(strtolower($item['description'] ?? ''), $q)
+                    || str_contains(strtolower($item['profile_name'] ?? ''), $q);
+            });
+        }
+
+        $this->monitoringTotal      = $filtered->count();
+        $this->monitoringTotalPages = (int) max(1, ceil($this->monitoringTotal / self::PER_PAGE));
+
+        if ($this->monitoringPage > $this->monitoringTotalPages) {
+            $this->monitoringPage = 1;
+        }
+
+        $this->pagedMonitoringTemplates = $filtered
+            ->values()
+            ->slice(($this->monitoringPage - 1) * self::PER_PAGE, self::PER_PAGE)
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -540,6 +631,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
                 'timestamp' => now()->format('Y-m-d H:i:s')
             ]);
         }
+
+        // Reset pagination and re-compute filtered indicators when date changes
+        $this->indicatorPage = 1;
+        $this->computeFilteredIndicators();
     }
 
     public function deleteReport($recordId): void

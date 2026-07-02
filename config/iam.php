@@ -73,14 +73,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | IAM Backchannel URL
+    |--------------------------------------------------------------------------
+    |
+    | The internal base URL of your IAM server for server-to-server communication
+    | (e.g. inside Docker network). If null, base_url is used.
+    |
+    */
+    'backchannel_url' => env('IAM_BACKCHANNEL', null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Token Verification Endpoint
     |--------------------------------------------------------------------------
     |
     | Optional explicit endpoint for JWT verification. When null, the package
-    | will derive it from the IAM base URL.
+    | will derive it from the IAM base URL (or backchannel URL).
     |
     */
-    'verify_endpoint' => env('IAM_VERIFY_ENDPOINT', 'http://localhost:8000/api/sso/verify'),
+    'verify_endpoint' => env('IAM_VERIFY_ENDPOINT', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -109,8 +120,9 @@ return [
     | Backchannel user applications endpoint
     |--------------------------------------------------------------------------
     |
-    | Optional internal endpoint for retrieving application metadata from
-    | IAM via a more secure or optimized backchannel route.
+    | Deprecated for switcher reads. Application switchers should use the
+    | standard IAM detail endpoint so browser-accessible URLs remain the
+    | source of truth. Kept only for backward compatibility with older setups.
     |
     */
     'backchannel_user_applications_endpoint' => env('IAM_BACKCHANNEL_USER_APPLICATIONS_ENDPOINT', null),
@@ -231,6 +243,26 @@ return [
             'path' => env('IAM_UNIT_KERJA_PUSH_PATH', 'api/iam/push-unit-kerja'),
             'middleware' => env('IAM_UNIT_KERJA_PUSH_MIDDLEWARE', 'api') ? explode(',', env('IAM_UNIT_KERJA_PUSH_MIDDLEWARE', 'api')) : ['api'],
         ],
+        /*
+        |----------------------------------------------------------------------
+        | Delete Behavior
+        |----------------------------------------------------------------------
+        |
+        | 'soft' — deleted unit kerja stay trashed (soft delete)
+        | 'force' — deleted unit kerja force deleted (hard delete)
+        | Default: 'soft' (conservative: keep data recoverable)
+        |
+        */
+        'delete_soft' => env('IAM_UNIT_KERJA_DELETE_SOFT', false),
+        /*
+        |----------------------------------------------------------------------
+        | Pivot Delete Behavior
+        |----------------------------------------------------------------------
+        |
+        | user_unit_kerja pivot always force deletes (no soft delete on pivot).
+        | Controlled via IAM center when user or unit kerja is deleted.
+        |
+        */
     ],
 
     /*
@@ -338,7 +370,7 @@ return [
     | * pull: IAM server pulls users from client (existing behavior)
     | * push: IAM server pushes users to client using /api/iam/push-users.
     */
-    'user_sync_mode' => env('IAM_USER_SYNC_MODE', 'push'),
+    'user_sync_mode' => env('IAM_USER_SYNC_MODE', 'pull'),
 
     'user_sync_from_iam_allow_create' => env('IAM_USER_SYNC_FROM_IAM_ALLOW_CREATE', true),
     'user_sync_from_iam_delete_missing' => env('IAM_USER_SYNC_FROM_IAM_DELETE_MISSING', false),
@@ -438,7 +470,8 @@ return [
     */
     'attach_enforce_timeout_middleware' => env('IAM_ATTACH_ENFORCE_TIMEOUT_MIDDLEWARE', true),
 
-    /*    |--------------------------------------------------------------------------
+    /*    
+    |--------------------------------------------------------------------------
     | Logout Route Name
     |--------------------------------------------------------------------------
     |
@@ -448,8 +481,9 @@ return [
     'logout_redirect_route' => env('IAM_LOGOUT_REDIRECT', 'home'),
 
     /*
-    |--------------------------------------------------------------------------    | OP‑initiated logout behaviour
-    --------------------------------------------------------------------------
+    |--------------------------------------------------------------------------    
+    | OP‑initiated logout behaviour
+    |--------------------------------------------------------------------------
     |
     | Controls how the client responds to OP‑initiated (front‑channel) logout
     | requests from the IAM server (`GET /iam/logout`). The package always
@@ -460,7 +494,8 @@ return [
     'logout_on_op_initiated' => true,
 
     /*
-    --------------------------------------------------------------------------    | Login Route Name  
+    |--------------------------------------------------------------------------    
+    | Login Route Name  
     |--------------------------------------------------------------------------
     |
     | The route name for login page (used for unauthenticated redirects).

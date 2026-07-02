@@ -151,6 +151,7 @@ class ImutDataResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->query(fn() => TableSchema::query())
             ->columns(TableSchema::columns())
             ->headerActions(TableSchema::headerActions())

@@ -14,7 +14,8 @@ class RegionTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->unique()->randomElement(['Nasional', 'Provinsi', 'Rumah Sakit']),
+            'type' => $this->faker->unique()->word() . ' ' . uniqid(),
+            'imut_data_id' => \App\Models\ImutData::factory(),
         ];
     }
 }

@@ -5,7 +5,7 @@ namespace Tests\Feature\DailyReport;
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
 use App\Models\User;
-use App\Services\DailyReport\DailyReportService;
+use App\Modules\DailyReport\Contracts\DailyReportInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -24,27 +24,34 @@ use Tests\TestCase;
  */
 class Phase4BenchmarkTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create Spatie permissions required by the test
+        \Spatie\Permission\Models\Permission::findOrCreate('view_all_data_imut::data');
+    }
     /**
      * Benchmark: Unified service reduces template loads and service calls
      */
     public function test_phase4_consolidation_improves_performance()
-    {
-        // Setup
-        $user = User::factory()->create();
-        $unitKerja = UnitKerja::factory()->create();
-        $user->assignUnitKerja($unitKerja);
-        $user->givePermissionTo('view_all_data_imut::data');
-
-        $template = FormTemplate::factory()
-            ->has(\App\Models\EnhancedFormField::factory()->count(5), 'formFields')
-            ->create();
-
-        $formData = [];
-        foreach ($template->formFields as $field) {
-            $formData[$field->field_key] = $this->getTestValueForFieldType($field->field_type);
-        }
-
-        $service = app(DailyReportService::class);
+     {
+         // Setup
+         $user = User::factory()->create();
+         $unitKerja = UnitKerja::factory()->create();
+         $user->assignUnitKerja($unitKerja);
+         $user->givePermissionTo('view_all_data_imut::data');
+ 
+         $template = FormTemplate::factory()
+             ->has(\App\Models\EnhancedFormField::factory()->count(5), 'formFields')
+             ->create();
+ 
+         $formData = [];
+         foreach ($template->formFields as $field) {
+             $formData[$field->field_key] = $this->getTestValueForFieldType($field->field_type);
+         }
+ 
+         $service = app(DailyReportInterface::class);
 
         // ===== BENCHMARK: Count queries =====
         $queryCount = 0;

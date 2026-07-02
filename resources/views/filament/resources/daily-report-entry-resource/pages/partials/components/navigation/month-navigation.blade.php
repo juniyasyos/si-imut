@@ -1,6 +1,6 @@
 <!-- Month Navigation -->
 <div class="bg-white dark:bg-slate-700/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 relative"
-    wire:loading.class="opacity-75">
+    wire:loading.class="opacity-75" wire:target="previousMonth, nextMonth, selectMonth">
 
     <div class="flex items-center justify-between">
         <button wire:click="previousMonth"

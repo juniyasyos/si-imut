@@ -84,6 +84,7 @@ class UnitKerjaResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->columns(UnitKerjaResourceTable::columns())
             ->filters(UnitKerjaResourceTable::filters())
             ->headerActions(UnitKerjaResourceTable::headerActions())
