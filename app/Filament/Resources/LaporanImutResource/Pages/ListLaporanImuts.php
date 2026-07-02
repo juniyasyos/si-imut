@@ -64,10 +64,10 @@ class ListLaporanImuts extends ListRecords
                 ->icon('heroicon-o-building-office-2')
                 ->color('success')
                 ->modalHeading('Laporan IMUT Unit Kerja')
-                ->modalDescription('Pilih unit kerja dan periode untuk melihat laporan detail.')
+                ->modalDescription('Pilih kategori dan periode untuk melihat laporan unit kerja.')
                 ->modalWidth('2xl')
                 ->visible(fn() => Gate::denies('update_laporan::imut'))
-                ->form(LaporanReportFormHelper::unitKerjaReportSchema())
+                ->form(LaporanReportFormHelper::unitKerjaWithCategorySchema())
                 ->openUrlInNewTab()
                 ->action(fn(array $data) => LaporanReportActionHelper::buildUnitKerjaRedirect($data)),
 

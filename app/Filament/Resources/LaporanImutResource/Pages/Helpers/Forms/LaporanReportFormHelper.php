@@ -61,6 +61,33 @@ class LaporanReportFormHelper
         ];
     }
 
+    public static function unitKerjaWithCategorySchema(): array
+    {
+        return [
+            Forms\Components\Section::make('Pilih Kategori & Periode')
+                ->schema([
+                    Forms\Components\Hidden::make('unit_kerja_id')
+                        ->default(function () {
+                            $user = Auth::user();
+
+                            if ($user->unitKerjas()->count() === 0) {
+                                return null;
+                            }
+
+                            return $user->unitKerjas()->orderBy('unit_name')->first()->id;
+                        }),
+                    Forms\Components\Select::make('imut_category')
+                        ->label('Kategori Indikator')
+                        ->options(fn() => ImutCategory::orderBy('id')->pluck('category_name', 'id'))
+                        ->multiple()
+                        ->searchable()
+                        ->placeholder('Semua Kategori (Pilih jika spesifik)'),
+                    ...self::periodFields(),
+                ])
+                ->columns(2),
+        ];
+    }
+
     private static function periodFields(): array
     {
         return [

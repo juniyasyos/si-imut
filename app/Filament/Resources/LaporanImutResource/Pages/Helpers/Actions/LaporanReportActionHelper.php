@@ -58,6 +58,10 @@ class LaporanReportActionHelper
             'periode' => $periode,
         ]);
 
+        if (!empty($data['imut_category'])) {
+            $url .= '?categories=' . urlencode(implode(',', $data['imut_category']));
+        }
+
         return redirect($url);
     }
 

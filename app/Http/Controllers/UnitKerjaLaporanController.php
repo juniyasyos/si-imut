@@ -42,6 +42,10 @@ class UnitKerjaLaporanController extends Controller
         // whose validity range overlaps (or fully contains) the given range.
         $imutDataItems = $unit->imutData()
             ->where('status', true)
+            ->when($request->query('categories'), function ($q, $categories) {
+                $categoryIds = explode(',', $categories);
+                $q->whereIn('imut_kategori_id', $categoryIds);
+            })
             ->whereHas('profiles', function ($q) use ($dateRange) {
                 $start = is_string($dateRange['start']) ? \Carbon\Carbon::parse($dateRange['start'])->startOfDay() : $dateRange['start'];
                 $end = is_string($dateRange['end']) ? \Carbon\Carbon::parse($dateRange['end'])->endOfDay() : $dateRange['end'];
