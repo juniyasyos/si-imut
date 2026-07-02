@@ -20,7 +20,7 @@ class LaporanReportActionHelper
         return redirect($url);
     }
 
-    public static function buildUnitKerjaRedirect(array $data): ?RedirectResponse
+    public static function buildUnitKerjaRedirect(array $data)
     {
         $user = Auth::user();
 
