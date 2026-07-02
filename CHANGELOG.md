@@ -12,7 +12,40 @@ Format mengikuti pola:
 
 ---
 
-## [1.4.1] — 2026-06-15
+## [2.1.0] — 2026-07-02
+
+### 1. 🏗️ Architecture & Refactoring (Modular Monolith)
+- Transisi struktur proyek menjadi arsitektur Modular Monolith.
+- Mengganti magic method `class_alias` dengan pola inheritance dan trait composition yang jauh lebih stabil.
+- Memisahkan logika API dari `routes` ke `controllers`.
+- Memecah (refaktor) komponen UI Widget Analisis & Rekomendasi (Tim Mutu) ke dalam partial views untuk memudahkan maintenance.
+
+### 2. ⚡ Performance Optimizations
+- Mengatasi bottleneck (proses lambat hingga 30 detik) pada matrix data Daily Report Dashboard.
+- Menghapus proses serialisasi payload `matrixData` pada Livewire untuk mencegah aplikasi lag.
+- Menambahkan server-side pagination & search via Livewire untuk Daily Report.
+- Memisahkan status loading pada navigasi kalender dan main content.
+
+### 3. ✨ New Features & UI/UX
+- **Redesign Total**: Desain ulang widget capaian rumah sakit secara keseluruhan (overall hospital achievement).
+- **Triwulan View**: Menambahkan mode tampilan Triwulan (Q1, Q2, Q3, Q4) untuk `ImutCapaianWidget` lengkap dengan service chart data.
+- Penambahan data global footer pada dashboard.
+- Integrasi ekstensi (extends) `unit kerja` yang dihubungkan langsung dari modul klien `nexaid-client` (update v1.2.13).
+
+### 4. 🐛 Bug Fixes & Adjustments
+- Memperbaiki error UI state, isu modular namespace, dan akurasi pada data monitoring pasca migrasi modular.
+- Memperbaiki tampilan tabel pada `report category` dan mengoptimalkan logika untuk proses pemuatan (load) cepat.
+- Mengatasi error `Uncaught ReferenceError` di AlpineJS dengan membuang nested x-data.
+- Memperbaiki bug reset paginasi Livewire saat bulan diubah, dan menghapus filter action yang redundan di header Daily Report.
+
+### 5. 🧠 AI & Developer Experience
+- Implementasi `codebase-memory-mcp` untuk pemetaan arsitektur proyek berbasis AI.
+- Pemisahan source code Python dengan penyimpan knowledge RAG.
+- Menambahkan dan merapikan panduan khusus AI (`RAG_USAGE_FOR_AGENT.md` dan integrasi GraphRAG metadata).
+
+---
+
+## [2.0.0] — 2026-06-15
 
 ### Added
 - **Widget**: Implementasi tampilan Triwulan untuk `ImutCapaianWidget`.
