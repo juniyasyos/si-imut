@@ -118,6 +118,7 @@ class MonitoringTemplateService
                     'description' => $template->description,
                     'profile_name' => $template->imutProfile?->title ?? null,
                     'imut_profile_version' => $template->imutProfile?->version ?? null,
+                    'form_template_version' => $template->version ?? null,
                     'category' => $imutData?->categories?->category_name ?? null,
                     'response_count' => $template->response_count ?? 0,
                 ];
@@ -185,6 +186,7 @@ class MonitoringTemplateService
                 'description' => $template->description,
                 'profile_name' => $template->imutProfile?->title ?? null,
                 'imut_profile_version' => $template->imutProfile?->version ?? null,
+                'form_template_version' => $template->version ?? null,
                 'category' => $imutData?->categories?->category_name ?? null,
                 'response_count' => $template->response_count ?? 0,
             ];

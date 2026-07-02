@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\ImutPenilaian;
+use App\Modules\ImutMaster\Models\ImutPenilaian;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 

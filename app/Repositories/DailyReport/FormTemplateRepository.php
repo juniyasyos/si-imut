@@ -43,9 +43,9 @@ class FormTemplateRepository
             return $this->queryBuilder
                 ->reset()
                 ->forUnitKerjas($unitKerjaIds)
-                ->validAt(now())
+                ->validAt($periodEnd)
+                ->templateValidAt($periodEnd)
                 ->monthlyOnly()
-                ->activeOnly()
                 ->buildMonitoringQuery()
                 ->with(['imutProfile.imutData.categories'])
                 ->with([

@@ -17,6 +17,7 @@ class FormTemplateQueryBuilder
     private Builder $query;
     private array $unitKerjaIds = [];
     private ?Carbon $validDate = null;
+    private ?Carbon $templateValidDate = null;
     private bool $monthlyOnly = false;
     private bool $activeOnly = false;
 
@@ -45,6 +46,15 @@ class FormTemplateQueryBuilder
     }
 
     /**
+     * Filter template versions valid at a specific date
+     */
+    public function templateValidAt(Carbon $date): self
+    {
+        $this->templateValidDate = $date;
+        return $this;
+    }
+
+    /**
      * Filter to only monthly indicators
      */
     public function monthlyOnly(): self
@@ -69,6 +79,7 @@ class FormTemplateQueryBuilder
     {
         return $this->applyUnitKerjaFilter()
             ->applyValidityFilter()
+            ->applyTemplateValidityFilter()
             ->applyMonthlyFilter()
             ->applyActiveFilter()
             ->getQuery();
@@ -154,6 +165,25 @@ class FormTemplateQueryBuilder
     }
 
     /**
+     * Apply template validity date filter
+     */
+    private function applyTemplateValidityFilter(): self
+    {
+        if (!$this->templateValidDate) {
+            return $this;
+        }
+
+        $this->query
+            ->where('form_templates.valid_from', '<=', $this->templateValidDate)
+            ->where(function ($q) {
+                $q->whereNull('form_templates.valid_until')
+                  ->orWhere('form_templates.valid_until', '>=', $this->templateValidDate);
+            });
+
+        return $this;
+    }
+
+    /**
      * Apply active filter
      */
     private function applyActiveFilter(): self
@@ -203,6 +233,7 @@ class FormTemplateQueryBuilder
         $this->query = FormTemplate::query();
         $this->unitKerjaIds = [];
         $this->validDate = now();
+        $this->templateValidDate = null;
         $this->monthlyOnly = false;
         $this->activeOnly = false;
         return $this;

@@ -14,6 +14,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Url;
 
 class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasForms
 {
@@ -36,6 +37,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     // ========================================
     const PER_PAGE = 10;
 
+    #[Url(history: true)]
     public int  $indicatorPage        = 1;
     public int  $indicatorTotalPages  = 1;
     public int  $indicatorTotal       = 0;
@@ -43,6 +45,7 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     // ========================================
     // PAGINATION: Monitoring List
     // ========================================
+    #[Url(history: true)]
     public int  $monitoringPage       = 1;
     public int  $monitoringTotalPages = 1;
     public int  $monitoringTotal      = 0;
@@ -51,7 +54,10 @@ class ListDailyReportEntries extends BaseDailyReportMonitoring implements HasFor
     // ========================================
     // SEARCH: Livewire-driven (replace Alpine client-side)
     // ========================================
+    #[Url(history: true)]
     public string $indicatorSearch   = '';
+    
+    #[Url(history: true)]
     public string $monitoringSearch  = '';
 
     public function __construct()

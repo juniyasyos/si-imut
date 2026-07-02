@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\ImutData;
+use App\Modules\ImutMaster\Models\ImutData;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ImutDataPolicy

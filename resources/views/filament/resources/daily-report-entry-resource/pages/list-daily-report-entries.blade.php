@@ -377,9 +377,10 @@
                         class="h-full p-6  lg:space-x-0 lg:space-y-1 max-h-none lg:max-h-[800px]">
                         <div class="sticky top-0 z-10 bg-white dark:bg-slate-800">
                             @include('filament.resources.daily-report-entry-resource.pages.partials.components.navigation.date-header')
-    
+
                             {{-- Search & Filter Bar --}}
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white/95 pb-4 backdrop-blur dark:bg-slate-800/95">
+                            <div
+                                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white/95 pb-4 backdrop-blur dark:bg-slate-800/95">
                                 {{-- Livewire Search --}}
                                 <div class="relative w-full sm:w-64 mb-4">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -389,7 +390,7 @@
                                         placeholder="Cari indikator..."
                                         class="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                                 </div>
-    
+
                                 {{-- Status Filter --}}
                                 <div class="flex items-center gap-2">
                                     <select wire:model.live="statusFilter"
@@ -405,7 +406,7 @@
                         {{-- Indicators List (Livewire server-side) --}}
                         <div class="space-y-3">
                             @forelse ($filteredIndicators as $indicator)
-                                <div
+                                <div wire:key="indicator-{{ $indicator['id'] }}"
                                     class="indicator-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                         <div class="min-w-0 flex-1">
@@ -481,7 +482,7 @@
                                         @for ($p = max(1, $indicatorPage - 2); $p <= min($indicatorTotalPages, $indicatorPage + 2); $p++)
                                                                     <button wire:click="goToIndicatorPage({{ $p }})"
                                                                         class="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-medium transition
-                                                                                                                                                                                                        {{ $p === $indicatorPage
+                                                                                                                                                                                                                                        {{ $p === $indicatorPage
                                             ? 'border-primary-500 bg-primary-600 text-white'
                                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700' }}">
                                                                         {{ $p }}

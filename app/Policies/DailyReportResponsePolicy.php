@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\DailyReportResponse;
+use App\Modules\FormEngine\Models\DailyReportResponse;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 

@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\ImutProfile;
+use App\Modules\ImutMaster\Models\ImutProfile;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

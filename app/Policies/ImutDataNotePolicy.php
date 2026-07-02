@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\ImutDataNote;
+use App\Modules\ImutMaster\Models\ImutDataNote;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 

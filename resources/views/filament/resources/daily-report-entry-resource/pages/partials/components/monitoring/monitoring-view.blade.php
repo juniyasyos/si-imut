@@ -125,10 +125,17 @@
                                         <span>Respon</span>
                                     </div>
 
-                                    <div class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1.5 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                                    <div class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1.5 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300" x-tooltip="'Versi Profil Imut'">
                                         @svg("heroicon-m-document-text", "h-3.5 w-3.5")
                                         <span>{{ $item['imut_profile_version'] ?? 'v1.0' }}</span>
                                     </div>
+
+                                    @if (!empty($item['form_template_version']))
+                                        <div class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 font-medium text-amber-700 dark:bg-slate-500 dark:text-amber-300" x-tooltip="'Versi Template Form'">
+                                            @svg("heroicon-m-clipboard-document-list", "h-3.5 w-3.5")
+                                            <span>{{ $item['form_template_version'] }}</span>
+                                        </div>
+                                    @endif
 
                                     @if (!empty($item['profile_name']))
                                         <div class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -192,6 +199,12 @@
                             @if (!empty($item['category']))
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 rounded">
                                     {{ $item['category'] }}
+                                </span>
+                            @endif
+                            @if (!empty($item['form_template_version']))
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded" x-tooltip="'Versi Template Form'">
+                                    @svg("heroicon-m-clipboard-document-list", "h-3 w-3")
+                                    v{{ $item['form_template_version'] }}
                                 </span>
                             @endif
                         </div>

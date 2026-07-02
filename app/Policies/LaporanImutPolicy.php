@@ -4,7 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\LaporanImut;
-use App\Models\ImutPenilaian;
+use App\Modules\ImutMaster\Models\ImutPenilaian;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class LaporanImutPolicy
