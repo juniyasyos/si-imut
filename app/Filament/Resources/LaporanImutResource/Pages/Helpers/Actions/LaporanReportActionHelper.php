@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LaporanReportActionHelper
 {
-    public static function buildCategoryRedirect(array $data): RedirectResponse
+    public static function buildCategoryRedirect(array $data)
     {
         $categories = implode(',', $data['imut_category'] ?? []);
         $periode = self::resolvePeriode($data);
@@ -20,7 +20,7 @@ class LaporanReportActionHelper
         return redirect($url);
     }
 
-    public static function buildUnitKerjaRedirect(array $data): ?RedirectResponse
+    public static function buildUnitKerjaRedirect(array $data)
     {
         $user = Auth::user();
 
