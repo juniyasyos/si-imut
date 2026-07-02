@@ -16,6 +16,7 @@ use Filament\Tables\Filters\SelectFilter;
 class ImutTercapai extends BaseWidget
 {
     protected static ?int $sort = 6;
+    protected static bool $isLazy = true;
     protected int|string|array $columnSpan = 'full';
     protected static ?string $heading = '⚠️ Unit Kerja Perlu Perhatian';
     protected static ?string $pollingInterval = '30s';

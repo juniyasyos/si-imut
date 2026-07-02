@@ -3,9 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Models\LaporanImut;
-use App\Services\Chart\ChartDataProcessorService;
+use App\Services\Chart\ImutCapaianDataService;
 use App\Services\Chart\ImutChartSeriesService;
-use App\Services\Core\ImutCalculationService;
+use App\Services\Chart\ImutPeriodService;
 use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
@@ -26,6 +26,8 @@ class ImutCapaianWidget extends ApexChartWidget
     protected static ?string $description = 'Grafik ini memperlihatkan persentase indikator IMUT yang berhasil memenuhi target untuk setiap kategori setiap bulan pada periode terpilih.';
 
     protected static ?int $sort = 5;
+
+    protected static bool $isLazy = true;
 
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
 
@@ -50,16 +52,6 @@ class ImutCapaianWidget extends ApexChartWidget
         $this->dispatch('$refresh');
     }
 
-    public function getChartProcessor(): ChartDataProcessorService
-    {
-        return app(ChartDataProcessorService::class);
-    }
-
-    protected function getChartService(): ImutChartSeriesService
-    {
-        return new ImutChartSeriesService();
-    }
-
     public static function canView(): bool
     {
         return Auth::user()?->can('widget_ImutCapaianWidget');
@@ -71,7 +63,10 @@ class ImutCapaianWidget extends ApexChartWidget
             ?? $this->selectedPeriodType
             ?? 'semester';
 
-        $periodOptions = $this->getPeriodOptions($selectedPeriodType);
+        $periodOptions = $this->periodService()->getAvailablePeriods(
+            $this->getCachedLaporans(),
+            $selectedPeriodType
+        );
         $defaultPeriod = count($periodOptions) > 0 ? array_key_first($periodOptions) : null;
 
         return [
@@ -95,7 +90,10 @@ class ImutCapaianWidget extends ApexChartWidget
 
                                     Select::make('selectedPeriod')
                                         ->label('Periode')
-                                        ->options(fn(callable $get) => $this->getPeriodOptions($get('selectedPeriodType') ?? 'semester'))
+                                        ->options(fn(callable $get) => $this->periodService()->getAvailablePeriods(
+                                            $this->getCachedLaporans(),
+                                            $get('selectedPeriodType') ?? 'semester'
+                                        ))
                                         ->searchable()
                                         ->required()
                                         ->default($defaultPeriod)
@@ -104,13 +102,16 @@ class ImutCapaianWidget extends ApexChartWidget
                                     Select::make('categories')
                                         ->label('Kategori Indikator')
                                         ->multiple()
+                                        ->maxItems(2)
                                         ->options(function () {
-                                            $categories = $this->getChartService()->getCategories();
+                                            $categories = $this->chartSeriesService()->getCategories();
+
                                             return array_combine($categories, $categories);
                                         })
                                         ->default(function () {
-                                            $categories = $this->getChartService()->getCategories();
-                                            return array_slice($categories, 0, 5);
+                                            $categories = $this->chartSeriesService()->getCategories();
+
+                                            return array_slice($categories, 0, 2);
                                         })
                                         ->searchable()
                                         ->columnSpanFull()
@@ -121,7 +122,7 @@ class ImutCapaianWidget extends ApexChartWidget
                                         ->default(false)
                                         ->columnSpanFull()
                                         ->reactive(),
-                                ])
+                                ]),
                         ]),
                 ])
                 ->collapsible(),
@@ -130,264 +131,66 @@ class ImutCapaianWidget extends ApexChartWidget
 
     public function getOptions(): array
     {
-        $allCategories = $this->getChartService()->getCategories();
-
-        if ($this->selectedCategories === null) {
-            $this->selectedCategories = array_slice($allCategories, 0, 5);
-        }
-
-        if (array_key_exists('categories', $this->filterFormData ?? [])) {
-            $this->selectedCategories = $this->filterFormData['categories'] ?? [];
-        }
-
-        $selectedCategories = $this->selectedCategories;
-
+        $allCategories = $this->chartSeriesService()->getCategories();
+        $selectedCategories = $this->resolveSelectedCategories($allCategories);
         $showDataLabels = $this->filterFormData['show_dataLabels'] ?? false;
 
-        $selectedPeriodType = $this->filterFormData['selectedPeriodType']
-            ?? $this->selectedPeriodType
-            ?? 'semester';
+        $periodType = $this->filterFormData['selectedPeriodType']
+            ?? $this->selectedPeriodType ?? 'semester';
+        $this->selectedPeriodType = $periodType;
 
-        $periodOptions = $this->getPeriodOptions($selectedPeriodType);
-        $defaultPeriod = count($periodOptions) > 0 ? array_key_first($periodOptions) : null;
-
+        $periodOptions = $this->periodService()->getAvailablePeriods(
+            $this->getCachedLaporans(),
+            $periodType
+        );
         $selectedPeriod = $this->filterFormData['selectedPeriod']
             ?? $this->selectedPeriod
-            ?? $defaultPeriod;
-
-        $this->selectedPeriodType = $selectedPeriodType;
+            ?? (count($periodOptions) > 0 ? array_key_first($periodOptions) : null);
         $this->selectedPeriod = $selectedPeriod;
 
         if (!$selectedPeriod) {
             return ApexChartConfig::noDataOptions();
         }
 
-        $periodMeta = $this->parseSelectedPeriod($selectedPeriodType, $selectedPeriod);
-
-        $year = $periodMeta['year'];
-        $monthsInPeriod = $periodMeta['months'];
-        $periodLabel = $periodMeta['label'];
-
-        $laporans = $this->getCachedLaporans()->filter(function ($laporan) use ($year, $monthsInPeriod) {
-            $lYear = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->year
-                : $laporan->report_year;
-
-            $lMonth = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->month
-                : $laporan->report_month;
-
-            return $lYear == $year && in_array((int) $lMonth, $monthsInPeriod, true);
-        });
+        // Parse periode dan filter laporan
+        $periodMeta = $this->periodService()->parsePeriod($periodType, $selectedPeriod);
+        $laporans = $this->periodService()->filterByPeriod(
+            $this->getCachedLaporans(),
+            $periodMeta['year'],
+            $periodMeta['months'],
+        );
 
         if ($laporans->isEmpty()) {
             return ApexChartConfig::noDataOptions();
         }
 
+        $laporans->loadMissing([
+            'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
+        ]);
+
+        // Filter kategori yang dipilih
         $categories = collect($allCategories)
             ->filter(fn($name) => in_array($name, $selectedCategories, true))
             ->values()
             ->toArray();
 
-        $monthNames = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember',
-        ];
-
-        $xLabels = [];
-
-        foreach ($monthsInPeriod as $month) {
-            $xLabels[] = $monthNames[$month];
-        }
-
-        $chartData = [];
-
-        foreach ($categories as $category) {
-            $chartData[$category] = [];
-
-            foreach ($monthsInPeriod as $month) {
-                $chartData[$category][$month] = 0;
-            }
-        }
-
-        $laporansByMonth = [];
-
-        foreach ($monthsInPeriod as $month) {
-            $laporansByMonth[$month] = [];
-        }
-
-        foreach ($laporans as $laporan) {
-            $month = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->month
-                : $laporan->report_month;
-
-            $month = (int) $month;
-
-            if (isset($laporansByMonth[$month])) {
-                $laporansByMonth[$month][] = $laporan;
-            }
-        }
-
-        $calculator = app(\App\Services\Core\ImutCalculatorService::class);
-        $periodStats = $this->initializePeriodStats($categories, $periodLabel);
-
-        foreach ($laporansByMonth as $month => $monthlyLaporans) {
-            $categoryData = array_fill_keys($categories, [
-                'total' => 0,
-                'achieved' => 0,
-            ]);
-
-            foreach ($monthlyLaporans as $laporan) {
-                foreach ($laporan->laporanUnitKerjas as $unitKerja) {
-                    foreach ($unitKerja->imutPenilaians as $penilaian) {
-                        $profile = $penilaian->profile;
-                        $category = $profile?->imutData?->categories;
-
-                        if (!$category || !$category->short_name) {
-                            continue;
-                        }
-
-                        $shortName = $category->short_name;
-
-                        if (!in_array($shortName, $categories, true)) {
-                            continue;
-                        }
-
-                        $evaluation = $calculator->evaluatePenilaian(
-                            $penilaian->numerator_value ?? 0,
-                            $penilaian->denominator_value ?? 0,
-                            $profile->target_value ?? 0,
-                            $profile->target_operator ?? '>='
-                        );
-
-                        $categoryData[$shortName]['total'] += 1;
-                        $categoryData[$shortName]['achieved'] += $evaluation['is_achieved'] ? 1 : 0;
-
-                        $periodStats['categories_detail'][$shortName]['total_imut'] += 1;
-
-                        if ($evaluation['is_achieved']) {
-                            $periodStats['categories_detail'][$shortName]['imut_meeting_standard'] += 1;
-                        } else {
-                            $periodStats['categories_detail'][$shortName]['imut_below_standard'] += 1;
-                        }
-                    }
-                }
-            }
-
-            foreach ($categories as $shortName) {
-                $total = $categoryData[$shortName]['total'];
-                $achieved = $categoryData[$shortName]['achieved'];
-
-                $chartData[$shortName][$month] = $total > 0
-                    ? round(($achieved / $total) * 100, 2)
-                    : 0;
-            }
-        }
-
-        $this->statistikData = $this->finalizePeriodStats($periodStats);
-
-        $colors = $this->getChartService()->getDefaultColors();
-
-        $series = [];
-        $colorIndex = 0;
-
-        foreach ($categories as $category) {
-            $series[] = [
-                'name' => $category,
-                'type' => 'line',
-                'data' => array_values($chartData[$category]),
-                'color' => $colors[$colorIndex % count($colors)],
-            ];
-
-            $colorIndex++;
-        }
-
-        $options = ApexChartConfig::defaultOptions(
-            $series,
-            $xLabels,
-            xLabelTitle: 'Bulan',
-            yLabelTitle: 'Persentase Capaian (%)',
-            yAxisMin: 0,
-            yAxisMax: 100,
-            showDataLabels: $showDataLabels,
-            chartType: 'line'
+        // Hitung data capaian via service
+        $result = $this->capaianDataService()->calculatePeriodCapaian(
+            $laporans,
+            $categories,
+            $periodMeta['months'],
+            $periodMeta['label'],
         );
 
-        $options['stroke'] = [
-            'curve' => 'monotoneCubic',
-            'width' => 2,
-        ];
+        $this->statistikData = $result->statistikData;
 
-        $options['markers'] = [
-            'size' => 4,
-        ];
-
-        return $options;
-    }
-
-    protected function initializePeriodStats(array $categories, string $periodLabel): array
-    {
-        $stats = [
-            'total_categories' => count($categories),
-            'total_imut_indicators' => 0,
-            'imut_meeting_standard' => 0,
-            'imut_below_standard' => 0,
-            'overall_achievement' => 0,
-            'laporan_used' => "Data {$periodLabel}",
-            'laporan_period' => $periodLabel,
-            'categories_detail' => [],
-        ];
-
-        foreach ($categories as $category) {
-            $stats['categories_detail'][$category] = [
-                'category_name' => $category,
-                'total_imut' => 0,
-                'imut_meeting_standard' => 0,
-                'imut_below_standard' => 0,
-                'achievement_percentage' => 0,
-            ];
-        }
-
-        return $stats;
-    }
-
-    protected function finalizePeriodStats(array $stats): array
-    {
-        foreach ($stats['categories_detail'] as $key => $catStat) {
-            $total = $catStat['total_imut'];
-            $achieved = $catStat['imut_meeting_standard'];
-
-            $stats['categories_detail'][$key]['achievement_percentage'] = $total > 0
-                ? round(($achieved / $total) * 100, 1)
-                : 0;
-
-            $stats['total_imut_indicators'] += $total;
-            $stats['imut_meeting_standard'] += $achieved;
-            $stats['imut_below_standard'] += $catStat['imut_below_standard'];
-        }
-
-        $stats['overall_achievement'] = $stats['total_imut_indicators'] > 0
-            ? round(($stats['imut_meeting_standard'] / $stats['total_imut_indicators']) * 100, 1)
-            : 0;
-
-        $stats['categories_detail'] = array_values($stats['categories_detail']);
-
-        return $stats;
-    }
-
-    protected function checkIfMeetsStandard(float $achievement, float $standard, string $operator): bool
-    {
-        return ImutCalculationService::meetsStandard($achievement, $standard, $operator);
+        // Build chart
+        return $this->buildChartOptions(
+            $categories,
+            $result->chartData,
+            $periodMeta['months'],
+            $showDataLabels,
+        );
     }
 
     public function getFooter(): ?string
@@ -401,119 +204,173 @@ class ImutCapaianWidget extends ApexChartWidget
         ])->render();
     }
 
-    protected function getPeriodOptions(string $periodType): array
+    // ──────────────────────────────────────────────
+    //  Private Helpers
+    // ──────────────────────────────────────────────
+
+    /**
+     * Resolve kategori yang dipilih dari form state.
+     */
+    private function resolveSelectedCategories(array $allCategories): array
     {
-        $laporans = $this->getCachedLaporans();
-
-        $periods = [];
-
-        foreach ($laporans as $laporan) {
-            $year = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->year
-                : $laporan->report_year;
-
-            $month = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->month
-                : $laporan->report_month;
-
-            if (!$year || !$month) {
-                continue;
-            }
-
-            $key = null;
-            $label = null;
-
-            if ($periodType === 'quarter') {
-                $quarter = (int) ceil($month / 3);
-
-                $key = "{$year}-Q{$quarter}";
-                $label = "Triwulan {$quarter} {$year}";
-            }
-
-            if ($periodType === 'semester') {
-                $semester = (int) ($month <= 6 ? 1 : 2);
-
-                $key = "{$year}-S{$semester}";
-                $label = "Semester {$semester} {$year}";
-            }
-
-            if ($periodType === 'year') {
-                $key = (string) $year;
-                $label = "Tahun {$year}";
-            }
-
-            if ($key && $label) {
-                $periods[$key] = $label;
-            }
+        if ($this->selectedCategories === null) {
+            $this->selectedCategories = array_slice($allCategories, 0, 2);
         }
 
-        krsort($periods);
+        if (array_key_exists('categories', $this->filterFormData ?? [])) {
+            $this->selectedCategories = $this->filterFormData['categories'] ?? [];
+        }
 
-        return $periods;
+        return $this->selectedCategories;
     }
 
-    protected function parseSelectedPeriod(string $periodType, string $selectedPeriod): array
-    {
-        if ($periodType === 'quarter') {
-            [$year, $quarterRaw] = explode('-Q', $selectedPeriod);
+    /**
+     * Build ApexCharts options dari data capaian.
+     */
+    private function buildChartOptions(
+        array $categories,
+        array $chartData,
+        array $monthsInPeriod,
+        bool $showDataLabels,
+    ): array {
+        $colors = $this->chartSeriesService()->getDefaultColors();
+        $xLabels = $this->periodService()->getMonthLabels($monthsInPeriod);
 
-            $year = (int) $year;
-            $quarter = (int) $quarterRaw;
-
-            $months = [
-                1 => [1, 2, 3],
-                2 => [4, 5, 6],
-                3 => [7, 8, 9],
-                4 => [10, 11, 12],
-            ][$quarter] ?? [1, 2, 3];
-
-            return [
-                'year' => $year,
-                'months' => $months,
-                'label' => "Triwulan {$quarter} {$year}",
+        $series = [];
+        foreach ($categories as $i => $category) {
+            $series[] = [
+                'name' => $category,
+                'type' => 'area',
+                'data' => array_values($chartData[$category]),
+                'color' => $colors[$i % count($colors)],
             ];
         }
 
-        if ($periodType === 'semester') {
-            [$year, $semesterRaw] = explode('-S', $selectedPeriod);
+        $options = ApexChartConfig::defaultOptions(
+            $series,
+            $xLabels,
+            xLabelTitle: 'Bulan',
+            yLabelTitle: 'Persentase Capaian (%)',
+            yAxisMin: 0,
+            yAxisMax: 100,
+            showDataLabels: $showDataLabels,
+            chartType: 'area',
+        );
 
-            $year = (int) $year;
-            $semester = (int) $semesterRaw;
-
-            $months = $semester === 1
-                ? [1, 2, 3, 4, 5, 6]
-                : [7, 8, 9, 10, 11, 12];
-
-            return [
-                'year' => $year,
-                'months' => $months,
-                'label' => "Semester {$semester} {$year}",
-            ];
-        }
-
-        $year = (int) $selectedPeriod;
-
-        return [
-            'year' => $year,
-            'months' => range(1, 12),
-            'label' => "Tahun {$year}",
+        // Area gradient fill
+        $options['fill'] = [
+            'type' => 'gradient',
+            'gradient' => [
+                'shadeIntensity' => 1,
+                'opacityFrom' => 0.35,
+                'opacityTo' => 0.05,
+                'stops' => [0, 90, 100],
+            ],
         ];
+
+        // Smooth line styling
+        $options['stroke'] = [
+            'curve' => 'monotoneCubic',
+            'width' => 2.5,
+        ];
+
+        $options['markers'] = [
+            'size' => 4,
+            'strokeWidth' => 2,
+            'hover' => ['sizeOffset' => 3],
+        ];
+
+        // Annotation: target line 80%
+        $options['annotations'] = [
+            'yaxis' => [
+                [
+                    'y' => 80,
+                    'borderColor' => '#ef4444',
+                    'strokeDashArray' => 5,
+                    'label' => [
+                        'text' => 'Target Minimal 80%',
+                        'position' => 'left',
+                        'borderColor' => '#ef4444',
+                        'style' => [
+                            'color' => '#fff',
+                            'background' => '#ef4444',
+                            'fontSize' => '11px',
+                            'padding' => [
+                                'left' => 8,
+                                'right' => 8,
+                                'top' => 3,
+                                'bottom' => 3,
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ];
+
+        // Enhanced tooltip
+        $options['tooltip'] = [
+            'shared' => true,
+            'intersect' => false,
+            'y' => [
+                'formatter' => 'function(val) { return val !== null ? val.toFixed(1) + "%" : "-"; }',
+            ],
+        ];
+
+        // Responsive breakpoints
+        $options['responsive'] = [
+            [
+                'breakpoint' => 640,
+                'options' => [
+                    'chart' => ['height' => 320],
+                    'legend' => ['position' => 'bottom', 'fontSize' => '11px'],
+                    'xaxis' => ['labels' => ['rotate' => -60, 'style' => ['fontSize' => '10px']]],
+                ],
+            ],
+        ];
+
+        // Legend interactivity
+        $options['legend'] = [
+            'position' => 'top',
+            'horizontalAlign' => 'center',
+            'fontSize' => '13px',
+            'fontWeight' => 500,
+            'itemMargin' => ['horizontal' => 12, 'vertical' => 4],
+            'onItemClick' => ['toggleDataSeries' => true],
+        ];
+
+        return $options;
+    }
+
+    // ──────────────────────────────────────────────
+    //  Service Accessors
+    // ──────────────────────────────────────────────
+
+    private function periodService(): ImutPeriodService
+    {
+        return app(ImutPeriodService::class);
+    }
+
+    private function chartSeriesService(): ImutChartSeriesService
+    {
+        return new ImutChartSeriesService;
+    }
+
+    private function capaianDataService(): ImutCapaianDataService
+    {
+        return app(ImutCapaianDataService::class);
     }
 
     protected function getCachedLaporans()
     {
         $statuses = $this->filterFormData['status'] ?? [LaporanImut::STATUS_COMPLETE];
 
-        $cacheKey = CacheKey::imutLaporans() . '_' . implode('_', $statuses);
+        $cacheKey = CacheKey::imutLaporans() . '_basic_' . implode('_', $statuses);
 
         return Cache::remember(
             $cacheKey,
             now()->addMinutes(5),
             function () use ($statuses) {
-                return LaporanImut::with([
-                    'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-                ])
-                    ->whereIn('status', $statuses)
+                return LaporanImut::whereIn('status', $statuses)
                     ->orderBy('assessment_period_start', 'desc')
                     ->get();
             }

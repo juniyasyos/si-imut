@@ -4,10 +4,9 @@ namespace App\Filament\Widgets;
 
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
+use App\Services\Chart\ImutChartSeriesService;
 use App\Services\Chart\UnitKerjaChartDataService;
 use App\Services\Support\DateFormattingService;
-use App\Services\Chart\ImutChartSeriesService;
-use App\Support\ApexChartConfig;
 use App\Support\CacheKey;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\ColorPicker;
@@ -23,8 +22,13 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 {
     protected static ?string $chartId = 'imutCapaianUnitKerjaWidget';
+
     protected static ?int $sort = 20;
+
+    protected static bool $isLazy = true;
+
     protected static MaxWidth|string $filterFormWidth = MaxWidth::ExtraLarge;
+
     protected int|string|array $columnSpan = 'full';
 
     public function getUnitKerjaChartService(): UnitKerjaChartDataService
@@ -39,7 +43,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getChartService(): ImutChartSeriesService
     {
-        return new ImutChartSeriesService();
+        return new ImutChartSeriesService;
     }
 
     public static function canView(): bool
@@ -61,7 +65,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
         $categories = $this->getChartService()->getCategories();
         $colors = [
             '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
-            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
+            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
         ];
 
         return [
@@ -81,7 +85,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
                                                 ->label('Tipe')
                                                 ->options([
                                                     'column' => 'Column',
-                                                    'line'   => 'Line',
+                                                    'line' => 'Line',
                                                 ])
                                                 ->default('column')
                                                 ->reactive(),
@@ -89,9 +93,9 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
                                                 ->label('Warna')
                                                 ->default($colors[$i % count($colors)])
                                                 ->reactive(),
-                                        ])->columns(2)
+                                        ])->columns(2),
                                 ]);
-                        })->toArray()
+                        })->toArray(),
                     ]
                 )
                 ->columns(1),
@@ -100,13 +104,22 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $cacheKey = 'imut_capaian_unit_kerja_' . md5(serialize($this->filters));
+        $cacheKey = 'imut_capaian_unit_kerja_'.md5(serialize($this->filters));
 
         return Cache::remember($cacheKey, now()->addMinutes(30), function () {
             // Get categories once and pass to service
             $categories = ImutCategory::all();
-            $laporans = $this->chartDataService->getCachedLaporans();
-            $chartSeries = $this->chartDataService->buildUnitKerjaChartSeries($laporans, $this->filters, $categories);
+            $laporans = $this->getCachedLaporans();
+            $unitKerjaIds = Auth::user()->unitKerjas->pluck('id')->toArray();
+
+            $laporans->loadMissing([
+                'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
+                    $query->whereIn('unit_kerja_id', $unitKerjaIds);
+                },
+                'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
+            ]);
+
+            $chartSeries = $this->getUnitKerjaChartService()->buildUnitKerjaChartSeries($laporans, $this->filterFormData ?? [], $categories);
 
             return [
                 'chart' => [
@@ -122,7 +135,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
                 ],
                 'yaxis' => [
                     'title' => [
-                        'text' => 'Capaian (%)'
+                        'text' => 'Capaian (%)',
                     ],
                     'min' => 0,
                     'max' => 100,
@@ -148,22 +161,16 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
         $unitKerjaIds = Auth::user()->unitKerjas->pluck('id')->toArray();
 
         return Cache::remember(
-            CacheKey::imutLaporansForUnitKerjas($unitKerjaIds),
+            CacheKey::imutLaporansForUnitKerjas($unitKerjaIds).'_basic',
             now()->addDay(),
-            fn() => LaporanImut::with([
-                'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
-                    $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                },
-                'laporanUnitKerjas.imutPenilaians.profile.imutData.categories',
-            ])
-                ->whereHas('laporanUnitKerjas', function ($query) use ($unitKerjaIds) {
-                    $query->whereIn('unit_kerja_id', $unitKerjaIds);
-                })
+            fn () => LaporanImut::whereHas('laporanUnitKerjas', function ($query) use ($unitKerjaIds) {
+                $query->whereIn('unit_kerja_id', $unitKerjaIds);
+            })
                 ->where('assessment_period_start', '>=', now()->subMonths(6))
                 ->whereIn('status', [
-                    LaporanImut::STATUS_COMPLETE,
-                    LaporanImut::STATUS_COMINGSOON
-                ])
+                LaporanImut::STATUS_COMPLETE,
+                LaporanImut::STATUS_COMINGSOON,
+            ])
                 ->orderBy('assessment_period_start')
                 ->get()
         );
