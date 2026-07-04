@@ -17,7 +17,7 @@ trait BuildsDynamicForm
     /**
      * Generate form component from FormField model
      */
-    protected function buildFormComponent(  $field)
+    protected function buildFormComponent(EnhancedFormField $field)
     {
         // Use FormFields helper for complex field types with 'responses.' prefix
         if (in_array($field->field_type, ['time_duration', 'time_range', 'single_select', 'multi_select', 'boolean'])) {
@@ -97,7 +97,7 @@ trait BuildsDynamicForm
     /**
      * Get field options for select/radio/checkbox components
      */
-    protected function getFieldOptions(  $field): array
+    protected function getFieldOptions(EnhancedFormField $field): array
     {
         // Check if field has options relation
         if ($field->relationLoaded('options') && $field->options->isNotEmpty()) {
@@ -149,7 +149,7 @@ trait BuildsDynamicForm
     /**
      * Build text field with history suggestions capability
      */
-    protected function buildTextFieldWithHistory(  $field)
+    protected function buildTextFieldWithHistory(EnhancedFormField $field)
     {
         $historySuggestions = $field->history_suggestions ?? [];
 

@@ -3,7 +3,7 @@
 namespace App\Modules\DailyReport\Services;
 
 use App\Domain\DailyReport\TableViewDomain;
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use App\Models\UnitKerja;
 use App\Models\User;
 use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;

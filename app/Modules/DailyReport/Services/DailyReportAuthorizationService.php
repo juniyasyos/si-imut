@@ -4,7 +4,7 @@ namespace App\Modules\DailyReport\Services;
 
 use App\Modules\DailyReport\Models\DailyReportResponse;
 use App\Models\FieldResponse;
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use App\Models\User;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
 use App\Modules\DailyReport\Services\UnifiedComplianceService;

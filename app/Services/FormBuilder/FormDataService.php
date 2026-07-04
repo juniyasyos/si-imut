@@ -2,9 +2,9 @@
 
 namespace App\Services\FormBuilder;
 
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use App\Models\ImutProfile;
-use App\Models\EnhancedFormField;
+use App\Modules\FormEngine\Models\EnhancedFormField;
 use App\Models\FormFieldOption;
 use Illuminate\Support\Str;
 

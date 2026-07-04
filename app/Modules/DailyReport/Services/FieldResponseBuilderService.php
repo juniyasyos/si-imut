@@ -4,8 +4,8 @@ namespace App\Modules\DailyReport\Services;
 
 use App\Modules\DailyReport\Models\DailyReportResponse;
 use App\Models\FieldResponse;
-use App\Models\EnhancedFormField;
-use App\Models\ImutPenilaian;
+use App\Modules\FormEngine\Models\EnhancedFormField;
+use App\Modules\ImutMaster\Models\ImutPenilaian;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
 
 /**
@@ -89,7 +89,7 @@ class FieldResponseBuilderService
         // - imut_profil_id from FormTemplate
         // - unit_kerja_id from LaporanUnitKerja matches DailyReportResponse
         // - report_date within assessment period of LaporanImut
-        return ImutPenilaian::query()
+        return \App\Models\ImutPenilaian::query()
             ->where('imut_profil_id', $formTemplate->imut_profile_id)
             ->whereHas('laporanUnitKerja', function ($q) use ($dailyReport) {
                 $q->where('unit_kerja_id', $dailyReport->unit_kerja_id);

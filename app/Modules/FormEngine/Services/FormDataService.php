@@ -3,7 +3,7 @@
 namespace App\Modules\FormEngine\Services;
 
 use App\Modules\FormEngine\Models\FormTemplate;
-use App\Models\ImutProfile;
+use App\Modules\ImutMaster\Models\ImutProfile;
 use App\Modules\FormEngine\Models\EnhancedFormField;
 use App\Modules\FormEngine\Models\FormFieldOption;
 use Illuminate\Support\Str;

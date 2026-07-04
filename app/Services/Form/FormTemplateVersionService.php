@@ -2,7 +2,7 @@
 
 namespace App\Services\Form;
 
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use App\Models\ImutProfile;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

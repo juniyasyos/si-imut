@@ -2,7 +2,7 @@
 
 namespace App\Modules\DailyReport\Services;
 
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use App\Models\User;
 use App\Modules\DailyReport\Services\Exports\DailyReportMonitoringExport;
 use App\Modules\DailyReport\Services\Monitoring\MonitoringTemplateService;
@@ -112,7 +112,7 @@ class DailyReportMonitoringService
 
             $unitKerjaIds = UserContextService::getUserUnitKerjaIdsForUser($user);
 
-            $template = FormTemplate::with([
+            $template = \App\Models\FormTemplate::with([
                 'imutProfile.imutData',
                 'formFields.options',
                 'dailyReportResponses' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {

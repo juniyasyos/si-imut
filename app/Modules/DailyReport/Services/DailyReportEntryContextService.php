@@ -3,7 +3,7 @@
 namespace App\Modules\DailyReport\Services;
 
 use App\Modules\DailyReport\Models\DailyReportResponse;
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use App\Models\LaporanImutAutoGenerationSetting;
 use Carbon\Carbon;
 use App\Modules\DailyReport\Services\CachedSettingsService;
@@ -13,7 +13,7 @@ class DailyReportEntryContextService
     public function resolveTemplate(?string $indicatorId = null, int|string|null $recordId = null): ?FormTemplate
     {
         if ($indicatorId) {
-            return FormTemplate::with(['formFields.options', 'imutProfile.imutData.categories'])
+            return \App\Models\FormTemplate::with(['formFields.options', 'imutProfile.imutData.categories'])
                 ->find((int) $indicatorId);
         }
 

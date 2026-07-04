@@ -3,8 +3,8 @@
 namespace App\Modules\DailyReport\Services;
 
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
-use App\Models\EnhancedFormField;
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\EnhancedFormField;
+use App\Modules\FormEngine\Models\FormTemplate;
 use Illuminate\Support\Collection;
 
 /**

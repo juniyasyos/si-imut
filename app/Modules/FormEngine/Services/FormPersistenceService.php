@@ -2,7 +2,7 @@
 
 namespace App\Modules\FormEngine\Services;
 
-use App\Models\ImutProfile;
+use App\Modules\ImutMaster\Models\ImutProfile;
 use App\Modules\FormEngine\Models\FormTemplate;
 use App\Modules\FormEngine\Models\EnhancedFormField;
 use Carbon\Carbon;

@@ -2,7 +2,7 @@
 
 namespace App\Modules\DailyReport\Services\Exports;
 
-use App\Models\FormTemplate;
+use App\Modules\FormEngine\Models\FormTemplate;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;

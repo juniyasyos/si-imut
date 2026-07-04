@@ -2,7 +2,7 @@
 
 namespace App\Modules\FormEngine\Services;
 
-use App\Models\DailyReportResponse;
+use App\Modules\DailyReport\Models\DailyReportResponse;
 use App\Modules\FormEngine\Models\FieldResponse;
 use App\Modules\FormEngine\Models\FormTemplate;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
