@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\SelectFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\FormFields;
-use App\Models\EnhancedFormField;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
@@ -18,7 +17,7 @@ trait BuildsDynamicForm
     /**
      * Generate form component from FormField model
      */
-    protected function buildFormComponent(EnhancedFormField $field)
+    protected function buildFormComponent(  $field)
     {
         // Use FormFields helper for complex field types with 'responses.' prefix
         if (in_array($field->field_type, ['time_duration', 'time_range', 'single_select', 'multi_select', 'boolean'])) {
@@ -98,7 +97,7 @@ trait BuildsDynamicForm
     /**
      * Get field options for select/radio/checkbox components
      */
-    protected function getFieldOptions(EnhancedFormField $field): array
+    protected function getFieldOptions(  $field): array
     {
         // Check if field has options relation
         if ($field->relationLoaded('options') && $field->options->isNotEmpty()) {
@@ -150,7 +149,7 @@ trait BuildsDynamicForm
     /**
      * Build text field with history suggestions capability
      */
-    protected function buildTextFieldWithHistory(EnhancedFormField $field)
+    protected function buildTextFieldWithHistory(  $field)
     {
         $historySuggestions = $field->history_suggestions ?? [];
 
