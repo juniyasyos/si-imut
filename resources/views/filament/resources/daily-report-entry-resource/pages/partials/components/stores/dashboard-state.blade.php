@@ -265,7 +265,7 @@ x-data="{
     getMonitoringPeriodText() {
         const date = new Date(this.monitoringMonth + '-01');
         const monthName = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-        return \`Periode: Monitoring \${monthName}\`;
+        return \`Bulan \${monthName}\`;
     },
     
     changeMonitoringPeriod(direction) {

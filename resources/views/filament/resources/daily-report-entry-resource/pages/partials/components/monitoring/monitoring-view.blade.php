@@ -19,7 +19,6 @@
                         </div>
 
                         <h2 class="text-xl font-bold tracking-tight text-gray-950 dark:text-white">
-                            Monitoring Bulan
                             <span class="text-primary-600 dark:text-primary-400"
                                 x-text="getMonitoringPeriodText()"></span>
                         </h2>
