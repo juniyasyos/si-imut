@@ -4,6 +4,7 @@ namespace App\Modules\ImutMaster\Models;
 
 use App\Models\LaporanUnitKerja;
 use App\Models\FieldResponse;
+use App\Models\RegionType;
 
 use App\Support\CacheKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
