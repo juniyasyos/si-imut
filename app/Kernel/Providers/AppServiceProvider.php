@@ -206,11 +206,15 @@ class AppServiceProvider extends ServiceProvider
                 'model' => 'App\\Models\\' . pathinfo($file, PATHINFO_FILENAME),
                 'policy' => 'App\\Policies\\' . pathinfo($file, PATHINFO_FILENAME) . 'Policy',
             ])
-            ->each(
-                fn($item) => class_exists($item['model']) && class_exists($item['policy'])
-                    ? Gate::policy($item['model'], $item['policy'])
-                    : null
-            );
+            ->each(function($item) {
+                try {
+                    if (class_exists($item['model']) && class_exists($item['policy'])) {
+                        Gate::policy($item['model'], $item['policy']);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore errors during class loading (e.g. missing parent classes during refactoring)
+                }
+            });
     }
 
     /**
