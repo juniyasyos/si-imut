@@ -12,7 +12,6 @@ class ReportingServiceProvider extends ServiceProvider
             Contracts\ReportingInterface::class,
             Services\ReportingService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'reporting');
     }
 
     public function boot(): void

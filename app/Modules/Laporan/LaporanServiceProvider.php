@@ -12,7 +12,6 @@ class LaporanServiceProvider extends ServiceProvider
             Contracts\LaporanInterface::class,
             Services\LaporanService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'laporan');
     }
 
     public function boot(): void

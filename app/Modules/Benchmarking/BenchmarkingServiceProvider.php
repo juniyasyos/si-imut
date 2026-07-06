@@ -12,7 +12,6 @@ class BenchmarkingServiceProvider extends ServiceProvider
             Contracts\BenchmarkingInterface::class,
             Services\BenchmarkingService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'benchmarking');
     }
 
     public function boot(): void

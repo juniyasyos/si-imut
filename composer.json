@@ -131,7 +131,7 @@
         "prod-setup": [
             "rm -rf ./storage/debugbar/*.json",
             "@php artisan db:wipe",
-            "mysql -h 127.0.0.1 -u juni -ppassword --max_allowed_packet=512M --net_buffer_length=16384 siimut < ./database/schema/siimut_db.sql"
+            "mysql -h 127.0.0.1 -u juni -ppassword --max_allowed_packet=512M --net_buffer_length=16384 siimut < ./database/schema/siimut_db_news.sql"
         ],
         "wipe-db": [
             "@php artisan migrate:fresh",

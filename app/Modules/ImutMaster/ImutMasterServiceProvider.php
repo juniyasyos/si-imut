@@ -12,7 +12,6 @@ class ImutMasterServiceProvider extends ServiceProvider
             Contracts\ImutMasterInterface::class,
             Services\ImutMasterService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'imut-master');
     }
 
     public function boot(): void

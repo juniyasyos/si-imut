@@ -12,7 +12,6 @@ class AuthorizationServiceProvider extends ServiceProvider
             Contracts\AuthorizationInterface::class,
             Services\AuthorizationService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'authorization');
     }
 
     public function boot(): void

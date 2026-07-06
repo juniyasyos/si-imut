@@ -12,7 +12,6 @@ class DailyReportServiceProvider extends ServiceProvider
             Contracts\DailyReportInterface::class,
             Services\DailyReportService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'daily-report');
     }
 
     public function boot(): void

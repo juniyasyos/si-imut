@@ -12,7 +12,6 @@ class FormEngineServiceProvider extends ServiceProvider
             Contracts\FormEngineInterface::class,
             Services\FormEngineService::class
         );
-        $this->loadViewsFrom(__DIR__.'/Resources/Views', 'form-engine');
     }
 
     public function boot(): void
