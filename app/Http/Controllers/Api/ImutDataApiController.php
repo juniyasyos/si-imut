@@ -163,7 +163,9 @@ class ImutDataApiController extends Controller
 
         // Available notes
         $availableNotes = ImutDataNote::where('imut_data_id', $imutData->id)
-            ->whereRelation('laporanImuts', 'id', $laporan->id)
+            ->whereHas('laporanImuts', function ($q) use ($laporan) {
+                $q->where('laporan_imuts.id', $laporan->id);
+            })
             ->get()
             ->map(function ($note) {
                 return [

@@ -502,15 +502,15 @@
                     <strong class="block mb-2 text-sm">Capaian Indikator:</strong>
                     <p class="ml-4 text-sm leading-relaxed">
                         Capaian indikator <strong x-text="imutData.title"></strong> pada periode yang dipilih adalah
-                        <strong x-text="summary.average_percentage ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'"></strong>.
+                        <strong x-text="summary.average_percentage != null ? summary.average_percentage.toFixed(2) + '%' : 'Loading...'"></strong>.
                         Target standar yang ditetapkan adalah <strong x-text="'≥ ' + imutData.standard + '%'"></strong>.
 
-                        <span x-show="summary.average_percentage >= imutData.standard" class="text-green-700 font-semibold block mt-2">
+                        <span x-show="summary.average_percentage != null && summary.average_percentage >= imutData.standard" class="text-green-700 font-semibold block mt-2">
                             ✓ Indikator ini telah memenuhi standar yang ditetapkan.
                         </span>
-                        <span x-show="summary.average_percentage < imutData.standard" class="text-red-700 font-semibold block mt-2">
+                        <span x-show="summary.average_percentage != null && summary.average_percentage < imutData.standard" class="text-red-700 font-semibold block mt-2">
                             ✗ Indikator ini belum memenuhi standar yang ditetapkan
-                            (kurang <span x-text="summary.average_percentage ? (imutData.standard - summary.average_percentage).toFixed(2) : 'Loading...'"></span>%).
+                            (kurang <span x-text="summary.average_percentage != null ? (imutData.standard - summary.average_percentage).toFixed(2) : ''"></span>%).
                         </span>
                     </p>
                 </div>
