@@ -884,13 +884,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/livewire/livewire.min.js' => 
+      '/livewire/livewire.js' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'generated::KkMyZrjl9kDH2JRo',
+            '_route' => 'generated::BPEKfTdSzHdBHbqZ',
           ),
           1 => NULL,
           2 => 
@@ -910,7 +910,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::AIrfQkzZxgU1MwLY',
+            '_route' => 'generated::gmrPkMljvwtuPltT',
           ),
           1 => NULL,
           2 => 
@@ -988,7 +988,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::6eIch6m9Hl7P4h8B',
+            '_route' => 'generated::AdVFrqyd9VBWNITW',
           ),
           1 => NULL,
           2 => 
@@ -1008,7 +1008,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::fUscGtk4oMwfBnkI',
+            '_route' => 'generated::jiY2xOC1juiYzFm7',
           ),
           1 => NULL,
           2 => 
@@ -1028,7 +1028,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::NBGaGWOiarqCgqLm',
+            '_route' => 'generated::bMUkXHFLhflxuLIe',
           ),
           1 => NULL,
           2 => 
@@ -1048,7 +1048,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::U7yUrz0QfDCDmxcp',
+            '_route' => 'generated::ckbQ43PsquNFQ0fZ',
           ),
           1 => NULL,
           2 => 
@@ -1068,7 +1068,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::pNUY8JeanrzEyoNF',
+            '_route' => 'generated::Yf6Tdb1BUTjHaTf7',
           ),
           1 => NULL,
           2 => 
@@ -1088,7 +1088,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::liWrzu6Wm7H6rkBl',
+            '_route' => 'generated::UWJbNC7RHRUgTjJr',
           ),
           1 => NULL,
           2 => 
@@ -1107,47 +1107,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::ooSt6jIfBGhGi3dA',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/laporan/indikator-mutu/kategori' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'laporan.indikator-mutu.by-category',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/laporan/indikator-mutu/kategori/pdf' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'laporan.indikator-mutu.by-category.pdf',
+            '_route' => 'generated::tg12FkFYHe2YPrt6',
           ),
           1 => NULL,
           2 => 
@@ -1347,6 +1307,46 @@ app('router')->setCompiledRoutes(
           0 => 
           array (
             '_route' => 'api.user-applications',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/laporan/indikator-mutu/kategori' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'laporan.indikator-mutu.by-category',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/laporan/indikator-mutu/kategori/pdf' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'laporan.indikator-mutu.by-category.pdf',
           ),
           1 => NULL,
           2 => 
@@ -2232,7 +2232,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::hOPMNRSx0dy8YElH',
+            '_route' => 'generated::rfKO1kSO8CFPwmX4',
             'timeKey' => NULL,
           ),
           1 => 
@@ -2256,7 +2256,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::tBhB1ud1ZLSTotxc',
+            '_route' => 'generated::s8aaE1xCtUurG48a',
           ),
           1 => 
           array (
@@ -2279,7 +2279,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::lQFLCBX296khnFgE',
+            '_route' => 'generated::xU1SabPyDkHWBBIV',
           ),
           1 => 
           array (
@@ -2302,7 +2302,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::47AJtdeZpCXBZMRd',
+            '_route' => 'generated::blb1Y7fcuG5IHBGH',
           ),
           1 => 
           array (
@@ -2325,7 +2325,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::2LJoOELpV4omnQjV',
+            '_route' => 'generated::I30y1M752BrsE8Zc',
           ),
           1 => 
           array (
@@ -2348,7 +2348,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::UdFq6VlsJ3RiM19t',
+            '_route' => 'generated::ggoHzgOk0k84XwNp',
           ),
           1 => 
           array (
@@ -2419,7 +2419,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::naULOj2TZ67iUR6h',
+            '_route' => 'generated::VPc3Zun1Y7mqSXhh',
           ),
           1 => 
           array (
@@ -5947,19 +5947,19 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::KkMyZrjl9kDH2JRo' => 
+    'generated::BPEKfTdSzHdBHbqZ' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'livewire/livewire.min.js',
+      'uri' => 'livewire/livewire.js',
       'action' => 
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
-        'as' => 'generated::KkMyZrjl9kDH2JRo',
+        'as' => 'generated::BPEKfTdSzHdBHbqZ',
       ),
       'fallback' => false,
       'defaults' => 
@@ -5975,7 +5975,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::AIrfQkzZxgU1MwLY' => 
+    'generated::gmrPkMljvwtuPltT' => 
     array (
       'methods' => 
       array (
@@ -5987,7 +5987,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
-        'as' => 'generated::AIrfQkzZxgU1MwLY',
+        'as' => 'generated::gmrPkMljvwtuPltT',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6076,7 +6076,7 @@ app('router')->setCompiledRoutes(
         \\response()
             ->download($path, $filename)
             ->deleteFileAfterSend();
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000015f40000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000016d80000000000000000";}}',
         'middleware' => 
         array (
           0 => 'web',
@@ -6152,7 +6152,7 @@ app('router')->setCompiledRoutes(
     return \\redirect(
         \\session()->pull(\'impersonate.back_to\')
     );
-}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000017ec0000000000000000";}}',
+}";s:5:"scope";s:34:"Illuminate\\Support\\ServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000018d00000000000000000";}}',
         'as' => 'filament-impersonate.leave',
         'middleware' => 
         array (
@@ -6322,7 +6322,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::6eIch6m9Hl7P4h8B' => 
+    'generated::AdVFrqyd9VBWNITW' => 
     array (
       'methods' => 
       array (
@@ -6339,13 +6339,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:77:"function (\\Illuminate\\Http\\Request $request) {
     return $request->user();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000018c70000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000018bd0000000000000000";}}',
         'namespace' => NULL,
         'prefix' => 'api',
         'where' => 
         array (
         ),
-        'as' => 'generated::6eIch6m9Hl7P4h8B',
+        'as' => 'generated::AdVFrqyd9VBWNITW',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6361,7 +6361,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::fUscGtk4oMwfBnkI' => 
+    'generated::jiY2xOC1juiYzFm7' => 
     array (
       'methods' => 
       array (
@@ -6382,7 +6382,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::fUscGtk4oMwfBnkI',
+        'as' => 'generated::jiY2xOC1juiYzFm7',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6398,7 +6398,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::hOPMNRSx0dy8YElH' => 
+    'generated::rfKO1kSO8CFPwmX4' => 
     array (
       'methods' => 
       array (
@@ -6419,7 +6419,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::hOPMNRSx0dy8YElH',
+        'as' => 'generated::rfKO1kSO8CFPwmX4',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6435,7 +6435,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::NBGaGWOiarqCgqLm' => 
+    'generated::bMUkXHFLhflxuLIe' => 
     array (
       'methods' => 
       array (
@@ -6456,7 +6456,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::NBGaGWOiarqCgqLm',
+        'as' => 'generated::bMUkXHFLhflxuLIe',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6472,7 +6472,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::tBhB1ud1ZLSTotxc' => 
+    'generated::s8aaE1xCtUurG48a' => 
     array (
       'methods' => 
       array (
@@ -6493,7 +6493,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::tBhB1ud1ZLSTotxc',
+        'as' => 'generated::s8aaE1xCtUurG48a',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6509,7 +6509,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::lQFLCBX296khnFgE' => 
+    'generated::xU1SabPyDkHWBBIV' => 
     array (
       'methods' => 
       array (
@@ -6530,7 +6530,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::lQFLCBX296khnFgE',
+        'as' => 'generated::xU1SabPyDkHWBBIV',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6546,7 +6546,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::U7yUrz0QfDCDmxcp' => 
+    'generated::ckbQ43PsquNFQ0fZ' => 
     array (
       'methods' => 
       array (
@@ -6567,7 +6567,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::U7yUrz0QfDCDmxcp',
+        'as' => 'generated::ckbQ43PsquNFQ0fZ',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6583,7 +6583,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::pNUY8JeanrzEyoNF' => 
+    'generated::Yf6Tdb1BUTjHaTf7' => 
     array (
       'methods' => 
       array (
@@ -6604,7 +6604,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::pNUY8JeanrzEyoNF',
+        'as' => 'generated::Yf6Tdb1BUTjHaTf7',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6620,7 +6620,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::liWrzu6Wm7H6rkBl' => 
+    'generated::UWJbNC7RHRUgTjJr' => 
     array (
       'methods' => 
       array (
@@ -6640,7 +6640,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::liWrzu6Wm7H6rkBl',
+        'as' => 'generated::UWJbNC7RHRUgTjJr',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6656,7 +6656,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::47AJtdeZpCXBZMRd' => 
+    'generated::blb1Y7fcuG5IHBGH' => 
     array (
       'methods' => 
       array (
@@ -6677,7 +6677,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::47AJtdeZpCXBZMRd',
+        'as' => 'generated::blb1Y7fcuG5IHBGH',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6693,7 +6693,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::2LJoOELpV4omnQjV' => 
+    'generated::I30y1M752BrsE8Zc' => 
     array (
       'methods' => 
       array (
@@ -6714,7 +6714,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::2LJoOELpV4omnQjV',
+        'as' => 'generated::I30y1M752BrsE8Zc',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6730,7 +6730,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::UdFq6VlsJ3RiM19t' => 
+    'generated::ggoHzgOk0k84XwNp' => 
     array (
       'methods' => 
       array (
@@ -6751,7 +6751,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::UdFq6VlsJ3RiM19t',
+        'as' => 'generated::ggoHzgOk0k84XwNp',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6804,7 +6804,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::ooSt6jIfBGhGi3dA' => 
+    'generated::tg12FkFYHe2YPrt6' => 
     array (
       'methods' => 
       array (
@@ -6832,8 +6832,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/it_support/projects/rsch/siimut/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000018c90000000000000000";}}',
-        'as' => 'generated::ooSt6jIfBGhGi3dA',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000018b50000000000000000";}}',
+        'as' => 'generated::tg12FkFYHe2YPrt6',
       ),
       'fallback' => false,
       'defaults' => 
@@ -6841,237 +6841,6 @@ app('router')->setCompiledRoutes(
       ),
       'wheres' => 
       array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'laporan.indikator-mutu.show' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'laporan/indikator-mutu/{indicator}/{periode}',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\ImutIndicatorReportController@show',
-        'controller' => 'App\\Http\\Controllers\\ImutIndicatorReportController@show',
-        'as' => 'laporan.indikator-mutu.show',
-        'namespace' => NULL,
-        'prefix' => '/laporan/indikator-mutu',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-        'indicator' => '[a-z0-9-]+',
-        'periode' => '[0-9]+',
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'laporan.indikator-mutu.detail' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'laporan/indikator-mutu/{indicator}/{periode}/{filter_periode?}/{catatan?}',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\ImutIndicatorReportController@detail',
-        'controller' => 'App\\Http\\Controllers\\ImutIndicatorReportController@detail',
-        'as' => 'laporan.indikator-mutu.detail',
-        'namespace' => NULL,
-        'prefix' => '/laporan/indikator-mutu',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-        'indicator' => '[a-z0-9-]+',
-        'periode' => '[0-9]+',
-        'filter_periode' => '[a-z_]+',
-        'catatan' => '[0-9]+',
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'laporan.indikator-mutu.by-category' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'laporan/indikator-mutu/kategori',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\CategoryReportController@show',
-        'controller' => 'App\\Http\\Controllers\\CategoryReportController@show',
-        'as' => 'laporan.indikator-mutu.by-category',
-        'namespace' => NULL,
-        'prefix' => '/laporan/indikator-mutu',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'laporan.indikator-mutu.by-category.pdf' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'laporan/indikator-mutu/kategori/pdf',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\CategoryReportPdfController@download',
-        'controller' => 'App\\Http\\Controllers\\CategoryReportPdfController@download',
-        'as' => 'laporan.indikator-mutu.by-category.pdf',
-        'namespace' => NULL,
-        'prefix' => '/laporan/indikator-mutu',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'laporan.indikator-mutu.unit-kerja.show' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'laporan/indikator-mutu/unit-kerja/{unitKerja}',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
-        'controller' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
-        'as' => 'laporan.indikator-mutu.unit-kerja.show',
-        'namespace' => NULL,
-        'prefix' => 'laporan/indikator-mutu/unit-kerja',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'laporan.indikator-mutu.unit-kerja.show-with-period' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'laporan/indikator-mutu/unit-kerja/{unitKerja}/{tipe}/{periode}',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
-        'controller' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
-        'as' => 'laporan.indikator-mutu.unit-kerja.show-with-period',
-        'namespace' => NULL,
-        'prefix' => 'laporan/indikator-mutu/unit-kerja',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-        'unitKerja' => '[a-z0-9-]+',
-        'tipe' => 'yearly|quarterly|semester|custom',
-        'periode' => '[a-zA-Z0-9\\-,]+',
       ),
       'bindingFields' => 
       array (
@@ -7512,7 +7281,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::naULOj2TZ67iUR6h' => 
+    'generated::VPc3Zun1Y7mqSXhh' => 
     array (
       'methods' => 
       array (
@@ -7534,7 +7303,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::naULOj2TZ67iUR6h',
+        'as' => 'generated::VPc3Zun1Y7mqSXhh',
       ),
       'fallback' => true,
       'defaults' => 
@@ -7543,6 +7312,237 @@ app('router')->setCompiledRoutes(
       'wheres' => 
       array (
         'fallbackPlaceholder' => '.*',
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'laporan.indikator-mutu.show' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'laporan/indikator-mutu/{indicator}/{periode}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+        ),
+        'uses' => 'App\\Http\\Controllers\\ImutIndicatorReportController@show',
+        'controller' => 'App\\Http\\Controllers\\ImutIndicatorReportController@show',
+        'as' => 'laporan.indikator-mutu.show',
+        'namespace' => NULL,
+        'prefix' => '/laporan/indikator-mutu',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+        'indicator' => '[a-z0-9-]+',
+        'periode' => '[0-9]+',
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'laporan.indikator-mutu.detail' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'laporan/indikator-mutu/{indicator}/{periode}/{filter_periode?}/{catatan?}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+        ),
+        'uses' => 'App\\Http\\Controllers\\ImutIndicatorReportController@detail',
+        'controller' => 'App\\Http\\Controllers\\ImutIndicatorReportController@detail',
+        'as' => 'laporan.indikator-mutu.detail',
+        'namespace' => NULL,
+        'prefix' => '/laporan/indikator-mutu',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+        'indicator' => '[a-z0-9-]+',
+        'periode' => '[0-9]+',
+        'filter_periode' => '[a-z_]+',
+        'catatan' => '[0-9]+',
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'laporan.indikator-mutu.by-category' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'laporan/indikator-mutu/kategori',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+        ),
+        'uses' => 'App\\Http\\Controllers\\CategoryReportController@show',
+        'controller' => 'App\\Http\\Controllers\\CategoryReportController@show',
+        'as' => 'laporan.indikator-mutu.by-category',
+        'namespace' => NULL,
+        'prefix' => '/laporan/indikator-mutu',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'laporan.indikator-mutu.by-category.pdf' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'laporan/indikator-mutu/kategori/pdf',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+        ),
+        'uses' => 'App\\Http\\Controllers\\CategoryReportPdfController@download',
+        'controller' => 'App\\Http\\Controllers\\CategoryReportPdfController@download',
+        'as' => 'laporan.indikator-mutu.by-category.pdf',
+        'namespace' => NULL,
+        'prefix' => '/laporan/indikator-mutu',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'laporan.indikator-mutu.unit-kerja.show' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'laporan/indikator-mutu/unit-kerja/{unitKerja}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+        ),
+        'uses' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
+        'controller' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
+        'as' => 'laporan.indikator-mutu.unit-kerja.show',
+        'namespace' => NULL,
+        'prefix' => 'laporan/indikator-mutu/unit-kerja',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'laporan.indikator-mutu.unit-kerja.show-with-period' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'laporan/indikator-mutu/unit-kerja/{unitKerja}/{tipe}/{periode}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+        ),
+        'uses' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
+        'controller' => 'App\\Http\\Controllers\\UnitKerjaLaporanController@show',
+        'as' => 'laporan.indikator-mutu.unit-kerja.show-with-period',
+        'namespace' => NULL,
+        'prefix' => 'laporan/indikator-mutu/unit-kerja',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+        'unitKerja' => '[a-z0-9-]+',
+        'tipe' => 'yearly|quarterly|semester|custom',
+        'periode' => '[a-zA-Z0-9\\-,]+',
       ),
       'bindingFields' => 
       array (
@@ -7568,7 +7568,7 @@ app('router')->setCompiledRoutes(
                         \'spec\' => $generator($config),
                         \'config\' => $config,
                     ]);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000018610000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000191e0000000000000000";}}',
         'as' => 'scramble.docs.ui',
         'middleware' => 
         array (
@@ -7603,7 +7603,7 @@ app('router')->setCompiledRoutes(
                     $config = \\Dedoc\\Scramble\\Scramble::getGeneratorConfig($api);
 
                     return response()->json($generator($config), options: JSON_PRETTY_PRINT);
-                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000018950000000000000000";}}',
+                }";s:5:"scope";s:38:"Dedoc\\Scramble\\ScrambleServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000018520000000000000000";}}',
         'as' => 'scramble.docs.document',
         'middleware' => 
         array (

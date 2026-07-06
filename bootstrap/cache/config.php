@@ -157,8 +157,8 @@
   'app' => 
   array (
     'name' => 'SI-IMUT',
-    'env' => 'production',
-    'debug' => false,
+    'env' => 'local',
+    'debug' => true,
     'url' => 'http://127.0.0.1:8000',
     'frontend_url' => 'http://localhost:3000',
     'asset_url' => NULL,
@@ -1261,7 +1261,7 @@
         0 => 'App\\Filament\\Resources\\UnitKerjaResource',
       ),
     ),
-    'app_env' => 'production',
+    'app_env' => 'local',
     'center_application' => false,
     'app_center_url' => 'http://127.0.0.1:8010',
     'sync' => 
