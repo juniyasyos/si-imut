@@ -24,14 +24,9 @@ class CachedSettingsService
             return self::$cachedSetting;
         }
 
-        // Load once from cache or database
-        self::$cachedSetting = Cache::remember(
-            'laporan_imut_auto_generation_setting_instance',
-            3600, // 1 hour
-            function () {
-                return LaporanImutAutoGenerationSetting::getInstance();
-            }
-        );
+        // Load once from static cache if already loaded in this request
+        // LaporanImutAutoGenerationSetting::getInstance() handles its own application cache.
+        self::$cachedSetting = LaporanImutAutoGenerationSetting::getInstance();
 
         return self::$cachedSetting;
     }
@@ -60,6 +55,5 @@ class CachedSettingsService
     {
         self::$cachedSetting = null;
         self::$cachedBackDays = null;
-        \Illuminate\Support\Facades\Cache::forget('laporan_imut_auto_generation_setting_instance');
     }
 }
