@@ -36,6 +36,8 @@ class ImutCapaianDataService
         $chartData = $this->initializeChartData($categories, $monthsInPeriod);
         $stats = $this->initializeStats($categories, $periodLabel);
 
+        $laporans->loadMissing(['laporanUnitKerjas.imutPenilaians.profile.imutData.categories']);
+
         $laporansByMonth = $this->groupLaporansByMonth($laporans, $monthsInPeriod);
 
         foreach ($laporansByMonth as $month => $monthlyLaporans) {

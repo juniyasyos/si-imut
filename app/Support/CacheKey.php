@@ -112,6 +112,35 @@ final class CacheKey
             . '_end_month_' . $endMonth;
     }
 
+    /**
+     * Invalidate semua kombinasi cache penilaian untuk indikator & tahun tertentu.
+     * Menyasar kombinasi startMonth dan endMonth.
+     */
+    public static function invalidateImutPenilaianCache(int $imutDataId, int|string $year): void
+    {
+        $months = array_merge(range(1, 12), [null]);
+
+        foreach ($months as $startMonth) {
+            foreach ($months as $endMonth) {
+                Cache::forget(static::imutPenilaian($imutDataId, $year, $startMonth, $endMonth));
+            }
+        }
+    }
+
+    /**
+     * Invalidate semua kombinasi cache penilaian unit kerja untuk indikator & tahun tertentu.
+     * Menyasar kombinasi endMonth.
+     */
+    public static function invalidateImutPenilaianImutDataUnitKerjaCache(int $imutDataId, int $year, ?int $unitKerjaId = null): void
+    {
+        $months = array_merge(range(1, 12), [null]);
+
+        foreach ($months as $endMonth) {
+            $month = is_int($endMonth) ? $endMonth : 12;
+            Cache::forget(static::imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId, $month));
+        }
+    }
+
     public static function recentLaporanList(int $limit = 6): string
     {
         return "laporan.recent_list.limit_{$limit}";
@@ -263,6 +292,54 @@ final class CacheKey
     public static function formTemplateData(int $templateId): string
     {
         return "form:template:data:{$templateId}";
+    }
+
+    public static function usersSetRoleOptions(): string
+    {
+        return 'users:set_role:options';
+    }
+
+    public static function laporanImutAutoGenerationSetting(): string
+    {
+        return 'laporan_imut_auto_generation_setting';
+    }
+
+    public static function imutCategoriesShortNames(): string
+    {
+        return 'imut:categories:short_names';
+    }
+
+    public static function greetingQuotes(): string
+    {
+        return 'greeting_quotes';
+    }
+
+    public static function monitoringTemplates(array $unitKerjaIds, ?string $month = null): string
+    {
+        sort($unitKerjaIds);
+        $unitKerjaHash = md5(implode(',', $unitKerjaIds));
+        $key = "monitoring_templates:{$unitKerjaHash}";
+        if ($month) {
+            $key .= ":{$month}";
+        }
+        return $key;
+    }
+
+    public static function monitoringTemplatesAll(array $unitKerjaIds): string
+    {
+        sort($unitKerjaIds);
+        $unitKerjaHash = md5(implode(',', $unitKerjaIds));
+        return "monitoring_templates_all:{$unitKerjaHash}";
+    }
+
+    public static function imutCapaianUnitKerjaWidget(array $filters): string
+    {
+        return 'imut_capaian_unit_kerja_' . md5(serialize($filters));
+    }
+
+    public static function imutCapaianWidgetBasic(array $statuses): string
+    {
+        return static::imutLaporans() . '_basic_' . implode('_', $statuses);
     }
 
     /**

@@ -364,7 +364,7 @@ class ImutCapaianWidget extends ApexChartWidget
     {
         $statuses = $this->filterFormData['status'] ?? [LaporanImut::STATUS_COMPLETE];
 
-        $cacheKey = CacheKey::imutLaporans() . '_basic_' . implode('_', $statuses);
+        $cacheKey = CacheKey::imutCapaianWidgetBasic($statuses);
 
         return Cache::remember(
             $cacheKey,

@@ -89,7 +89,7 @@ class ImutPenilaianRepository implements ImutPenilaianRepositoryInterface
 
     public function getByCategoryPeriod(array $categoryIds, array $monthStrings, Carbon $startDate, Carbon $endDate): Collection
     {
-        $query = ImutPenilaian::with(['profile.imutData', 'laporanUnitKerja.laporanImut'])
+        $query = ImutPenilaian::with(['profile.imutData.categories', 'laporanUnitKerja.laporanImut', 'laporanUnitKerja.unitKerja'])
             ->whereHas('profile.imutData', fn ($q) => $q->where('status', true));
 
         if (count($categoryIds) > 0) {

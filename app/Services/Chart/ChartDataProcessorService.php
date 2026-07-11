@@ -24,6 +24,7 @@ class ChartDataProcessorService
      */
     public function processCapaianData(Collection $laporans, array $categories): array
     {
+        $laporans->loadMissing(['laporanUnitKerjas.imutPenilaians.profile.imutData.categories']);
         $data = $this->initializeCategoryData($categories, $laporans->count());
 
         foreach ($laporans as $index => $laporan) {
@@ -50,6 +51,7 @@ class ChartDataProcessorService
      */
     public function processCategoryAchievementData($laporan, array $categories): array
     {
+        $laporan->loadMissing(['laporanUnitKerjas.imutPenilaians.profile.imutData.categories']);
         $results = array_fill_keys($categories, 0);
         $categoryData = [];
 

@@ -104,7 +104,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $cacheKey = 'imut_capaian_unit_kerja_'.md5(serialize($this->filters));
+        $cacheKey = CacheKey::imutCapaianUnitKerjaWidget($this->filters);
 
         return Cache::remember($cacheKey, now()->addMinutes(30), function () {
             // Get categories once and pass to service

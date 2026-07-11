@@ -30,7 +30,7 @@ class ImutChartSeriesService
 
     public function getCategories(): array
     {
-        return Cache::remember('imut:categories:short_names', now()->addDay(), function () {
+        return Cache::remember(\App\Support\CacheKey::imutCategoriesShortNames(), now()->addDay(), function () {
             return ImutCategory::orderBy('short_name')->pluck('short_name')->toArray();
         });
     }
@@ -55,6 +55,7 @@ class ImutChartSeriesService
     public function calculateAchievementData($laporans, array $categories): array
     {
         $laporans = collect($laporans);
+        $laporans->loadMissing(['laporanUnitKerjas.imutPenilaians.profile.imutData.categories']);
         $data = [];
 
         // Init semua kategori dengan array kosong sejumlah laporan

@@ -62,70 +62,7 @@ class ImutPenilaian extends Model implements HasMedia
         'calculation_metadata' => 'array',
     ];
 
-    /**
-     * Boot model events
-     */
-    protected static function booted(): void
-    {
-        static::saved(fn(self $penilaian) => $penilaian->clearCache());
-        static::deleted(fn(self $penilaian) => $penilaian->clearCache());
-    }
 
-    public function clearCache()
-    {
-        $this->loadMissing(['profile', 'laporanUnitKerja.laporanImut']);
-
-        $laporanUnitKerja = $this->laporanUnitKerja;
-
-        if ($laporanUnitKerja) {
-            $laporanId = $laporanUnitKerja->laporan_imut_id;
-            $unitKerjaId = $laporanUnitKerja->unit_kerja_id;
-
-            Cache::forget(CacheKey::laporanUnitDetail($laporanId, $unitKerjaId));
-            Cache::forget(CacheKey::dashboardSiimutAllData($laporanId));
-            Cache::forget(CacheKey::dashboardSiimutChartData());
-
-            // Clear completion chart cache
-            Cache::forget(CacheKey::unitKerjaCompletionStats($laporanId));
-            Cache::forget(CacheKey::imutDataCompletionStats($laporanId));
-
-            // Clear widget recommendation analysis cache
-            Cache::forget(CacheKey::recommendationAnalysisTimMutuOngoing());
-            Cache::forget(CacheKey::recommendationAnalysisTimMutuPrevious());
-            Cache::forget(CacheKey::recommendationAnalysisCompletionStats($laporanId));
-            Cache::forget(CacheKey::recommendationAnalysisCompletionStatsUnitKerja($laporanId, $unitKerjaId));
-
-            // Clear for all users' unit kerja widgets
-            $userIds = \App\Models\User::whereHas('unitKerjas', function ($q) use ($unitKerjaId) {
-                $q->where('unit_kerja.id', $unitKerjaId);
-            })->pluck('id')->toArray();
-
-            foreach ($userIds as $userId) {
-                Cache::forget(CacheKey::recommendationAnalysisUnitKerjaOngoing($userId));
-                Cache::forget(CacheKey::recommendationAnalysisUnitKerjaPrevious($userId));
-            }
-
-            $laporanImut = $laporanUnitKerja->laporanImut;
-
-            if ($laporanImut && $this->profile) {
-                $imutDataId = $this->profile->imut_data_id;
-                $year = \Carbon\Carbon::parse($laporanImut->assessment_period_start)->year;
-
-                Cache::forget(CacheKey::imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId));
-                Cache::forget(CacheKey::imutPenilaian($imutDataId, $year));
-
-                $regionTypeIds = RegionType::query()->pluck('id');
-                foreach ($regionTypeIds as $regionTypeId) {
-                    Cache::forget(CacheKey::imutBenchmarking($year, $regionTypeId));
-                }
-            }
-            Cache::forget(CacheKey::getPenilaianStats($laporanId, false));
-            Cache::forget(CacheKey::getPenilaianStats($laporanId, true));
-        }
-
-        Cache::forget(CacheKey::imutLaporans());
-        Cache::forget(CacheKey::latestLaporan());
-    }
 
 
     /**

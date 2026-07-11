@@ -72,7 +72,7 @@ class LaporanImutAutoGenerationSetting extends Model
      */
     public static function getInstance(): self
     {
-        return Cache::remember('laporan_imut_auto_generation_setting', 3600, function () {
+        return Cache::remember(\App\Support\CacheKey::laporanImutAutoGenerationSetting(), 3600, function () {
             return static::firstOrCreate([], static::getDefaults());
         });
     }
@@ -82,7 +82,7 @@ class LaporanImutAutoGenerationSetting extends Model
      */
     public static function clearCache(): void
     {
-        Cache::forget('laporan_imut_auto_generation_setting');
+        Cache::forget(\App\Support\CacheKey::laporanImutAutoGenerationSetting());
     }
 
     /**

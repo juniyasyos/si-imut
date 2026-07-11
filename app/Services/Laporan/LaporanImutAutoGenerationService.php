@@ -196,12 +196,12 @@ class LaporanImutAutoGenerationService
         // Get recipients based on targets
         $recipients = $this->getNotificationRecipients($laporan, $targets);
 
-        foreach ($recipients as $recipient) {
+        if ($recipients->isNotEmpty()) {
             Notification::make()
                 ->title($title)
                 ->body($body)
                 ->warning()
-                ->sendToDatabase($recipient);
+                ->sendToDatabase($recipients);
         }
 
         Log::info('Reminder notifications sent', [
@@ -214,20 +214,19 @@ class LaporanImutAutoGenerationService
     /**
      * Get notification recipients
      */
-    protected function getNotificationRecipients(LaporanImut $laporan, array $targets): array
+    protected function getNotificationRecipients(LaporanImut $laporan, array $targets): \Illuminate\Support\Collection
     {
-        $recipients = [];
+        $recipients = collect();
 
         // This can be customized based on your needs
         // For now, just get users with certain permissions
         if (in_array('pic', $targets) || in_array('all', $targets)) {
-            $recipients = array_merge(
-                $recipients,
-                User::permission('update_laporan::imut')->get()->toArray()
+            $recipients = $recipients->merge(
+                User::permission('update_laporan::imut')->get()
             );
         }
 
-        return $recipients;
+        return $recipients->unique('id')->values();
     }
 
     /**

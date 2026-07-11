@@ -57,30 +57,68 @@ class ImutPenilaianObserver
         // Load relasi jika belum di-load
         $penilaian->loadMissing(['laporanUnitKerja.laporanImut', 'profile']);
 
-        if (!$penilaian->laporanUnitKerja?->laporanImut) {
+        if (!$penilaian->laporanUnitKerja) {
             return;
         }
 
-        $laporanId = $penilaian->laporanUnitKerja->laporanImut->id;
+        $laporanUnitKerja = $penilaian->laporanUnitKerja;
+        $unitKerjaId = $laporanUnitKerja->unit_kerja_id;
 
-        // Clear cache untuk completion stats
+        if (!$laporanUnitKerja->laporanImut) {
+            return;
+        }
+
+        $laporanImut = $laporanUnitKerja->laporanImut;
+        $laporanId = $laporanImut->id;
+
+        // Basic detail and dashboard caches
+        Cache::forget(CacheKey::laporanUnitDetail($laporanId, $unitKerjaId));
+        Cache::forget(CacheKey::dashboardSiimutAllData($laporanId));
+        Cache::forget(CacheKey::dashboardSiimutChartData());
+        Cache::forget(CacheKey::penilaianGroupedByProfile($laporanId));
+        Cache::forget(CacheKey::imutChartSeriesData($laporanId));
+
+        // Clear completion chart cache
         Cache::forget(CacheKey::unitKerjaCompletionStats($laporanId));
         Cache::forget(CacheKey::imutDataCompletionStats($laporanId));
 
-        // Clear cache untuk chart data
-        Cache::forget(CacheKey::imutChartSeriesData($laporanId));
+        // Clear widget recommendation analysis cache
+        Cache::forget(CacheKey::recommendationAnalysisTimMutuOngoing());
+        Cache::forget(CacheKey::recommendationAnalysisTimMutuPrevious());
+        Cache::forget(CacheKey::recommendationAnalysisCompletionStats($laporanId));
+        Cache::forget(CacheKey::recommendationAnalysisCompletionStatsUnitKerja($laporanId, $unitKerjaId));
 
-        // Clear cache untuk dashboard
-        Cache::forget(CacheKey::dashboardSiimutAllData($laporanId));
+        // Clear for all users' unit kerja widgets
+        $userIds = \App\Models\User::whereHas('unitKerjas', function ($q) use ($unitKerjaId) {
+            $q->where('unit_kerja.id', $unitKerjaId);
+        })->pluck('id')->toArray();
 
-        // Clear cache untuk penilaian grouped
-        Cache::forget(CacheKey::penilaianGroupedByProfile($laporanId));
+        foreach ($userIds as $userId) {
+            Cache::forget(CacheKey::recommendationAnalysisUnitKerjaOngoing($userId));
+            Cache::forget(CacheKey::recommendationAnalysisUnitKerjaPrevious($userId));
+        }
 
-        // Clear cache untuk penilaian stats
-        Cache::forget(CacheKey::getPenilaianStats($laporanId, true));
+        // Invalidasi data indikator berdasarkan profil
+        if ($penilaian->profile) {
+            $imutDataId = $penilaian->profile->imut_data_id;
+            $year = \Carbon\Carbon::parse($laporanImut->assessment_period_start)->year;
+
+            // Invalidate semua kombinasi bulan untuk imutPenilaian dan imutPenilaianImutDataUnitKerja
+            CacheKey::invalidateImutPenilaianImutDataUnitKerjaCache($imutDataId, $year, $unitKerjaId);
+            CacheKey::invalidateImutPenilaianCache($imutDataId, $year);
+
+            // Invalidate semua cache benchmarking dengan benar (menggunakan fungsi utilitas)
+            $regionTypeIds = \App\Models\RegionType::query()->pluck('id');
+            foreach ($regionTypeIds as $regionTypeId) {
+                CacheKey::invalidateBenchmarkingCache($imutDataId, $year, $regionTypeId);
+            }
+        }
+
         Cache::forget(CacheKey::getPenilaianStats($laporanId, false));
+        Cache::forget(CacheKey::getPenilaianStats($laporanId, true));
 
-        // Clear latest laporan cache
+        // Laporan globals
+        Cache::forget(CacheKey::imutLaporans());
         Cache::forget(CacheKey::latestLaporan());
     }
 }

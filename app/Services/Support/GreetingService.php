@@ -44,7 +44,7 @@ class GreetingService
      */
     public function getAllQuotes(): array
     {
-        return Cache::remember('greeting_quotes', now()->addDay(), function () {
+        return Cache::remember(\App\Support\CacheKey::greetingQuotes(), now()->addDay(), function () {
             $path = public_path('quotes/greeting-quotes.json');
 
             if (!File::exists($path)) {

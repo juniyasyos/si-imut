@@ -144,7 +144,7 @@ class UserResourceTable
                     Select::make('role')
                         ->label(__('filament-forms::users.fields.roles'))
                         ->options(function (): array {
-                            return Cache::remember('users:set_role:options', now()->addMinutes(30), function () {
+                            return Cache::remember(\App\Support\CacheKey::usersSetRoleOptions(), now()->addMinutes(30), function () {
                                 return Role::query()
                                     ->orderBy('name')
                                     ->pluck('label', 'id')
