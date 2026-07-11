@@ -37,7 +37,7 @@ class FormTemplateRepository
         Carbon $periodStart,
         Carbon $periodEnd
     ): Collection {
-        $cacheKey = $this->getCacheKey('monitoring_templates', $unitKerjaIds, $periodStart->format('Y-m'));
+        $cacheKey = \App\Support\CacheKey::monitoringTemplates($unitKerjaIds, $periodStart->format('Y-m'));
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($unitKerjaIds, $periodStart, $periodEnd) {
             return $this->queryBuilder
@@ -74,7 +74,7 @@ class FormTemplateRepository
      */
     public function getMonitoringTemplates(array $unitKerjaIds): Collection
     {
-        $cacheKey = $this->getCacheKey('monitoring_templates_all', $unitKerjaIds);
+        $cacheKey = \App\Support\CacheKey::monitoringTemplatesAll($unitKerjaIds);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($unitKerjaIds) {
             return $this->queryBuilder
@@ -174,23 +174,9 @@ class FormTemplateRepository
     public function clearMonitoringCache(array $unitKerjaIds): void
     {
         $month = now()->format('Y-m');
-        Cache::forget($this->getCacheKey('monitoring_templates', $unitKerjaIds, $month));
-        Cache::forget($this->getCacheKey('monitoring_templates_all', $unitKerjaIds));
+        Cache::forget(\App\Support\CacheKey::monitoringTemplates($unitKerjaIds, $month));
+        Cache::forget(\App\Support\CacheKey::monitoringTemplatesAll($unitKerjaIds));
     }
 
-    /**
-     * Generate cache key for monitoring data
-     */
-    private function getCacheKey(string $prefix, array $unitKerjaIds, ?string $suffix = null): string
-    {
-        sort($unitKerjaIds);
-        $unitKerjaHash = md5(implode(',', $unitKerjaIds));
-        $key = "{$prefix}:{$unitKerjaHash}";
 
-        if ($suffix) {
-            $key .= ":{$suffix}";
-        }
-
-        return $key;
-    }
 }
