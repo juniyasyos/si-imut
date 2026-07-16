@@ -68,6 +68,8 @@ class UnitKerjaRelationManager extends RelationManager
 
                         app(\App\Repositories\Interfaces\ImutDataRepositoryInterface::class)
                             ->attachUnitKerjas($imut, [$data['recordId']], auth()->id());
+                            
+                        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
                     })
                     ->attachAnother(false)
                     ->recordSelectSearchColumns(['unit_name']),
@@ -84,11 +86,18 @@ class UnitKerjaRelationManager extends RelationManager
                     }),
                 Tables\Actions\DetachAction::make()
                     ->label('Lepas')
-                    ->requiresConfirmation(),
+                    ->requiresConfirmation()
+                    ->after(function () {
+                        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make()->label('Lepas Beberapa'),
+                    Tables\Actions\DetachBulkAction::make()
+                        ->label('Lepas Beberapa')
+                        ->after(function () {
+                            \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
+                        }),
                 ]),
             ]);
     }

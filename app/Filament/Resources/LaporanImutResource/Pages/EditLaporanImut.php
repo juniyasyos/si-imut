@@ -353,6 +353,22 @@ class EditLaporanImut extends EditRecord
         $laporan = $this->record;
 
         return [
+            // Action to manually trigger ProsesPenilaianImut
+            Action::make('refreshData')
+                ->label('Refresh Data')
+                ->icon('heroicon-o-arrow-path')
+                ->color('info')
+                ->action(function () use ($laporan) {
+                    ProsesPenilaianImut::dispatch($laporan->id, true);
+                    
+                    Notification::make()
+                        ->title('⏳ Sinkronisasi Sedang Diproses')
+                        ->body("Data indikator untuk laporan **{$laporan->name}** sedang diperbarui di background.")
+                        ->info()
+                        ->send();
+                })
+                ->visible(fn() => Gate::allows('update_laporan::imut')),
+
             // Calculate from Daily Reports Action
             Action::make('calculateFromDailyReports')
                 ->label('Hitung dari Daily Report')

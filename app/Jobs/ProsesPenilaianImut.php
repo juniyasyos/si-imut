@@ -23,7 +23,7 @@ class ProsesPenilaianImut implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public int $laporanId) {}
+    public function __construct(public int $laporanId, public bool $isSync = false) {}
 
     public function handle(): void
     {
@@ -104,16 +104,20 @@ class ProsesPenilaianImut implements ShouldQueue
                 }
 
                 // Notifikasi ke pembuat laporan jika ada indikator tanpa profil
-                if (! empty($indikatorKurangProfil)) {
-                    $this->sendMissingProfileNotification($indikatorKurangProfil, $laporan);
-                }
+                if (! $this->isSync) {
+                    if (! empty($indikatorKurangProfil)) {
+                        $this->sendMissingProfileNotification($indikatorKurangProfil, $laporan);
+                    }
 
-                // Notifikasi umum ke semua user unit kerja
-                $this->sendGeneralNotification($laporan);
+                    // Notifikasi umum ke semua user unit kerja
+                    $this->sendGeneralNotification($laporan);
+                }
             });
 
             // Notifikasi akhir proses penilaian ke pembuat laporan
-            $this->sendCompletionNotification();
+            if (! $this->isSync) {
+                $this->sendCompletionNotification();
+            }
         } catch (\Throwable $e) {
             Log::error('Job ProsesPenilaianImut gagal: ' . $e->getMessage(), [
                 'laporan_id' => $this->laporanId,

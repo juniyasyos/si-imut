@@ -24,6 +24,8 @@ class ImutProfileObserver
         } else {
             Log::info("ℹ️  ImutProfile created: ID {$imutProfile->id} - FormTemplate NOT created (conditions not met)");
         }
+        
+        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
     }
 
     /**
@@ -41,6 +43,8 @@ class ImutProfileObserver
                 Log::info("✅ ImutProfile updated: ID {$imutProfile->id} - FormTemplate auto-created due to validity change");
             }
         }
+        
+        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
     }
 
     /**
@@ -51,6 +55,8 @@ class ImutProfileObserver
         // Note: FormTemplates will be cascade deleted by database constraints
         // This is just for logging purposes
         Log::info("ImutProfile {$imutProfile->id} deleted - associated FormTemplates will be cascade deleted");
+        
+        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
     }
 
     /**

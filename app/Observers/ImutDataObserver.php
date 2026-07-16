@@ -15,4 +15,14 @@ class ImutDataObserver
         // FormTemplate creation moved to CompleteFormTemplateSeeder for production safety
         Log::info("✅ ImutData created: ID {$imutData->id}");
     }
+
+    /**
+     * Handle the ImutData "saved" event (created or updated).
+     */
+    public function saved(ImutData $imutData): void
+    {
+        if ($imutData->status) {
+            \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
+        }
+    }
 }
