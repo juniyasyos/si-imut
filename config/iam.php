@@ -359,7 +359,7 @@ return [
     | `push`: IAM pushes roles into client (`POST /api/iam/push-roles`)
     |
     */
-    'role_sync_mode' => env('IAM_ROLE_SYNC_MODE', 'pull'),
+    'role_sync_mode' => env('IAM_ROLE_SYNC_MODE', 'push'),
 
     /*
     |------------------------------------------------------------------------
@@ -370,7 +370,7 @@ return [
     | * pull: IAM server pulls users from client (existing behavior)
     | * push: IAM server pushes users to client using /api/iam/push-users.
     */
-    'user_sync_mode' => env('IAM_USER_SYNC_MODE', 'pull'),
+    'user_sync_mode' => env('IAM_USER_SYNC_MODE', 'push'),
 
     'user_sync_from_iam_allow_create' => env('IAM_USER_SYNC_FROM_IAM_ALLOW_CREATE', true),
     'user_sync_from_iam_delete_missing' => env('IAM_USER_SYNC_FROM_IAM_DELETE_MISSING', false),
