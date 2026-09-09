@@ -89,9 +89,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->middleware([])
             ->navigationGroups([
-                'User & Access Control',
-                'Quality Indicators',
-                'System & Configurations',
+                __('filament-navigation::navigation.group.user_access'),
+                __('filament-navigation::navigation.group.quality_indicator'),
+                __('filament-navigation::navigation.group.system_navigation_group'),
             ])
             ->plugins(
                 $this->getPlugins()
@@ -126,7 +126,7 @@ class AdminPanelProvider extends PanelProvider
             ActivitylogPlugin::make()
                 ->navigationIcon('heroicon-o-clock')
                 ->navigationItem()
-                ->navigationGroup('User & Access Control')
+                ->navigationGroup(__('filament-navigation::navigation.group.user_access'))
                 ->label('Audit & Activity Logs'),
             AuthUIEnhancerPlugin::make()
                 ->showEmptyPanelOnMobile(false)
@@ -137,7 +137,7 @@ class AdminPanelProvider extends PanelProvider
                 ->myProfile(
                     shouldRegisterUserMenu: true,
                     shouldRegisterNavigation: false,
-                    navigationGroup: 'System & Configuration',
+                    navigationGroup: __('filament-navigation::navigation.group.system_navigation_group'),
                     hasAvatars: false,
                     slug: 'my-profile'
                 )

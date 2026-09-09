@@ -28,7 +28,10 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
 
     protected static ?string $pluralModelLabel = 'Laporan Harian';
 
-    protected static ?string $navigationGroup = 'Quality Indicators';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament-navigation::navigation.group.quality_indicator');
+    }
 
     protected static ?int $navigationSort = 1;
 

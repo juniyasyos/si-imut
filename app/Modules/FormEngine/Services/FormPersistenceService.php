@@ -2,9 +2,9 @@
 
 namespace App\Modules\FormEngine\Services;
 
-use App\Modules\ImutMaster\Models\ImutProfile;
-use App\Modules\FormEngine\Models\FormTemplate;
-use App\Modules\FormEngine\Models\EnhancedFormField;
+use App\Models\ImutProfile;
+use App\Models\FormTemplate;
+use App\Models\EnhancedFormField;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use App\Repositories\Interfaces\FormPersistenceRepositoryInterface;
