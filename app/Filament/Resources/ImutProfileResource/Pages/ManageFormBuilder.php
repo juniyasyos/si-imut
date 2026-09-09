@@ -238,6 +238,7 @@ class ManageFormBuilder extends Page implements HasForms
             if ($this->formTemplate) {
                 // Save to specific template without activating it
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
+                \Illuminate\Support\Facades\Cache::forget(\App\Support\CacheKey::formTemplateData($this->formTemplate->id));
 
                 // Calculate compliance for the profile
                 $profileForAction = $this->record ?? $this->formTemplate?->imutProfile;
@@ -279,6 +280,7 @@ class ManageFormBuilder extends Page implements HasForms
 
             if ($this->formTemplate) {
                 $formPersistenceService->saveFormDataToTemplate($this->formTemplate, $data);
+                \Illuminate\Support\Facades\Cache::forget(\App\Support\CacheKey::formTemplateData($this->formTemplate->id));
                 $profileForAction = $this->record ?? $this->formTemplate?->imutProfile;
                 $formPersistenceService->calculateAndUpdateCompliance($profileForAction);
             }
