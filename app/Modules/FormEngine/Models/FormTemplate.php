@@ -5,6 +5,8 @@ namespace App\Modules\FormEngine\Models;
 use App\Models\ImutProfile;
 use App\Models\DailyReportResponse;
 use App\Models\User;
+use App\Models\EnhancedFormField as AppEnhancedFormField;
+use App\Models\FormTemplate as AppFormTemplate;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -61,7 +63,7 @@ class FormTemplate extends Model
 
     public function formFields(): HasMany
     {
-        return $this->hasMany(EnhancedFormField::class)->orderBy('order_index');
+        return $this->hasMany(AppEnhancedFormField::class)->orderBy('order_index');
     }
 
     public function fields(): HasMany
@@ -76,12 +78,12 @@ class FormTemplate extends Model
 
     public function parentTemplate(): BelongsTo
     {
-        return $this->belongsTo(FormTemplate::class, 'parent_template_id');
+        return $this->belongsTo(AppFormTemplate::class, 'parent_template_id');
     }
 
     public function childTemplates(): HasMany
     {
-        return $this->hasMany(FormTemplate::class, 'parent_template_id');
+        return $this->hasMany(AppFormTemplate::class, 'parent_template_id');
     }
 
     public function createdBy(): BelongsTo

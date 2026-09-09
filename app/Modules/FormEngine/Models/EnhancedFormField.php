@@ -2,6 +2,9 @@
 
 namespace App\Modules\FormEngine\Models;
 
+use App\Models\FormTemplate as AppFormTemplate;
+use App\Models\FormFieldOption as AppFormFieldOption;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,12 +42,12 @@ class EnhancedFormField extends Model
 
     public function formTemplate(): BelongsTo
     {
-        return $this->belongsTo(FormTemplate::class);
+        return $this->belongsTo(AppFormTemplate::class);
     }
 
     public function options(): HasMany
     {
-        return $this->hasMany(FormFieldOption::class, 'enhanced_form_field_id')->orderBy('order_index');
+        return $this->hasMany(AppFormFieldOption::class, 'enhanced_form_field_id')->orderBy('order_index');
     }
 
     public function fieldResponses(): HasMany
