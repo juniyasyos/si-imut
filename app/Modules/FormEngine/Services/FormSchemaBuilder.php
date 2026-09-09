@@ -693,16 +693,19 @@ class FormSchemaBuilder
         return $options;
     }
 
-    private static function shouldBeReadonly(Model $record): bool
+    private static function shouldBeReadonly(?Model $record): bool
     {
-        // dd([
-        //     'record' => $record,
-        //     'imutProfile' => $record->imutProfile,
-        //     'imutData' => $record->imutProfile->imutData,
-        //     'created_by' => $record->imutProfile->imutData->created_by,
-        //     'current_user_id' => Auth::id(),
-        // ]);
-        return !($record->imutProfile->imutData->created_by === Auth::id()) && Auth::user()?->can('delete_imut::profile');
+        if (!$record) {
+            return false;
+        }
+
+        $profile = self::resolveRelatedProfile($record);
+        
+        if (!$profile || !$profile->imutData) {
+            return false;
+        }
+
+        return !($profile->imutData->created_by === Auth::id()) && Auth::user()?->can('delete_imut::profile');
     }
 
     private static function validateValidityWindow($validFrom, $validUntil, ?Model $record): bool
