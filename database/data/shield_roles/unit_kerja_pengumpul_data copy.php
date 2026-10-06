@@ -14,6 +14,7 @@ return [
         'widget_StatsForUnitKerja',
         'widget_LaporanLatestWidget',
         'widget_LaporanUnitWidget',
+        'widget_ImutCapaianUnitKerjaWidget',
 
         // Folder
         'view_any_folder::custom',

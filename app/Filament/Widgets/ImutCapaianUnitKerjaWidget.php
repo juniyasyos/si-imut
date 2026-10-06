@@ -50,9 +50,12 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
     {
         $user = Auth::user();
 
-        return $user
-            && $user->can('widget_ImutCapaianUnitKerjaWidget')
-            && $user->hasUnitKerjaCached();
+        if (! $user || ! $user->hasUnitKerjaCached()) {
+            return false;
+        }
+
+        return $user->can('widget_ImutCapaianUnitKerjaWidget')
+            || $user->hasAnyRole(['validator_pic', 'pengumpul_data']);
     }
 
     protected function getHeading(): ?string
@@ -104,13 +107,14 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $cacheKey = CacheKey::imutCapaianUnitKerjaWidget($this->filters);
+        $unitKerjaIds = Auth::user()?->unitKerjas->pluck('id')->toArray() ?? [];
+        $filterData = array_merge($this->filterFormData ?? [], ['unit_kerja_ids' => $unitKerjaIds]);
+        $cacheKey = CacheKey::imutCapaianUnitKerjaWidget($filterData);
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () {
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($unitKerjaIds) {
             // Get categories once and pass to service
             $categories = ImutCategory::all();
             $laporans = $this->getCachedLaporans();
-            $unitKerjaIds = Auth::user()->unitKerjas->pluck('id')->toArray();
 
             $laporans->loadMissing([
                 'laporanUnitKerjas' => function ($query) use ($unitKerjaIds) {
@@ -131,7 +135,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
                 ],
                 'series' => $chartSeries,
                 'xaxis' => [
-                    'categories' => $this->dateFormattingService->generateTimeLabels(),
+                    'categories' => $this->getDateFormattingService()->generateTimeLabels(),
                 ],
                 'yaxis' => [
                     'title' => [
