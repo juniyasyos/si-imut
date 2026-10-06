@@ -46,6 +46,15 @@ class DateFormattingServiceTest extends TestCase
     }
 
     /** @test */
+    public function it_returns_empty_array_when_generate_time_labels_receives_null(): void
+    {
+        $result = $this->service->generateTimeLabels(null);
+
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /** @test */
     public function it_formats_same_month_period_correctly(): void
     {
         // Act

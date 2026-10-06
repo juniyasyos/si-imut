@@ -10,8 +10,12 @@ class DateFormattingService
     /**
      * Generate X-axis labels from laporan collection
      */
-    public function generateTimeLabels(Collection $laporans): array
+    public function generateTimeLabels(?Collection $laporans = null): array
     {
+        if (! $laporans) {
+            return [];
+        }
+
         return $laporans->map(function ($laporan) {
             return $this->formatPeriodLabel(
                 $laporan->assessment_period_start,

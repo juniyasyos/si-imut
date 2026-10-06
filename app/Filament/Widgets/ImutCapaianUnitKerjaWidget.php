@@ -135,7 +135,7 @@ class ImutCapaianUnitKerjaWidget extends ApexChartWidget
                 ],
                 'series' => $chartSeries,
                 'xaxis' => [
-                    'categories' => $this->getDateFormattingService()->generateTimeLabels(),
+                    'categories' => $this->getDateFormattingService()->generateTimeLabels($laporans),
                 ],
                 'yaxis' => [
                     'title' => [
