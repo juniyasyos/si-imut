@@ -34,6 +34,35 @@ class EditImutData extends EditRecord
                 ->visible(fn($record) => Auth::user() && ($record->created_by === Auth::id() || Auth::user()->can('view_all_data_imut::data')))
                 ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
 
+            Action::make('lihat_grafik_unit_kerja')
+                ->label('Lihat Grafik Unit Kerja')
+                ->color('success')
+                ->icon('heroicon-s-chart-bar')
+                ->visible(function ($record) {
+                    $user = Auth::user();
+                    if (! $user || $user->can('view_all_data_imut::data')) {
+                        return false;
+                    }
+
+                    if (! $user->can('view_by_unit_kerja_imut::data') || ! $user->hasUnitKerjaCached()) {
+                        return false;
+                    }
+
+                    $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+                    return $record->unitKerja()->whereIn('unit_kerja.id', $userUnitIds)->exists();
+                })
+                ->url(function ($record) {
+                    $user = Auth::user();
+                    $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+                    $unitKerja = $record->unitKerja()->whereIn('unit_kerja.id', $userUnitIds)->first()
+                        ?? $user->unitKerjas->first();
+
+                    return UnitKerjaOverview::getUrl([
+                        'record_imut_data' => $record->id,
+                        'record_unit_kerja' => $unitKerja?->id,
+                    ]);
+                }),
+
             ActionGroup::make([
                 RelationManagerAction::make('profiles')
                     ->slideOver()

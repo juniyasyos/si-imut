@@ -37,7 +37,7 @@ class UnitKerjaOverview extends Page
 
         // Izin terbatas berdasarkan unit kerja
         if ($user->can('view_by_unit_kerja_imut::data')) {
-            return $user->unitKerjas()->where('unit_kerja_id', $unitKerjaId)->exists();
+            return $user->unitKerjas()->where('unit_kerja.id', $unitKerjaId)->exists();
         }
 
         return false;

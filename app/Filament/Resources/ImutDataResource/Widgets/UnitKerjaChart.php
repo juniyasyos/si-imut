@@ -12,6 +12,7 @@ use App\Support\CacheKey as SupportCacheKey;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\MaxWidth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
@@ -53,7 +54,16 @@ class UnitKerjaChart extends ApexChartWidget
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
 
-        $unitKerjaOptions = UnitKerja::pluck('unit_name', 'id')->toArray();
+        $user = Auth::user();
+        if ($user && ! $user->can('view_all_data_imut::data')) {
+            $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+            $unitKerjaOptions = $this->imutData->unitKerja()
+                ->whereIn('unit_kerja.id', $userUnitIds)
+                ->pluck('unit_name', 'unit_kerja.id')
+                ->toArray();
+        } else {
+            $unitKerjaOptions = UnitKerja::pluck('unit_name', 'id')->toArray();
+        }
 
         $is_benchmarking = $this->imutData->categories->is_benchmark_category;
 
@@ -148,9 +158,19 @@ class UnitKerjaChart extends ApexChartWidget
     {
         $year = $this->filterFormData['year'] ?? now()->year;
         $endMonth = $this->filterFormData['end_month'] ?? now()->month;
-        $unitKerjaId = $this->filterFormData['unit_kerja_id'] ?? null;
+        $unitKerjaId = $this->filterFormData['unit_kerja_id'] ?? $this->unitKerja->id;
         $showBenchmarking = $this->filterFormData['show_benchmarking'] ?? true;
         $imutDataId = $this->imutData->id;
+
+        $user = Auth::user();
+        if ($user && ! $user->can('view_all_data_imut::data')) {
+            $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+            if (! in_array($unitKerjaId, $userUnitIds)) {
+                $unitKerjaId = in_array($this->unitKerja->id, $userUnitIds)
+                    ? $this->unitKerja->id
+                    : ($userUnitIds[0] ?? null);
+            }
+        }
 
         $penilaianData = Cache::remember(
             SupportCacheKey::imutPenilaianImutDataUnitKerja($imutDataId, $year, $unitKerjaId, $endMonth),

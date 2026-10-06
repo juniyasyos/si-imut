@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ImutDataResource\Table;
 use App\Filament\Exports\ImutDataExporter;
 use App\Filament\Resources\ImutDataResource;
 use App\Filament\Resources\ImutDataResource\Pages\SummaryDiagram;
+use App\Filament\Resources\ImutDataResource\Pages\UnitKerjaOverview;
 use App\Models\User;
 use App\Repositories\Interfaces\ImutDataRepositoryInterface;
 use Filament\Tables\Actions\Action as ActionTable;
@@ -106,6 +107,33 @@ class TableSchema extends ImutDataResource
                     ->color('success')
                     ->visible(fn() => \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class))
                     ->url(fn($record) => SummaryDiagram::getUrl(['record' => $record->slug])),
+
+                ActionTable::make('summary_unit_kerja')
+                    ->label('Grafik Unit Kerja')
+                    ->icon('heroicon-o-presentation-chart-line')
+                    ->color('success')
+                    ->visible(function ($record) {
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        if (! $user || \Illuminate\Support\Facades\Gate::allows('view_all_data_imut::data', User::class)) {
+                            return false;
+                        }
+                        if (! $user->can('view_by_unit_kerja_imut::data') || ! $user->hasUnitKerjaCached()) {
+                            return false;
+                        }
+                        $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+                        return $record->unitKerja()->whereIn('unit_kerja.id', $userUnitIds)->exists();
+                    })
+                    ->url(function ($record) {
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        $userUnitIds = $user->unitKerjas->pluck('id')->toArray();
+                        $unitKerja = $record->unitKerja()->whereIn('unit_kerja.id', $userUnitIds)->first()
+                            ?? $user->unitKerjas->first();
+
+                        return UnitKerjaOverview::getUrl([
+                            'record_imut_data' => $record->id,
+                            'record_unit_kerja' => $unitKerja?->id,
+                        ]);
+                    }),
 
                 ActionTable::make('catatan')
                     ->label('Analisis & Rekomendasi per Triwulan/Tahun')
