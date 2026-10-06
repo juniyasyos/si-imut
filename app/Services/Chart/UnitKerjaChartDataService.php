@@ -55,7 +55,11 @@ class UnitKerjaChartDataService
             $categoryData = $laporans->map(function ($laporan) use ($category) {
                 $penilaians = $laporan->laporanUnitKerjas
                     ->flatMap(fn($luk) => $luk->imutPenilaians)
-                    ->filter(fn($penilaian) => $penilaian->imutProfil->imutData->imut_kategori_id === $category->id);
+                    ->filter(function ($penilaian) use ($category) {
+                        $profile = $penilaian->profile ?? $penilaian->imutProfil ?? null;
+
+                        return ($profile?->imutData?->imut_kategori_id ?? null) === $category->id;
+                    });
 
                 if ($penilaians->isEmpty()) {
                     return 0;
@@ -103,7 +107,7 @@ class UnitKerjaChartDataService
         return Cache::remember(
             "unit_kerja_laporans_{$unitKerjaId}",
             now()->addMinutes(30),
-            fn() => LaporanImut::with(['laporanUnitKerjas.imutPenilaians.imutProfil.imutData.imutCategory'])
+            fn() => LaporanImut::with(['laporanUnitKerjas.imutPenilaians.profile.imutData.categories'])
                 ->whereHas('laporanUnitKerjas', fn($query) => $query->where('unit_kerja_id', $unitKerjaId))
                 ->orderBy('assessment_period_start')
                 ->get()
