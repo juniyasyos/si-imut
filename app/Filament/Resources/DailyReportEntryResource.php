@@ -8,6 +8,7 @@ use App\Filament\Resources\DailyReportEntryResource\Schema\DailyReportEntrySchem
 use App\Filament\Resources\DailyReportEntryResource\Table\DailyReportEntryTable;
 use App\Models\DailyReportResponse;
 use App\Models\FormTemplate;
+use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms\Form;
 use Filament\Infolists\Infolist;
@@ -64,7 +65,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->modifyQueryUsing(
-                fn(Builder $query) => $query
+                fn (Builder $query) => $query
                     ->forUserUnits(Auth::user())
                     ->whereHas('formTemplate', function (Builder $query) {
                         $query->whereHas('imutProfile', function (Builder $query) {
@@ -198,17 +199,18 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         if (! $user->hasUnitKerjaCached()) {
             return false;
         }
 
         // Check if the record belongs to user's unit kerja
         $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id');
+
         return $userUnitIds->contains($record->unit_kerja_id);
     }
 
@@ -219,17 +221,18 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         if (! $user->hasUnitKerjaCached()) {
             return false;
         }
 
         // Check if the record belongs to user's unit kerja
         $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id');
+
         return $userUnitIds->contains($record->unit_kerja_id);
     }
 
@@ -240,17 +243,18 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         if (! $user->hasUnitKerjaCached()) {
             return false;
         }
 
         // Check if the record belongs to user's unit kerja
         $userUnitIds = $user->unitKerjas()->pluck('unit_kerja.id');
+
         return $userUnitIds->contains($record->unit_kerja_id);
     }
 
@@ -261,11 +265,11 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         return $user->hasUnitKerjaCached();
     }
 
@@ -290,6 +294,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             'update',
             'delete',
             'delete_any',
+            'validate',
         ];
     }
 
@@ -300,12 +305,12 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
-        /** @var \App\Models\User $user */
-        if (!$user->hasRole('Unit Kerja')) {
+        /** @var User $user */
+        if (! $user->hasRole('Unit Kerja')) {
             return null;
         }
 
@@ -328,8 +333,8 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
     /**
      * Generate URL for creating report entry for specific indicator and date
      * Usage: DailyReportEntryResource::getCreateUrl($indicatorId, $date)
-     * 
-     * Note: $indicatorId can be any FormTemplate ID. This method will ensure 
+     *
+     * Note: $indicatorId can be any FormTemplate ID. This method will ensure
      * we use the active template from the same profile.
      */
     public static function getCreateUrl(int $indicatorId, ?string $date = null): string
@@ -345,9 +350,9 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             }
         }
 
-        return static::getUrl('create') . '?' . http_build_query([
+        return static::getUrl('create').'?'.http_build_query([
             'indicator' => $activeTemplateId,
-            'date' => $date ?? now()->format('Y-m-d')
+            'date' => $date ?? now()->format('Y-m-d'),
         ]);
     }
 
@@ -367,7 +372,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             $params['date'] = $date;
         }
 
-        return $params ? $url . '?' . http_build_query($params) : $url;
+        return $params ? $url.'?'.http_build_query($params) : $url;
     }
 
     /**
@@ -386,7 +391,7 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
             $params['date'] = $date;
         }
 
-        return $params ? $url . '?' . http_build_query($params) : $url;
+        return $params ? $url.'?'.http_build_query($params) : $url;
     }
 
     /**
@@ -395,6 +400,6 @@ class DailyReportEntryResource extends Resource implements HasShieldPermissions
      */
     public static function getSlideOverUrl(int $indicatorId, string $date): string
     {
-        return static::getUrl('index') . '?indicator_id=' . $indicatorId . '&date=' . $date;
+        return static::getUrl('index').'?indicator_id='.$indicatorId.'&date='.$date;
     }
 }

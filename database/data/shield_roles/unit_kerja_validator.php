@@ -42,7 +42,6 @@ return [
         'restore_imut::data',
         'restore_any_imut::data',
 
-
         // IMUT Profile
         'view_imut::profile',
         'view_any_imut::profile',
@@ -78,6 +77,7 @@ return [
         'create_recommendation_penilaian_imut::penilaian',
 
         // Daily Report Validation
+        'validate_daily::report::entry',
         'validate_reports',
     ],
 ];

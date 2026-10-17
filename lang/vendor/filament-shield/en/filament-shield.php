@@ -77,5 +77,6 @@ return [
         'replicate' => 'Replicate',
         'reorder' => 'Reorder',
         'restore_any' => 'Restore Any',
+        'validate' => 'Validate',
     ],
 ];

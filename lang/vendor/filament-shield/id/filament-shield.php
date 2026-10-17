@@ -77,5 +77,6 @@ return [
         'replicate' => 'Replikasi',
         'reorder' => 'Susun Ulang',
         'restore_any' => 'Pulihkan Apa Saja',
+        'validate' => 'Validasi',
     ],
 ];

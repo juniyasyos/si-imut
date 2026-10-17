@@ -335,7 +335,7 @@ $isLocked = ($this->selectedDate)
                                         </button>
                                         @endif
 
-                                        @if(auth()->user()->can('validate_reports'))
+                                        @if(auth()->user()->can('validate_daily::report::entry') || auth()->user()->can('validate_reports'))
                                         <div class="{{ $isLocked ? 'w-full' : 'flex-1' }} relative" x-data="{ open: false }">
                                             <button @click="open = !open" type="button"
                                                 wire:loading.attr="disabled"

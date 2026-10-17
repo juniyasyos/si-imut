@@ -4,9 +4,13 @@ namespace App\Traits\DailyReport;
 
 use App\Filament\Resources\DailyReportEntryResource;
 use App\Models\DailyReportEntry;
+use App\Models\DailyReportResponse;
+use App\Services\DailyReport\CachedSettingsService;
+use App\Services\DailyReport\UnifiedComplianceService;
+use Carbon\Carbon;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Services\DailyReport\CachedSettingsService;
 
 trait ReportManagementTrait
 {
@@ -19,35 +23,36 @@ trait ReportManagementTrait
             // Check if the selected date is within the back-entry window
             $backDays = CachedSettingsService::getBackDataEntryDays();
             $sixDaysAgo = now()->subDays($backDays)->startOfDay();
-            $isLocked = \Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo);
+            $isLocked = Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo);
 
             if ($isLocked) {
-                \Filament\Notifications\Notification::make()
+                Notification::make()
                     ->title('Data Terkunci')
                     ->body('Periode entri data untuk tanggal ini telah berakhir.')
                     ->danger()
                     ->send();
+
                 return;
             }
 
             Log::info('createNewReport: Redirecting to create page', [
                 'indicator_id' => $this->selectedIndicatorId,
-                'date' => $this->selectedDate
+                'date' => $this->selectedDate,
             ]);
 
-            $createUrl = DailyReportEntryResource::getUrl('create') . '?' . http_build_query([
+            $createUrl = DailyReportEntryResource::getUrl('create').'?'.http_build_query([
                 'indicator' => $this->selectedIndicatorId,
-                'date' => $this->selectedDate
+                'date' => $this->selectedDate,
             ]);
 
             $this->redirect($createUrl);
         } else {
             Log::warning('createNewReport: Missing data', [
                 'indicator_id' => $this->selectedIndicatorId,
-                'date' => $this->selectedDate
+                'date' => $this->selectedDate,
             ]);
 
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Data Tidak Lengkap')
                 ->body('Silakan pilih indikator dan tanggal terlebih dahulu')
                 ->warning()
@@ -77,12 +82,13 @@ trait ReportManagementTrait
         if ($this->selectedDate) {
             $backDays = CachedSettingsService::getBackDataEntryDays();
             $sixDaysAgo = now()->subDays($backDays)->startOfDay();
-            if (\Carbon\Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo)) {
-                \Filament\Notifications\Notification::make()
+            if (Carbon::parse($this->selectedDate)->startOfDay()->lt($sixDaysAgo)) {
+                Notification::make()
                     ->title('Data Terkunci')
                     ->body('Periode entri data untuk tanggal ini telah berakhir.')
                     ->danger()
                     ->send();
+
                 return;
             }
         }
@@ -100,18 +106,20 @@ trait ReportManagementTrait
      */
     public function deleteReport(int $reportId): void
     {
-        $report = \App\Models\DailyReportResponse::findOrFail($reportId);
+        $report = DailyReportResponse::findOrFail($reportId);
 
         // Check permissions
         $user = Auth::user();
-        if (!$user || !$user->can('delete', $report)) {
+        if (! $user || ! $user->can('delete', $report)) {
             $this->addError('delete', 'Anda tidak memiliki izin untuk menghapus laporan ini.');
+
             return;
         }
 
         // Check if report can be deleted (within 24 hours)
         if ($report->created_at->diffInHours(now()) > 24) {
             $this->addError('delete', 'Laporan hanya dapat dihapus dalam 24 jam setelah dibuat.');
+
             return;
         }
 
@@ -122,12 +130,12 @@ trait ReportManagementTrait
             $this->loadMatrixData();
             $this->loadDailyReports();
 
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Laporan berhasil dihapus')
                 ->success()
                 ->send();
         } catch (\Exception $e) {
-            $this->addError('delete', 'Gagal menghapus laporan: ' . $e->getMessage());
+            $this->addError('delete', 'Gagal menghapus laporan: '.$e->getMessage());
         }
     }
 
@@ -137,10 +145,11 @@ trait ReportManagementTrait
     public function bulkDeleteReports(): void
     {
         if (empty($this->selectedReports)) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Tidak ada laporan dipilih')
                 ->warning()
                 ->send();
+
             return;
         }
 
@@ -150,10 +159,11 @@ trait ReportManagementTrait
 
         foreach ($this->selectedReports as $reportId) {
             try {
-                $report = \App\Models\DailyReportResponse::findOrFail($reportId);
+                $report = DailyReportResponse::findOrFail($reportId);
 
-                if (!$user || !$user->can('delete', $report)) {
+                if (! $user || ! $user->can('delete', $report)) {
                     $failed++;
+
                     continue;
                 }
 
@@ -161,7 +171,7 @@ trait ReportManagementTrait
                 $deleted++;
             } catch (\Exception $e) {
                 $failed++;
-                Log::error('bulkDeleteReports: failed to delete report ' . $reportId, ['error' => $e->getMessage()]);
+                Log::error('bulkDeleteReports: failed to delete report '.$reportId, ['error' => $e->getMessage()]);
             }
         }
 
@@ -170,12 +180,12 @@ trait ReportManagementTrait
         $this->loadDailyReports();
 
         if ($failed > 0) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title("{$deleted} laporan dihapus, {$failed} gagal")
                 ->warning()
                 ->send();
         } else {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title("{$deleted} laporan berhasil dihapus")
                 ->success()
                 ->send();
@@ -184,23 +194,25 @@ trait ReportManagementTrait
 
     /**
      * Toggle validation status of a report
-     * @param int $reportId
-     * @param string|null $status - 'valid', 'invalid', or null to clear
+     *
+     * @param  string|null  $status  - 'valid', 'invalid', or null to clear
      */
     public function toggleValidation(int $reportId, ?string $status = null): void
     {
-        $report = \App\Models\DailyReportResponse::findOrFail($reportId);
+        $report = DailyReportResponse::findOrFail($reportId);
 
-        // Check permissions - only users with validator_pic permission can validate
+        // Check permissions - users with validate_daily::report::entry permission can validate
         $user = Auth::user();
-        if (!$user || !$user->can('validate_reports')) {
+        if (! $user || (! $user->can('validate_daily::report::entry') && ! $user->can('validate_reports'))) {
             $this->addError('validation', 'Anda tidak memiliki izin untuk memvalidasi laporan ini.');
+
             return;
         }
 
         // Validate status parameter - allow null for clearing
-        if ($status !== null && !in_array($status, ['valid', 'invalid'])) {
+        if ($status !== null && ! in_array($status, ['valid', 'invalid'])) {
             $this->addError('validation', 'Status validasi tidak valid.');
+
             return;
         }
 
@@ -226,13 +238,13 @@ trait ReportManagementTrait
             // Refresh slide-over data
             $this->loadDailyReports();
 
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Status Validasi Diubah')
-                ->body('Laporan berhasil ditandai sebagai ' . $statusText)
+                ->body('Laporan berhasil ditandai sebagai '.$statusText)
                 ->success()
                 ->send();
         } catch (\Exception $e) {
-            $this->addError('validation', 'Gagal mengubah status validasi: ' . $e->getMessage());
+            $this->addError('validation', 'Gagal mengubah status validasi: '.$e->getMessage());
         }
     }
 
@@ -259,9 +271,9 @@ trait ReportManagementTrait
                 'status' => 'submitted',
             ]);
 
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Laporan Berhasil Disimpan')
-                ->body('Laporan harian telah berhasil dibuat dengan skor kepatuhan ' . number_format($complianceData['score'], 1) . '%')
+                ->body('Laporan harian telah berhasil dibuat dengan skor kepatuhan '.number_format($complianceData['score'], 1).'%')
                 ->success()
                 ->send();
 
@@ -269,9 +281,9 @@ trait ReportManagementTrait
             $this->loadSlideOverData();
             $this->loadMatrixData();
         } catch (\Exception $e) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('Gagal Menyimpan')
-                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                ->body('Terjadi kesalahan: '.$e->getMessage())
                 ->danger()
                 ->send();
         }
@@ -288,7 +300,7 @@ trait ReportManagementTrait
 
         $responses = $data['field_responses'] ?? $data;
 
-        $complianceService = app(\App\Services\DailyReport\UnifiedComplianceService::class);
+        $complianceService = app(UnifiedComplianceService::class);
         $result = $complianceService->calculate($this->formTemplate, $responses);
 
         $totalFields = $this->formTemplate->formFields->count();

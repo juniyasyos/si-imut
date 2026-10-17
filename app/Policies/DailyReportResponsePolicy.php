@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Modules\FormEngine\Models\DailyReportResponse;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Modules\FormEngine\Models\DailyReportResponse;
 
 class DailyReportResponsePolicy
 {
@@ -22,6 +21,7 @@ class DailyReportResponsePolicy
     public function view(User $user, DailyReportResponse $dailyReportResponse): bool
     {
         $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+
         return in_array($dailyReportResponse->unit_kerja_id, $unitKerjaIds);
     }
 
@@ -39,6 +39,7 @@ class DailyReportResponsePolicy
     public function update(User $user, DailyReportResponse $dailyReportResponse): bool
     {
         $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+
         return in_array($dailyReportResponse->unit_kerja_id, $unitKerjaIds);
     }
 
@@ -48,6 +49,7 @@ class DailyReportResponsePolicy
     public function delete(User $user, DailyReportResponse $dailyReportResponse): bool
     {
         $unitKerjaIds = $user->unitKerjas()->pluck('unit_kerja.id')->toArray();
+
         return in_array($dailyReportResponse->unit_kerja_id, $unitKerjaIds);
     }
 
@@ -56,8 +58,8 @@ class DailyReportResponsePolicy
      */
     public function validate(User $user, DailyReportResponse $dailyReportResponse): bool
     {
-        // Only users with validator_pic permission can validate reports
-        return $user->can('validate_reports');
+        // Users with validate_daily::report::entry or legacy validate_reports can validate reports
+        return $user->can('validate_daily::report::entry') || $user->can('validate_reports');
     }
 
     /**

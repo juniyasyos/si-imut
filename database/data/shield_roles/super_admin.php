@@ -105,6 +105,7 @@ return [
         'update_daily::report::entry',
         'delete_daily::report::entry',
         'delete_any_daily::report::entry',
+        'validate_daily::report::entry',
 
         // Region Type
         'view_region::type',
