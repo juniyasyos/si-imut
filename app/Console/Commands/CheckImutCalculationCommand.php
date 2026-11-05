@@ -3,12 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Models\ImutData;
+use App\Models\ImutPenilaian;
 use App\Models\LaporanImut;
 use App\Repositories\Interfaces\DailyReportResponseRepositoryInterface;
 use App\Services\Reporting\DailyReportAggregationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CheckImutCalculationCommand extends Command
 {
@@ -22,21 +24,21 @@ class CheckImutCalculationCommand extends Command
                             {--year= : Tahun laporan (misal: 2025, 2026)}
                             {--filter= : Filter judul/kode IMUT berdasarkan kata kunci (misal: IDO)}
                             {--laporan-id= : ID Laporan IMUT spesifik (opsional)}
-                            {--unit= : Filter nama/ID unit kerja (opsional)}';
+                            {--unit= : Filter nama/ID unit kerja (opsional)}
+                            {--sync-orphans : Bersihkan penilaian yang relasi unit kerjanya sudah dicabut di master}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Pemeriksaan & audit kalkulasi Numerator, Denominator, dan Agregat IMUT (100% Read-Only / Safe)';
+    protected $description = 'Pemeriksaan & audit kalkulasi IMUT serta sinkronisasi penilaian orphaned';
 
     public function handle(
         DailyReportAggregationService $service,
         DailyReportResponseRepositoryInterface $dailyReportRepo
     ): int {
         $this->info('🔍 SIIMUT - Tool Audit & Diagnosa Kalkulasi Indikator Mutu');
-        $this->comment('   (100% Read-Only: Tidak ada modifikasi atau penghapusan data database)');
         $this->newLine();
 
         $laporan = $this->resolveLaporan();
@@ -46,13 +48,15 @@ class CheckImutCalculationCommand extends Command
 
         $keyword = $this->option('filter');
         $unitFilter = $this->option('unit');
+        $syncOrphans = (bool) $this->option('sync-orphans');
 
         $this->inspectLaporan(
             $laporan,
             $service,
             $dailyReportRepo,
             $keyword,
-            $unitFilter
+            $unitFilter,
+            $syncOrphans
         );
 
         return Command::SUCCESS;
@@ -110,7 +114,6 @@ class CheckImutCalculationCommand extends Command
             return $reports->first();
         }
 
-        // Default jika tidak ada opsi: ambil laporan terbaru
         $latest = LaporanImut::orderByDesc('report_year')
             ->orderByDesc('report_month')
             ->first();
@@ -161,7 +164,8 @@ class CheckImutCalculationCommand extends Command
         DailyReportAggregationService $service,
         DailyReportResponseRepositoryInterface $dailyReportRepo,
         ?string $keyword,
-        ?string $unitFilter
+        ?string $unitFilter,
+        bool $syncOrphans
     ): void {
         $startDate = Carbon::parse($laporan->assessment_period_start);
         $endDate = Carbon::parse($laporan->assessment_period_end);
@@ -169,6 +173,7 @@ class CheckImutCalculationCommand extends Command
         $this->info("📋 Laporan: {$laporan->name} (ID: {$laporan->id})");
         $this->line("   📅 Periode Asesmen : {$startDate->format('d M Y')} s/d {$endDate->format('d M Y')} (" . ($startDate->diffInDays($endDate) + 1) . " hari)");
         $this->line("   🗓️ Periode Laporan : Bulan {$laporan->report_month} Tahun {$laporan->report_year}");
+        $this->line("   ⚙️ Aksi Sinkron    : " . ($syncOrphans ? '<fg=yellow;options=bold>AKTIF (--sync-orphans: membersihkan penilaian orphaned)</>' : '<fg=cyan>NON-AKTIF (Hanya audit & deteksi)</>'));
         $this->newLine();
 
         $laporan->loadMissing([
@@ -230,20 +235,33 @@ class CheckImutCalculationCommand extends Command
         $this->info("🎯 Ditemukan " . $groupedByImut->count() . " Indikator Mutu untuk dianalisa:");
         $this->newLine();
 
+        $totalOrphansDetected = 0;
+
         foreach ($groupedByImut as $imutDataId => $penilaians) {
-            $this->processImutGroup(
+            $orphansInGroup = $this->processImutGroup(
                 $imutDataId,
                 $penilaians,
-                $service
+                $service,
+                $syncOrphans
             );
+            $totalOrphansDetected += $orphansInGroup;
+        }
+
+        if ($totalOrphansDetected > 0 && !$syncOrphans) {
+            $this->newLine();
+            $this->warn("⚠️ Terdeteksi {$totalOrphansDetected} penilaian yang relasi unit kerjanya sudah DICABUT dari master data.");
+            $this->line("   Nilai penilaian dari unit-unit ini saat ini masih ikut terhitung ke agregat Rumah Sakit.");
+            $this->line("   👉 Untuk menghapus data penilaian yang sudah dicabut ini dari laporan, jalankan:");
+            $this->comment("      php artisan imut:check-calculation --month={$laporan->report_month} --year={$laporan->report_year} " . ($keyword ? "--filter=\"{$keyword}\" " : "") . "--sync-orphans");
         }
     }
 
     private function processImutGroup(
         int $imutDataId,
         Collection $penilaians,
-        DailyReportAggregationService $service
-    ): void {
+        DailyReportAggregationService $service,
+        bool $syncOrphans
+    ): int {
         $first = $penilaians->first();
         $imutData = $first->profile?->imutData;
         $title = $imutData?->title ?? "IMUT Data ID #{$imutDataId}";
@@ -261,9 +279,22 @@ class CheckImutCalculationCommand extends Command
         $totalCalcNum = 0.0;
         $totalCalcDenum = 0.0;
 
+        $orphanedPenilaians = collect();
+
         foreach ($penilaians as $penilaian) {
-            $unitName = $penilaian->laporanUnitKerja?->unitKerja?->unit_name ?? "Unit #{$penilaian->laporanUnitKerja?->unit_kerja_id}";
+            $unitKerjaId = $penilaian->laporanUnitKerja?->unit_kerja_id;
+            $unitName = $penilaian->laporanUnitKerja?->unitKerja?->unit_name ?? "Unit #{$unitKerjaId}";
             $formTemplate = $penilaian->profile?->activeFormTemplate;
+
+            // Cek apakah relasi unit kerja dengan IMUT Data ini masih aktif di master
+            $isMasterLinked = DB::table('imut_data_unit_kerja')
+                ->where('unit_kerja_id', $unitKerjaId)
+                ->where('imut_data_id', $imutDataId)
+                ->exists();
+
+            if (!$isMasterLinked) {
+                $orphanedPenilaians->push($penilaian);
+            }
 
             $dbNum = $penilaian->numerator_value;
             $dbDenum = $penilaian->denominator_value;
@@ -287,11 +318,13 @@ class CheckImutCalculationCommand extends Command
             $status = '';
             $notes = [];
 
-            if ($dbNum > 0 && ($dbDenum === null || $dbDenum == 0)) {
-                $notes[] = '<fg=yellow;options=bold>ANOMALI: Num > 0 tapi Denum = 0!</>';
-            }
-
-            if (!$formTemplate) {
+            if (!$isMasterLinked) {
+                $status = '<fg=yellow;options=bold>RELASI_DICABUT</>';
+                $notes[] = '<fg=yellow>Relasi master sudah dicabut (Orphaned)</>';
+            } elseif ($dbNum > 0 && ($dbDenum === null || $dbDenum == 0)) {
+                $status = '<fg=red;options=bold>ANOMALI</>';
+                $notes[] = '<fg=red>Num > 0 tapi Denum = 0!</>';
+            } elseif (!$formTemplate) {
                 $status = '<fg=red>NO_TEMPLATE</>';
                 $notes[] = 'FormTemplate tidak aktif';
             } elseif ($calcDenum == 0 && $dbDenum !== null) {
@@ -348,7 +381,7 @@ class CheckImutCalculationCommand extends Command
             : '<fg=red;options=bold>ADA SELISIH (MISMATCH)</>';
 
         $this->newLine();
-        $this->line("   📊 <options=bold>RINGKASAN AGREGASI KESELURUHAN UNIT UNTUK INDIKATOR INI:</>");
+        $this->line("   📊 <options=bold>RINGKASAN AGREGASI KESELURUHAN UNIT SAAT INI:</>");
         $this->table(
             ['Metrik', 'Nilai Tersimpan di DB', 'Hasil Kalkulasi Daily Report', 'Selisih (Daily - DB)'],
             [
@@ -358,7 +391,49 @@ class CheckImutCalculationCommand extends Command
                 ['Status Agregat', $aggStatus, $aggStatus, '-'],
             ]
         );
+
+        // Eksekusi pembersihan jika flag --sync-orphans aktif
+        if ($syncOrphans && $orphanedPenilaians->isNotEmpty()) {
+            $this->newLine();
+            $this->warn("🧹 Melakukan pembersihan data penilaian orphaned...");
+
+            $cleanNumTotal = 0;
+            $cleanDenumTotal = 0;
+
+            foreach ($orphanedPenilaians as $orphaned) {
+                $uName = $orphaned->laporanUnitKerja?->unitKerja?->unit_name ?? "Unit #{$orphaned->laporanUnitKerja?->unit_kerja_id}";
+                $nVal = (float) ($orphaned->numerator_value ?? 0);
+                $dVal = (float) ($orphaned->denominator_value ?? 0);
+
+                $cleanNumTotal += $nVal;
+                $cleanDenumTotal += $dVal;
+
+                $this->line("   🗑️ Menghapus penilaian [ID: {$orphaned->id}] milik unit '{$uName}' (N: {$nVal}, D: {$dVal})");
+
+                // Hapus via Eloquent agar trigger Observer pembersih cache
+                $orphaned->delete();
+            }
+
+            $newDbNum = $totalDbNum - $cleanNumTotal;
+            $newDbDenum = $totalDbDenum - $cleanDenumTotal;
+            $newDbPct = $newDbDenum > 0 ? ceil(($newDbNum / $newDbDenum) * 100 * 100) / 100 : 0.0;
+
+            $this->newLine();
+            $this->info("✅ Berhasil membersihkan " . $orphanedPenilaians->count() . " penilaian orphaned dan mereset cache!");
+            $this->line("   📊 <options=bold>REKAPITULASI SETELAH PEMBERSIHAN UNIT DICABUT:</>");
+            $this->table(
+                ['Metrik', 'Sebelum Cleanup', 'Setelah Cleanup', 'Koreksi'],
+                [
+                    ['Total Numerator (N)', number_format($totalDbNum, 2), number_format($newDbNum, 2), '-' . number_format($cleanNumTotal, 2)],
+                    ['Total Denominator (D)', number_format($totalDbDenum, 2), number_format($newDbDenum, 2), '-' . number_format($cleanDenumTotal, 2)],
+                    ['Capaian Agregat (%)', number_format($overallDbPct, 2) . '%', number_format($newDbPct, 2) . '%', number_format($newDbPct - $overallDbPct, 2) . '%'],
+                ]
+            );
+        }
+
         $this->newLine();
+
+        return $orphanedPenilaians->count();
     }
 
     private function diagnoseMissingKeyword(string $keyword, Carbon $startDate, Carbon $endDate): void

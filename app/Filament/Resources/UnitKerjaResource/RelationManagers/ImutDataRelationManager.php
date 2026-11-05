@@ -123,6 +123,9 @@ class ImutDataRelationManager extends RelationManager
                     ->modalSubmitActionLabel(__('filament-forms::imut-data-relationship-user.modal.submit_label'))
                     ->preloadRecordSelect()
                     ->attachAnother(false)
+                    ->after(function () {
+                        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
+                    })
                     ->recordSelectSearchColumns(['title']),
             ])
             ->actions([
@@ -137,12 +140,18 @@ class ImutDataRelationManager extends RelationManager
                     ->visible(fn() => Gate::allows('attach_imut_data_to_unit_kerja_unit::kerja', User::class))
                     ->label(__('filament-forms::imut-data-relationship-user.actions.detach.label'))
                     ->modalHeading(__('filament-forms::imut-data-relationship-user.actions.detach.heading'))
-                    ->modalDescription(__('filament-forms::imut-data-relationship-user.actions.detach.description')),
+                    ->modalDescription(__('filament-forms::imut-data-relationship-user.actions.detach.description'))
+                    ->after(function () {
+                        \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DetachBulkAction::make()
-                        ->label(__('filament-forms::imut-data-relationship-user.actions.detach_bulk.label')),
+                        ->label(__('filament-forms::imut-data-relationship-user.actions.detach_bulk.label'))
+                        ->after(function () {
+                            \App\Jobs\SyncOngoingLaporanPenilaian::dispatch();
+                        }),
                 ]),
             ]);
     }
