@@ -65,6 +65,11 @@ Route::middleware(['web'])->group(function () {
         ->middleware(['auth'])
         ->name('export.unit-kerja-rekap');
 
+    // Export Excel Daftar Indikator Mutu Tidak Tercapai per Unit Kerja
+    Route::get('/export/imut-tidak-tercapai', [ExportController::class, 'imutTidakTercapaiExport'])
+        ->middleware(['auth'])
+        ->name('export.imut-tidak-tercapai');
+
     // Debug routes - available in all modes
     Route::get('/debug-session', [DebugController::class, 'session'])
         ->name('debug.session');

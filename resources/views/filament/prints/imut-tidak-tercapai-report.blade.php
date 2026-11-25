@@ -270,6 +270,12 @@
             <span style="font-size: 13px; color: #94a3b8;">Orientasi:</span>
             <a href="{{ request()->fullUrlWithQuery(['orientation' => 'landscape']) }}" class="btn {{ $orientation === 'landscape' ? 'btn-active' : 'btn-outline' }}">Landscape</a>
             <a href="{{ request()->fullUrlWithQuery(['orientation' => 'portrait']) }}" class="btn {{ $orientation === 'portrait' ? 'btn-active' : 'btn-outline' }}">Portrait</a>
+            <a href="{{ route('export.imut-tidak-tercapai', array_filter(['period_type' => $periodContext['periodType'] ?? 'month', 'period' => $periodContext['selectedPeriod'] ?? null, 'category_id' => request('category_id'), 'search' => $search ?? ''], fn ($v) => $v !== null && $v !== '')) }}"
+               target="_blank"
+               class="btn"
+               style="background-color: #059669; color: #ffffff;">
+                Download Excel
+            </a>
             <button onclick="window.print()" class="btn btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ImutTidakTercapaiExport;
 use App\Exports\MonitoringExport;
 use App\Exports\UnitKerjaRekapPeriodExport;
+use App\Filament\Widgets\ImutTidakTercapai;
 use App\Models\FormTemplate;
 use App\Models\LaporanImut;
 use App\Models\UnitKerja;
@@ -70,12 +72,88 @@ class ExportController extends Controller
      */
     public function unitKerjaRekapExport(Request $request)
     {
-        $periodType = (string) $request->query('period_type', 'month');
-        $selectedPeriod = $request->query('period');
-        $categoryIds = array_values(array_filter(array_map('intval', (array) $request->query('category_ids', []))));
-        $unitKerjaIds = array_values(array_filter(array_map('intval', (array) $request->query('unit_kerja_ids', []))));
+        $categoryIds = $this->parseIntArrayParam($request, 'category_ids');
+        $unitKerjaIds = $this->parseIntArrayParam($request, 'unit_kerja_ids');
         $filterLevel = (string) $request->query('filter_level', 'all');
         $sort = (string) $request->query('sort', 'percentage_desc');
+
+        ['periodContext' => $periodContext, 'parsedPeriod' => $parsedPeriod] = $this->resolvePeriodContextForRequest($request);
+
+        $rows = UnitKerjaReportQueryBuilder::buildMonthlyBreakdown(
+            $periodContext['laporanIds'] ?? [],
+            $categoryIds,
+            $unitKerjaIds
+        )->get();
+
+        $periodSlug = $periodContext['selectedPeriod'] ?: now()->format('Y_m');
+
+        return Excel::download(
+            new UnitKerjaRekapPeriodExport(
+                periodContext: $periodContext,
+                months: $parsedPeriod['months'],
+                rows: $rows,
+                filterLevel: $filterLevel,
+                sort: $sort,
+                categoryLabel: $this->resolveCategoryLabel($categoryIds),
+                unitLabel: $this->resolveUnitLabel($unitKerjaIds),
+            ),
+            $this->sanitizeExcelFilename('rekap_capaian_imut_unit_' . $periodSlug . '.xlsx')
+        );
+    }
+
+    /**
+     * Export Excel daftar indikator mutu tidak tercapai per unit kerja sesuai jenjang periode & filter.
+     */
+    public function imutTidakTercapaiExport(Request $request)
+    {
+        $categoryIds = $this->parseIntArrayParam($request, 'category_ids');
+        $filterCategoryId = (string) $request->query('category_id', 'all');
+        if (empty($categoryIds) && $filterCategoryId !== 'all' && $filterCategoryId !== '') {
+            $categoryIds = [(int) $filterCategoryId];
+        }
+
+        $unitKerjaIds = $this->parseIntArrayParam($request, 'unit_kerja_ids');
+        $search = (string) $request->query('search', '');
+        $mergeUnits = filter_var($request->query('merge_units', '1'), FILTER_VALIDATE_BOOLEAN);
+
+        ['periodContext' => $periodContext, 'periodeText' => $periodeText] = $this->resolvePeriodContextForRequest($request);
+
+        $rows = ImutTidakTercapai::buildAggregatedBelowStandardQuery(
+            $periodContext['laporanIds'] ?? [],
+            $search,
+            $filterCategoryId,
+            $categoryIds,
+            $unitKerjaIds
+        )->get();
+
+        $unitGroups = ImutTidakTercapai::groupRowsByUnit($rows);
+        $summary = ImutTidakTercapai::summarizeRows($rows);
+        $periodSlug = $periodContext['selectedPeriod'] ?: now()->format('Y_m');
+
+        return Excel::download(
+            new ImutTidakTercapaiExport(
+                periodContext: $periodContext,
+                periodeText: $periodeText,
+                unitGroups: $unitGroups,
+                summary: $summary,
+                categoryLabel: $this->resolveCategoryLabel($categoryIds),
+                unitLabel: $this->resolveUnitLabel($unitKerjaIds),
+                search: $search,
+                mergeUnits: $mergeUnits,
+            ),
+            $this->sanitizeExcelFilename('daftar_imut_tidak_tercapai_' . $periodSlug . '.xlsx')
+        );
+    }
+
+    /**
+     * Resolve konteks periode, daftar bulan, dan rentang tanggal dari request export.
+     *
+     * @return array{periodContext: array<string, mixed>, parsedPeriod: array{year: int, months: int[], label: string}, periodeText: string}
+     */
+    protected function resolvePeriodContextForRequest(Request $request): array
+    {
+        $periodType = (string) $request->query('period_type', 'month');
+        $selectedPeriod = $request->query('period');
 
         $laporans = LaporanImut::select(['id', 'name', 'report_month', 'report_year', 'assessment_period_start', 'assessment_period_end', 'status'])
             ->orderByDesc('assessment_period_start')
@@ -92,42 +170,60 @@ class ExportController extends Controller
             ? $periodService->parsePeriod($periodContext['periodType'], $periodContext['selectedPeriod'])
             : ['year' => (int) now()->year, 'months' => [(int) now()->month], 'label' => '-'];
 
-        $rows = UnitKerjaReportQueryBuilder::buildMonthlyBreakdown(
-            $periodContext['laporanIds'] ?? [],
-            $categoryIds,
-            $unitKerjaIds
-        )->get();
+        $startDate = $periodContext['startDate'] ?? null;
+        $endDate = $periodContext['endDate'] ?? null;
+        $periodeText = ($startDate && $endDate)
+            ? $startDate->translatedFormat('d F Y') . ' s/d ' . $endDate->translatedFormat('d F Y')
+            : ($periodContext['label'] ?? '-');
 
-        $categoryLabel = empty($categoryIds)
-            ? 'Semua Kategori'
-            : ImutCategory::whereIn('id', $categoryIds)
-                ->orderBy('category_name')
-                ->get(['short_name', 'category_name'])
-                ->map(fn ($category) => $category->short_name ? "{$category->short_name} ({$category->category_name})" : $category->category_name)
-                ->implode(', ');
+        return compact('periodContext', 'parsedPeriod', 'periodeText');
+    }
 
-        $unitLabel = empty($unitKerjaIds)
-            ? 'Semua Unit Kerja'
-            : UnitKerja::whereIn('id', $unitKerjaIds)
-                ->orderBy('unit_name')
-                ->pluck('unit_name')
-                ->implode(', ');
+    /**
+     * @return int[]
+     */
+    protected function parseIntArrayParam(Request $request, string $key): array
+    {
+        return array_values(array_filter(array_map('intval', (array) $request->query($key, []))));
+    }
 
-        $periodSlug = $periodContext['selectedPeriod'] ?: now()->format('Y_m');
-        $filename = 'rekap_capaian_imut_unit_' . $periodSlug . '.xlsx';
-        $filename = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
+    /**
+     * @param  int[]  $categoryIds
+     */
+    protected function resolveCategoryLabel(array $categoryIds): string
+    {
+        if (empty($categoryIds)) {
+            return 'Semua Kategori';
+        }
 
-        return Excel::download(
-            new UnitKerjaRekapPeriodExport(
-                periodContext: $periodContext,
-                months: $parsedPeriod['months'],
-                rows: $rows,
-                filterLevel: $filterLevel,
-                sort: $sort,
-                categoryLabel: $categoryLabel ?: 'Semua Kategori',
-                unitLabel: $unitLabel ?: 'Semua Unit Kerja',
-            ),
-            $filename
-        );
+        $label = ImutCategory::whereIn('id', $categoryIds)
+            ->orderBy('category_name')
+            ->get(['short_name', 'category_name'])
+            ->map(fn ($category) => $category->short_name ? "{$category->short_name} ({$category->category_name})" : $category->category_name)
+            ->implode(', ');
+
+        return $label ?: 'Semua Kategori';
+    }
+
+    /**
+     * @param  int[]  $unitKerjaIds
+     */
+    protected function resolveUnitLabel(array $unitKerjaIds): string
+    {
+        if (empty($unitKerjaIds)) {
+            return 'Semua Unit Kerja';
+        }
+
+        $label = UnitKerja::whereIn('id', $unitKerjaIds)
+            ->orderBy('unit_name')
+            ->pluck('unit_name')
+            ->implode(', ');
+
+        return $label ?: 'Semua Unit Kerja';
+    }
+
+    protected function sanitizeExcelFilename(string $filename): string
+    {
+        return (string) preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
     }
 }

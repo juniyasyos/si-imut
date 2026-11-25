@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
+use App\Models\UnitKerja;
 use App\Services\Chart\ImutPeriodService;
 use App\Services\Core\ImutCalculationService;
 use Filament\Widgets\Widget;
@@ -39,6 +40,25 @@ class ImutTidakTercapai extends Widget
     public string $filterCategoryId = 'all';
 
     public string|int $perPage = 10;
+
+    // State modal export Excel
+    public bool $showExportModal = false;
+
+    public string $exportPeriodType = 'month';
+
+    public ?string $exportPeriod = null;
+
+    /** @var array<int|string> */
+    public array $exportCategoryIds = [];
+
+    /** @var array<int|string> */
+    public array $exportUnitKerjaIds = [];
+
+    public string $exportUnitSearch = '';
+
+    public string $exportSearch = '';
+
+    public bool $exportMergeUnits = true;
 
     protected $queryString = [
         'periodType' => ['except' => 'month'],
@@ -136,11 +156,16 @@ class ImutTidakTercapai extends Widget
     public static function buildAggregatedBelowStandardQuery(
         int|array $laporanIds,
         string $search = '',
-        string $filterCategoryId = 'all'
+        string $filterCategoryId = 'all',
+        array $categoryIds = [],
+        array $unitKerjaIds = []
     ): Builder {
         $ids = is_array($laporanIds)
             ? array_values(array_filter(array_map('intval', $laporanIds)))
             : [$laporanIds];
+
+        $categoryIds = array_values(array_filter(array_map('intval', $categoryIds)));
+        $unitKerjaIds = array_values(array_filter(array_map('intval', $unitKerjaIds)));
 
         $aggPercentageExpr = ImutCalculationService::percentageExpression(
             'SUM(imut_penilaians.numerator_value)',
@@ -180,8 +205,14 @@ class ImutTidakTercapai extends Widget
             });
         }
 
-        if ($filterCategoryId !== 'all' && $filterCategoryId !== '') {
+        if (! empty($categoryIds)) {
+            $query->whereIn('imut_data.imut_kategori_id', $categoryIds);
+        } elseif ($filterCategoryId !== 'all' && $filterCategoryId !== '') {
             $query->where('imut_data.imut_kategori_id', (int) $filterCategoryId);
+        }
+
+        if (! empty($unitKerjaIds)) {
+            $query->whereIn('laporan_unit_kerjas.unit_kerja_id', $unitKerjaIds);
         }
 
         return $query
@@ -219,15 +250,10 @@ class ImutTidakTercapai extends Widget
     }
 
     /**
-     * Ambil seluruh unit beserta daftar indikator tidak tercapai (dikelompokkan per Unit Kerja).
+     * Kelompokkan collection hasil query berdasarkan Unit Kerja.
      */
-    public static function getAllGroupedUnits(
-        int|array $laporanIds,
-        string $search = '',
-        string $filterCategoryId = 'all'
-    ): Collection {
-        $rows = self::buildAggregatedBelowStandardQuery($laporanIds, $search, $filterCategoryId)->get();
-
+    public static function groupRowsByUnit(Collection $rows): Collection
+    {
         return $rows
             ->groupBy('unit_kerja_id')
             ->map(function (Collection $items) {
@@ -242,6 +268,21 @@ class ImutTidakTercapai extends Widget
                 ];
             })
             ->values();
+    }
+
+    /**
+     * Ambil seluruh unit beserta daftar indikator tidak tercapai (dikelompokkan per Unit Kerja).
+     */
+    public static function getAllGroupedUnits(
+        int|array $laporanIds,
+        string $search = '',
+        string $filterCategoryId = 'all',
+        array $categoryIds = [],
+        array $unitKerjaIds = []
+    ): Collection {
+        $rows = self::buildAggregatedBelowStandardQuery($laporanIds, $search, $filterCategoryId, $categoryIds, $unitKerjaIds)->get();
+
+        return self::groupRowsByUnit($rows);
     }
 
     /**
@@ -277,15 +318,12 @@ class ImutTidakTercapai extends Widget
     }
 
     /**
-     * Ringkasan keseluruhan indikator tidak tercapai pada periode terpilih.
+     * Hitung ringkasan dari collection hasil query indikator tidak tercapai.
+     *
+     * @return array{total_units: int, total_indicators: int, by_category: Collection}
      */
-    public static function getReportSummary(
-        int|array $laporanIds,
-        string $search = '',
-        string $filterCategoryId = 'all'
-    ): array {
-        $rows = self::buildAggregatedBelowStandardQuery($laporanIds, $search, $filterCategoryId)->get();
-
+    public static function summarizeRows(Collection $rows): array
+    {
         $byCategory = $rows
             ->groupBy(fn ($row) => $row->category_id ?? 0)
             ->map(function (Collection $group, $catId) {
@@ -307,6 +345,21 @@ class ImutTidakTercapai extends Widget
             'total_indicators' => $rows->count(),
             'by_category' => $byCategory,
         ];
+    }
+
+    /**
+     * Ringkasan keseluruhan indikator tidak tercapai pada periode terpilih.
+     */
+    public static function getReportSummary(
+        int|array $laporanIds,
+        string $search = '',
+        string $filterCategoryId = 'all',
+        array $categoryIds = [],
+        array $unitKerjaIds = []
+    ): array {
+        $rows = self::buildAggregatedBelowStandardQuery($laporanIds, $search, $filterCategoryId, $categoryIds, $unitKerjaIds)->get();
+
+        return self::summarizeRows($rows);
     }
 
     public function getSummaryProperty(): array
@@ -355,5 +408,112 @@ class ImutTidakTercapai extends Widget
             '<' => ['badge' => "< {$formattedValue}", 'label' => 'Kurang dari'],
             default => ['badge' => trim(($operator ?? '')." {$formattedValue}"), 'label' => 'Target'],
         };
+    }
+
+    public function openExportModal(): void
+    {
+        $this->exportPeriodType = $this->periodType;
+        $this->exportPeriod = $this->periodContext['selectedPeriod'] ?? $this->selectedPeriod;
+        $this->exportSearch = $this->search;
+        $this->exportCategoryIds = ($this->filterCategoryId !== 'all' && $this->filterCategoryId !== '')
+            ? [(int) $this->filterCategoryId]
+            : [];
+        $this->exportUnitSearch = '';
+        $this->showExportModal = true;
+    }
+
+    public function closeExportModal(): void
+    {
+        $this->showExportModal = false;
+    }
+
+    public function updatingExportPeriodType(string $value): void
+    {
+        $options = app(ImutPeriodService::class)->getAvailablePeriods($this->availableLaporans, $value);
+        $this->exportPeriod = array_key_first($options) ?: null;
+    }
+
+    public function resetExportCategories(): void
+    {
+        $this->exportCategoryIds = [];
+    }
+
+    public function resetExportUnits(): void
+    {
+        $this->exportUnitKerjaIds = [];
+        $this->exportUnitSearch = '';
+    }
+
+    public function getExportPeriodContextProperty(): array
+    {
+        $context = app(ImutPeriodService::class)->resolvePeriodContext(
+            $this->availableLaporans,
+            $this->exportPeriodType,
+            $this->exportPeriod
+        );
+
+        if ($context['selectedPeriod'] && $this->exportPeriod !== $context['selectedPeriod']) {
+            $this->exportPeriod = $context['selectedPeriod'];
+        }
+
+        return $context;
+    }
+
+    /**
+     * Daftar nama bulan dalam periode terpilih untuk preview pada modal export.
+     *
+     * @return string[]
+     */
+    public function getExportMonthLabelsProperty(): array
+    {
+        $context = $this->exportPeriodContext;
+        $selectedPeriod = $context['selectedPeriod'] ?? null;
+
+        if (! $selectedPeriod) {
+            return [];
+        }
+
+        $periodService = app(ImutPeriodService::class);
+        $parsed = $periodService->parsePeriod($context['periodType'], $selectedPeriod);
+
+        return $periodService->getMonthLabels($parsed['months']);
+    }
+
+    public function getAvailableUnitKerjasProperty(): Collection
+    {
+        $query = UnitKerja::select(['id', 'unit_name'])
+            ->orderBy('unit_name');
+
+        if (! empty(trim($this->exportUnitSearch))) {
+            $query->where('unit_name', 'like', '%'.trim($this->exportUnitSearch).'%');
+        }
+
+        return $query->get();
+    }
+
+    public function getExportUrlProperty(): string
+    {
+        $context = $this->exportPeriodContext;
+        $params = [
+            'period_type' => $context['periodType'] ?? $this->exportPeriodType,
+            'period' => $context['selectedPeriod'] ?? $this->exportPeriod,
+            'merge_units' => $this->exportMergeUnits ? 1 : 0,
+        ];
+
+        $categoryIds = array_values(array_filter(array_map('intval', $this->exportCategoryIds)));
+        if (! empty($categoryIds)) {
+            $params['category_ids'] = $categoryIds;
+        }
+
+        $unitIds = array_values(array_filter(array_map('intval', $this->exportUnitKerjaIds)));
+        if (! empty($unitIds)) {
+            $params['unit_kerja_ids'] = $unitIds;
+        }
+
+        if (trim($this->exportSearch) !== '') {
+            $params['search'] = trim($this->exportSearch);
+        }
+
+        return route('export.imut-tidak-tercapai', $params);
     }
 }
