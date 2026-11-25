@@ -53,7 +53,7 @@
                         </div>
 
                         <!-- Tombol Cetak & Pilih Bulan -->
-                        <div class="flex flex-wrap items-center gap-2.5">
+                        <div class="flex flex-wrap items-center gap-1.5">
                             <!-- Dropdown Pemilih Periode / Bulan Laporan -->
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Bulan:</span>
@@ -306,62 +306,9 @@
                 {{-- PAGINATION --}}
                 @if ($isPaginated && $records->hasPages())
                     <div class="border-t border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900" style="padding: 0.75rem 1.5rem;">
-                        {{ $records->links() }}
+                        {{ $records->links('filament.widgets.partials.imut-tercapai-pagination') }}
                     </div>
                 @endif
-
-                {{-- 4. EXECUTIVE SUMMARY (RANGKUMAN PALING BAWAH DENGAN WARNA JELAS) --}}
-                <div class="border-t border-gray-200 bg-gray-50 dark:border-slate-800 dark:bg-slate-800/40" style="padding: 1.5rem;">
-                    <div class="flex items-center gap-2" style="margin-bottom: 1rem;">
-                        @svg('heroicon-s-chart-pie', 'h-4 w-4 text-blue-600 dark:text-blue-400')
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200">
-                            Ikhtisar & Rangkuman Keseluruhan Laporan
-                        </h4>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
-                        <!-- Total Unit -->
-                        <div class="rounded-xl border border-gray-200 bg-white text-center shadow-sm dark:border-slate-700 dark:bg-slate-800" style="padding: 1rem;">
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Total Unit</span>
-                            <div class="font-mono text-2xl font-bold text-gray-900 dark:text-white" style="margin-top: 0.25rem;">{{ number_format($summary['total_units']) }}</div>
-                        </div>
-
-                        <!-- Jml Indikator -->
-                        <div class="rounded-xl border border-gray-200 bg-white text-center shadow-sm dark:border-slate-700 dark:bg-slate-800" style="padding: 1rem;">
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Jml Indikator</span>
-                            <div class="font-mono text-2xl font-bold text-gray-900 dark:text-white" style="margin-top: 0.25rem;">{{ number_format($summary['total_indicators']) }}</div>
-                        </div>
-
-                        <!-- Mencapai Standar -->
-                        <div style="--c-50:var(--success-50);--c-400:var(--success-400);--c-600:var(--success-600); padding: 1rem;"
-                             class="rounded-xl border border-green-200 bg-custom-50 text-center shadow-sm dark:border-green-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Mencapai Standar</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['total_standard']) }}</div>
-                        </div>
-
-                        <!-- Tidak Standar -->
-                        <div style="--c-50:var(--danger-50);--c-400:var(--danger-400);--c-600:var(--danger-600); padding: 1rem;"
-                             class="rounded-xl border border-red-200 bg-custom-50 text-center shadow-sm dark:border-red-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Tidak Standar</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['total_below']) }}</div>
-                        </div>
-
-                        <!-- Kosong / Belum -->
-                        <div style="--c-50:var(--warning-50);--c-400:var(--warning-400);--c-600:var(--warning-600); padding: 1rem;"
-                             class="rounded-xl border border-amber-200 bg-custom-50 text-center shadow-sm dark:border-amber-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Kosong / Belum</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['total_empty']) }}</div>
-                        </div>
-
-                        <!-- Rata-rata Capaian -->
-                        <div style="--c-50:var(--info-50);--c-400:var(--info-400);--c-600:var(--info-600); padding: 1rem;"
-                             class="rounded-xl border border-blue-200 bg-custom-50 text-center shadow-sm dark:border-blue-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Rata-rata Capaian</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['overall_percentage'], 1) }}%</div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         @endif
     </div>

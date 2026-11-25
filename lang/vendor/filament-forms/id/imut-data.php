@@ -3,7 +3,7 @@
 return [
     // Navigasi & Label Umum
     'navigation' => [
-        'group' => 'Quality Indicators',
+        'group' => 'Indikator Mutu',
         'title' => 'Data IMUT',
         'plural' => 'Data IMUT',
         'description' => 'Kelola data indikator mutu dengan efisien.',

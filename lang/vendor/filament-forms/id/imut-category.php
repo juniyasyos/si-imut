@@ -2,7 +2,7 @@
 
 return [
     'navigation' => [
-        'group' => 'Quality Indicators',
+        'group' => 'Indikator Mutu',
         'title' => 'Kategori IMUT',
         'plural' => 'Kategori IMUT',
         'description' => 'Kelola kategori indikator mutu dalam sistem.',

@@ -4,7 +4,7 @@
 
 return [
     'title' => 'Sistem',
-    'group' => 'System & Configuration',
+    'group' => 'Sistem & Konfigurasi',
     'back' => 'Kembali',
     'settings' => [
         'site' => [

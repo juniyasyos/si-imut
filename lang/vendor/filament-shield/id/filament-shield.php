@@ -32,7 +32,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'nav.group' => 'User & Access Control',
+    'nav.group' => 'Pengguna & Hak Akses',
     'nav.role.label' => 'Peran & Hak Akses',
     'nav.role.icon' => 'heroicon-o-shield-check',
     'resource.label.role' => 'Peran',

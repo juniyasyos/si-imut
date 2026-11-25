@@ -16,6 +16,7 @@ return [
         'widget_DashboardSiimutOverview',
         'widget_ImutCapaianWidget',
         'widget_ImutTercapai',
+        'widget_ImutTidakTercapai',
         'widget_imutDataCompletionChart',
         'widget_UnitKerjaCompletionChart',
 
