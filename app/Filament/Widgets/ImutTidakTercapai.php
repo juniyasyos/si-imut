@@ -44,13 +44,7 @@ class ImutTidakTercapai extends Widget
 
     public static function canView(): bool
     {
-        $user = Auth::user();
-
-        if (! $user) {
-            return false;
-        }
-
-        return $user->hasRole('super_admin') || $user->can('widget_ImutTidakTercapai');
+        return Auth::user()?->can('widget_ImutTidakTercapai') ?? false;
     }
 
     public function mount(): void
