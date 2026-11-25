@@ -4,6 +4,8 @@ namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Models\LaporanImut;
+use App\Models\UnitKerja;
+use App\Modules\ImutMaster\Models\ImutCategory;
 use App\Repositories\Interfaces\LaporanRepositoryInterface;
 use App\Services\Chart\ImutPeriodService;
 use App\Services\Core\ImutCalculationService;
@@ -41,6 +43,25 @@ class ImutTercapai extends Widget
 
     public string|int $perPage = 10;
 
+    // State modal export Excel
+    public bool $showExportModal = false;
+
+    public string $exportPeriodType = 'month';
+
+    public ?string $exportPeriod = null;
+
+    /** @var array<int|string> */
+    public array $exportCategoryIds = [];
+
+    /** @var array<int|string> */
+    public array $exportUnitKerjaIds = [];
+
+    public string $exportUnitSearch = '';
+
+    public string $exportFilterLevel = 'all';
+
+    public string $exportSort = 'percentage_desc';
+
     protected $queryString = [
         'periodType' => ['except' => 'month'],
         'selectedPeriod' => ['except' => null],
@@ -55,6 +76,8 @@ class ImutTercapai extends Widget
 
     public function mount(): void
     {
+        $this->periodType = 'month';
+
         if (! $this->selectedPeriod) {
             $context = $this->periodContext;
             $this->selectedPeriod = $context['selectedPeriod'];
@@ -230,5 +253,113 @@ class ImutTercapai extends Widget
         $records = $laporanRepository->getReportByUnitKerja($laporanIds)->get();
 
         return self::getSummaryFromRecords($records);
+    }
+
+    public function openExportModal(): void
+    {
+        $this->exportPeriodType = $this->periodType;
+        $this->exportPeriod = $this->periodContext['selectedPeriod'] ?? $this->selectedPeriod;
+        $this->exportFilterLevel = $this->filterLevel;
+        $this->exportUnitSearch = '';
+        $this->showExportModal = true;
+    }
+
+    public function closeExportModal(): void
+    {
+        $this->showExportModal = false;
+    }
+
+    public function updatingExportPeriodType(string $value): void
+    {
+        $options = app(ImutPeriodService::class)->getAvailablePeriods($this->availableLaporans, $value);
+        $this->exportPeriod = array_key_first($options) ?: null;
+    }
+
+    public function resetExportCategories(): void
+    {
+        $this->exportCategoryIds = [];
+    }
+
+    public function resetExportUnits(): void
+    {
+        $this->exportUnitKerjaIds = [];
+        $this->exportUnitSearch = '';
+    }
+
+    public function getExportPeriodContextProperty(): array
+    {
+        $context = app(ImutPeriodService::class)->resolvePeriodContext(
+            $this->availableLaporans,
+            $this->exportPeriodType,
+            $this->exportPeriod
+        );
+
+        if ($context['selectedPeriod'] && $this->exportPeriod !== $context['selectedPeriod']) {
+            $this->exportPeriod = $context['selectedPeriod'];
+        }
+
+        return $context;
+    }
+
+    /**
+     * Daftar nama bulan yang akan menjadi kolom Excel berdasarkan jenjang & periode terpilih.
+     *
+     * @return string[]
+     */
+    public function getExportMonthLabelsProperty(): array
+    {
+        $context = $this->exportPeriodContext;
+        $selectedPeriod = $context['selectedPeriod'] ?? null;
+
+        if (! $selectedPeriod) {
+            return [];
+        }
+
+        $periodService = app(ImutPeriodService::class);
+        $parsed = $periodService->parsePeriod($context['periodType'], $selectedPeriod);
+
+        return $periodService->getMonthLabels($parsed['months']);
+    }
+
+    public function getAvailableCategoriesProperty(): Collection
+    {
+        return ImutCategory::select(['id', 'short_name', 'category_name'])
+            ->orderBy('category_name')
+            ->get();
+    }
+
+    public function getAvailableUnitKerjasProperty(): Collection
+    {
+        $query = UnitKerja::select(['id', 'unit_name'])
+            ->orderBy('unit_name');
+
+        if (! empty(trim($this->exportUnitSearch))) {
+            $query->where('unit_name', 'like', '%'.trim($this->exportUnitSearch).'%');
+        }
+
+        return $query->get();
+    }
+
+    public function getExportUrlProperty(): string
+    {
+        $context = $this->exportPeriodContext;
+        $params = [
+            'period_type' => $context['periodType'] ?? $this->exportPeriodType,
+            'period' => $context['selectedPeriod'] ?? $this->exportPeriod,
+            'filter_level' => $this->exportFilterLevel,
+            'sort' => $this->exportSort,
+        ];
+
+        $categoryIds = array_values(array_filter(array_map('intval', $this->exportCategoryIds)));
+        if (! empty($categoryIds)) {
+            $params['category_ids'] = $categoryIds;
+        }
+
+        $unitIds = array_values(array_filter(array_map('intval', $this->exportUnitKerjaIds)));
+        if (! empty($unitIds)) {
+            $params['unit_kerja_ids'] = $unitIds;
+        }
+
+        return route('export.unit-kerja-rekap', $params);
     }
 }

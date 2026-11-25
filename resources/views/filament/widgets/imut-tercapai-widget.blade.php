@@ -43,7 +43,7 @@
                                 <p class="text-xs text-slate-300 sm:text-sm" style="color: #cbd5e1; margin-top: 0.25rem;">
                                     <span class="font-semibold text-white" style="color: #ffffff;">{{ $context['reportName'] }}</span>
                                     <span class="text-slate-500" style="margin-left: 0.5rem; margin-right: 0.5rem;">&bull;</span>
-                                    Periode ({{ $context['periodTypeLabel'] }}):
+                                    Periode:
                                     <span class="font-medium text-slate-200" style="color: #e2e8f0;">
                                         {{ $context['startDate'] ? $context['startDate']->translatedFormat('d M Y') : '-' }}
                                         s/d
@@ -53,9 +53,9 @@
                             </div>
                         </div>
 
-                        <!-- Tombol Cetak & Pemilih Tipe + Periode -->
+                        <!-- Tombol Cetak & Pemilih Bulan -->
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- Tipe Periode -->
+                            {{-- Tipe Periode disembunyikan sementara (gunakan bulanan)
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Tipe:</span>
                                 <select wire:model.live="periodType"
@@ -67,10 +67,11 @@
                                     <option value="year" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">Tahun</option>
                                 </select>
                             </div>
+                            --}}
 
-                            <!-- Nilai Periode -->
+                            <!-- Pemilih Bulan -->
                             <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Periode:</span>
+                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Bulan:</span>
                                 <select wire:model.live="selectedPeriod"
                                         class="rounded-lg border border-slate-600 bg-slate-800 text-xs font-bold text-white shadow-sm transition [color-scheme:dark] hover:bg-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                         style="background-color: #1e293b; color: #ffffff; border-color: #475569; padding: 0.375rem 0.75rem;">
@@ -81,6 +82,14 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <button type="button"
+                                    wire:click="openExportModal"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                    style="background-color: #059669; color: #ffffff; padding: 0.5rem 1rem;">
+                                @svg('heroicon-o-arrow-down-tray', 'h-4 w-4')
+                                <span>Download Excel</span>
+                            </button>
 
                             <a href="{{ route('print.unit-kerja-rekap', ['period_type' => $periodType, 'period' => $context['selectedPeriod'], 'orientation' => 'landscape']) }}"
                                target="_blank"
@@ -320,6 +329,224 @@
                         {{ $records->links('filament.widgets.partials.imut-tercapai-pagination') }}
                     </div>
                 @endif
+            </div>
+        @endif
+
+        {{-- MODAL EXPORT EXCEL --}}
+        @if ($showExportModal)
+            @php
+                $exportContext = $this->exportPeriodContext;
+                $exportMonthLabels = $this->exportMonthLabels;
+                $availableCategories = $this->availableCategories;
+                $availableUnits = $this->availableUnitKerjas;
+            @endphp
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm"
+                 style="padding: 1rem;"
+                 wire:keydown.escape.window="closeExportModal">
+                <div class="w-full max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+                     style="max-height: 90vh; display: flex; flex-direction: column;">
+                    {{-- Modal Header --}}
+                    <div class="flex items-center justify-between border-b border-gray-200 bg-slate-900 text-white dark:border-slate-700"
+                         style="padding: 1rem 1.5rem;">
+                        <div class="flex items-center gap-2.5">
+                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/20 text-emerald-400">
+                                @svg('heroicon-o-table-cells', 'h-5 w-5')
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Download Excel Rekapitulasi IMUT</h3>
+                                <p class="text-xs text-slate-300">Pilih jenjang periode, kategori IMUT, dan filter data yang diinginkan</p>
+                            </div>
+                        </div>
+                        <button type="button"
+                                wire:click="closeExportModal"
+                                class="rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                                style="padding: 0.375rem;"
+                                title="Tutup">
+                            @svg('heroicon-o-x-mark', 'h-5 w-5')
+                        </button>
+                    </div>
+
+                    {{-- Modal Body --}}
+                    <div class="flex flex-1 flex-col gap-4 overflow-y-auto" style="padding: 1.25rem 1.5rem;">
+                        {{-- 1. Jenjang Periode & Periode --}}
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200" style="margin-bottom: 0.375rem;">
+                                    Jenjang Periode
+                                </label>
+                                <select wire:model.live="exportPeriodType"
+                                        class="w-full rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-800 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                        style="padding: 0.5rem 0.75rem;">
+                                    <option value="month">Bulan</option>
+                                    <option value="quarter">Kuartal (Triwulan)</option>
+                                    <option value="semester">Semester</option>
+                                    <option value="year">Tahun</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200" style="margin-bottom: 0.375rem;">
+                                    Pilih Periode
+                                </label>
+                                <select wire:model.live="exportPeriod"
+                                        class="w-full rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-800 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                        style="padding: 0.5rem 0.75rem;">
+                                    @forelse ($exportContext['options'] as $optKey => $optLabel)
+                                        <option value="{{ $optKey }}">{{ $optLabel }}</option>
+                                    @empty
+                                        <option value="">Tidak ada periode tersedia</option>
+                                    @endforelse
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Preview Kolom Bulan Excel --}}
+                        @if (! empty($exportMonthLabels))
+                            <div class="rounded-lg border border-emerald-200 bg-emerald-50/70 text-xs text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300"
+                                 style="padding: 0.625rem 0.875rem;">
+                                <span class="font-bold">Kolom Bulan di Excel:</span>
+                                <span>{{ implode(', ', $exportMonthLabels) }}</span>
+                                <span class="text-emerald-700 dark:text-emerald-400"> (masing-masing: Jml Indikator, Tidak Sesuai Standart, Persentase %)</span>
+                            </div>
+                        @endif
+
+                        {{-- 2. Kategori IMUT --}}
+                        <div>
+                            <div class="flex items-center justify-between" style="margin-bottom: 0.375rem;">
+                                <label class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200">
+                                    Kategori IMUT
+                                    <span class="font-normal normal-case text-gray-500 dark:text-gray-400">(kosongkan untuk semua kategori)</span>
+                                </label>
+                                @if (! empty($exportCategoryIds))
+                                    <button type="button"
+                                            wire:click="resetExportCategories"
+                                            class="text-xs font-semibold text-rose-600 hover:underline dark:text-rose-400">
+                                        Reset ({{ count($exportCategoryIds) }})
+                                    </button>
+                                @endif
+                            </div>
+                            <div class="grid grid-cols-1 gap-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 sm:grid-cols-2 dark:border-slate-700 dark:bg-slate-800/60"
+                                 style="max-height: 140px; padding: 0.625rem 0.75rem;">
+                                @forelse ($availableCategories as $category)
+                                    <label class="flex cursor-pointer items-start gap-2 rounded text-xs text-gray-700 hover:bg-white dark:text-gray-200 dark:hover:bg-slate-800"
+                                           style="padding: 0.25rem 0.375rem;">
+                                        <input type="checkbox"
+                                               wire:model.live="exportCategoryIds"
+                                               value="{{ $category->id }}"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-700"
+                                               style="margin-top: 0.125rem;">
+                                        <span>
+                                            @if ($category->short_name)
+                                                <span class="font-bold">{{ $category->short_name }}</span> -
+                                            @endif
+                                            {{ $category->category_name }}
+                                        </span>
+                                    </label>
+                                @empty
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Belum ada kategori IMUT.</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        {{-- 3. Filter Unit Kerja --}}
+                        <div>
+                            <div class="flex items-center justify-between" style="margin-bottom: 0.375rem;">
+                                <label class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200">
+                                    Unit Kerja
+                                    <span class="font-normal normal-case text-gray-500 dark:text-gray-400">(kosongkan untuk semua unit)</span>
+                                </label>
+                                @if (! empty($exportUnitKerjaIds))
+                                    <button type="button"
+                                            wire:click="resetExportUnits"
+                                            class="text-xs font-semibold text-rose-600 hover:underline dark:text-rose-400">
+                                        Reset ({{ count($exportUnitKerjaIds) }})
+                                    </button>
+                                @endif
+                            </div>
+                            <input type="text"
+                                   wire:model.live.debounce.250ms="exportUnitSearch"
+                                   placeholder="Cari nama unit kerja..."
+                                   class="w-full rounded-lg border border-gray-300 bg-white text-xs text-gray-800 placeholder-gray-400 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                   style="padding: 0.375rem 0.75rem; margin-bottom: 0.5rem;" />
+                            <div class="grid grid-cols-1 gap-1.5 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 sm:grid-cols-2 dark:border-slate-700 dark:bg-slate-800/60"
+                                 style="max-height: 140px; padding: 0.625rem 0.75rem;">
+                                @forelse ($availableUnits as $unit)
+                                    <label class="flex cursor-pointer items-center gap-2 rounded text-xs text-gray-700 hover:bg-white dark:text-gray-200 dark:hover:bg-slate-800"
+                                           style="padding: 0.25rem 0.375rem;">
+                                        <input type="checkbox"
+                                               wire:model.live="exportUnitKerjaIds"
+                                               value="{{ $unit->id }}"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-700">
+                                        <span class="truncate">{{ $unit->unit_name }}</span>
+                                    </label>
+                                @empty
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Unit kerja tidak ditemukan.</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        {{-- 4. Filter Status Capaian & Urutan --}}
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200" style="margin-bottom: 0.375rem;">
+                                    Status Capaian
+                                </label>
+                                <select wire:model.live="exportFilterLevel"
+                                        class="w-full rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-800 shadow-sm focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                        style="padding: 0.5rem 0.75rem;">
+                                    <option value="all">Semua Status Capaian</option>
+                                    <option value="high">Capaian Tinggi (≥ 80%)</option>
+                                    <option value="medium">Capaian Sedang (50% - 79%)</option>
+                                    <option value="low">Capaian Rendah (&lt; 50%)</option>
+                                    <option value="has_below">Ada Tidak Sesuai Standar (&gt; 0)</option>
+                                    <option value="has_empty">Ada Indikator Kosong (&gt; 0)</option>
+                                    <option value="all_standard">Sesuai Standar 100%</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200" style="margin-bottom: 0.375rem;">
+                                    Urutan Unit Kerja
+                                </label>
+                                <select wire:model.live="exportSort"
+                                        class="w-full rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-800 shadow-sm focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                        style="padding: 0.5rem 0.75rem;">
+                                    <option value="percentage_desc">Persentase Tertinggi → Terendah</option>
+                                    <option value="percentage_asc">Persentase Terendah → Tertinggi</option>
+                                    <option value="unit_name_asc">Nama Unit A → Z</option>
+                                    <option value="unit_name_desc">Nama Unit Z → A</option>
+                                    <option value="below_desc">Tidak Sesuai Standar Terbanyak</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Modal Footer --}}
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/80"
+                         style="padding: 0.875rem 1.5rem;">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            File akan diunduh dalam format <span class="font-semibold text-gray-700 dark:text-gray-200">.xlsx</span>
+                        </span>
+
+                        <div class="flex items-center gap-2">
+                            <button type="button"
+                                    wire:click="closeExportModal"
+                                    class="rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700"
+                                    style="padding: 0.5rem 1rem;">
+                                Batal
+                            </button>
+
+                            <a href="{{ $this->exportUrl }}"
+                               target="_blank"
+                               wire:click="closeExportModal"
+                               class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                               style="background-color: #059669; color: #ffffff; padding: 0.5rem 1.125rem;">
+                                @svg('heroicon-o-arrow-down-tray', 'h-4 w-4')
+                                <span>Download Excel (.xlsx)</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         @endif
     </div>

@@ -33,34 +33,7 @@ class UnitKerjaReportQueryBuilder
 
         $isMultiPeriod = is_array($laporanIds);
 
-        // Expression untuk menghitung filled_count - akan digunakan di SELECT dan HAVING
-        $filledCountExpr = self::getFilledCountExpression();
-
-        $meetsStandardCondition = ImutCalculationService::meetsStandardExpression(
-            ImutCalculationService::percentageExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value'),
-            'imut_profil.target_value',
-            'imut_profil.target_operator'
-        );
-
-        $meetsStandardExpr = "SUM(CASE
-            WHEN imut_penilaians.numerator_value IS NOT NULL
-                AND imut_penilaians.denominator_value IS NOT NULL
-                AND imut_penilaians.denominator_value != 0
-                AND {$meetsStandardCondition}
-            THEN 1 ELSE 0 END)";
-
-        $belowStandardExpr = "SUM(CASE
-            WHEN imut_penilaians.numerator_value IS NOT NULL
-                AND imut_penilaians.denominator_value IS NOT NULL
-                AND imut_penilaians.denominator_value != 0
-                AND NOT {$meetsStandardCondition}
-            THEN 1 ELSE 0 END)";
-
-        $emptyCountExpr = "SUM(CASE
-            WHEN imut_penilaians.numerator_value IS NULL
-                OR imut_penilaians.denominator_value IS NULL
-                OR imut_penilaians.denominator_value = 0
-            THEN 1 ELSE 0 END)";
+        ['filled' => $filledCountExpr, 'meets' => $meetsStandardExpr, 'below' => $belowStandardExpr, 'empty' => $emptyCountExpr] = self::getStandardExpressions();
 
         if (empty($ids)) {
             $this->query->whereRaw('1 = 0');
@@ -115,6 +88,117 @@ class UnitKerjaReportQueryBuilder
             'unit_kerja.unit_name',
             'laporan_unit_kerjas.laporan_imut_id'
         );
+    }
+
+    /**
+     * Build query rincian capaian per unit kerja dan per bulan (untuk export Excel periode).
+     *
+     * @param  int|int[]  $laporanIds
+     * @param  int[]  $categoryIds
+     * @param  int[]  $unitKerjaIds
+     */
+    public static function buildMonthlyBreakdown(
+        int|array $laporanIds,
+        array $categoryIds = [],
+        array $unitKerjaIds = []
+    ): Builder {
+        $ids = is_array($laporanIds)
+            ? array_values(array_filter(array_map('intval', $laporanIds)))
+            : [(int) $laporanIds];
+
+        $categoryIds = array_values(array_filter(array_map('intval', $categoryIds)));
+        $unitKerjaIds = array_values(array_filter(array_map('intval', $unitKerjaIds)));
+
+        ['meets' => $meetsStandardExpr, 'below' => $belowStandardExpr, 'empty' => $emptyCountExpr] = self::getStandardExpressions();
+        $monthExpr = 'COALESCE(MONTH(laporan_imuts.assessment_period_start), laporan_imuts.report_month)';
+
+        $query = LaporanUnitKerja::query()
+            ->join('laporan_imuts', 'laporan_unit_kerjas.laporan_imut_id', '=', 'laporan_imuts.id')
+            ->leftJoin('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
+            ->leftJoin('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
+            ->leftJoin('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id');
+
+        if (empty($ids)) {
+            $query->whereRaw('1 = 0');
+        } else {
+            $query->whereIn('laporan_unit_kerjas.laporan_imut_id', $ids);
+        }
+
+        if (! empty($categoryIds)) {
+            $query->leftJoin('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
+                ->whereIn('imut_data.imut_kategori_id', $categoryIds);
+        }
+
+        if (! empty($unitKerjaIds)) {
+            $query->whereIn('laporan_unit_kerjas.unit_kerja_id', $unitKerjaIds);
+        }
+
+        return $query
+            ->select([
+                'laporan_unit_kerjas.unit_kerja_id',
+                'unit_kerja.unit_name',
+                DB::raw("{$monthExpr} as report_month"),
+                DB::raw('COUNT(imut_penilaians.id) as total_count'),
+                DB::raw("{$meetsStandardExpr} as meets_standard_count"),
+                DB::raw("{$belowStandardExpr} as below_standard_count"),
+                DB::raw("{$emptyCountExpr} as empty_count"),
+                DB::raw("ROUND(
+                    CASE WHEN COUNT(imut_penilaians.id) > 0
+                    THEN ({$meetsStandardExpr}) * 100.0 / COUNT(imut_penilaians.id)
+                    ELSE 0 END, 2
+                ) as standard_percentage"),
+            ])
+            ->groupBy(
+                'laporan_unit_kerjas.unit_kerja_id',
+                'unit_kerja.unit_name',
+                DB::raw($monthExpr)
+            )
+            ->orderBy('unit_kerja.unit_name')
+            ->orderByRaw($monthExpr);
+    }
+
+    /**
+     * Ekspresi SQL standar untuk indikator terisi, memenuhi standar, tidak sesuai standar, dan kosong.
+     *
+     * @return array{filled: string, meetsCondition: string, meets: string, below: string, empty: string}
+     */
+    protected static function getStandardExpressions(): array
+    {
+        $filledCountExpr = self::getFilledCountExpression();
+
+        $meetsStandardCondition = ImutCalculationService::meetsStandardExpression(
+            ImutCalculationService::percentageExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value'),
+            'imut_profil.target_value',
+            'imut_profil.target_operator'
+        );
+
+        $meetsStandardExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NOT NULL
+                AND imut_penilaians.denominator_value IS NOT NULL
+                AND imut_penilaians.denominator_value != 0
+                AND {$meetsStandardCondition}
+            THEN 1 ELSE 0 END)";
+
+        $belowStandardExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NOT NULL
+                AND imut_penilaians.denominator_value IS NOT NULL
+                AND imut_penilaians.denominator_value != 0
+                AND NOT {$meetsStandardCondition}
+            THEN 1 ELSE 0 END)";
+
+        $emptyCountExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NULL
+                OR imut_penilaians.denominator_value IS NULL
+                OR imut_penilaians.denominator_value = 0
+            THEN 1 ELSE 0 END)";
+
+        return [
+            'filled' => $filledCountExpr,
+            'meetsCondition' => $meetsStandardCondition,
+            'meets' => $meetsStandardExpr,
+            'below' => $belowStandardExpr,
+            'empty' => $emptyCountExpr,
+        ];
     }
 
     /**

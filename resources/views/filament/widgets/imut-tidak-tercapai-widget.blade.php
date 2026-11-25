@@ -35,7 +35,7 @@
                                 <p class="text-xs text-slate-300 sm:text-sm" style="color: #cbd5e1; margin-top: 0.25rem;">
                                     <span class="font-semibold text-white" style="color: #ffffff;">{{ $context['reportName'] }}</span>
                                     <span class="text-slate-500" style="margin-left: 0.5rem; margin-right: 0.5rem;">&bull;</span>
-                                    Periode ({{ $context['periodTypeLabel'] }}):
+                                    Periode:
                                     <span class="font-medium text-slate-200" style="color: #e2e8f0;">
                                         {{ $context['startDate'] ? $context['startDate']->translatedFormat('d M Y') : '-' }}
                                         s/d
@@ -45,9 +45,9 @@
                             </div>
                         </div>
 
-                        <!-- Tombol Cetak & Pemilih Tipe + Periode -->
+                        <!-- Tombol Cetak & Pemilih Bulan -->
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- Tipe Periode -->
+                            {{-- Tipe Periode disembunyikan sementara (gunakan bulanan)
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Tipe:</span>
                                 <select wire:model.live="periodType"
@@ -59,10 +59,11 @@
                                     <option value="year" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">Tahun</option>
                                 </select>
                             </div>
+                            --}}
 
-                            <!-- Nilai Periode -->
+                            <!-- Pemilih Bulan -->
                             <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Periode:</span>
+                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Bulan:</span>
                                 <select wire:model.live="selectedPeriod"
                                         class="rounded-lg border border-slate-600 bg-slate-800 text-xs font-bold text-white shadow-sm transition [color-scheme:dark] hover:bg-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                         style="background-color: #1e293b; color: #ffffff; border-color: #475569; padding: 0.375rem 0.75rem;">

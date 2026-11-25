@@ -54,6 +54,8 @@ class ImutTidakTercapai extends Widget
 
     public function mount(): void
     {
+        $this->periodType = 'month';
+
         if (! $this->selectedPeriod) {
             $context = $this->periodContext;
             $this->selectedPeriod = $context['selectedPeriod'];

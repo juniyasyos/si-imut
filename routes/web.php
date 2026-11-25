@@ -60,6 +60,11 @@ Route::middleware(['web'])->group(function () {
         ->middleware(['auth'])
         ->name('export.monitoring');
 
+    // Export Excel Rekapitulasi Capaian Unit Kerja per Jenjang Periode
+    Route::get('/export/unit-kerja-rekap', [ExportController::class, 'unitKerjaRekapExport'])
+        ->middleware(['auth'])
+        ->name('export.unit-kerja-rekap');
+
     // Debug routes - available in all modes
     Route::get('/debug-session', [DebugController::class, 'session'])
         ->name('debug.session');

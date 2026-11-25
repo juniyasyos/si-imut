@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Exports\MonitoringExport;
+use App\Exports\UnitKerjaRekapPeriodExport;
 use App\Models\FormTemplate;
+use App\Models\LaporanImut;
+use App\Models\UnitKerja;
+use App\Modules\ImutMaster\Models\ImutCategory;
+use App\QueryBuilders\UnitKerjaReportQueryBuilder;
+use App\Services\Chart\ImutPeriodService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,5 +63,71 @@ class ExportController extends Controller
 
             return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Export Excel rekapitulasi capaian IMUT per unit kerja sesuai jenjang periode & filter.
+     */
+    public function unitKerjaRekapExport(Request $request)
+    {
+        $periodType = (string) $request->query('period_type', 'month');
+        $selectedPeriod = $request->query('period');
+        $categoryIds = array_values(array_filter(array_map('intval', (array) $request->query('category_ids', []))));
+        $unitKerjaIds = array_values(array_filter(array_map('intval', (array) $request->query('unit_kerja_ids', []))));
+        $filterLevel = (string) $request->query('filter_level', 'all');
+        $sort = (string) $request->query('sort', 'percentage_desc');
+
+        $laporans = LaporanImut::select(['id', 'name', 'report_month', 'report_year', 'assessment_period_start', 'assessment_period_end', 'status'])
+            ->orderByDesc('assessment_period_start')
+            ->get();
+
+        $periodService = app(ImutPeriodService::class);
+        $periodContext = $periodService->resolvePeriodContext(
+            $laporans,
+            $periodType,
+            $selectedPeriod ? (string) $selectedPeriod : null
+        );
+
+        $parsedPeriod = $periodContext['selectedPeriod']
+            ? $periodService->parsePeriod($periodContext['periodType'], $periodContext['selectedPeriod'])
+            : ['year' => (int) now()->year, 'months' => [(int) now()->month], 'label' => '-'];
+
+        $rows = UnitKerjaReportQueryBuilder::buildMonthlyBreakdown(
+            $periodContext['laporanIds'] ?? [],
+            $categoryIds,
+            $unitKerjaIds
+        )->get();
+
+        $categoryLabel = empty($categoryIds)
+            ? 'Semua Kategori'
+            : ImutCategory::whereIn('id', $categoryIds)
+                ->orderBy('category_name')
+                ->get(['short_name', 'category_name'])
+                ->map(fn ($category) => $category->short_name ? "{$category->short_name} ({$category->category_name})" : $category->category_name)
+                ->implode(', ');
+
+        $unitLabel = empty($unitKerjaIds)
+            ? 'Semua Unit Kerja'
+            : UnitKerja::whereIn('id', $unitKerjaIds)
+                ->orderBy('unit_name')
+                ->pluck('unit_name')
+                ->implode(', ');
+
+        $periodSlug = $periodContext['selectedPeriod'] ?: now()->format('Y_m');
+        $filename = 'rekap_capaian_imut_unit_' . $periodSlug . '.xlsx';
+        $filename = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
+
+        return Excel::download(
+            new UnitKerjaRekapPeriodExport(
+                periodContext: $periodContext,
+                months: $parsedPeriod['months'],
+                rows: $rows,
+                filterLevel: $filterLevel,
+                sort: $sort,
+                categoryLabel: $categoryLabel ?: 'Semua Kategori',
+                unitLabel: $unitLabel ?: 'Semua Unit Kerja',
+            ),
+            $filename
+        );
     }
 }
