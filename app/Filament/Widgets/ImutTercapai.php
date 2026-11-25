@@ -21,6 +21,7 @@ class ImutTercapai extends Widget
     protected int|string|array $columnSpan = 'full';
     protected static ?string $pollingInterval = '30s';
 
+    public ?int $selectedLaporanId = null;
     public string $search = '';
     public string $filterLevel = 'all';
     public string $sortColumn = 'standard_percentage';
@@ -28,6 +29,7 @@ class ImutTercapai extends Widget
     public string|int $perPage = 10;
 
     protected $queryString = [
+        'selectedLaporanId' => ['except' => null],
         'search' => ['except' => ''],
         'filterLevel' => ['except' => 'all'],
     ];
@@ -35,6 +37,19 @@ class ImutTercapai extends Widget
     public static function canView(): bool
     {
         return Auth::user()?->can('widget_ImutTercapai') ?? false;
+    }
+
+    public function mount(): void
+    {
+        if (! $this->selectedLaporanId) {
+            $latest = LaporanImutFacade::getLatestLaporan();
+            $this->selectedLaporanId = $latest?->id;
+        }
+    }
+
+    public function updatingSelectedLaporanId(): void
+    {
+        $this->resetPage();
     }
 
     public function updatingSearch(): void
@@ -70,11 +85,29 @@ class ImutTercapai extends Widget
         $this->resetPage();
     }
 
+    public function getAvailableLaporansProperty()
+    {
+        return LaporanImut::select(['id', 'name', 'report_month', 'report_year', 'assessment_period_start', 'assessment_period_end', 'status'])
+            ->orderByDesc('assessment_period_start')
+            ->get();
+    }
+
     public function getLaporan(): ?LaporanImut
     {
+        if ($this->selectedLaporanId) {
+            $laporan = LaporanImut::find($this->selectedLaporanId);
+            if ($laporan) {
+                return $laporan;
+            }
+        }
+
         $laporan = LaporanImutFacade::getLatestLaporan();
         if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
             $laporan = LaporanImut::find($laporan->id);
+        }
+
+        if ($laporan && ! $this->selectedLaporanId) {
+            $this->selectedLaporanId = $laporan->id;
         }
 
         return $laporan;

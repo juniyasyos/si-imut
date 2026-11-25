@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekapitulasi Capaian Indikator Mutu Unit Kerja - {{ $laporan->name ?? 'Laporan' }}</title>
     <link rel="stylesheet" href="{{ asset('css/print-report.css') }}">
+    @vite(['resources/css/app.css'])
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @page {
             size: {{ $orientation === 'portrait' ? 'A4 portrait' : 'A4 landscape' }};
-            margin: 15mm 15mm 15mm 15mm;
+            margin: 10mm 15mm 15mm 15mm;
         }
 
         body {
@@ -25,7 +27,7 @@
             min-height: {{ $orientation === 'portrait' ? '297mm' : '210mm' }};
             margin: 20px auto;
             background: #ffffff;
-            padding: 20mm;
+            padding: 15mm 20mm 20mm 20mm;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             box-sizing: border-box;
         }
@@ -96,71 +98,6 @@
             border-color: #38bdf8;
         }
 
-        /* Formal Report Styles */
-        .report-header {
-            text-align: center;
-            border-bottom: 2px solid #0f172a;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .report-header .institution-name {
-            font-size: 14pt;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #0f172a;
-            margin-bottom: 4px;
-        }
-
-        .report-header .sub-institution {
-            font-size: 10pt;
-            color: #475569;
-            margin-bottom: 8px;
-        }
-
-        .report-header h1 {
-            font-size: 14pt;
-            font-weight: 700;
-            color: #1e3a8a;
-            margin: 6px 0 2px 0;
-            text-transform: uppercase;
-        }
-
-        .report-header h2 {
-            font-size: 11pt;
-            font-weight: 500;
-            color: #334155;
-            margin: 0;
-        }
-
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px 24px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            font-size: 9.5pt;
-        }
-
-        .meta-item {
-            display: flex;
-        }
-
-        .meta-label {
-            width: 140px;
-            font-weight: 600;
-            color: #475569;
-        }
-
-        .meta-value {
-            flex: 1;
-            color: #0f172a;
-        }
-
         /* Summary Cards */
         .summary-bar {
             display: grid;
@@ -170,7 +107,7 @@
         }
 
         .summary-box {
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
             padding: 10px;
             background: #ffffff;
@@ -344,33 +281,15 @@
 
     <!-- Halaman Dokumen Laporan -->
     <div class="paper-container">
-        <!-- Header Dokumen -->
-        <div class="report-header">
-            <div class="institution-name">SISTEM INFORMASI INDIKATOR MUTU (SIIMUT)</div>
-            <div class="sub-institution">RUMAH SAKIT CITRA HUSADA JEMBER</div>
-            <h1>Rekapitulasi Capaian Indikator Mutu Per Unit Kerja</h1>
-            <h2>{{ $laporan->name }}</h2>
-        </div>
-
-        <!-- Metadata Informasi Laporan -->
-        <div class="meta-grid">
-            <div class="meta-item">
-                <span class="meta-label">Nama Laporan</span>
-                <span class="meta-value">: {{ $laporan->name }}</span>
-            </div>
-            <div class="meta-item">
-                <span class="meta-label">Status Laporan</span>
-                <span class="meta-value">: {{ strtoupper($laporan->status ?? '-') }}</span>
-            </div>
-            <div class="meta-item">
-                <span class="meta-label">Periode Asesmen</span>
-                <span class="meta-value">: {{ $periodeText }}</span>
-            </div>
-            <div class="meta-item">
-                <span class="meta-label">Waktu Cetak</span>
-                <span class="meta-value">: {{ now()->translatedFormat('d F Y, H:i') }} WIB</span>
-            </div>
-        </div>
+        <!-- Header Dokumen dengan Logo Resmi (Komponen basic-report-header sama seperti page cetak lain) -->
+        <x-basic-report-header
+            title="Rekapitulasi Capaian Indikator Mutu Per Unit Kerja"
+            subtitle="{{ $laporan->name }}"
+            :additionalInfo="[
+                ['label' => 'Nama Laporan', 'value' => $laporan->name],
+                ['label' => 'Periode Asesmen', 'value' => $periodeText],
+                ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
+            ]" />
 
         <!-- Summary Bar -->
         <div class="summary-bar">
