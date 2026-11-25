@@ -45,6 +45,11 @@ Route::middleware(['web'])->group(function () {
         ->middleware(['auth'])
         ->name('api.table-data');
 
+    // Print Rekapitulasi Capaian Unit Kerja
+    Route::get('/print/unit-kerja-rekap', [PrintReportController::class, 'printUnitKerjaRekap'])
+        ->middleware(['auth'])
+        ->name('print.unit-kerja-rekap');
+
     // Export Monitoring Route
     Route::get('/export/monitoring/{templateId}', [ExportController::class, 'monitoringExport'])
         ->middleware(['auth'])

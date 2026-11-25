@@ -510,4 +510,80 @@ class PrintReportController extends Controller
         // For now, redirect to preview
         return redirect()->route('print.preview.imut-indicator-report');
     }
+
+    /**
+     * Cetak Laporan Rekapitulasi Capaian Unit Kerja
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function printUnitKerjaRekap(Request $request)
+    {
+        $laporanId = $request->get('laporan_id');
+        $orientation = $request->get('orientation', 'landscape');
+        if (!in_array($orientation, ['landscape', 'portrait'])) {
+            $orientation = 'landscape';
+        }
+
+        $laporan = null;
+        if ($laporanId) {
+            $laporan = \App\Models\LaporanImut::find($laporanId);
+        }
+
+        if (!$laporan) {
+            $laporan = \App\Facades\LaporanImut::getLatestLaporan();
+        }
+
+        if (!$laporan) {
+            abort(404, 'Data laporan tidak ditemukan.');
+        }
+
+        $query = $this->laporanRepository->getReportByUnitKerja($laporan->id);
+
+        $sortColumn = $request->get('sort', 'unit_name');
+        $sortDirection = $request->get('direction', 'asc');
+        $allowedSorts = ['unit_name', 'total_count', 'meets_standard_count', 'below_standard_count', 'empty_count', 'standard_percentage'];
+        if (in_array($sortColumn, $allowedSorts)) {
+            $query->orderBy($sortColumn, strtolower($sortDirection) === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy('unit_name', 'asc');
+        }
+
+        $records = $query->get();
+
+        $startDate = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
+        $endDate = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
+
+        $periodeText = '-';
+        if ($startDate && $endDate) {
+            $sameMonth = $startDate->month === $endDate->month && $startDate->year === $endDate->year;
+            $periodeText = $sameMonth
+                ? $startDate->translatedFormat('d') . ' – ' . $endDate->translatedFormat('d F Y')
+                : $startDate->translatedFormat('d M') . ' – ' . $endDate->translatedFormat('d F Y');
+        }
+
+        $totalUnits = $records->count();
+        $totalIndicators = (int) $records->sum('total_count');
+        $totalStandard = (int) $records->sum('meets_standard_count');
+        $totalBelow = (int) $records->sum('below_standard_count');
+        $totalEmpty = (int) $records->sum('empty_count');
+        $overallPercentage = $totalIndicators > 0 ? round(($totalStandard / $totalIndicators) * 100, 2) : 0;
+
+        $summary = [
+            'total_units' => $totalUnits,
+            'total_indicators' => $totalIndicators,
+            'total_standard' => $totalStandard,
+            'total_below' => $totalBelow,
+            'total_empty' => $totalEmpty,
+            'overall_percentage' => $overallPercentage,
+        ];
+
+        return view('filament.prints.unit-kerja-rekap-report', compact(
+            'laporan',
+            'records',
+            'summary',
+            'orientation',
+            'periodeText'
+        ));
+    }
 }

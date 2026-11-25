@@ -3,157 +3,177 @@
 namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
-use App\Filament\Resources\LaporanImutResource\Pages\UnitKerjaImutDataReport;
+use App\Models\LaporanImut;
 use App\Repositories\Interfaces\LaporanRepositoryInterface;
-use App\Models\LaporanUnitKerja;
-use Filament\Tables;
-use Filament\Widgets\TableWidget as BaseWidget;
+use App\Services\Core\ImutCalculationService;
+use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Number;
-use Filament\Tables\Filters\SelectFilter;
+use Livewire\WithPagination;
 
-class ImutTercapai extends BaseWidget
+class ImutTercapai extends Widget
 {
+    use WithPagination;
+
+    protected static string $view = 'filament.widgets.imut-tercapai-widget';
     protected static ?int $sort = 6;
     protected static bool $isLazy = true;
     protected int|string|array $columnSpan = 'full';
-    protected static ?string $heading = '⚠️ Unit Kerja Perlu Perhatian';
     protected static ?string $pollingInterval = '30s';
+
+    public string $search = '';
+    public string $filterLevel = 'all';
+    public string $sortColumn = 'standard_percentage';
+    public string $sortDirection = 'desc';
+    public string|int $perPage = 10;
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'filterLevel' => ['except' => 'all'],
+    ];
 
     public static function canView(): bool
     {
         return Auth::user()?->can('widget_ImutTercapai') ?? false;
     }
 
-    public function table(Tables\Table $table): Tables\Table
+    public function updatingSearch(): void
     {
-        $laporan = LaporanImutFacade::getLatestLaporan();
+        $this->resetPage();
+    }
 
-        if (! $laporan) {
-            return $table
-                ->query(LaporanUnitKerja::query()->whereRaw('1 = 0'))
-                ->columns([
-                    Tables\Columns\TextColumn::make('message')
-                        ->label('Informasi')
-                        ->getStateUsing(fn() => 'Tidak ada laporan IMUT terbaru.')
-                ]);
+    public function updatingFilterLevel(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilter(): void
+    {
+        $this->search = '';
+        $this->filterLevel = 'all';
+        $this->resetPage();
+    }
+
+    public function sortBy(string $column): void
+    {
+        if ($this->sortColumn === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortColumn = $column;
+            $this->sortDirection = in_array($column, ['unit_name']) ? 'asc' : 'desc';
+        }
+        $this->resetPage();
+    }
+
+    public function getLaporan(): ?LaporanImut
+    {
+        return LaporanImutFacade::getLatestLaporan();
+    }
+
+    protected function getFilteredQuery(?int $laporanId): ?Builder
+    {
+        if (! $laporanId) {
+            return null;
         }
 
-        return $table
-            ->query(fn() => $this->getIncompleteUnitsQuery($laporan->id))
-            ->paginated([5, 10, 25, 50])
-            ->defaultPaginationPageOption(5)
-            ->defaultSort('percentage', 'asc')
-            ->striped()
-            ->recordClasses(fn($record) => match ($this->getPriorityLevel($record)) {
-                'KRITIS' => 'bg-red-50/70 dark:bg-red-900/20',
-                'TINGGI' => 'bg-orange-50/60 dark:bg-orange-900/20',
-                'SEDANG' => 'bg-amber-50/60 dark:bg-amber-900/10',
-                default  => 'bg-white dark:bg-gray-900/40',
-            })
-            ->columns([
-                Tables\Columns\TextColumn::make('unit_name')
-                    ->label('Unit Kerja')
-                    ->wrap()
-                    ->weight('medium')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('completion_status')
-                    ->label('Kelengkapan')
-                    ->alignCenter()
-                    ->state(fn($record) =>
-                        number_format($record->filled_count ?? 0) . ' / ' . number_format($record->total_count ?? 0)
-                    )
-                    ->description(fn($record) =>
-                        Number::format($record->percentage ?? 0, 1, locale: app()->getLocale()) . '%'
-                    )
-                    ->badge()
-                    ->color(fn($record) => match (true) {
-                        ! is_numeric($record->percentage) => 'gray',
-                        $record->percentage >= 80 => 'success',
-                        $record->percentage >= 50 => 'warning',
-                        default => 'danger',
-                    })
-                    ->sortable(query: function($query, $direction) {
-                        $filledCountExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 THEN 1 ELSE 0 END)";
-                        return $query->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) " . $direction);
-                    }),
-
-                Tables\Columns\TextColumn::make('below_standard_count')
-                    ->label('Di Bawah Standar')
-                    ->alignCenter()
-                    ->state(fn($record) => number_format($record->below_standard_count ?? 0))
-                    ->badge()
-                    ->color(fn($record) => ($record->below_standard_count ?? 0) > 0 ? 'success' : 'danger')
-                    ->icon(fn($record) => ($record->below_standard_count ?? 0) > 0 ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
-                    ->tooltip('IMUT yang sudah terisi tapi tidak memenuhi standar mutu')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('priority_level')
-                    ->label('Prioritas')
-                    ->alignCenter()
-                    ->state(fn($record) => $this->getPriorityLevel($record))
-                    ->badge()
-                    ->color(fn($record) => $this->getPriorityColor($record))
-                    ->icon(fn($record) => $this->getPriorityIcon($record)),
-            ])
-            ->actions([
-                Tables\Actions\Action::make('view_details')
-                    ->label('Lihat Detail')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(fn($record) => UnitKerjaImutDataReport::getUrl([
-                        'laporan_id'    => $record->laporan_imut_id,
-                        'unit_kerja_id' => $record->unit_kerja_id,
-                    ])),
-            ])
-            ->emptyStateHeading('Semua Unit Sudah Lengkap! 🎉')
-            ->emptyStateDescription('Tidak ada unit kerja yang memerlukan perhatian.')
-            ->emptyStateIcon('heroicon-o-check-circle');
-    }
-
-    protected function getIncompleteUnitsQuery(int $laporanId): Builder
-    {
         $laporanRepository = app(LaporanRepositoryInterface::class);
-        $filledCountExpr = \App\QueryBuilders\UnitKerjaReportQueryBuilder::getFilledCountExpression();
+        $query = $laporanRepository->getReportByUnitKerja($laporanId);
 
-        return $laporanRepository->getReportByUnitKerja($laporanId)
-            ->havingRaw("{$filledCountExpr} < COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0")
-            ->orderByRaw("({$filledCountExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) ASC");
+        // Filter search unit name
+        if (! empty(trim($this->search))) {
+            $searchTerm = '%' . trim($this->search) . '%';
+            $query->where('unit_kerja.unit_name', 'like', $searchTerm);
+        }
+
+        // Filter status capaian
+        $meetsStandardCondition = ImutCalculationService::meetsStandardExpression(
+            ImutCalculationService::percentageExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value'),
+            'imut_profil.target_value',
+            'imut_profil.target_operator'
+        );
+        $meetsStandardExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 AND {$meetsStandardCondition} THEN 1 ELSE 0 END)";
+        $belowStandardExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 AND NOT {$meetsStandardCondition} THEN 1 ELSE 0 END)";
+        $emptyExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NULL OR imut_penilaians.denominator_value IS NULL OR imut_penilaians.denominator_value = 0 THEN 1 ELSE 0 END)";
+
+        match ($this->filterLevel) {
+            'high' => $query->havingRaw("({$meetsStandardExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) >= 0.8"),
+            'medium' => $query->havingRaw("({$meetsStandardExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) >= 0.5 AND ({$meetsStandardExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) < 0.8"),
+            'low' => $query->havingRaw("({$meetsStandardExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) < 0.5"),
+            'has_below' => $query->havingRaw("{$belowStandardExpr} > 0"),
+            'has_empty' => $query->havingRaw("{$emptyExpr} > 0"),
+            'all_standard' => $query->havingRaw("{$meetsStandardExpr} = COUNT(imut_penilaians.id) AND COUNT(imut_penilaians.id) > 0"),
+            default => null,
+        };
+
+        // Sorting
+        $allowedSorts = ['unit_name', 'total_count', 'meets_standard_count', 'below_standard_count', 'empty_count', 'standard_percentage'];
+        $column = in_array($this->sortColumn, $allowedSorts) ? $this->sortColumn : 'standard_percentage';
+        $direction = strtolower($this->sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        if ($column === 'standard_percentage') {
+            $query->orderByRaw("({$meetsStandardExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) {$direction}");
+        } else {
+            $query->orderBy($column, $direction);
+        }
+
+        return $query;
     }
 
-    protected function getPriorityLevel($record): string
+    public function getRecordsProperty()
     {
-        $percentage = $record->percentage ?? 0;
-        return match (true) {
-            $percentage >= 80 => 'RENDAH',
-            $percentage >= 50 => 'SEDANG',
-            $percentage >= 25 => 'TINGGI',
-            default => 'KRITIS',
-        };
+        $laporan = $this->getLaporan();
+        if (! $laporan) {
+            return collect();
+        }
+
+        $query = $this->getFilteredQuery($laporan->id);
+        if (! $query) {
+            return collect();
+        }
+
+        if ($this->perPage === 'all' || (int) $this->perPage === -1) {
+            return $query->get();
+        }
+
+        return $query->paginate((int) $this->perPage);
     }
 
-    protected function getPriorityColor($record): string
+    public function getSummaryProperty(): array
     {
-        return match ($this->getPriorityLevel($record)) {
-            'RENDAH' => 'success',
-            'SEDANG' => 'warning',
-            'TINGGI' => 'danger',
-            'KRITIS' => 'danger',
-            default => 'gray',
-        };
-    }
+        $laporan = $this->getLaporan();
+        if (! $laporan) {
+            return [
+                'total_units' => 0,
+                'total_indicators' => 0,
+                'total_standard' => 0,
+                'total_below' => 0,
+                'total_empty' => 0,
+                'overall_percentage' => 0,
+            ];
+        }
 
-    protected function getPriorityIcon($record): string
-    {
-        return match ($this->getPriorityLevel($record)) {
-            'RENDAH' => 'heroicon-o-check-badge',
-            'SEDANG' => 'heroicon-o-exclamation-triangle',
-            'TINGGI' => 'heroicon-o-fire',
-            'KRITIS' => 'heroicon-o-shield-exclamation',
-            default => 'heroicon-o-question-mark-circle',
-        };
+        $laporanRepository = app(LaporanRepositoryInterface::class);
+        $records = $laporanRepository->getReportByUnitKerja($laporan->id)->get();
+
+        $totalUnits = $records->count();
+        $totalIndicators = (int) $records->sum('total_count');
+        $totalStandard = (int) $records->sum('meets_standard_count');
+        $totalBelow = (int) $records->sum('below_standard_count');
+        $totalEmpty = (int) $records->sum('empty_count');
+        $overallPercentage = $totalIndicators > 0 ? round(($totalStandard / $totalIndicators) * 100, 2) : 0;
+
+        return [
+            'total_units' => $totalUnits,
+            'total_indicators' => $totalIndicators,
+            'total_standard' => $totalStandard,
+            'total_below' => $totalBelow,
+            'total_empty' => $totalEmpty,
+            'overall_percentage' => $overallPercentage,
+        ];
     }
 }

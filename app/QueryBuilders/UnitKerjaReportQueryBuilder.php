@@ -34,6 +34,32 @@ class UnitKerjaReportQueryBuilder
             AND imut_penilaians.denominator_value != 0
             THEN 1 ELSE 0 END)";
 
+        $meetsStandardCondition = ImutCalculationService::meetsStandardExpression(
+            ImutCalculationService::percentageExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value'),
+            'imut_profil.target_value',
+            'imut_profil.target_operator'
+        );
+
+        $meetsStandardExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NOT NULL
+                AND imut_penilaians.denominator_value IS NOT NULL
+                AND imut_penilaians.denominator_value != 0
+                AND {$meetsStandardCondition}
+            THEN 1 ELSE 0 END)";
+
+        $belowStandardExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NOT NULL
+                AND imut_penilaians.denominator_value IS NOT NULL
+                AND imut_penilaians.denominator_value != 0
+                AND NOT {$meetsStandardCondition}
+            THEN 1 ELSE 0 END)";
+
+        $emptyCountExpr = "SUM(CASE
+            WHEN imut_penilaians.numerator_value IS NULL
+                OR imut_penilaians.denominator_value IS NULL
+                OR imut_penilaians.denominator_value = 0
+            THEN 1 ELSE 0 END)";
+
         return $this->query
             ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
             ->leftJoin('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
@@ -53,17 +79,18 @@ class UnitKerjaReportQueryBuilder
                     THEN {$filledCountExpr} * 100.0 / COUNT(imut_penilaians.id)
                     ELSE 0 END, 2
                 ) as percentage"),
+                // Indikator yang memenuhi standar
+                DB::raw("{$meetsStandardExpr} as meets_standard_count"),
                 // Hitung jumlah IMUT yang terisi tapi tidak memenuhi standar
-                DB::raw("SUM(CASE
-                    WHEN imut_penilaians.numerator_value IS NOT NULL
-                        AND imut_penilaians.denominator_value IS NOT NULL
-                        AND imut_penilaians.denominator_value != 0
-                        AND NOT " . ImutCalculationService::meetsStandardExpression(
-                            ImutCalculationService::percentageExpression('imut_penilaians.numerator_value', 'imut_penilaians.denominator_value'),
-                            'imut_profil.target_value',
-                            'imut_profil.target_operator'
-                        ) . "
-                    THEN 1 ELSE 0 END) as below_standard_count"),
+                DB::raw("{$belowStandardExpr} as below_standard_count"),
+                // Hitung jumlah IMUT yang kosong / belum terisi
+                DB::raw("{$emptyCountExpr} as empty_count"),
+                // Persentase capaian: indikator standar / jumlah indikator * 100%
+                DB::raw("ROUND(
+                    CASE WHEN COUNT(imut_penilaians.id) > 0
+                    THEN ({$meetsStandardExpr}) * 100.0 / COUNT(imut_penilaians.id)
+                    ELSE 0 END, 2
+                ) as standard_percentage"),
             ])
             ->groupBy(
                 'laporan_unit_kerjas.id',
