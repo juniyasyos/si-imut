@@ -50,6 +50,11 @@ Route::middleware(['web'])->group(function () {
         ->middleware(['auth'])
         ->name('print.unit-kerja-rekap');
 
+    // Print Daftar Indikator Tidak Tercapai
+    Route::get('/print/imut-tidak-tercapai', [PrintReportController::class, 'printImutTidakTercapai'])
+        ->middleware(['auth'])
+        ->name('print.imut-tidak-tercapai');
+
     // Export Monitoring Route
     Route::get('/export/monitoring/{templateId}', [ExportController::class, 'monitoringExport'])
         ->middleware(['auth'])

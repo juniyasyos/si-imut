@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Facades\LaporanImut as LaporanImutFacade;
+use App\Models\ImutCategory;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
 use App\Services\Core\ImutCalculationService;
@@ -32,19 +33,19 @@ class ImutTidakTercapai extends Widget
 
     public string $search = '';
 
-    public string $filterIndicatorType = 'all';
+    public string $filterCategoryId = 'all';
 
     public string|int $perPage = 10;
 
     protected $queryString = [
         'selectedLaporanId' => ['except' => null],
         'search' => ['except' => ''],
-        'filterIndicatorType' => ['except' => 'all'],
+        'filterCategoryId' => ['except' => 'all'],
     ];
 
     public static function canView(): bool
     {
-        return Auth::user()?->can('widget_ImutTidakTercapai') ?? false;
+        return Auth::user()?->can('widget_ImutTercapai') ?? false;
     }
 
     public function mount(): void
@@ -65,7 +66,7 @@ class ImutTidakTercapai extends Widget
         $this->resetPage('belowPage');
     }
 
-    public function updatingFilterIndicatorType(): void
+    public function updatingFilterCategoryId(): void
     {
         $this->resetPage('belowPage');
     }
@@ -78,7 +79,7 @@ class ImutTidakTercapai extends Widget
     public function resetFilter(): void
     {
         $this->search = '';
-        $this->filterIndicatorType = 'all';
+        $this->filterCategoryId = 'all';
         $this->resetPage('belowPage');
     }
 
@@ -87,6 +88,12 @@ class ImutTidakTercapai extends Widget
         return LaporanImut::select(['id', 'name', 'report_month', 'report_year', 'assessment_period_start', 'assessment_period_end', 'status'])
             ->orderByDesc('assessment_period_start')
             ->get();
+    }
+
+    public function getAvailableCategoriesProperty(): Collection
+    {
+        return ImutCategory::orderBy('category_name')
+            ->get(['id', 'short_name', 'category_name']);
     }
 
     public function getLaporan(): ?LaporanImut
@@ -113,8 +120,11 @@ class ImutTidakTercapai extends Widget
     /**
      * Query dasar untuk seluruh baris penilaian indikator yang tidak memenuhi standar.
      */
-    protected function getBelowStandardBaseQuery(int $laporanId, bool $applyFilters = true): Builder
-    {
+    public static function buildBelowStandardBaseQuery(
+        int $laporanId,
+        string $search = '',
+        string $filterCategoryId = 'all'
+    ): Builder {
         $percentageSql = ImutCalculationService::percentageExpression(
             'imut_penilaians.numerator_value',
             'imut_penilaians.denominator_value',
@@ -139,35 +149,32 @@ class ImutTidakTercapai extends Widget
             ->where('imut_penilaians.denominator_value', '!=', 0)
             ->whereRaw("NOT {$meetsStandardCondition}");
 
-        if ($applyFilters) {
-            if (! empty(trim($this->search))) {
-                $searchTerm = '%' . trim($this->search) . '%';
-                $query->where(function (Builder $q) use ($searchTerm) {
-                    $q->where('unit_kerja.unit_name', 'like', $searchTerm)
-                        ->orWhere('imut_data.title', 'like', $searchTerm)
-                        ->orWhere('imut_kategori.short_name', 'like', $searchTerm);
-                });
-            }
+        if (! empty(trim($search))) {
+            $searchTerm = '%' . trim($search) . '%';
+            $query->where(function (Builder $q) use ($searchTerm) {
+                $q->where('unit_kerja.unit_name', 'like', $searchTerm)
+                    ->orWhere('imut_data.title', 'like', $searchTerm)
+                    ->orWhere('imut_kategori.short_name', 'like', $searchTerm)
+                    ->orWhere('imut_kategori.category_name', 'like', $searchTerm);
+            });
+        }
 
-            if ($this->filterIndicatorType !== 'all') {
-                $query->where('imut_profil.indicator_type', $this->filterIndicatorType);
-            }
+        if ($filterCategoryId !== 'all' && $filterCategoryId !== '') {
+            $query->where('imut_data.imut_kategori_id', (int) $filterCategoryId);
         }
 
         return $query;
     }
 
     /**
-     * Paginator daftar Unit Kerja yang memiliki indikator tidak tercapai.
+     * Query builder daftar Unit Kerja yang memiliki indikator tidak tercapai.
      */
-    public function getUnitGroupsProperty(): LengthAwarePaginator|Collection
-    {
-        $laporan = $this->getLaporan();
-        if (! $laporan) {
-            return collect();
-        }
-
-        $unitQuery = $this->getBelowStandardBaseQuery($laporan->id)
+    protected static function buildUnitQuery(
+        int $laporanId,
+        string $search = '',
+        string $filterCategoryId = 'all'
+    ): Builder {
+        return self::buildBelowStandardBaseQuery($laporanId, $search, $filterCategoryId)
             ->select([
                 'laporan_unit_kerjas.id as laporan_unit_kerja_id',
                 'laporan_unit_kerjas.laporan_imut_id',
@@ -182,18 +189,21 @@ class ImutTidakTercapai extends Widget
                 'unit_kerja.unit_name'
             )
             ->orderBy('unit_kerja.unit_name');
+    }
 
-        if ($this->perPage === 'all' || (int) $this->perPage === -1) {
-            $units = $unitQuery->get();
-        } else {
-            $units = $unitQuery->paginate((int) $this->perPage, ['*'], 'belowPage');
-        }
-
-        $unitCollection = $units instanceof LengthAwarePaginator ? $units->getCollection() : $units;
+    /**
+     * Attach koleksi indikator tidak tercapai ke masing-masing Unit Kerja.
+     */
+    protected static function hydrateUnitIndicators(
+        Collection $unitCollection,
+        int $laporanId,
+        string $search = '',
+        string $filterCategoryId = 'all'
+    ): Collection {
         $laporanUnitKerjaIds = $unitCollection->pluck('laporan_unit_kerja_id')->all();
 
         if (empty($laporanUnitKerjaIds)) {
-            return $units;
+            return $unitCollection;
         }
 
         $percentageSql = ImutCalculationService::percentageExpression(
@@ -202,7 +212,7 @@ class ImutTidakTercapai extends Widget
             'capaian_percentage'
         );
 
-        $indicatorsByUnit = $this->getBelowStandardBaseQuery($laporan->id)
+        $indicatorsByUnit = self::buildBelowStandardBaseQuery($laporanId, $search, $filterCategoryId)
             ->whereIn('laporan_unit_kerjas.id', $laporanUnitKerjaIds)
             ->select([
                 'imut_penilaians.id',
@@ -210,8 +220,9 @@ class ImutTidakTercapai extends Widget
                 'imut_penilaians.numerator_value',
                 'imut_penilaians.denominator_value',
                 'imut_data.title as indicator_title',
+                'imut_kategori.id as category_id',
                 'imut_kategori.short_name as category_short_name',
-                'imut_profil.indicator_type',
+                'imut_kategori.category_name as category_name',
                 'imut_profil.target_operator',
                 'imut_profil.target_value',
                 DB::raw($percentageSql),
@@ -221,11 +232,47 @@ class ImutTidakTercapai extends Widget
             ->get()
             ->groupBy('laporan_unit_kerja_id');
 
-        $unitCollection->transform(function ($unit) use ($indicatorsByUnit) {
+        return $unitCollection->transform(function ($unit) use ($indicatorsByUnit) {
             $unit->indicators = $indicatorsByUnit->get($unit->laporan_unit_kerja_id, collect());
 
             return $unit;
         });
+    }
+
+    /**
+     * Ambil seluruh unit beserta daftar indikator tidak tercapai (untuk cetak laporan).
+     */
+    public static function getAllGroupedUnits(
+        int $laporanId,
+        string $search = '',
+        string $filterCategoryId = 'all'
+    ): Collection {
+        $units = self::buildUnitQuery($laporanId, $search, $filterCategoryId)->get();
+
+        return self::hydrateUnitIndicators($units, $laporanId, $search, $filterCategoryId);
+    }
+
+    /**
+     * Paginator daftar Unit Kerja yang memiliki indikator tidak tercapai.
+     */
+    public function getUnitGroupsProperty(): LengthAwarePaginator|Collection
+    {
+        $laporan = $this->getLaporan();
+        if (! $laporan) {
+            return collect();
+        }
+
+        $unitQuery = self::buildUnitQuery($laporan->id, $this->search, $this->filterCategoryId);
+
+        if ($this->perPage === 'all' || (int) $this->perPage === -1) {
+            $units = $unitQuery->get();
+            self::hydrateUnitIndicators($units, $laporan->id, $this->search, $this->filterCategoryId);
+
+            return $units;
+        }
+
+        $units = $unitQuery->paginate((int) $this->perPage, ['*'], 'belowPage');
+        self::hydrateUnitIndicators($units->getCollection(), $laporan->id, $this->search, $this->filterCategoryId);
 
         return $units;
     }
@@ -233,6 +280,43 @@ class ImutTidakTercapai extends Widget
     /**
      * Ringkasan keseluruhan indikator tidak tercapai pada laporan terpilih.
      */
+    public static function getReportSummary(
+        int $laporanId,
+        string $search = '',
+        string $filterCategoryId = 'all'
+    ): array {
+        $rows = self::buildBelowStandardBaseQuery($laporanId, $search, $filterCategoryId)
+            ->select([
+                'laporan_unit_kerjas.unit_kerja_id',
+                'imut_kategori.id as category_id',
+                'imut_kategori.short_name as category_short_name',
+                'imut_kategori.category_name as category_name',
+            ])
+            ->get();
+
+        $byCategory = $rows
+            ->groupBy(fn ($row) => $row->category_id ?? 0)
+            ->map(function (Collection $group, $catId) {
+                $first = $group->first();
+
+                return [
+                    'id' => (int) $catId,
+                    'label' => $first->category_short_name ?: ($first->category_name ?: 'Tanpa Kategori'),
+                    'full_name' => $first->category_name ?: 'Tanpa Kategori',
+                    'count' => $group->count(),
+                    'color_var' => self::categoryColorVar((int) $catId),
+                ];
+            })
+            ->sortByDesc('count')
+            ->values();
+
+        return [
+            'total_units' => $rows->pluck('unit_kerja_id')->unique()->count(),
+            'total_indicators' => $rows->count(),
+            'by_category' => $byCategory,
+        ];
+    }
+
     public function getSummaryProperty(): array
     {
         $laporan = $this->getLaporan();
@@ -240,45 +324,44 @@ class ImutTidakTercapai extends Widget
             return [
                 'total_units' => 0,
                 'total_indicators' => 0,
-                'process_count' => 0,
-                'output_count' => 0,
-                'outcome_count' => 0,
+                'by_category' => collect(),
             ];
         }
 
-        $rows = $this->getBelowStandardBaseQuery($laporan->id, applyFilters: false)
-            ->select([
-                'laporan_unit_kerjas.unit_kerja_id',
-                'imut_profil.indicator_type',
-            ])
-            ->get();
-
-        return [
-            'total_units' => $rows->pluck('unit_kerja_id')->unique()->count(),
-            'total_indicators' => $rows->count(),
-            'process_count' => $rows->where('indicator_type', 'process')->count(),
-            'output_count' => $rows->where('indicator_type', 'output')->count(),
-            'outcome_count' => $rows->where('indicator_type', 'outcome')->count(),
-        ];
+        return self::getReportSummary($laporan->id);
     }
 
-    public static function formatIndicatorType(?string $type): string
+    public static function categoryColorVar(?int $categoryId): string
     {
-        return match ($type) {
-            'process' => 'Proses',
-            'output' => 'Output',
-            'outcome' => 'Outcome',
-            default => 'Lainnya',
-        };
+        $palette = ['info', 'warning', 'primary', 'success', 'danger'];
+
+        if (! $categoryId) {
+            return 'gray';
+        }
+
+        return $palette[abs($categoryId) % count($palette)];
     }
 
-    public static function indicatorTypeVar(?string $type): string
+    /**
+     * Format nilai standar agar lebih mudah dibaca (simbol matematika + keterangan).
+     *
+     * @return array{badge: string, label: string}
+     */
+    public static function formatStandard(?string $operator, mixed $value): array
     {
-        return match ($type) {
-            'process' => 'warning',
-            'output' => 'info',
-            'outcome' => 'success',
-            default => 'gray',
+        if ($value === null) {
+            return ['badge' => '-', 'label' => '-'];
+        }
+
+        $formattedValue = rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.') . '%';
+
+        return match ($operator) {
+            '>=', '≥' => ['badge' => "≥ {$formattedValue}", 'label' => 'Minimal'],
+            '<=', '≤' => ['badge' => "≤ {$formattedValue}", 'label' => 'Maksimal'],
+            '=', '==' => ['badge' => "= {$formattedValue}", 'label' => 'Tepat'],
+            '>' => ['badge' => "> {$formattedValue}", 'label' => 'Lebih dari'],
+            '<' => ['badge' => "< {$formattedValue}", 'label' => 'Kurang dari'],
+            default => ['badge' => trim(($operator ?? '') . " {$formattedValue}"), 'label' => 'Target'],
         };
     }
 }

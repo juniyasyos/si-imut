@@ -590,4 +590,74 @@ class PrintReportController extends Controller
             'periodeText'
         ));
     }
+
+    /**
+     * Cetak Laporan Daftar Indikator Mutu Tidak Tercapai Per Unit Kerja
+     */
+    public function printImutTidakTercapai(Request $request)
+    {
+        $laporanId = $request->get('laporan_id');
+        $orientation = $request->get('orientation', 'landscape');
+        if (! in_array($orientation, ['landscape', 'portrait'])) {
+            $orientation = 'landscape';
+        }
+
+        $search = (string) $request->get('search', '');
+        $filterCategoryId = (string) $request->get('category_id', 'all');
+
+        $laporan = null;
+        if ($laporanId) {
+            $laporan = \App\Models\LaporanImut::find($laporanId);
+        }
+
+        if (! $laporan) {
+            $laporan = \App\Facades\LaporanImut::getLatestLaporan();
+        }
+
+        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
+            $laporan = \App\Models\LaporanImut::find($laporan->id);
+        }
+
+        if (! $laporan) {
+            abort(404, 'Data laporan tidak ditemukan.');
+        }
+
+        $unitGroups = \App\Filament\Widgets\ImutTidakTercapai::getAllGroupedUnits(
+            $laporan->id,
+            $search,
+            $filterCategoryId
+        );
+        $summary = \App\Filament\Widgets\ImutTidakTercapai::getReportSummary(
+            $laporan->id,
+            $search,
+            $filterCategoryId
+        );
+
+        $startDate = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
+        $endDate = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
+
+        $periodeText = '-';
+        if ($startDate && $endDate) {
+            $sameMonth = $startDate->month === $endDate->month && $startDate->year === $endDate->year;
+            $periodeText = $sameMonth
+                ? $startDate->translatedFormat('d') . ' – ' . $endDate->translatedFormat('d F Y')
+                : $startDate->translatedFormat('d M') . ' – ' . $endDate->translatedFormat('d F Y');
+        }
+
+        $categoryName = null;
+        if ($filterCategoryId !== 'all' && $filterCategoryId !== '') {
+            $cat = \App\Models\ImutCategory::find((int) $filterCategoryId);
+            $categoryName = $cat ? ($cat->short_name ? "{$cat->short_name} - {$cat->category_name}" : $cat->category_name) : null;
+        }
+
+        return view('filament.prints.imut-tidak-tercapai-report', compact(
+            'laporan',
+            'unitGroups',
+            'summary',
+            'orientation',
+            'periodeText',
+            'categoryName',
+            'search'
+        ));
+    }
 }

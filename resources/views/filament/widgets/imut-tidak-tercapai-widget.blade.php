@@ -6,7 +6,7 @@
         $isPaginated = $unitGroups instanceof \Illuminate\Pagination\LengthAwarePaginator;
     @endphp
 
-    <x-filament::section class="w-full">
+    <div class="w-full">
         @if (! $laporan)
             <div class="flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white text-center shadow-sm dark:border-slate-700 dark:bg-slate-900" style="padding-top: 3.5rem; padding-bottom: 3.5rem;">
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" style="margin-left: auto; margin-right: auto; margin-bottom: 1rem;">
@@ -30,10 +30,6 @@
                                     <h2 class="text-xl font-bold tracking-tight text-white" style="color: #ffffff;">
                                         Daftar Indikator Mutu Tidak Tercapai Per Unit Kerja
                                     </h2>
-                                    <span class="inline-flex items-center rounded-md bg-red-600 text-xs font-bold uppercase tracking-wider text-white"
-                                          style="background-color: #dc2626; color: #ffffff; padding: 0.125rem 0.625rem;">
-                                        {{ number_format($summary['total_indicators']) }} INDIKATOR
-                                    </span>
                                 </div>
                                 <p class="text-xs text-slate-300 sm:text-sm" style="color: #cbd5e1; margin-top: 0.25rem;">
                                     <span class="font-semibold text-white" style="color: #ffffff;">{{ $laporan->name }}</span>
@@ -48,7 +44,7 @@
                             </div>
                         </div>
 
-                        <!-- Pemilih Periode / Bulan -->
+                        <!-- Tombol Cetak & Pemilih Periode / Bulan -->
                         <div class="flex flex-wrap items-center gap-2.5">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Bulan:</span>
@@ -65,6 +61,14 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <a href="{{ route('print.imut-tidak-tercapai', ['laporan_id' => $laporan->id, 'orientation' => 'landscape', 'category_id' => $filterCategoryId, 'search' => $search]) }}"
+                               target="_blank"
+                               class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 text-xs font-bold text-white shadow transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                               style="background-color: #2563eb; color: #ffffff; padding: 0.5rem 1rem;">
+                                @svg('heroicon-o-printer', 'h-4 w-4')
+                                <span>Cetak Laporan</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -79,21 +83,23 @@
                             </div>
                             <input type="text"
                                    wire:model.live.debounce.300ms="search"
-                                   placeholder="Cari unit kerja atau nama indikator..."
+                                   placeholder="Cari unit kerja, nama indikator, atau kategori..."
                                    class="w-full rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder-gray-400 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-gray-500"
                                    style="padding: 0.375rem 1rem 0.375rem 2.25rem;" />
                         </div>
 
                         <!-- Dropdowns -->
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- Filter Jenis Indikator -->
-                            <select wire:model.live="filterIndicatorType"
+                            <!-- Filter Kategori Indikator -->
+                            <select wire:model.live="filterCategoryId"
                                     class="rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 shadow-sm transition focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200"
                                     style="padding: 0.375rem 0.75rem;">
-                                <option value="all">Semua Jenis Indikator</option>
-                                <option value="process">Proses</option>
-                                <option value="output">Output</option>
-                                <option value="outcome">Outcome</option>
+                                <option value="all">Semua Kategori Indikator</option>
+                                @foreach ($this->availableCategories as $category)
+                                    <option value="{{ $category->id }}">
+                                        {{ $category->short_name ? "{$category->short_name} - {$category->category_name}" : $category->category_name }}
+                                    </option>
+                                @endforeach
                             </select>
 
                             <!-- Pilihan Baris Unit -->
@@ -106,7 +112,7 @@
                                 <option value="all">Semua Unit</option>
                             </select>
 
-                            @if ($search !== '' || $filterIndicatorType !== 'all')
+                            @if ($search !== '' || $filterCategoryId !== 'all')
                                 <button type="button"
                                         wire:click="resetFilter"
                                         class="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 text-xs font-bold text-red-700 shadow-sm transition hover:bg-red-100 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300"
@@ -127,7 +133,7 @@
                                 <th scope="col" class="w-14 text-center" style="padding: 0.875rem;">No</th>
                                 <th scope="col" class="w-60" style="padding: 0.875rem 1.25rem;">Unit Kerja</th>
                                 <th scope="col" style="padding: 0.875rem 1.25rem;">Indikator</th>
-                                <th scope="col" class="w-36 text-center" style="padding: 0.875rem;">Jenis Indikator</th>
+                                <th scope="col" class="w-40 text-center" style="padding: 0.875rem;">Kategori Indikator</th>
                                 <th scope="col" class="w-32 text-center" style="padding: 0.875rem;">Capaian</th>
                                 <th scope="col" class="w-32 text-center" style="padding: 0.875rem;">Nilai Standard</th>
                             </tr>
@@ -141,19 +147,20 @@
                                         : $loop->iteration;
                                     $items = $unit->indicators ?? collect();
                                     $rowCount = max(1, $items->count());
-                                    $unitBgClass = $loop->even ? 'bg-gray-50/70 dark:bg-slate-800/30' : 'bg-white dark:bg-slate-900';
+                                    $unitBgClass = $loop->even ? 'bg-gray-50 dark:bg-slate-800/30' : 'bg-white dark:bg-slate-900';
                                 @endphp
 
                                 @foreach ($items as $item)
                                     @php
                                         $isFirst = $loop->first;
                                         $isLast = $loop->last;
-                                        $typeLabel = \App\Filament\Widgets\ImutTidakTercapai::formatIndicatorType($item->indicator_type);
-                                        $typeVar = \App\Filament\Widgets\ImutTidakTercapai::indicatorTypeVar($item->indicator_type);
+                                        $catLabel = $item->category_short_name ?: ($item->category_name ?: '-');
+                                        $catFullName = $item->category_name ?: $catLabel;
+                                        $catVar = \App\Filament\Widgets\ImutTidakTercapai::categoryColorVar($item->category_id);
                                         $capaian = (float) ($item->capaian_percentage ?? 0);
-                                        $standardText = trim(($item->target_operator ?? '') . ' ' . ($item->target_value !== null ? rtrim(rtrim(number_format((float) $item->target_value, 2, '.', ''), '0'), '.') . '%' : '-'));
+                                        $standard = \App\Filament\Widgets\ImutTidakTercapai::formatStandard($item->target_operator, $item->target_value);
                                     @endphp
-                                    <tr class="transition hover:bg-red-50/40 dark:hover:bg-slate-800/70 {{ $unitBgClass }}"
+                                    <tr class="transition hover:bg-blue-50/70 dark:hover:bg-slate-800/70 {{ $unitBgClass }}"
                                         style="{{ $isLast ? 'border-bottom: 2px solid #cbd5e1;' : '' }}">
                                         @if ($isFirst)
                                             <!-- No -->
@@ -192,25 +199,19 @@
                                             <div class="font-semibold text-gray-900 dark:text-white">
                                                 {{ $item->indicator_title }}
                                             </div>
-                                            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400" style="margin-top: 0.25rem;">
-                                                @if ($item->category_short_name)
-                                                    <span class="rounded bg-gray-100 font-semibold text-gray-700 dark:bg-slate-800 dark:text-gray-300" style="padding: 0.125rem 0.375rem;">
-                                                        {{ $item->category_short_name }}
-                                                    </span>
-                                                @endif
-                                                <span>
-                                                    Num: <strong class="text-gray-700 dark:text-gray-200">{{ number_format((float) $item->numerator_value) }}</strong>
-                                                    /
-                                                    Den: <strong class="text-gray-700 dark:text-gray-200">{{ number_format((float) $item->denominator_value) }}</strong>
-                                                </span>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400" style="margin-top: 0.25rem;">
+                                                Num: <strong class="text-gray-700 dark:text-gray-200">{{ number_format((float) $item->numerator_value) }}</strong>
+                                                /
+                                                Den: <strong class="text-gray-700 dark:text-gray-200">{{ number_format((float) $item->denominator_value) }}</strong>
                                             </div>
                                         </td>
 
-                                        <!-- Jenis Indikator -->
+                                        <!-- Kategori Indikator -->
                                         <td class="text-center" style="padding: 0.75rem 0.875rem;">
-                                            <span style="--c-50:var(--{{ $typeVar }}-50);--c-400:var(--{{ $typeVar }}-400);--c-600:var(--{{ $typeVar }}-600); padding: 0.25rem 0.625rem;"
+                                            <span title="{{ $catFullName }}"
+                                                  style="--c-50:var(--{{ $catVar }}-50);--c-400:var(--{{ $catVar }}-400);--c-600:var(--{{ $catVar }}-600); padding: 0.25rem 0.625rem;"
                                                   class="fi-badge inline-flex items-center rounded-md text-xs font-bold ring-1 ring-inset fi-color-custom bg-custom-50 text-custom-600 ring-custom-600/20 dark:bg-custom-400/10 dark:text-custom-400 dark:ring-custom-400/30">
-                                                {{ $typeLabel }}
+                                                {{ $catLabel }}
                                             </span>
                                         </td>
 
@@ -224,10 +225,15 @@
 
                                         <!-- Nilai Standard -->
                                         <td class="text-center" style="padding: 0.75rem 0.875rem;">
-                                            <span style="--c-50:var(--success-50);--c-400:var(--success-400);--c-600:var(--success-600); padding: 0.25rem 0.625rem;"
-                                                  class="fi-badge inline-flex items-center rounded-md font-mono text-xs font-bold ring-1 ring-inset fi-color-custom bg-custom-50 text-custom-600 ring-custom-600/20 dark:bg-custom-400/10 dark:text-custom-400 dark:ring-custom-400/30">
-                                                {{ $standardText }}
-                                            </span>
+                                            <div class="inline-flex flex-col items-center">
+                                                <span style="--c-50:var(--success-50);--c-400:var(--success-400);--c-600:var(--success-600); padding: 0.25rem 0.625rem;"
+                                                      class="fi-badge inline-flex items-center rounded-md font-mono text-xs font-bold ring-1 ring-inset fi-color-custom bg-custom-50 text-custom-600 ring-custom-600/20 dark:bg-custom-400/10 dark:text-custom-400 dark:ring-custom-400/30">
+                                                    {{ $standard['badge'] }}
+                                                </span>
+                                                <span class="text-[11px] text-gray-500 dark:text-gray-400" style="margin-top: 0.125rem;">
+                                                    {{ $standard['label'] }}
+                                                </span>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -254,53 +260,42 @@
                     </div>
                 @endif
 
-                {{-- 4. EXECUTIVE SUMMARY --}}
-                <div class="border-t border-gray-200 bg-gray-50 dark:border-slate-800 dark:bg-slate-800/40" style="padding: 1.5rem;">
-                    <div class="flex items-center gap-2" style="margin-bottom: 1rem;">
-                        @svg('heroicon-s-chart-pie', 'h-4 w-4 text-red-600 dark:text-red-400')
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-gray-200">
-                            Rangkuman Indikator Tidak Tercapai
-                        </h4>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
-                        <!-- Unit Terdampak -->
-                        <div class="rounded-xl border border-gray-200 bg-white text-center shadow-sm dark:border-slate-700 dark:bg-slate-800" style="padding: 1rem;">
-                            <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Unit Kerja</span>
-                            <div class="font-mono text-2xl font-bold text-gray-900 dark:text-white" style="margin-top: 0.25rem;">{{ number_format($summary['total_units']) }}</div>
+                {{-- 4. IKHTISAR COMPACT --}}
+                <div class="border-t border-gray-200 bg-gray-50 dark:border-slate-800 dark:bg-slate-800/40" style="padding: 0.875rem 1.5rem;">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            @svg('heroicon-s-chart-pie', 'h-4 w-4 text-red-600 dark:text-red-400')
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200">
+                                Ikhtisar:
+                            </span>
                         </div>
 
-                        <!-- Total Tidak Tercapai -->
-                        <div style="--c-50:var(--danger-50);--c-400:var(--danger-400);--c-600:var(--danger-600); padding: 1rem;"
-                             class="rounded-xl border border-red-200 bg-custom-50 text-center shadow-sm dark:border-red-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Total Tidak Tercapai</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['total_indicators']) }}</div>
-                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white text-xs text-gray-600 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300"
+                                  style="padding: 0.375rem 0.75rem;">
+                                <span>Unit Kerja</span>
+                                <strong class="font-mono text-sm font-bold text-gray-900 dark:text-white">{{ number_format($summary['total_units']) }}</strong>
+                            </span>
 
-                        <!-- Jenis Proses -->
-                        <div style="--c-50:var(--warning-50);--c-400:var(--warning-400);--c-600:var(--warning-600); padding: 1rem;"
-                             class="rounded-xl border border-amber-200 bg-custom-50 text-center shadow-sm dark:border-amber-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Jenis Proses</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['process_count']) }}</div>
-                        </div>
+                            <span style="--c-50:var(--danger-50);--c-400:var(--danger-400);--c-600:var(--danger-600); padding: 0.375rem 0.75rem;"
+                                  class="fi-badge inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-custom-50 text-xs text-custom-600 dark:border-red-800 dark:bg-custom-400/10 dark:text-custom-400">
+                                <span>Tidak Tercapai</span>
+                                <strong class="font-mono text-sm font-bold">{{ number_format($summary['total_indicators']) }}</strong>
+                            </span>
 
-                        <!-- Jenis Output -->
-                        <div style="--c-50:var(--info-50);--c-400:var(--info-400);--c-600:var(--info-600); padding: 1rem;"
-                             class="rounded-xl border border-blue-200 bg-custom-50 text-center shadow-sm dark:border-blue-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Jenis Output</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['output_count']) }}</div>
-                        </div>
-
-                        <!-- Jenis Outcome -->
-                        <div style="--c-50:var(--success-50);--c-400:var(--success-400);--c-600:var(--success-600); padding: 1rem;"
-                             class="rounded-xl border border-green-200 bg-custom-50 text-center shadow-sm dark:border-green-800 dark:bg-custom-400/10">
-                            <span class="text-xs font-bold uppercase tracking-wider text-custom-600 dark:text-custom-400">Jenis Outcome</span>
-                            <div class="font-mono text-2xl font-bold text-custom-600 dark:text-custom-400" style="margin-top: 0.25rem;">{{ number_format($summary['outcome_count']) }}</div>
+                            @foreach ($summary['by_category'] as $catSummary)
+                                <span title="{{ $catSummary['full_name'] }}"
+                                      style="--c-50:var(--{{ $catSummary['color_var'] }}-50);--c-400:var(--{{ $catSummary['color_var'] }}-400);--c-600:var(--{{ $catSummary['color_var'] }}-600); padding: 0.375rem 0.75rem;"
+                                      class="fi-badge inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-50 text-xs text-custom-600 dark:border-slate-700 dark:bg-custom-400/10 dark:text-custom-400">
+                                    <span>{{ $catSummary['label'] }}</span>
+                                    <strong class="font-mono text-sm font-bold">{{ number_format($catSummary['count']) }}</strong>
+                                </span>
+                            @endforeach
                         </div>
                     </div>
                 </div>
 
             </div>
         @endif
-    </x-filament::section>
+    </div>
 </x-filament-widgets::widget>
