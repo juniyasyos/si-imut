@@ -1,7 +1,7 @@
 importScripts("/serviceworker-files.js");
 
-const CACHE_NAME = "siimut-cache-v3";
-const RUNTIME_CACHE = "siimut-runtime-v3";
+const CACHE_NAME = "siimut-cache-v4";
+const RUNTIME_CACHE = "siimut-runtime-v4";
 
 self.addEventListener("install", function (event) {
     console.log('PWA Service Worker installing...');

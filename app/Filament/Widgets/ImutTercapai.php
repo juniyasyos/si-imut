@@ -17,7 +17,7 @@ class ImutTercapai extends Widget
 
     protected static string $view = 'filament.widgets.imut-tercapai-widget';
     protected static ?int $sort = 6;
-    protected static bool $isLazy = true;
+    protected static bool $isLazy = false;
     protected int|string|array $columnSpan = 'full';
     protected static ?string $pollingInterval = '30s';
 
