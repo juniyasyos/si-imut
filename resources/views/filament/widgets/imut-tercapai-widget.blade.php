@@ -6,7 +6,7 @@
         $isPaginated = $records instanceof \Illuminate\Pagination\LengthAwarePaginator;
     @endphp
 
-    <div class="w-full">
+    <x-filament::section class="w-full">
         @if (! $laporan)
             <div class="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-14 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
@@ -343,5 +343,5 @@
 
             </div>
         @endif
-    </div>
+    </x-filament::section>
 </x-filament-widgets::widget>
