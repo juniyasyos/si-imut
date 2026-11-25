@@ -2,10 +2,13 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\HasSafeExcelValueBinder;
 use App\Services\Chart\ImutPeriodService;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -18,8 +21,10 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
  * Export Excel rekapitulasi capaian IMUT per unit kerja dengan kolom dinamis per bulan
  * dan 3 tingkat header (Unit Kerja | Bulan -> Nama Bulan -> Jml Indikator, Tidak Sesuai Standart, Persentase).
  */
-class UnitKerjaRekapPeriodExport implements FromArray, WithTitle, WithEvents
+class UnitKerjaRekapPeriodExport implements FromArray, WithTitle, WithEvents, WithCustomValueBinder, WithStrictNullComparison
 {
+    use HasSafeExcelValueBinder;
+
     private const HEADER_ROW_TOP = 5;
 
     private const HEADER_ROW_MONTH = 6;

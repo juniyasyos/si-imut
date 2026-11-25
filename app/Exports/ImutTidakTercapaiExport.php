@@ -2,10 +2,13 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\HasSafeExcelValueBinder;
 use App\Filament\Widgets\ImutTidakTercapai;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -17,8 +20,10 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
  * Export Excel daftar indikator mutu tidak tercapai per Unit Kerja
  * (mengikuti struktur tabel laporan cetak dengan Numerator & Denominator terpisah).
  */
-class ImutTidakTercapaiExport implements FromArray, WithTitle, WithEvents
+class ImutTidakTercapaiExport implements FromArray, WithTitle, WithEvents, WithCustomValueBinder, WithStrictNullComparison
 {
+    use HasSafeExcelValueBinder;
+
     private const HEADER_ROW = 6;
 
     private const DATA_START_ROW = 7;
