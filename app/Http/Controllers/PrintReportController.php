@@ -534,6 +534,10 @@ class PrintReportController extends Controller
             $laporan = \App\Facades\LaporanImut::getLatestLaporan();
         }
 
+        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
+            $laporan = \App\Models\LaporanImut::find($laporan->id);
+        }
+
         if (!$laporan) {
             abort(404, 'Data laporan tidak ditemukan.');
         }

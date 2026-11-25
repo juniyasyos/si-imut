@@ -25,7 +25,7 @@ class LaporanImutService
         return Cache::remember(CacheKey::latestLaporan(), now()->addMinutes(30), function () {
             try {
                 $today = Carbon::today();
-                $laporan = LaporanImut::select(['id', 'assessment_period_start', 'status'])
+                $laporan = LaporanImut::select(['id', 'name', 'assessment_period_start', 'assessment_period_end', 'status'])
                     ->where('status', LaporanImut::STATUS_PROCESS)
                     ->whereDate('assessment_period_start', '<=', $today)
                     ->whereDate('assessment_period_end', '>=', $today)
@@ -37,7 +37,7 @@ class LaporanImutService
                 }
 
                 // fallback jika tidak ada laporan dengan status PROCESS di periode aktif
-                return LaporanImut::select(['id', 'assessment_period_start', 'status'])
+                return LaporanImut::select(['id', 'name', 'assessment_period_start', 'assessment_period_end', 'status'])
                     ->where('status', LaporanImut::STATUS_COMPLETE)
                     ->latest('assessment_period_start')
                     ->first();

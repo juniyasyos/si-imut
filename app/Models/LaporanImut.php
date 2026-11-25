@@ -289,8 +289,12 @@ class LaporanImut extends Model
     /**
      * Accessor otomatis update status menjadi sesuai dengan kasus real
      */
-    public function getStatusAttribute(string $value): string
+    public function getStatusAttribute(?string $value = null): ?string
     {
+        if (! $this->assessment_period_start || ! $this->assessment_period_end) {
+            return $value;
+        }
+
         $today = now()->startOfDay();
         $start = $this->assessment_period_start->startOfDay();
         $end = $this->assessment_period_end->startOfDay();

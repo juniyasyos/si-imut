@@ -72,7 +72,12 @@ class ImutTercapai extends Widget
 
     public function getLaporan(): ?LaporanImut
     {
-        return LaporanImutFacade::getLatestLaporan();
+        $laporan = LaporanImutFacade::getLatestLaporan();
+        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
+            $laporan = LaporanImut::find($laporan->id);
+        }
+
+        return $laporan;
     }
 
     protected function getFilteredQuery(?int $laporanId): ?Builder
