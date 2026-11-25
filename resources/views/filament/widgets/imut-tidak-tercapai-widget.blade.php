@@ -391,15 +391,13 @@
                             </div>
                         </div>
 
-                        {{-- Info Akumulasi Periode --}}
+                        {{-- Preview Kolom Bulan Excel --}}
                         @if (! empty($exportMonthLabels))
                             <div class="rounded-lg border border-emerald-200 bg-emerald-50/70 text-xs text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-300"
                                  style="padding: 0.625rem 0.875rem;">
-                                <span class="font-bold">Cakupan Bulan:</span>
+                                <span class="font-bold">Kolom Bulan di Excel:</span>
                                 <span>{{ implode(', ', $exportMonthLabels) }}</span>
-                                @if (count($exportMonthLabels) > 1)
-                                    <span class="text-emerald-700 dark:text-emerald-400"> (Numerator &amp; Denominator diakumulasi selama periode ini)</span>
-                                @endif
+                                <span class="text-emerald-700 dark:text-emerald-400"> (masing-masing: Numerator, Denominator, Capaian % &mdash; bulan tercapai ditandai hijau)</span>
                             </div>
                         @endif
 
@@ -507,7 +505,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/80"
                          style="padding: 0.875rem 1.5rem;">
                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                            Format: <span class="font-semibold text-gray-700 dark:text-gray-200">.xlsx</span> (No, Unit, Indikator, Kategori, Num, Den, Capaian, Standard)
+                            Format: <span class="font-semibold text-gray-700 dark:text-gray-200">.xlsx</span> (kolom bulan terpisah &amp; penanda Tercapai)
                         </span>
 
                         <div class="flex items-center gap-2">

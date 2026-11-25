@@ -250,6 +250,231 @@ class ImutTidakTercapai extends Widget
     }
 
     /**
+     * Query rincian per (unit_kerja_id, imut_data_id, bulan) tanpa akumulasi lintas bulan
+     * untuk kebutuhan export Excel multi-bulan terpisah.
+     *
+     * @param  int|int[]  $laporanIds
+     * @param  int[]  $categoryIds
+     * @param  int[]  $unitKerjaIds
+     */
+    public static function buildMonthlyBreakdown(
+        int|array $laporanIds,
+        string $search = '',
+        array $categoryIds = [],
+        array $unitKerjaIds = []
+    ): Builder {
+        $ids = is_array($laporanIds)
+            ? array_values(array_filter(array_map('intval', $laporanIds)))
+            : [(int) $laporanIds];
+
+        $categoryIds = array_values(array_filter(array_map('intval', $categoryIds)));
+        $unitKerjaIds = array_values(array_filter(array_map('intval', $unitKerjaIds)));
+        $monthExpr = 'COALESCE(MONTH(laporan_imuts.assessment_period_start), laporan_imuts.report_month)';
+
+        $aggPercentageExpr = ImutCalculationService::percentageExpression(
+            'SUM(imut_penilaians.numerator_value)',
+            'NULLIF(SUM(imut_penilaians.denominator_value), 0)',
+            'capaian_percentage'
+        );
+
+        $rawPercentageExpr = ImutCalculationService::percentageExpression(
+            'SUM(imut_penilaians.numerator_value)',
+            'NULLIF(SUM(imut_penilaians.denominator_value), 0)'
+        );
+
+        $aggMeetsStandardCondition = ImutCalculationService::meetsStandardExpression(
+            $rawPercentageExpr,
+            'imut_profil.target_value',
+            'imut_profil.target_operator'
+        );
+
+        $query = LaporanUnitKerja::query()
+            ->join('laporan_imuts', 'laporan_unit_kerjas.laporan_imut_id', '=', 'laporan_imuts.id')
+            ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
+            ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
+            ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
+            ->join('imut_data', 'imut_profil.imut_data_id', '=', 'imut_data.id')
+            ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
+            ->whereNotNull('imut_penilaians.numerator_value')
+            ->whereNotNull('imut_penilaians.denominator_value')
+            ->where('imut_penilaians.denominator_value', '!=', 0);
+
+        if (empty($ids)) {
+            $query->whereRaw('1 = 0');
+        } else {
+            $query->whereIn('laporan_unit_kerjas.laporan_imut_id', $ids);
+        }
+
+        if (! empty(trim($search))) {
+            $searchTerm = '%'.trim($search).'%';
+            $query->where(function (Builder $q) use ($searchTerm) {
+                $q->where('unit_kerja.unit_name', 'like', $searchTerm)
+                    ->orWhere('imut_data.title', 'like', $searchTerm)
+                    ->orWhere('imut_kategori.short_name', 'like', $searchTerm)
+                    ->orWhere('imut_kategori.category_name', 'like', $searchTerm);
+            });
+        }
+
+        if (! empty($categoryIds)) {
+            $query->whereIn('imut_data.imut_kategori_id', $categoryIds);
+        }
+
+        if (! empty($unitKerjaIds)) {
+            $query->whereIn('laporan_unit_kerjas.unit_kerja_id', $unitKerjaIds);
+        }
+
+        return $query
+            ->select([
+                'laporan_unit_kerjas.unit_kerja_id',
+                'unit_kerja.unit_name',
+                'imut_data.id as imut_data_id',
+                'imut_data.title as indicator_title',
+                'imut_kategori.id as category_id',
+                'imut_kategori.short_name as category_short_name',
+                'imut_kategori.category_name as category_name',
+                'imut_profil.target_operator',
+                'imut_profil.target_value',
+                DB::raw("{$monthExpr} as report_month"),
+                DB::raw('SUM(imut_penilaians.numerator_value) as numerator_value'),
+                DB::raw('SUM(imut_penilaians.denominator_value) as denominator_value'),
+                DB::raw($aggPercentageExpr),
+                DB::raw("CASE WHEN SUM(imut_penilaians.denominator_value) > 0 AND NOT {$aggMeetsStandardCondition} THEN 1 ELSE 0 END as is_below_standard"),
+            ])
+            ->groupBy(
+                'laporan_unit_kerjas.unit_kerja_id',
+                'unit_kerja.unit_name',
+                'imut_data.id',
+                'imut_data.title',
+                'imut_kategori.id',
+                'imut_kategori.short_name',
+                'imut_kategori.category_name',
+                'imut_profil.target_operator',
+                'imut_profil.target_value',
+                DB::raw($monthExpr)
+            )
+            ->orderBy('unit_kerja.unit_name')
+            ->orderBy('imut_data.title')
+            ->orderByRaw($monthExpr);
+    }
+
+    /**
+     * Pivot hasil query bulanan, hanya mempertahankan indikator yang tidak tercapai minimal pada 1 bulan
+     * dalam periode terpilih, sambil tetap menyertakan data aktual bulan lainnya (termasuk indikator tercapai).
+     *
+     * @param  int[]  $months
+     * @return array{unitGroups: Collection, summary: array{total_units: int, total_indicators: int, by_category: Collection, below_per_month: array<int, int>}}
+     */
+    public static function prepareMonthlyExportData(Collection $rows, array $months): array
+    {
+        $months = array_values(array_filter(array_map('intval', $months)));
+        $belowPerMonth = array_fill_keys($months, 0);
+
+        $units = [];
+        foreach ($rows as $row) {
+            $unitId = (int) ($row->unit_kerja_id ?? 0);
+            $imutId = (int) ($row->imut_data_id ?? 0);
+            $month = (int) ($row->report_month ?? 0);
+
+            if ($unitId <= 0 || $imutId <= 0 || ! in_array($month, $months, true)) {
+                continue;
+            }
+
+            if (! isset($units[$unitId])) {
+                $units[$unitId] = [
+                    'unit_kerja_id' => $unitId,
+                    'unit_name' => $row->unit_name ?: "Unit #{$unitId}",
+                    'indicators' => [],
+                ];
+            }
+
+            if (! isset($units[$unitId]['indicators'][$imutId])) {
+                $units[$unitId]['indicators'][$imutId] = [
+                    'imut_data_id' => $imutId,
+                    'indicator_title' => $row->indicator_title ?: '-',
+                    'category_id' => (int) ($row->category_id ?? 0),
+                    'category_short_name' => $row->category_short_name,
+                    'category_name' => $row->category_name,
+                    'target_operator' => $row->target_operator,
+                    'target_value' => $row->target_value,
+                    'has_below' => false,
+                    'months' => [],
+                ];
+            }
+
+            $isBelow = (bool) ($row->is_below_standard ?? false);
+            if ($isBelow) {
+                $units[$unitId]['indicators'][$imutId]['has_below'] = true;
+            }
+
+            $units[$unitId]['indicators'][$imutId]['months'][$month] = [
+                'numerator' => (float) ($row->numerator_value ?? 0),
+                'denominator' => (float) ($row->denominator_value ?? 0),
+                'capaian_percentage' => (float) ($row->capaian_percentage ?? 0),
+                'is_below' => $isBelow,
+            ];
+        }
+
+        $unitGroups = collect();
+        $failedIndicatorRows = collect();
+
+        foreach ($units as $unit) {
+            $failedIndicators = collect($unit['indicators'])
+                ->filter(fn (array $ind) => $ind['has_below'] === true)
+                ->map(function (array $ind) use (&$belowPerMonth, $months) {
+                    foreach ($months as $m) {
+                        if (! empty($ind['months'][$m]['is_below'])) {
+                            $belowPerMonth[$m]++;
+                        }
+                    }
+
+                    return (object) $ind;
+                })
+                ->values();
+
+            if ($failedIndicators->isEmpty()) {
+                continue;
+            }
+
+            foreach ($failedIndicators as $fi) {
+                $failedIndicatorRows->push($fi);
+            }
+
+            $unitGroups->push((object) [
+                'unit_kerja_id' => $unit['unit_kerja_id'],
+                'unit_name' => $unit['unit_name'],
+                'below_count' => $failedIndicators->count(),
+                'indicators' => $failedIndicators,
+            ]);
+        }
+
+        $byCategory = $failedIndicatorRows
+            ->groupBy(fn ($row) => $row->category_id ?? 0)
+            ->map(function (Collection $group, $catId) {
+                $first = $group->first();
+
+                return [
+                    'id' => (int) $catId,
+                    'label' => $first->category_short_name ?: ($first->category_name ?: 'Tanpa Kategori'),
+                    'full_name' => $first->category_name ?: 'Tanpa Kategori',
+                    'count' => $group->count(),
+                    'color_var' => self::categoryColorVar((int) $catId),
+                ];
+            })
+            ->sortByDesc('count')
+            ->values();
+
+        return [
+            'unitGroups' => $unitGroups->values(),
+            'summary' => [
+                'total_units' => $unitGroups->count(),
+                'total_indicators' => $failedIndicatorRows->count(),
+                'by_category' => $byCategory,
+                'below_per_month' => $belowPerMonth,
+            ],
+        ];
+    }
+
+    /**
      * Kelompokkan collection hasil query berdasarkan Unit Kerja.
      */
     public static function groupRowsByUnit(Collection $rows): Collection

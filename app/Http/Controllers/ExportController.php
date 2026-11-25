@@ -116,24 +116,26 @@ class ExportController extends Controller
         $search = (string) $request->query('search', '');
         $mergeUnits = filter_var($request->query('merge_units', '1'), FILTER_VALIDATE_BOOLEAN);
 
-        ['periodContext' => $periodContext, 'periodeText' => $periodeText] = $this->resolvePeriodContextForRequest($request);
+        ['periodContext' => $periodContext, 'parsedPeriod' => $parsedPeriod, 'periodeText' => $periodeText] = $this->resolvePeriodContextForRequest($request);
 
-        $rows = ImutTidakTercapai::buildAggregatedBelowStandardQuery(
+        $rows = ImutTidakTercapai::buildMonthlyBreakdown(
             $periodContext['laporanIds'] ?? [],
             $search,
-            $filterCategoryId,
             $categoryIds,
             $unitKerjaIds
         )->get();
 
-        $unitGroups = ImutTidakTercapai::groupRowsByUnit($rows);
-        $summary = ImutTidakTercapai::summarizeRows($rows);
+        ['unitGroups' => $unitGroups, 'summary' => $summary] = ImutTidakTercapai::prepareMonthlyExportData(
+            $rows,
+            $parsedPeriod['months']
+        );
         $periodSlug = $periodContext['selectedPeriod'] ?: now()->format('Y_m');
 
         return Excel::download(
             new ImutTidakTercapaiExport(
                 periodContext: $periodContext,
                 periodeText: $periodeText,
+                months: $parsedPeriod['months'],
                 unitGroups: $unitGroups,
                 summary: $summary,
                 categoryLabel: $this->resolveCategoryLabel($categoryIds),
