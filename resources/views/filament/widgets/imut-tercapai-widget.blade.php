@@ -134,70 +134,69 @@
                 {{-- 3. TABEL SEMI-LAPORAN FORMAL (HEADER TEGAS SLATE-800 & TEKS PUTIH TAJAM) --}}
                 <div class="w-full overflow-x-auto">
                     <table class="w-full min-w-full table-auto text-left text-sm">
-                        <thead class="border-b-2 border-slate-700 bg-slate-800 text-xs font-bold uppercase tracking-wider text-white"
-                               style="background-color: #1e293b; color: #ffffff;">
+                        <thead class="border-b-2 border-slate-300 bg-slate-100 text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                             <tr>
-                                <th scope="col" class="w-14 px-3.5 py-3.5 text-center text-white" style="color: #ffffff;">No</th>
+                                <th scope="col" class="w-14 px-3.5 py-3.5 text-center">No</th>
 
-                                <th scope="col" class="cursor-pointer px-5 py-3.5 text-white transition hover:bg-slate-700" style="color: #ffffff;" wire:click="sortBy('unit_name')">
+                                <th scope="col" class="cursor-pointer px-5 py-3.5 transition hover:bg-slate-200 dark:hover:bg-slate-700" wire:click="sortBy('unit_name')">
                                     <div class="flex items-center gap-1.5">
                                         <span>Unit Kerja</span>
                                         @if ($sortColumn === 'unit_name')
-                                            <span class="text-blue-400" style="color: #60a5fa;">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <span class="text-blue-600 dark:text-blue-400">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                                         @else
-                                            <span class="text-slate-400" style="color: #94a3b8;">⇅</span>
+                                            <span class="text-slate-400">⇅</span>
                                         @endif
                                     </div>
                                 </th>
 
-                                <th scope="col" class="w-32 cursor-pointer px-3.5 py-3.5 text-center text-white transition hover:bg-slate-700" style="color: #ffffff;" wire:click="sortBy('total_count')">
+                                <th scope="col" class="w-32 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-200 dark:hover:bg-slate-700" wire:click="sortBy('total_count')">
                                     <div class="flex items-center justify-center gap-1">
                                         <span>Jml IMUT</span>
                                         @if ($sortColumn === 'total_count')
-                                            <span class="text-blue-400" style="color: #60a5fa;">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <span class="text-blue-600 dark:text-blue-400">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                                         @endif
                                     </div>
                                 </th>
 
-                                <th scope="col" class="w-36 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-700" wire:click="sortBy('meets_standard_count')">
-                                    <div class="flex items-center justify-center gap-1 text-green-300" style="color: #86efac;">
+                                <th scope="col" class="w-36 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-200 dark:hover:bg-slate-700" wire:click="sortBy('meets_standard_count')">
+                                    <div class="flex items-center justify-center gap-1 text-emerald-700 dark:text-emerald-300">
                                         <span>Standar</span>
                                         @if ($sortColumn === 'meets_standard_count')
-                                            <span class="text-blue-400" style="color: #60a5fa;">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <span class="text-blue-600 dark:text-blue-400">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                                         @endif
                                     </div>
                                 </th>
 
-                                <th scope="col" class="w-36 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-700" wire:click="sortBy('below_standard_count')">
-                                    <div class="flex items-center justify-center gap-1 text-red-300" style="color: #fca5a5;">
+                                <th scope="col" class="w-36 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-200 dark:hover:bg-slate-700" wire:click="sortBy('below_standard_count')">
+                                    <div class="flex items-center justify-center gap-1 text-rose-700 dark:text-rose-300">
                                         <span>Tidak Standar</span>
                                         @if ($sortColumn === 'below_standard_count')
-                                            <span class="text-blue-400" style="color: #60a5fa;">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <span class="text-blue-600 dark:text-blue-400">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                                         @endif
                                     </div>
                                 </th>
 
-                                <th scope="col" class="w-28 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-700" wire:click="sortBy('empty_count')">
-                                    <div class="flex items-center justify-center gap-1 text-amber-300" style="color: #fcd34d;">
+                                <th scope="col" class="w-28 cursor-pointer px-3.5 py-3.5 text-center transition hover:bg-slate-200 dark:hover:bg-slate-700" wire:click="sortBy('empty_count')">
+                                    <div class="flex items-center justify-center gap-1 text-amber-700 dark:text-amber-300">
                                         <span>Kosong</span>
                                         @if ($sortColumn === 'empty_count')
-                                            <span class="text-blue-400" style="color: #60a5fa;">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <span class="text-blue-600 dark:text-blue-400">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                                         @endif
                                     </div>
                                 </th>
 
-                                <th scope="col" class="w-40 cursor-pointer px-4 py-3.5 text-center transition hover:bg-slate-700" wire:click="sortBy('standard_percentage')">
-                                    <div class="flex items-center justify-center gap-1 text-blue-300" style="color: #93c5fd;">
+                                <th scope="col" class="w-40 cursor-pointer px-4 py-3.5 text-center transition hover:bg-slate-200 dark:hover:bg-slate-700" wire:click="sortBy('standard_percentage')">
+                                    <div class="flex items-center justify-center gap-1 text-blue-700 dark:text-blue-300">
                                         <span>Persentase (%)</span>
                                         @if ($sortColumn === 'standard_percentage')
-                                            <span class="text-blue-400" style="color: #60a5fa;">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <span class="text-blue-600 dark:text-blue-400">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
                                         @else
-                                            <span class="text-slate-400" style="color: #94a3b8;">⇅</span>
+                                            <span class="text-slate-400">⇅</span>
                                         @endif
                                     </div>
                                 </th>
 
-                                <th scope="col" class="w-24 px-3.5 py-3.5 text-center text-white" style="color: #ffffff;">Aksi</th>
+                                <th scope="col" class="w-24 px-3.5 py-3.5 text-center">Aksi</th>
                             </tr>
                         </thead>
 
