@@ -512,6 +512,77 @@ class PrintReportController extends Controller
     }
 
     /**
+     * Resolve konteks periode untuk halaman print laporan (bulan, kuartal, semester, tahun)
+     * dengan tetap mendukung parameter laporan_id lama.
+     */
+    private function resolvePrintPeriodContext(Request $request): array
+    {
+        $periodType = (string) $request->get('period_type', 'month');
+        $selectedPeriod = $request->get('period');
+        $laporanId = $request->get('laporan_id');
+
+        $allLaporans = \App\Models\LaporanImut::select([
+            'id',
+            'name',
+            'report_month',
+            'report_year',
+            'assessment_period_start',
+            'assessment_period_end',
+            'status',
+        ])
+            ->orderByDesc('assessment_period_start')
+            ->get();
+
+        if ($allLaporans->isEmpty()) {
+            abort(404, 'Data laporan tidak ditemukan.');
+        }
+
+        if (! $selectedPeriod && $laporanId) {
+            $target = $allLaporans->firstWhere('id', (int) $laporanId) ?? \App\Models\LaporanImut::find((int) $laporanId);
+            if ($target) {
+                $periodType = 'month';
+                $year = $target->assessment_period_start
+                    ? Carbon::parse($target->assessment_period_start)->year
+                    : $target->report_year;
+                $month = $target->assessment_period_start
+                    ? Carbon::parse($target->assessment_period_start)->month
+                    : $target->report_month;
+                if ($year && $month) {
+                    $selectedPeriod = sprintf('%04d-%02d', (int) $year, (int) $month);
+                }
+            }
+        }
+
+        $context = app(\App\Services\Chart\ImutPeriodService::class)->resolvePeriodContext(
+            $allLaporans,
+            $periodType,
+            $selectedPeriod ? (string) $selectedPeriod : null
+        );
+
+        if (empty($context['laporanIds'])) {
+            abort(404, 'Data laporan tidak ditemukan.');
+        }
+
+        $startDate = $context['startDate'];
+        $endDate = $context['endDate'];
+        $periodeText = '-';
+
+        if ($startDate && $endDate) {
+            $sameMonth = $startDate->month === $endDate->month && $startDate->year === $endDate->year;
+            $sameYear = $startDate->year === $endDate->year;
+            $periodeText = match (true) {
+                $sameMonth => $startDate->translatedFormat('d').' – '.$endDate->translatedFormat('d F Y'),
+                $sameYear => $startDate->translatedFormat('d M').' – '.$endDate->translatedFormat('d F Y'),
+                default => $startDate->translatedFormat('d M Y').' – '.$endDate->translatedFormat('d M Y'),
+            };
+        }
+
+        $context['periodeText'] = $periodeText;
+
+        return $context;
+    }
+
+    /**
      * Cetak Laporan Rekapitulasi Capaian Unit Kerja
      *
      * @param Request $request
@@ -519,30 +590,17 @@ class PrintReportController extends Controller
      */
     public function printUnitKerjaRekap(Request $request)
     {
-        $laporanId = $request->get('laporan_id');
         $orientation = $request->get('orientation', 'landscape');
-        if (!in_array($orientation, ['landscape', 'portrait'])) {
+        if (! in_array($orientation, ['landscape', 'portrait'])) {
             $orientation = 'landscape';
         }
 
-        $laporan = null;
-        if ($laporanId) {
-            $laporan = \App\Models\LaporanImut::find($laporanId);
-        }
+        $periodContext = $this->resolvePrintPeriodContext($request);
+        $laporan = $periodContext['primaryLaporan'];
+        $periodeText = $periodContext['periodeText'];
+        $laporanIds = $periodContext['laporanIds'];
 
-        if (!$laporan) {
-            $laporan = \App\Facades\LaporanImut::getLatestLaporan();
-        }
-
-        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
-            $laporan = \App\Models\LaporanImut::find($laporan->id);
-        }
-
-        if (!$laporan) {
-            abort(404, 'Data laporan tidak ditemukan.');
-        }
-
-        $query = $this->laporanRepository->getReportByUnitKerja($laporan->id);
+        $query = $this->laporanRepository->getReportByUnitKerja($laporanIds);
 
         $sortColumn = $request->get('sort', 'unit_name');
         $sortDirection = $request->get('direction', 'asc');
@@ -554,36 +612,11 @@ class PrintReportController extends Controller
         }
 
         $records = $query->get();
-
-        $startDate = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
-        $endDate = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
-
-        $periodeText = '-';
-        if ($startDate && $endDate) {
-            $sameMonth = $startDate->month === $endDate->month && $startDate->year === $endDate->year;
-            $periodeText = $sameMonth
-                ? $startDate->translatedFormat('d') . ' – ' . $endDate->translatedFormat('d F Y')
-                : $startDate->translatedFormat('d M') . ' – ' . $endDate->translatedFormat('d F Y');
-        }
-
-        $totalUnits = $records->count();
-        $totalIndicators = (int) $records->sum('total_count');
-        $totalStandard = (int) $records->sum('meets_standard_count');
-        $totalBelow = (int) $records->sum('below_standard_count');
-        $totalEmpty = (int) $records->sum('empty_count');
-        $overallPercentage = $totalIndicators > 0 ? round(($totalStandard / $totalIndicators) * 100, 2) : 0;
-
-        $summary = [
-            'total_units' => $totalUnits,
-            'total_indicators' => $totalIndicators,
-            'total_standard' => $totalStandard,
-            'total_below' => $totalBelow,
-            'total_empty' => $totalEmpty,
-            'overall_percentage' => $overallPercentage,
-        ];
+        $summary = \App\Filament\Widgets\ImutTercapai::getSummaryFromRecords($records);
 
         return view('filament.prints.unit-kerja-rekap-report', compact(
             'laporan',
+            'periodContext',
             'records',
             'summary',
             'orientation',
@@ -596,7 +629,6 @@ class PrintReportController extends Controller
      */
     public function printImutTidakTercapai(Request $request)
     {
-        $laporanId = $request->get('laporan_id');
         $orientation = $request->get('orientation', 'landscape');
         if (! in_array($orientation, ['landscape', 'portrait'])) {
             $orientation = 'landscape';
@@ -605,44 +637,21 @@ class PrintReportController extends Controller
         $search = (string) $request->get('search', '');
         $filterCategoryId = (string) $request->get('category_id', 'all');
 
-        $laporan = null;
-        if ($laporanId) {
-            $laporan = \App\Models\LaporanImut::find($laporanId);
-        }
-
-        if (! $laporan) {
-            $laporan = \App\Facades\LaporanImut::getLatestLaporan();
-        }
-
-        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
-            $laporan = \App\Models\LaporanImut::find($laporan->id);
-        }
-
-        if (! $laporan) {
-            abort(404, 'Data laporan tidak ditemukan.');
-        }
+        $periodContext = $this->resolvePrintPeriodContext($request);
+        $laporan = $periodContext['primaryLaporan'];
+        $periodeText = $periodContext['periodeText'];
+        $laporanIds = $periodContext['laporanIds'];
 
         $unitGroups = \App\Filament\Widgets\ImutTidakTercapai::getAllGroupedUnits(
-            $laporan->id,
+            $laporanIds,
             $search,
             $filterCategoryId
         );
         $summary = \App\Filament\Widgets\ImutTidakTercapai::getReportSummary(
-            $laporan->id,
+            $laporanIds,
             $search,
             $filterCategoryId
         );
-
-        $startDate = $laporan->assessment_period_start ? Carbon::parse($laporan->assessment_period_start) : null;
-        $endDate = $laporan->assessment_period_end ? Carbon::parse($laporan->assessment_period_end) : null;
-
-        $periodeText = '-';
-        if ($startDate && $endDate) {
-            $sameMonth = $startDate->month === $endDate->month && $startDate->year === $endDate->year;
-            $periodeText = $sameMonth
-                ? $startDate->translatedFormat('d') . ' – ' . $endDate->translatedFormat('d F Y')
-                : $startDate->translatedFormat('d M') . ' – ' . $endDate->translatedFormat('d F Y');
-        }
 
         $categoryName = null;
         if ($filterCategoryId !== 'all' && $filterCategoryId !== '') {
@@ -652,6 +661,7 @@ class PrintReportController extends Controller
 
         return view('filament.prints.imut-tidak-tercapai-report', compact(
             'laporan',
+            'periodContext',
             'unitGroups',
             'summary',
             'orientation',

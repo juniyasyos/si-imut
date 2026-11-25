@@ -21,9 +21,9 @@ class LaporanRepository implements LaporanRepositoryInterface
     /**
      * Mengambil laporan berdasarkan unit kerja dengan jumlah penilaian dan persentase pengisian.
      */
-    public function getReportByUnitKerja(int $laporanId): Builder
+    public function getReportByUnitKerja(int|array $laporanIds): Builder
     {
-        return (new UnitKerjaReportQueryBuilder())->build($laporanId);
+        return (new UnitKerjaReportQueryBuilder())->build($laporanIds);
     }
 
     /**

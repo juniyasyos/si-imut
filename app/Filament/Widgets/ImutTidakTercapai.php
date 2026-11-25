@@ -2,14 +2,15 @@
 
 namespace App\Filament\Widgets;
 
-use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Models\ImutCategory;
 use App\Models\LaporanImut;
 use App\Models\LaporanUnitKerja;
+use App\Services\Chart\ImutPeriodService;
 use App\Services\Core\ImutCalculationService;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,9 @@ class ImutTidakTercapai extends Widget
 
     protected static ?string $pollingInterval = '30s';
 
-    public ?int $selectedLaporanId = null;
+    public string $periodType = 'month';
+
+    public ?string $selectedPeriod = null;
 
     public string $search = '';
 
@@ -38,7 +41,8 @@ class ImutTidakTercapai extends Widget
     public string|int $perPage = 10;
 
     protected $queryString = [
-        'selectedLaporanId' => ['except' => null],
+        'periodType' => ['except' => 'month'],
+        'selectedPeriod' => ['except' => null],
         'search' => ['except' => ''],
         'filterCategoryId' => ['except' => 'all'],
     ];
@@ -50,13 +54,19 @@ class ImutTidakTercapai extends Widget
 
     public function mount(): void
     {
-        if (! $this->selectedLaporanId) {
-            $latest = LaporanImutFacade::getLatestLaporan();
-            $this->selectedLaporanId = $latest?->id;
+        if (! $this->selectedPeriod) {
+            $context = $this->periodContext;
+            $this->selectedPeriod = $context['selectedPeriod'];
         }
     }
 
-    public function updatingSelectedLaporanId(): void
+    public function updatingPeriodType(): void
+    {
+        $this->selectedPeriod = null;
+        $this->resetPage('belowPage');
+    }
+
+    public function updatingSelectedPeriod(): void
     {
         $this->resetPage('belowPage');
     }
@@ -96,49 +106,53 @@ class ImutTidakTercapai extends Widget
             ->get(['id', 'short_name', 'category_name']);
     }
 
+    public function getPeriodContextProperty(): array
+    {
+        $context = app(ImutPeriodService::class)->resolvePeriodContext(
+            $this->availableLaporans,
+            $this->periodType,
+            $this->selectedPeriod
+        );
+
+        if ($context['selectedPeriod'] && $this->selectedPeriod !== $context['selectedPeriod']) {
+            $this->selectedPeriod = $context['selectedPeriod'];
+        }
+
+        return $context;
+    }
+
     public function getLaporan(): ?LaporanImut
     {
-        if ($this->selectedLaporanId) {
-            $laporan = LaporanImut::find($this->selectedLaporanId);
-            if ($laporan) {
-                return $laporan;
-            }
-        }
-
-        $laporan = LaporanImutFacade::getLatestLaporan();
-        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
-            $laporan = LaporanImut::find($laporan->id);
-        }
-
-        if ($laporan && ! $this->selectedLaporanId) {
-            $this->selectedLaporanId = $laporan->id;
-        }
-
-        return $laporan;
+        return $this->periodContext['primaryLaporan'];
     }
 
     /**
-     * Query dasar untuk seluruh baris penilaian indikator yang tidak memenuhi standar.
+     * Query agregasi periode (Opsi A):
+     * Menjumlahkan numerator & denominator per (unit_kerja_id, imut_data_id) selama periode terpilih,
+     * lalu mengambil indikator yang nilai agregatnya belum memenuhi standar.
      */
-    public static function buildBelowStandardBaseQuery(
-        int $laporanId,
+    public static function buildAggregatedBelowStandardQuery(
+        int|array $laporanIds,
         string $search = '',
         string $filterCategoryId = 'all'
     ): Builder {
-        $percentageSql = ImutCalculationService::percentageExpression(
-            'imut_penilaians.numerator_value',
-            'imut_penilaians.denominator_value',
+        $ids = is_array($laporanIds)
+            ? array_values(array_filter(array_map('intval', $laporanIds)))
+            : [$laporanIds];
+
+        $aggPercentageExpr = ImutCalculationService::percentageExpression(
+            'SUM(imut_penilaians.numerator_value)',
+            'NULLIF(SUM(imut_penilaians.denominator_value), 0)',
             'capaian_percentage'
         );
 
-        $meetsStandardCondition = ImutCalculationService::meetsStandardExpression(
-            $percentageSql,
+        $aggMeetsStandardCondition = ImutCalculationService::meetsStandardExpression(
+            $aggPercentageExpr,
             'imut_profil.target_value',
             'imut_profil.target_operator'
         );
 
         $query = LaporanUnitKerja::query()
-            ->where('laporan_unit_kerjas.laporan_imut_id', $laporanId)
             ->join('unit_kerja', 'laporan_unit_kerjas.unit_kerja_id', '=', 'unit_kerja.id')
             ->join('imut_penilaians', 'laporan_unit_kerjas.id', '=', 'imut_penilaians.laporan_unit_kerja_id')
             ->join('imut_profil', 'imut_penilaians.imut_profil_id', '=', 'imut_profil.id')
@@ -146,11 +160,16 @@ class ImutTidakTercapai extends Widget
             ->leftJoin('imut_kategori', 'imut_data.imut_kategori_id', '=', 'imut_kategori.id')
             ->whereNotNull('imut_penilaians.numerator_value')
             ->whereNotNull('imut_penilaians.denominator_value')
-            ->where('imut_penilaians.denominator_value', '!=', 0)
-            ->whereRaw("NOT {$meetsStandardCondition}");
+            ->where('imut_penilaians.denominator_value', '!=', 0);
+
+        if (empty($ids)) {
+            $query->whereRaw('1 = 0');
+        } else {
+            $query->whereIn('laporan_unit_kerjas.laporan_imut_id', $ids);
+        }
 
         if (! empty(trim($search))) {
-            $searchTerm = '%' . trim($search) . '%';
+            $searchTerm = '%'.trim($search).'%';
             $query->where(function (Builder $q) use ($searchTerm) {
                 $q->where('unit_kerja.unit_name', 'like', $searchTerm)
                     ->orWhere('imut_data.title', 'like', $searchTerm)
@@ -163,93 +182,64 @@ class ImutTidakTercapai extends Widget
             $query->where('imut_data.imut_kategori_id', (int) $filterCategoryId);
         }
 
-        return $query;
-    }
-
-    /**
-     * Query builder daftar Unit Kerja yang memiliki indikator tidak tercapai.
-     */
-    protected static function buildUnitQuery(
-        int $laporanId,
-        string $search = '',
-        string $filterCategoryId = 'all'
-    ): Builder {
-        return self::buildBelowStandardBaseQuery($laporanId, $search, $filterCategoryId)
+        return $query
             ->select([
-                'laporan_unit_kerjas.id as laporan_unit_kerja_id',
-                'laporan_unit_kerjas.laporan_imut_id',
                 'laporan_unit_kerjas.unit_kerja_id',
                 'unit_kerja.unit_name',
-                DB::raw('COUNT(imut_penilaians.id) as below_count'),
-            ])
-            ->groupBy(
-                'laporan_unit_kerjas.id',
-                'laporan_unit_kerjas.laporan_imut_id',
-                'laporan_unit_kerjas.unit_kerja_id',
-                'unit_kerja.unit_name'
-            )
-            ->orderBy('unit_kerja.unit_name');
-    }
-
-    /**
-     * Attach koleksi indikator tidak tercapai ke masing-masing Unit Kerja.
-     */
-    protected static function hydrateUnitIndicators(
-        Collection $unitCollection,
-        int $laporanId,
-        string $search = '',
-        string $filterCategoryId = 'all'
-    ): Collection {
-        $laporanUnitKerjaIds = $unitCollection->pluck('laporan_unit_kerja_id')->all();
-
-        if (empty($laporanUnitKerjaIds)) {
-            return $unitCollection;
-        }
-
-        $percentageSql = ImutCalculationService::percentageExpression(
-            'imut_penilaians.numerator_value',
-            'imut_penilaians.denominator_value',
-            'capaian_percentage'
-        );
-
-        $indicatorsByUnit = self::buildBelowStandardBaseQuery($laporanId, $search, $filterCategoryId)
-            ->whereIn('laporan_unit_kerjas.id', $laporanUnitKerjaIds)
-            ->select([
-                'imut_penilaians.id',
-                'imut_penilaians.laporan_unit_kerja_id',
-                'imut_penilaians.numerator_value',
-                'imut_penilaians.denominator_value',
+                DB::raw('MAX(laporan_unit_kerjas.laporan_imut_id) as laporan_imut_id'),
+                'imut_data.id as imut_data_id',
                 'imut_data.title as indicator_title',
                 'imut_kategori.id as category_id',
                 'imut_kategori.short_name as category_short_name',
                 'imut_kategori.category_name as category_name',
                 'imut_profil.target_operator',
                 'imut_profil.target_value',
-                DB::raw($percentageSql),
+                DB::raw('COUNT(imut_penilaians.id) as months_count'),
+                DB::raw('SUM(imut_penilaians.numerator_value) as numerator_value'),
+                DB::raw('SUM(imut_penilaians.denominator_value) as denominator_value'),
+                DB::raw($aggPercentageExpr),
             ])
+            ->groupBy(
+                'laporan_unit_kerjas.unit_kerja_id',
+                'unit_kerja.unit_name',
+                'imut_data.id',
+                'imut_data.title',
+                'imut_kategori.id',
+                'imut_kategori.short_name',
+                'imut_kategori.category_name',
+                'imut_profil.target_operator',
+                'imut_profil.target_value'
+            )
+            ->havingRaw("SUM(imut_penilaians.denominator_value) > 0 AND NOT {$aggMeetsStandardCondition}")
+            ->orderBy('unit_kerja.unit_name')
             ->orderBy('capaian_percentage')
-            ->orderBy('imut_data.title')
-            ->get()
-            ->groupBy('laporan_unit_kerja_id');
-
-        return $unitCollection->transform(function ($unit) use ($indicatorsByUnit) {
-            $unit->indicators = $indicatorsByUnit->get($unit->laporan_unit_kerja_id, collect());
-
-            return $unit;
-        });
+            ->orderBy('imut_data.title');
     }
 
     /**
-     * Ambil seluruh unit beserta daftar indikator tidak tercapai (untuk cetak laporan).
+     * Ambil seluruh unit beserta daftar indikator tidak tercapai (dikelompokkan per Unit Kerja).
      */
     public static function getAllGroupedUnits(
-        int $laporanId,
+        int|array $laporanIds,
         string $search = '',
         string $filterCategoryId = 'all'
     ): Collection {
-        $units = self::buildUnitQuery($laporanId, $search, $filterCategoryId)->get();
+        $rows = self::buildAggregatedBelowStandardQuery($laporanIds, $search, $filterCategoryId)->get();
 
-        return self::hydrateUnitIndicators($units, $laporanId, $search, $filterCategoryId);
+        return $rows
+            ->groupBy('unit_kerja_id')
+            ->map(function (Collection $items) {
+                $first = $items->first();
+
+                return (object) [
+                    'unit_kerja_id' => $first->unit_kerja_id,
+                    'unit_name' => $first->unit_name,
+                    'laporan_imut_id' => $first->laporan_imut_id,
+                    'below_count' => $items->count(),
+                    'indicators' => $items->values(),
+                ];
+            })
+            ->values();
     }
 
     /**
@@ -257,42 +247,42 @@ class ImutTidakTercapai extends Widget
      */
     public function getUnitGroupsProperty(): LengthAwarePaginator|Collection
     {
-        $laporan = $this->getLaporan();
-        if (! $laporan) {
+        $laporanIds = $this->periodContext['laporanIds'] ?? [];
+        if (empty($laporanIds)) {
             return collect();
         }
 
-        $unitQuery = self::buildUnitQuery($laporan->id, $this->search, $this->filterCategoryId);
+        $allGroups = self::getAllGroupedUnits($laporanIds, $this->search, $this->filterCategoryId);
 
         if ($this->perPage === 'all' || (int) $this->perPage === -1) {
-            $units = $unitQuery->get();
-            self::hydrateUnitIndicators($units, $laporan->id, $this->search, $this->filterCategoryId);
-
-            return $units;
+            return $allGroups;
         }
 
-        $units = $unitQuery->paginate((int) $this->perPage, ['*'], 'belowPage');
-        self::hydrateUnitIndicators($units->getCollection(), $laporan->id, $this->search, $this->filterCategoryId);
+        $perPage = max(1, (int) $this->perPage);
+        $currentPage = Paginator::resolveCurrentPage('belowPage');
+        $sliced = $allGroups->slice(($currentPage - 1) * $perPage, $perPage)->values();
 
-        return $units;
+        return new LengthAwarePaginator(
+            $sliced,
+            $allGroups->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => 'belowPage',
+            ]
+        );
     }
 
     /**
-     * Ringkasan keseluruhan indikator tidak tercapai pada laporan terpilih.
+     * Ringkasan keseluruhan indikator tidak tercapai pada periode terpilih.
      */
     public static function getReportSummary(
-        int $laporanId,
+        int|array $laporanIds,
         string $search = '',
         string $filterCategoryId = 'all'
     ): array {
-        $rows = self::buildBelowStandardBaseQuery($laporanId, $search, $filterCategoryId)
-            ->select([
-                'laporan_unit_kerjas.unit_kerja_id',
-                'imut_kategori.id as category_id',
-                'imut_kategori.short_name as category_short_name',
-                'imut_kategori.category_name as category_name',
-            ])
-            ->get();
+        $rows = self::buildAggregatedBelowStandardQuery($laporanIds, $search, $filterCategoryId)->get();
 
         $byCategory = $rows
             ->groupBy(fn ($row) => $row->category_id ?? 0)
@@ -319,8 +309,8 @@ class ImutTidakTercapai extends Widget
 
     public function getSummaryProperty(): array
     {
-        $laporan = $this->getLaporan();
-        if (! $laporan) {
+        $laporanIds = $this->periodContext['laporanIds'] ?? [];
+        if (empty($laporanIds)) {
             return [
                 'total_units' => 0,
                 'total_indicators' => 0,
@@ -328,7 +318,7 @@ class ImutTidakTercapai extends Widget
             ];
         }
 
-        return self::getReportSummary($laporan->id);
+        return self::getReportSummary($laporanIds);
     }
 
     public static function categoryColorVar(?int $categoryId): string
@@ -353,7 +343,7 @@ class ImutTidakTercapai extends Widget
             return ['badge' => '-', 'label' => '-'];
         }
 
-        $formattedValue = rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.') . '%';
+        $formattedValue = rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.').'%';
 
         return match ($operator) {
             '>=', '≥' => ['badge' => "≥ {$formattedValue}", 'label' => 'Minimal'],
@@ -361,7 +351,7 @@ class ImutTidakTercapai extends Widget
             '=', '==' => ['badge' => "= {$formattedValue}", 'label' => 'Tepat'],
             '>' => ['badge' => "> {$formattedValue}", 'label' => 'Lebih dari'],
             '<' => ['badge' => "< {$formattedValue}", 'label' => 'Kurang dari'],
-            default => ['badge' => trim(($operator ?? '') . " {$formattedValue}"), 'label' => 'Target'],
+            default => ['badge' => trim(($operator ?? '')." {$formattedValue}"), 'label' => 'Target'],
         };
     }
 }

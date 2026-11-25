@@ -5,9 +5,11 @@ namespace App\Filament\Widgets;
 use App\Facades\LaporanImut as LaporanImutFacade;
 use App\Models\LaporanImut;
 use App\Repositories\Interfaces\LaporanRepositoryInterface;
+use App\Services\Chart\ImutPeriodService;
 use App\Services\Core\ImutCalculationService;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
 
@@ -16,20 +18,32 @@ class ImutTercapai extends Widget
     use WithPagination;
 
     protected static string $view = 'filament.widgets.imut-tercapai-widget';
+
     protected static ?int $sort = 6;
+
     protected static bool $isLazy = false;
+
     protected int|string|array $columnSpan = 'full';
+
     protected static ?string $pollingInterval = '30s';
 
-    public ?int $selectedLaporanId = null;
+    public string $periodType = 'month';
+
+    public ?string $selectedPeriod = null;
+
     public string $search = '';
+
     public string $filterLevel = 'all';
+
     public string $sortColumn = 'standard_percentage';
+
     public string $sortDirection = 'desc';
+
     public string|int $perPage = 10;
 
     protected $queryString = [
-        'selectedLaporanId' => ['except' => null],
+        'periodType' => ['except' => 'month'],
+        'selectedPeriod' => ['except' => null],
         'search' => ['except' => ''],
         'filterLevel' => ['except' => 'all'],
     ];
@@ -41,13 +55,19 @@ class ImutTercapai extends Widget
 
     public function mount(): void
     {
-        if (! $this->selectedLaporanId) {
-            $latest = LaporanImutFacade::getLatestLaporan();
-            $this->selectedLaporanId = $latest?->id;
+        if (! $this->selectedPeriod) {
+            $context = $this->periodContext;
+            $this->selectedPeriod = $context['selectedPeriod'];
         }
     }
 
-    public function updatingSelectedLaporanId(): void
+    public function updatingPeriodType(): void
+    {
+        $this->selectedPeriod = null;
+        $this->resetPage();
+    }
+
+    public function updatingSelectedPeriod(): void
     {
         $this->resetPage();
     }
@@ -85,46 +105,45 @@ class ImutTercapai extends Widget
         $this->resetPage();
     }
 
-    public function getAvailableLaporansProperty()
+    public function getAvailableLaporansProperty(): Collection
     {
         return LaporanImut::select(['id', 'name', 'report_month', 'report_year', 'assessment_period_start', 'assessment_period_end', 'status'])
             ->orderByDesc('assessment_period_start')
             ->get();
     }
 
-    public function getLaporan(): ?LaporanImut
+    public function getPeriodContextProperty(): array
     {
-        if ($this->selectedLaporanId) {
-            $laporan = LaporanImut::find($this->selectedLaporanId);
-            if ($laporan) {
-                return $laporan;
-            }
+        $context = app(ImutPeriodService::class)->resolvePeriodContext(
+            $this->availableLaporans,
+            $this->periodType,
+            $this->selectedPeriod
+        );
+
+        if ($context['selectedPeriod'] && $this->selectedPeriod !== $context['selectedPeriod']) {
+            $this->selectedPeriod = $context['selectedPeriod'];
         }
 
-        $laporan = LaporanImutFacade::getLatestLaporan();
-        if ($laporan && (! $laporan->name || ! $laporan->assessment_period_end)) {
-            $laporan = LaporanImut::find($laporan->id);
-        }
-
-        if ($laporan && ! $this->selectedLaporanId) {
-            $this->selectedLaporanId = $laporan->id;
-        }
-
-        return $laporan;
+        return $context;
     }
 
-    protected function getFilteredQuery(?int $laporanId): ?Builder
+    public function getLaporan(): ?LaporanImut
     {
-        if (! $laporanId) {
+        return $this->periodContext['primaryLaporan'] ?? LaporanImutFacade::getLatestLaporan();
+    }
+
+    protected function getFilteredQuery(array $laporanIds): ?Builder
+    {
+        if (empty($laporanIds)) {
             return null;
         }
 
         $laporanRepository = app(LaporanRepositoryInterface::class);
-        $query = $laporanRepository->getReportByUnitKerja($laporanId);
+        $query = $laporanRepository->getReportByUnitKerja($laporanIds);
 
         // Filter search unit name
         if (! empty(trim($this->search))) {
-            $searchTerm = '%' . trim($this->search) . '%';
+            $searchTerm = '%'.trim($this->search).'%';
             $query->where('unit_kerja.unit_name', 'like', $searchTerm);
         }
 
@@ -136,7 +155,7 @@ class ImutTercapai extends Widget
         );
         $meetsStandardExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 AND {$meetsStandardCondition} THEN 1 ELSE 0 END)";
         $belowStandardExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NOT NULL AND imut_penilaians.denominator_value IS NOT NULL AND imut_penilaians.denominator_value != 0 AND NOT {$meetsStandardCondition} THEN 1 ELSE 0 END)";
-        $emptyExpr = "SUM(CASE WHEN imut_penilaians.numerator_value IS NULL OR imut_penilaians.denominator_value IS NULL OR imut_penilaians.denominator_value = 0 THEN 1 ELSE 0 END)";
+        $emptyExpr = 'SUM(CASE WHEN imut_penilaians.numerator_value IS NULL OR imut_penilaians.denominator_value IS NULL OR imut_penilaians.denominator_value = 0 THEN 1 ELSE 0 END)';
 
         match ($this->filterLevel) {
             'high' => $query->havingRaw("({$meetsStandardExpr} / NULLIF(COUNT(imut_penilaians.id), 0)) >= 0.8"),
@@ -164,12 +183,12 @@ class ImutTercapai extends Widget
 
     public function getRecordsProperty()
     {
-        $laporan = $this->getLaporan();
-        if (! $laporan) {
+        $laporanIds = $this->periodContext['laporanIds'] ?? [];
+        if (empty($laporanIds)) {
             return collect();
         }
 
-        $query = $this->getFilteredQuery($laporan->id);
+        $query = $this->getFilteredQuery($laporanIds);
         if (! $query) {
             return collect();
         }
@@ -181,23 +200,8 @@ class ImutTercapai extends Widget
         return $query->paginate((int) $this->perPage);
     }
 
-    public function getSummaryProperty(): array
+    public static function getSummaryFromRecords(Collection $records): array
     {
-        $laporan = $this->getLaporan();
-        if (! $laporan) {
-            return [
-                'total_units' => 0,
-                'total_indicators' => 0,
-                'total_standard' => 0,
-                'total_below' => 0,
-                'total_empty' => 0,
-                'overall_percentage' => 0,
-            ];
-        }
-
-        $laporanRepository = app(LaporanRepositoryInterface::class);
-        $records = $laporanRepository->getReportByUnitKerja($laporan->id)->get();
-
         $totalUnits = $records->count();
         $totalIndicators = (int) $records->sum('total_count');
         $totalStandard = (int) $records->sum('meets_standard_count');
@@ -213,5 +217,18 @@ class ImutTercapai extends Widget
             'total_empty' => $totalEmpty,
             'overall_percentage' => $overallPercentage,
         ];
+    }
+
+    public function getSummaryProperty(): array
+    {
+        $laporanIds = $this->periodContext['laporanIds'] ?? [];
+        if (empty($laporanIds)) {
+            return self::getSummaryFromRecords(collect());
+        }
+
+        $laporanRepository = app(LaporanRepositoryInterface::class);
+        $records = $laporanRepository->getReportByUnitKerja($laporanIds)->get();
+
+        return self::getSummaryFromRecords($records);
     }
 }

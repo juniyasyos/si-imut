@@ -1,13 +1,14 @@
 <x-filament-widgets::widget>
     @php
-        $laporan = $this->getLaporan();
+        $context = $this->periodContext;
+        $hasData = ! empty($context['laporanIds']);
         $summary = $this->summary;
         $unitGroups = $this->unitGroups;
         $isPaginated = $unitGroups instanceof \Illuminate\Pagination\LengthAwarePaginator;
     @endphp
 
     <div class="w-full">
-        @if (! $laporan)
+        @if (! $hasData)
             <div class="flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white text-center shadow-sm dark:border-slate-700 dark:bg-slate-900" style="padding-top: 3.5rem; padding-bottom: 3.5rem;">
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" style="margin-left: auto; margin-right: auto; margin-bottom: 1rem;">
                     @svg('heroicon-o-document-magnifying-glass', 'h-8 w-8')
@@ -32,37 +33,48 @@
                                     </h2>
                                 </div>
                                 <p class="text-xs text-slate-300 sm:text-sm" style="color: #cbd5e1; margin-top: 0.25rem;">
-                                    <span class="font-semibold text-white" style="color: #ffffff;">{{ $laporan->name }}</span>
+                                    <span class="font-semibold text-white" style="color: #ffffff;">{{ $context['reportName'] }}</span>
                                     <span class="text-slate-500" style="margin-left: 0.5rem; margin-right: 0.5rem;">&bull;</span>
-                                    Periode:
+                                    Periode ({{ $context['periodTypeLabel'] }}):
                                     <span class="font-medium text-slate-200" style="color: #e2e8f0;">
-                                        {{ $laporan->assessment_period_start ? \Carbon\Carbon::parse($laporan->assessment_period_start)->translatedFormat('d M Y') : '-' }}
+                                        {{ $context['startDate'] ? $context['startDate']->translatedFormat('d M Y') : '-' }}
                                         s/d
-                                        {{ $laporan->assessment_period_end ? \Carbon\Carbon::parse($laporan->assessment_period_end)->translatedFormat('d M Y') : '-' }}
+                                        {{ $context['endDate'] ? $context['endDate']->translatedFormat('d M Y') : '-' }}
                                     </span>
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Tombol Cetak & Pemilih Periode / Bulan -->
-                        <div class="flex flex-wrap items-center gap-2.5">
+                        <!-- Tombol Cetak & Pemilih Tipe + Periode -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <!-- Tipe Periode -->
                             <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Bulan:</span>
-                                <select wire:model.live="selectedLaporanId"
+                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Tipe:</span>
+                                <select wire:model.live="periodType"
                                         class="rounded-lg border border-slate-600 bg-slate-800 text-xs font-bold text-white shadow-sm transition [color-scheme:dark] hover:bg-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                         style="background-color: #1e293b; color: #ffffff; border-color: #475569; padding: 0.375rem 0.75rem;">
-                                    @foreach ($this->availableLaporans as $item)
-                                        @php
-                                            $bulan = $item->assessment_period_start ? \Carbon\Carbon::parse($item->assessment_period_start)->translatedFormat('F Y') : ($item->name ?? "Laporan #{$item->id}");
-                                        @endphp
-                                        <option value="{{ $item->id }}" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">
-                                            {{ $bulan }} ({{ strtoupper($item->status ?? 'PROSES') }})
+                                    <option value="month" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">Bulan</option>
+                                    <option value="quarter" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">Kuartal</option>
+                                    <option value="semester" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">Semester</option>
+                                    <option value="year" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">Tahun</option>
+                                </select>
+                            </div>
+
+                            <!-- Nilai Periode -->
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-slate-300" style="color: #cbd5e1;">Periode:</span>
+                                <select wire:model.live="selectedPeriod"
+                                        class="rounded-lg border border-slate-600 bg-slate-800 text-xs font-bold text-white shadow-sm transition [color-scheme:dark] hover:bg-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                        style="background-color: #1e293b; color: #ffffff; border-color: #475569; padding: 0.375rem 0.75rem;">
+                                    @foreach ($context['options'] as $key => $label)
+                                        <option value="{{ $key }}" class="bg-slate-800 text-white" style="background-color: #1e293b; color: #ffffff;">
+                                            {{ $label }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
 
-                            <a href="{{ route('print.imut-tidak-tercapai', ['laporan_id' => $laporan->id, 'orientation' => 'landscape', 'category_id' => $filterCategoryId, 'search' => $search]) }}"
+                            <a href="{{ route('print.imut-tidak-tercapai', ['period_type' => $periodType, 'period' => $context['selectedPeriod'], 'orientation' => 'landscape', 'category_id' => $filterCategoryId, 'search' => $search]) }}"
                                target="_blank"
                                class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 text-xs font-bold text-white shadow transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                style="background-color: #2563eb; color: #ffffff; padding: 0.5rem 1rem;">
@@ -200,6 +212,10 @@
                                                 {{ $item->indicator_title }}
                                             </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400" style="margin-top: 0.25rem;">
+                                                @if (($item->months_count ?? 1) > 1)
+                                                    <span class="font-semibold text-gray-600 dark:text-gray-300">Akumulasi {{ $item->months_count }} bln</span>
+                                                    <span style="margin-left: 0.25rem; margin-right: 0.25rem;">&bull;</span>
+                                                @endif
                                                 Num: <strong class="text-gray-700 dark:text-gray-200">{{ number_format((float) $item->numerator_value) }}</strong>
                                                 /
                                                 Den: <strong class="text-gray-700 dark:text-gray-200">{{ number_format((float) $item->denominator_value) }}</strong>

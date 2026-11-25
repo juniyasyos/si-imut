@@ -282,11 +282,15 @@
     <!-- Halaman Dokumen Laporan -->
     <div class="paper-container">
         <!-- Header Dokumen dengan Logo Resmi (Komponen basic-report-header sama seperti page cetak lain) -->
+        @php
+            $headerReportName = $periodContext['reportName'] ?? ($laporan->name ?? '-');
+            $headerPeriodType = $periodContext['periodTypeLabel'] ?? 'Bulan';
+        @endphp
         <x-basic-report-header
             title="Rekapitulasi Capaian Indikator Mutu Per Unit Kerja"
-            subtitle="{{ $laporan->name }}"
+            subtitle="{{ $headerReportName }}"
             :additionalInfo="[
-                ['label' => 'Nama Laporan', 'value' => $laporan->name],
+                ['label' => 'Laporan / Periode', 'value' => $headerReportName . ' (' . $headerPeriodType . ')'],
                 ['label' => 'Periode Asesmen', 'value' => $periodeText],
                 ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB']
             ]" />

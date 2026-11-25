@@ -12,10 +12,10 @@ interface LaporanRepositoryInterface
     /**
      * Mengambil laporan berdasarkan unit kerja dengan jumlah penilaian dan persentase pengisian.
      *
-     * @param int $laporanId
+     * @param int|int[] $laporanIds
      * @return Builder
      */
-    public function getReportByUnitKerja(int $laporanId): Builder;
+    public function getReportByUnitKerja(int|array $laporanIds): Builder;
 
     /**
      * Mengambil laporan berdasarkan data IMUT dengan total nilai dan persentase.

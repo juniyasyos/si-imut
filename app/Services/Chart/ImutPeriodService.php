@@ -2,11 +2,12 @@
 
 namespace App\Services\Chart;
 
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * Service untuk mengelola logik periode (triwulan, semester, tahun).
- * Diekstrak dari ImutCapaianWidget untuk reusability.
+ * Service untuk mengelola logik periode (bulan, triwulan/kuartal, semester, tahun).
+ * Digunakan bersama oleh ImutCapaianWidget, ImutTercapai, ImutTidakTercapai, dan PrintReportController.
  */
 class ImutPeriodService
 {
@@ -26,6 +27,16 @@ class ImutPeriodService
         10 => 'Oktober',
         11 => 'November',
         12 => 'Desember',
+    ];
+
+    /**
+     * Mapping label tipe periode.
+     */
+    public const PERIOD_TYPE_LABELS = [
+        'month' => 'Bulan',
+        'quarter' => 'Kuartal',
+        'semester' => 'Semester',
+        'year' => 'Tahun',
     ];
 
     /**
@@ -49,11 +60,11 @@ class ImutPeriodService
 
         foreach ($laporans as $laporan) {
             $year = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->year
+                ? Carbon::parse($laporan->assessment_period_start)->year
                 : $laporan->report_year;
 
             $month = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->month
+                ? Carbon::parse($laporan->assessment_period_start)->month
                 : $laporan->report_month;
 
             if (! $year || ! $month) {
@@ -80,6 +91,7 @@ class ImutPeriodService
     public function parsePeriod(string $periodType, string $selectedPeriod): array
     {
         return match ($periodType) {
+            'month' => $this->parseMonth($selectedPeriod),
             'quarter' => $this->parseQuarter($selectedPeriod),
             'semester' => $this->parseSemester($selectedPeriod),
             default => $this->parseYear($selectedPeriod),
@@ -107,15 +119,104 @@ class ImutPeriodService
     {
         return $laporans->filter(function ($laporan) use ($year, $months) {
             $lYear = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->year
+                ? Carbon::parse($laporan->assessment_period_start)->year
                 : $laporan->report_year;
 
             $lMonth = $laporan->assessment_period_start
-                ? $laporan->assessment_period_start->month
+                ? Carbon::parse($laporan->assessment_period_start)->month
                 : $laporan->report_month;
 
-            return $lYear == $year && in_array((int) $lMonth, $months, true);
+            return (int) $lYear === $year && in_array((int) $lMonth, $months, true);
         });
+    }
+
+    /**
+     * Resolve tipe periode dan nilai periode terpilih menjadi konteks lengkap laporan.
+     *
+     * @return array{
+     *     periodType: string,
+     *     periodTypeLabel: string,
+     *     options: array<string, string>,
+     *     selectedPeriod: ?string,
+     *     label: string,
+     *     laporans: Collection,
+     *     laporanIds: int[],
+     *     primaryLaporan: mixed,
+     *     startDate: ?Carbon,
+     *     endDate: ?Carbon,
+     *     status: string,
+     *     reportName: string
+     * }
+     */
+    public function resolvePeriodContext(
+        Collection $laporans,
+        string $periodType = 'month',
+        ?string $selectedPeriod = null
+    ): array {
+        if (! array_key_exists($periodType, self::PERIOD_TYPE_LABELS)) {
+            $periodType = 'month';
+        }
+
+        $options = $this->getAvailablePeriods($laporans, $periodType);
+
+        if (empty($options)) {
+            return [
+                'periodType' => $periodType,
+                'periodTypeLabel' => self::PERIOD_TYPE_LABELS[$periodType],
+                'options' => [],
+                'selectedPeriod' => null,
+                'label' => '-',
+                'laporans' => collect(),
+                'laporanIds' => [],
+                'primaryLaporan' => null,
+                'startDate' => null,
+                'endDate' => null,
+                'status' => 'process',
+                'reportName' => '-',
+            ];
+        }
+
+        if (! $selectedPeriod || ! array_key_exists($selectedPeriod, $options)) {
+            $selectedPeriod = (string) array_key_first($options);
+        }
+
+        $meta = $this->parsePeriod($periodType, $selectedPeriod);
+        $matched = $this->filterByPeriod($laporans, $meta['year'], $meta['months'])
+            ->sortBy('assessment_period_start')
+            ->values();
+
+        $laporanIds = $matched->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $primaryLaporan = $matched->last();
+
+        $startDates = $matched->pluck('assessment_period_start')->filter()->map(fn ($d) => Carbon::parse($d));
+        $endDates = $matched->pluck('assessment_period_end')->filter()->map(fn ($d) => Carbon::parse($d));
+
+        $startDate = $startDates->isNotEmpty() ? $startDates->min() : null;
+        $endDate = $endDates->isNotEmpty() ? $endDates->max() : null;
+
+        $allComplete = $matched->isNotEmpty() && $matched->every(fn ($item) => ($item->status ?? '') === 'complete');
+        $status = $periodType === 'month'
+            ? ($primaryLaporan?->status ?? 'process')
+            : ($allComplete ? 'complete' : 'process');
+
+        $reportName = $periodType === 'month'
+            ? ($primaryLaporan?->name ?? $meta['label'])
+            : "Rekap {$meta['label']} ({$matched->count()} Laporan Bulanan)";
+
+        return [
+            'periodType' => $periodType,
+            'periodTypeLabel' => self::PERIOD_TYPE_LABELS[$periodType],
+            'options' => $options,
+            'selectedPeriod' => $selectedPeriod,
+            'label' => $meta['label'],
+            'laporans' => $matched,
+            'laporanIds' => $laporanIds,
+            'primaryLaporan' => $primaryLaporan,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'status' => $status,
+            'reportName' => $reportName,
+        ];
     }
 
     /**
@@ -126,6 +227,10 @@ class ImutPeriodService
     private function buildPeriodKeyLabel(string $periodType, int $year, int $month): array
     {
         return match ($periodType) {
+            'month' => [
+                sprintf('%04d-%02d', $year, $month),
+                (self::MONTH_NAMES[$month] ?? $month)." {$year}",
+            ],
             'quarter' => [
                 "{$year}-Q".((int) ceil($month / 3)),
                 'Triwulan '.((int) ceil($month / 3))." {$year}",
@@ -142,14 +247,31 @@ class ImutPeriodService
     /**
      * @return array{year: int, months: int[], label: string}
      */
-    private function parseQuarter(string $selectedPeriod): array
+    private function parseMonth(string $selectedPeriod): array
     {
-        [$year, $quarterRaw] = explode('-Q', $selectedPeriod);
-
-        $quarter = (int) $quarterRaw;
+        $parts = explode('-', $selectedPeriod);
+        $year = (int) ($parts[0] ?? now()->year);
+        $month = max(1, min(12, (int) ($parts[1] ?? now()->month)));
+        $monthName = self::MONTH_NAMES[$month] ?? (string) $month;
 
         return [
-            'year' => (int) $year,
+            'year' => $year,
+            'months' => [$month],
+            'label' => "{$monthName} {$year}",
+        ];
+    }
+
+    /**
+     * @return array{year: int, months: int[], label: string}
+     */
+    private function parseQuarter(string $selectedPeriod): array
+    {
+        $parts = explode('-Q', $selectedPeriod);
+        $year = (int) ($parts[0] ?? now()->year);
+        $quarter = max(1, min(4, (int) ($parts[1] ?? 1)));
+
+        return [
+            'year' => $year,
             'months' => self::QUARTER_MONTHS[$quarter] ?? [1, 2, 3],
             'label' => "Triwulan {$quarter} {$year}",
         ];
@@ -160,12 +282,12 @@ class ImutPeriodService
      */
     private function parseSemester(string $selectedPeriod): array
     {
-        [$year, $semesterRaw] = explode('-S', $selectedPeriod);
-
-        $semester = (int) $semesterRaw;
+        $parts = explode('-S', $selectedPeriod);
+        $year = (int) ($parts[0] ?? now()->year);
+        $semester = (int) ($parts[1] ?? 1) === 2 ? 2 : 1;
 
         return [
-            'year' => (int) $year,
+            'year' => $year,
             'months' => $semester === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12],
             'label' => "Semester {$semester} {$year}",
         ];
@@ -176,7 +298,7 @@ class ImutPeriodService
      */
     private function parseYear(string $selectedPeriod): array
     {
-        $year = (int) $selectedPeriod;
+        $year = (int) $selectedPeriod ?: now()->year;
 
         return [
             'year' => $year,

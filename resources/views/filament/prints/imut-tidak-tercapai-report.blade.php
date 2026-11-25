@@ -284,8 +284,10 @@
     <!-- Halaman Dokumen Laporan -->
     <div class="paper-container">
         @php
+            $headerReportName = $periodContext['reportName'] ?? ($laporan->name ?? '-');
+            $headerPeriodType = $periodContext['periodTypeLabel'] ?? 'Bulan';
             $additionalInfo = [
-                ['label' => 'Nama Laporan', 'value' => $laporan->name],
+                ['label' => 'Laporan / Periode', 'value' => $headerReportName . ' (' . $headerPeriodType . ')'],
                 ['label' => 'Periode Asesmen', 'value' => $periodeText],
                 ['label' => 'Tanggal Cetak', 'value' => now()->translatedFormat('d F Y, H:i') . ' WIB'],
             ];
@@ -299,7 +301,7 @@
 
         <x-basic-report-header
             title="Daftar Indikator Mutu Tidak Tercapai Per Unit Kerja"
-            subtitle="{{ $laporan->name }}"
+            subtitle="{{ $headerReportName }}"
             :additionalInfo="$additionalInfo" />
 
         <!-- Compact Summary Strip -->
@@ -362,6 +364,9 @@
                             <td>
                                 <div style="font-weight: 600;">{{ $item->indicator_title }}</div>
                                 <div style="font-size: 8pt; color: #475569; margin-top: 2px;">
+                                    @if (($item->months_count ?? 1) > 1)
+                                        <strong>Akumulasi {{ $item->months_count }} bln</strong> &bull;
+                                    @endif
                                     Num: {{ number_format((float) $item->numerator_value) }} / Den: {{ number_format((float) $item->denominator_value) }}
                                 </div>
                             </td>
