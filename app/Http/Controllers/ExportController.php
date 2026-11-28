@@ -38,17 +38,20 @@ class ExportController extends Controller
             // Get template with responses
             $template = FormTemplate::with([
                 'imutProfile.imutData',
+                'formFields' => fn ($query) => $query->orderBy('order_index'),
                 'formFields.options',
                 'dailyReportResponses' => function ($query) use ($startDate, $endDate, $user) {
                     $query->whereBetween('report_date', [$startDate, $endDate])
-                        ->forUserUnits($user)
-                        ->with(['submittedBy', 'validator', 'unitKerja', 'fieldResponses.formField']);
+                        ->when(! $user?->can('view_all_data_imut::data'), fn ($q) => $q->forUserUnits($user))
+                        ->with(['submittedBy', 'validator', 'unitKerja', 'fieldResponses'])
+                        ->orderBy('report_date', 'asc')
+                        ->orderBy('created_at', 'asc');
                 },
             ])->findOrFail($templateId);
 
             // Generate filename
-            $filename = 'monitoring_' . $template->imutProfile->imutData->title . '_' . $month . '.xlsx';
-            $filename = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
+            $title = $template->imutProfile?->imutData?->title ?? $template->title ?? 'monitoring';
+            $filename = $this->sanitizeExcelFilename('monitoring_' . $title . '_' . $month . '.xlsx');
 
             return Excel::download(
                 new MonitoringExport($template, $startDate, $endDate),

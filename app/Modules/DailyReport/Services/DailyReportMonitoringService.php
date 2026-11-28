@@ -114,12 +114,15 @@ class DailyReportMonitoringService
 
             $template = \App\Models\FormTemplate::with([
                 'imutProfile.imutData',
+                'formFields' => fn ($query) => $query->orderBy('order_index'),
                 'formFields.options',
-                'dailyReportResponses' => function ($query) use ($startDate, $endDate, $unitKerjaIds) {
+                'dailyReportResponses' => function ($query) use ($startDate, $endDate, $unitKerjaIds, $user) {
                     $query->whereBetween('report_date', [$startDate, $endDate])
-                        ->with(['submittedBy', 'validator', 'unitKerja', 'fieldResponses.formField']);
-                    
-                    if (!empty($unitKerjaIds)) {
+                        ->with(['submittedBy', 'validator', 'unitKerja', 'fieldResponses'])
+                        ->orderBy('report_date', 'asc')
+                        ->orderBy('created_at', 'asc');
+
+                    if (! $user->can('view_all_data_imut::data') && ! empty($unitKerjaIds)) {
                         $query->whereIn('unit_kerja_id', $unitKerjaIds);
                     }
                 }
@@ -148,7 +151,7 @@ class DailyReportMonitoringService
      */
     private function generateExportFilename(FormTemplate $template, string $month): string
     {
-        $title = $template->imutProfile->imutData->title;
+        $title = $template->imutProfile?->imutData?->title ?? $template->title ?? 'monitoring';
         $filename = "monitoring_{$title}_{$month}.xlsx";
         return preg_replace('/[^A-Za-z0-9\-_.]/', '_', $filename);
     }

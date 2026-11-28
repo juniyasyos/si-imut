@@ -4,6 +4,7 @@ namespace App\Domain\DailyReport;
 
 use App\Models\FormTemplate;
 use App\Models\UnitKerja;
+use App\Support\DailyReportFieldValueFormatter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
@@ -239,7 +240,7 @@ class TableViewDomain
                     continue;
                 }
 
-                $row[$fieldKey] = $fieldValue;
+                $row[$fieldKey] = DailyReportFieldValueFormatter::unwrapScalar($fieldValue);
             }
 
             $row['validation_status'] = $this->calculateComplianceStatus($entry->fieldResponses);

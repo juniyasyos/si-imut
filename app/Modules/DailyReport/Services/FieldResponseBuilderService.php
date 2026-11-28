@@ -6,6 +6,7 @@ use App\Modules\DailyReport\Models\DailyReportResponse;
 use App\Models\FieldResponse;
 use App\Modules\FormEngine\Models\EnhancedFormField;
 use App\Modules\ImutMaster\Models\ImutPenilaian;
+use App\Filament\Resources\ImutProfileResource\Pages\Helper\FieldBuilders\TimeRangeFieldBuilder;
 use App\Filament\Resources\ImutProfileResource\Pages\Helper\TimeUtility;
 
 /**
@@ -154,11 +155,12 @@ class FieldResponseBuilderService
         $fieldValue,
         array $formData
     ): array {
+        $validationConfig = is_array($field->validation_config) ? $field->validation_config : [];
         $inputValue = $formData[$field->field_key . '_input_value'] ?? null;
-        $startTime = $formData[$field->field_key . '_start_time'] ?? null;
-        $endTime = $formData[$field->field_key . '_end_time'] ?? null;
+        $startTime = $formData[$field->field_key . '_start_time'] ?? ($validationConfig['default_start_time'] ?? '00:00');
+        $endTime = $formData[$field->field_key . '_end_time'] ?? ($validationConfig['default_end_time'] ?? '23:59');
 
-        $isValid = ($inputValue && $startTime && $endTime) ? '1' : '0';
+        $isValid = TimeRangeFieldBuilder::isInputValueValid($inputValue, $startTime, $endTime) ? '1' : '0';
 
         return [
             'type' => 'time_range',
