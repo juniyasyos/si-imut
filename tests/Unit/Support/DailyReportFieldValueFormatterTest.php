@@ -180,6 +180,66 @@ class DailyReportFieldValueFormatterTest extends TestCase
         ]));
     }
 
+    public function test_split_time_duration_and_time_range_columns(): void
+    {
+        $durationField = $this->makeField('time_duration');
+        $this->assertSame([
+            'start' => '2026-07-10 08:00',
+            'end' => '2026-07-10 08:15',
+            'duration' => '15 menit',
+            'status' => 'Sesuai',
+        ], DailyReportFieldValueFormatter::formatTimeDurationColumns([
+            'type' => 'time_duration',
+            'start_time' => '2026-07-10 08:00',
+            'end_time' => '2026-07-10 08:15',
+            'valid_indicator' => '1',
+        ]));
+
+        // Empty time_duration should NOT falsely label 'Tidak Sesuai'
+        $this->assertSame([
+            'start' => '',
+            'end' => '',
+            'duration' => '',
+            'status' => '',
+        ], DailyReportFieldValueFormatter::formatTimeDurationColumns([
+            'type' => 'time_duration',
+            'start_time' => null,
+            'end_time' => null,
+            'valid_indicator' => '0',
+        ]));
+
+        $rangeField = $this->makeField('time_range', [], [
+            'default_start_time' => '08:00',
+            'default_end_time' => '17:00',
+        ]);
+
+        $this->assertSame([
+            'input_value' => '09:30',
+            'status' => 'Sesuai',
+        ], DailyReportFieldValueFormatter::formatTimeRangeColumns($rangeField, [
+            'type' => 'time_range',
+            'input_value' => '09:30',
+            'start_time' => null,
+            'end_time' => null,
+            'valid_indicator' => '0',
+        ]));
+
+        $this->assertSame([
+            'input_value' => '19:00',
+            'status' => 'Tidak Sesuai',
+        ], DailyReportFieldValueFormatter::formatTimeRangeColumns($rangeField, [
+            'input_value' => '19:00',
+            'start_time' => '08:00',
+            'end_time' => '17:00',
+            'valid_indicator' => '0',
+        ]));
+
+        $this->assertSame(
+            '08:00 - 17:00',
+            DailyReportFieldValueFormatter::resolveTimeRangeBoundaryLabel($rangeField)
+        );
+    }
+
     public function test_validation_status_and_sheet_title_sanitization(): void
     {
         $this->assertSame('Valid', DailyReportFieldValueFormatter::formatValidationStatus('valid'));

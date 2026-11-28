@@ -242,6 +242,7 @@ class MonitoringExportTest extends TestCase
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, false, false);
 
+            // Row 1: Group / top headers (with time_range bounds in top header)
             $this->assertSame([
                 'Tanggal',
                 'Unit Kerja',
@@ -255,32 +256,69 @@ class MonitoringExportTest extends TestCase
                 'Metode',
                 'Momen',
                 'Durasi',
-                'Jam Lapor',
+                null,
+                null,
+                null,
+                'Jam Lapor (08:00 - 17:00)',
+                null,
             ], $rows[0]);
 
-            $this->assertSame('10/07/2026', $rows[1][0]);
-            $this->assertSame('IGD', $rows[1][1]);
-            $this->assertSame('Budi', $rows[1][2]);
-            $this->assertSame('Siti', $rows[1][3]);
-            $this->assertSame('Valid', $rows[1][4]);
-            $this->assertSame('Observasi shift pagi', $rows[1][5]);
-            $this->assertEquals(25, $rows[1][6]);
-            $this->assertSame('10/07/2026', $rows[1][7]);
-            $this->assertSame('Ya', $rows[1][8]);
-            $this->assertSame('Hand Rub', $rows[1][9]);
-            $this->assertSame('Sebelum Kontak, Sesudah Kontak', $rows[1][10]);
-            $this->assertSame('2026-07-10 08:00 - 2026-07-10 08:15 (15 menit, Sesuai)', $rows[1][11]);
-            $this->assertSame('09:30 (Sesuai, rentang 08:00 - 17:00)', $rows[1][12]);
+            // Row 2: Sub-headers for time_duration (4 cols) and time_range (2 cols)
+            $this->assertSame([
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'Mulai',
+                'Selesai',
+                'Waktu Selisih',
+                'Kesesuaian',
+                'Waktu',
+                'Kesesuaian',
+            ], $rows[1]);
 
-            $this->assertSame('Belum Divalidasi', $rows[2][4]);
-            for ($col = 5; $col <= 12; $col++) {
-                $this->assertNull($rows[2][$col]);
+            // Verify merged cells in Excel
+            $mergedCells = $sheet->getMergeCells();
+            $this->assertArrayHasKey('A1:A2', $mergedCells);
+            $this->assertArrayHasKey('F1:F2', $mergedCells);
+            $this->assertArrayHasKey('L1:O1', $mergedCells);
+            $this->assertArrayHasKey('P1:Q1', $mergedCells);
+
+            // Row 3: Data row 1
+            $this->assertSame('10/07/2026', $rows[2][0]);
+            $this->assertSame('IGD', $rows[2][1]);
+            $this->assertSame('Budi', $rows[2][2]);
+            $this->assertSame('Siti', $rows[2][3]);
+            $this->assertSame('Valid', $rows[2][4]);
+            $this->assertSame('Observasi shift pagi', $rows[2][5]);
+            $this->assertEquals(25, $rows[2][6]);
+            $this->assertSame('10/07/2026', $rows[2][7]);
+            $this->assertSame('Ya', $rows[2][8]);
+            $this->assertSame('Hand Rub', $rows[2][9]);
+            $this->assertSame('Sebelum Kontak, Sesudah Kontak', $rows[2][10]);
+            $this->assertSame('2026-07-10 08:00', $rows[2][11]);
+            $this->assertSame('2026-07-10 08:15', $rows[2][12]);
+            $this->assertSame('15 menit', $rows[2][13]);
+            $this->assertSame('Sesuai', $rows[2][14]);
+            $this->assertSame('09:30', $rows[2][15]);
+            $this->assertSame('Sesuai', $rows[2][16]);
+
+            // Row 4: Data row 2 (empty arrays -> all blank cells)
+            $this->assertSame('Belum Divalidasi', $rows[3][4]);
+            for ($col = 5; $col <= 16; $col++) {
+                $this->assertNull($rows[3][$col]);
             }
 
-            // Ensure DailyReportMonitoringExport produces identical rows
+            // Ensure DailyReportMonitoringExport produces identical rows & title
             $serviceExport = new DailyReportMonitoringExport($loadedTemplate);
-            $this->assertSame($export->collection()->toArray(), $serviceExport->collection()->toArray());
-            $this->assertSame($export->headings(), $serviceExport->headings());
+            $this->assertSame($export->array(), $serviceExport->array());
             $this->assertSame($export->title(), $serviceExport->title());
 
             // Ensure TableViewDomain unwraps wrapped scalar arrays on regular fields
@@ -348,5 +386,61 @@ class MonitoringExportTest extends TestCase
             'end_time' => '17:00',
             'valid_indicator' => '1',
         ], $fieldResponse->field_value);
+    }
+
+    public function test_monitoring_export_uses_single_header_row_when_no_time_fields_exist(): void
+    {
+        $unit = UnitKerja::factory()->create(['unit_name' => 'Poli']);
+        $user = User::factory()->create(['name' => 'Ani']);
+        $imutData = ImutData::factory()->create(['title' => 'Template Sederhana']);
+        $profile = ImutProfile::factory()->create(['imut_data_id' => $imutData->id]);
+        $template = FormTemplate::factory()->create(['imut_profile_id' => $profile->id]);
+
+        $field = EnhancedFormField::create([
+            'form_template_id' => $template->id,
+            'field_key' => 'catatan',
+            'field_label' => 'Catatan',
+            'field_type' => 'text',
+            'order_index' => 1,
+        ]);
+
+        $report = DailyReportResponse::create([
+            'form_template_id' => $template->id,
+            'unit_kerja_id' => $unit->id,
+            'submitted_by' => $user->id,
+            'report_date' => '2026-07-16',
+            'total_score' => 100,
+            'compliance_status' => true,
+            'validation_status' => 'invalid',
+        ]);
+
+        FieldResponse::create([
+            'daily_report_response_id' => $report->id,
+            'form_field_id' => $field->id,
+            'field_value' => ['Aman'],
+            'compliance_score' => 100,
+        ]);
+
+        $loadedTemplate = FormTemplate::with([
+            'imutProfile.imutData',
+            'formFields' => fn ($q) => $q->orderBy('order_index'),
+            'formFields.options',
+            'dailyReportResponses' => fn ($q) => $q->with(['submittedBy', 'validator', 'unitKerja', 'fieldResponses']),
+        ])->findOrFail($template->id);
+
+        $rawBinary = Excel::raw(new MonitoringExport($loadedTemplate), ExcelFormat::XLSX);
+        $tmpPath = tempnam(sys_get_temp_dir(), 'mon_simple_') . '.xlsx';
+        file_put_contents($tmpPath, $rawBinary);
+
+        try {
+            $sheet = IOFactory::load($tmpPath)->getActiveSheet();
+            $rows = $sheet->toArray(null, true, false, false);
+
+            $this->assertCount(2, $rows);
+            $this->assertSame(['Tanggal', 'Unit Kerja', 'Pengumpul Data', 'Validator', 'Status Validasi', 'Catatan'], $rows[0]);
+            $this->assertSame(['16/07/2026', 'Poli', 'Ani', null, 'Tidak Valid', 'Aman'], $rows[1]);
+        } finally {
+            @unlink($tmpPath);
+        }
     }
 }

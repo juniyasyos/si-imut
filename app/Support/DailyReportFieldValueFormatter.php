@@ -67,6 +67,139 @@ class DailyReportFieldValueFormatter
         return implode(', ', array_map('strval', $items));
     }
 
+    /**
+     * Format a time_duration field into separate Excel columns:
+     * start, end, duration difference, and compliance status.
+     *
+     * @return array{start: string, end: string, duration: string, status: string}
+     */
+    public static function formatTimeDurationColumns(mixed $fieldValue): array
+    {
+        if (! is_array($fieldValue)) {
+            $scalar = trim((string) ($fieldValue ?? ''));
+
+            return [
+                'start' => '',
+                'end' => '',
+                'duration' => $scalar,
+                'status' => '',
+            ];
+        }
+
+        $startTime = $fieldValue['start_time'] ?? null;
+        $endTime = $fieldValue['end_time'] ?? null;
+        $duration = $fieldValue['duration'] ?? null;
+        $validIndicator = $fieldValue['valid_indicator'] ?? null;
+
+        $hasStart = filled($startTime);
+        $hasEnd = filled($endTime);
+        $hasDuration = filled($duration);
+
+        if (! $hasStart && ! $hasEnd && ! $hasDuration) {
+            return [
+                'start' => '',
+                'end' => '',
+                'duration' => '',
+                'status' => '',
+            ];
+        }
+
+        $durationText = '';
+        if ($hasStart && $hasEnd) {
+            $minutes = TimeUtility::calculateDurationInMinutes((string) $startTime, (string) $endTime);
+            if ($minutes !== null) {
+                $durationText = self::formatDurationMinutes($minutes);
+            }
+        } elseif ($hasDuration) {
+            $durationText = "{$duration} menit";
+        }
+
+        $statusText = self::resolveValidityText($validIndicator) ?? '';
+
+        return [
+            'start' => $hasStart ? (string) $startTime : '',
+            'end' => $hasEnd ? (string) $endTime : '',
+            'duration' => $durationText,
+            'status' => $statusText,
+        ];
+    }
+
+    /**
+     * Format a time_range field into separate Excel columns:
+     * input time value and compliance status against the configured range.
+     *
+     * @return array{input_value: string, status: string}
+     */
+    public static function formatTimeRangeColumns(EnhancedFormField $field, mixed $fieldValue): array
+    {
+        if (! is_array($fieldValue)) {
+            $scalar = trim((string) ($fieldValue ?? ''));
+
+            return [
+                'input_value' => $scalar,
+                'status' => '',
+            ];
+        }
+
+        $inputValue = $fieldValue['input_value'] ?? null;
+
+        if (! filled($inputValue)) {
+            return [
+                'input_value' => '',
+                'status' => '',
+            ];
+        }
+
+        $storedStart = $fieldValue['start_time'] ?? null;
+        $storedEnd = $fieldValue['end_time'] ?? null;
+        $config = is_array($field->validation_config) ? $field->validation_config : [];
+        $startTime = filled($storedStart) ? $storedStart : ($config['default_start_time'] ?? null);
+        $endTime = filled($storedEnd) ? $storedEnd : ($config['default_end_time'] ?? null);
+
+        $validIndicator = $fieldValue['valid_indicator'] ?? null;
+        $isValid = null;
+
+        if (filled($storedStart) && filled($storedEnd) && $validIndicator !== null && $validIndicator !== '') {
+            $isValid = ((string) $validIndicator === '1' || $validIndicator === true);
+        } elseif (filled($startTime) && filled($endTime)) {
+            $isValid = TimeRangeFieldBuilder::isInputValueValid(
+                (string) $inputValue,
+                (string) $startTime,
+                (string) $endTime
+            );
+        }
+
+        return [
+            'input_value' => (string) $inputValue,
+            'status' => $isValid === null ? '' : ($isValid ? 'Sesuai' : 'Tidak Sesuai'),
+        ];
+    }
+
+    /**
+     * Resolve the boundary range label (e.g. "08:00 - 17:00") for a time_range field.
+     */
+    public static function resolveTimeRangeBoundaryLabel(EnhancedFormField $field, iterable $responses = []): ?string
+    {
+        $config = is_array($field->validation_config) ? $field->validation_config : [];
+        $configStart = $config['default_start_time'] ?? null;
+        $configEnd = $config['default_end_time'] ?? null;
+
+        if (filled($configStart) && filled($configEnd)) {
+            return "{$configStart} - {$configEnd}";
+        }
+
+        foreach ($responses as $response) {
+            $fieldResponse = $response->fieldResponses->firstWhere('form_field_id', $field->id);
+            $val = $fieldResponse?->field_value;
+
+            if (is_array($val) && filled($val['start_time'] ?? null) && filled($val['end_time'] ?? null)) {
+                return "{$val['start_time']} - {$val['end_time']}";
+            }
+        }
+
+        return null;
+    }
+
     public static function formatValidationStatus(?string $status): string
     {
         return match ($status) {
